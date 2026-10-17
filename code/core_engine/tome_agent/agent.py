@@ -6,8 +6,8 @@ from typing import Protocol
 import re
 from .state import canonical, digest, Workspace
 from .submissions import submit_groups
-from .checkpoints import save_checkpoint
-from .storage import save_payload
+from tome_backend.checkpoints import save_checkpoint
+from tome_backend.storage import save_payload
 
 
 @dataclass
@@ -231,12 +231,6 @@ class ChapterAgent:
                     trace.append({"tool": call.name, "arguments": deepcopy(call.arguments), "result": deepcopy(result)})
                 snapshot("IN_PROGRESS")
             raise ValueError("Chapter turn budget exhausted")
-        except Exception as exc:
-            snapshot("FAILED", str(exc))
-            raise
-        finally:
-            self._running = False
-
         except Exception as exc:
             snapshot("FAILED", str(exc))
             raise
