@@ -1,0 +1,1 @@
+# INF 核心、DeepSeek 适配器和离线演示仅使用 Python 3.11 标准库。
