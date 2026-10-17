@@ -29,7 +29,7 @@
 
 模型默认deepseek-flash；.env中空模型名也使用该默认值。依赖已安装在本机项目.venv，其他成员需运行setup.cmd。requirements.txt锁定直接依赖；requirements-lock.txt锁定完整解析结果。安装依赖仍需要网络，项目压缩包不是离线依赖安装包。
 
-[完整使用说明](docs/USER_GUIDE.md) · [架构对应说明](docs/ARCHITECTURE.md) · [验证记录](docs/VALIDATION.md)
+[问题定义与5W1H](docs/requirements/problem_definition.md) · [团队计划](docs/mgmt/TEAM_PLAN.md) · [Kanban](docs/mgmt/KANBAN.md) · [完整使用说明](docs/USER_GUIDE.md) · [架构对应说明](docs/ARCHITECTURE.md) · [验证记录](docs/VALIDATION.md)
 
 ## 命令行
 
@@ -63,7 +63,12 @@ tome_agent/
   offline.py                 模拟模型演示
   storage.py                 原子文件写入
 tests/                       32项本地测试
-docs/                        架构、操作、验证与开发路线
+code/                        课程要求的前端、后端与核心引擎位置索引
+docs/requirements/           5W1H、产品描述与需求资料
+docs/algorithm/              长文本生成算法说明
+docs/software/               软件设计资料
+docs/mgmt/                   团队计划、Kanban与缺陷流程
+docs/retrospection/          迭代复盘
 data/books/                  本地作品与过程记录（不提交）
 ```
 

@@ -8,7 +8,7 @@ destination = root.parent / "tome-agent-framework.zip"
 root_files = {"README.md", "app.py", "setup.cmd", "start.cmd", "pyproject.toml",
               "requirements.txt", "requirements-lock.txt", ".env.example", ".gitignore",
               "package_project.py"}
-folders = {"tome_agent", "tests", "docs", ".github", ".streamlit"}
+folders = {"tome_agent", "code", "tests", "docs", ".github", ".streamlit"}
 files = []
 for path in root.rglob("*"):
     relative = path.relative_to(root)

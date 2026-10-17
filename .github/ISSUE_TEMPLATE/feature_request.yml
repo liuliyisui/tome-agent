@@ -1,0 +1,40 @@
+name: 功能或任务
+description: 记录功能、文档、实验和项目任务
+title: "[Task] "
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: 目标
+      description: 说明要解决的问题和预期价值。
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收条件
+      placeholder: "- [ ] 可以观察或检查的结果"
+    validations:
+      required: true
+  - type: input
+    id: owner
+    attributes:
+      label: 负责人
+      placeholder: 姓名或 GitHub 用户名
+  - type: input
+    id: due
+    attributes:
+      label: 目标日期
+      placeholder: YYYY-MM-DD
+  - type: dropdown
+    id: status
+    attributes:
+      label: 看板状态
+      options:
+        - Todo
+        - In Progress
+        - Review
+        - Done
+    validations:
+      required: true
+
