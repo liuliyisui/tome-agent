@@ -3,12 +3,11 @@ from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 from hashlib import sha256
 
-root = Path(__file__).resolve().parent
+root = Path(__file__).resolve().parent.parent
 destination = root.parent / "tome-agent-framework.zip"
 root_files = {"README.md", "setup.cmd", "start.cmd", "pyproject.toml",
-              "requirements.txt", "requirements-lock.txt", ".env.example", ".gitignore",
-              "package_project.py"}
-folders = {"code", "tests", "docs", ".github", ".streamlit"}
+              "requirements.txt", "requirements-lock.txt", ".env.example", ".gitignore"}
+folders = {"code", "tests", "docs", "scripts", ".github"}
 files = []
 for path in root.rglob("*"):
     relative = path.relative_to(root)

@@ -49,7 +49,8 @@ check和demo不联网。plan/generate产生模型费用，须显式添加--allow
 ```text
 setup.cmd / start.cmd        安装与启动
 requirements*.txt            依赖及完整版本锁
-code/frontend/app.py         本地网页工作台
+scripts/package_project.py   交付打包脚本
+code/frontend/app.py         本地网页工作台（界面主题等配置写在start.cmd里）
 code/backend/tome_backend/   DeepSeek适配、服务、检查点和存储
 code/core_engine/tome_agent/ 规划、章节循环、记忆和全书调度
 tests/unit/                  单元测试
