@@ -11,7 +11,6 @@ from tome_agent.state import Workspace
 st.set_page_config(page_title="Tome Agent · 长篇创作", page_icon="📖", layout="wide")
 st.title("Tome Agent")
 st.caption("从故事构想到连贯长篇 · 分层规划 / 跨章记忆 / 保存续写")
-
 with st.sidebar:
     st.subheader("模型配置")
     try:
@@ -30,8 +29,6 @@ with st.sidebar:
         st.session_state["active_book"] = next_book
     active = st.selectbox("打开作品", [None, *books], key="active_book",
                           format_func=lambda book_id: "新建作品" if book_id is None else labels[book_id])
-
-
 def report_error(exc):
     if isinstance(exc, (ValueError, RuntimeError)):
         st.error(str(exc))
