@@ -1,6 +1,8 @@
 """UI/CLI application services; no provider calls until explicitly requested."""
 import json
 import os
+from collections import Counter
+from uuid import uuid4
 from contextlib import contextmanager
 from pathlib import Path
 from .agent import ChapterAgent, Limits
@@ -97,3 +99,25 @@ def update_outline(book_id, outline):
 
 def list_books():
     return sorted(p.parent.name for p in BOOKS.glob("*/book.json")) if BOOKS.exists() else []
+
+
+def new_book_id():
+    """Storage identity is independent of the author's title."""
+    return "book-" + uuid4().hex
+
+
+def book_labels(book_ids):
+    """Read titles without changing or migrating existing workspaces."""
+    titles = {}
+    for book_id in book_ids:
+        try:
+            data = json.loads(book_path(book_id).read_text(encoding="utf-8"))
+            title = data["workspace"]["title"]
+            if not isinstance(title, str) or not title.strip():
+                raise ValueError("Missing title")
+            titles[book_id] = title
+        except (OSError, ValueError, KeyError, TypeError):
+            titles[book_id] = f"无法读取的作品（{book_id}）"
+    counts = Counter(titles.values())
+    return {book_id: f"{title}（{book_id}）" if counts[title] > 1 or title == "新建作品" else title
+            for book_id, title in titles.items()}

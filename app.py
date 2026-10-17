@@ -4,8 +4,9 @@ import streamlit as st
 from tome_agent.checkpoints import load_checkpoint
 from tome_agent.providers.deepseek import Settings
 from tome_agent.service import (book_path, create_book, generate, list_books,
-                                export_markdown, update_outline)
+                                export_markdown, update_outline, new_book_id, book_labels)
 from tome_agent.agent import count_units
+from tome_agent.state import Workspace
 
 st.set_page_config(page_title="Tome Agent · 长篇创作", page_icon="📖", layout="wide")
 st.title("Tome Agent")
@@ -23,7 +24,12 @@ with st.sidebar:
         st.error("配置格式有误，请检查 .env。")
     st.divider()
     books = list_books()
-    active = st.selectbox("打开作品", ["新建作品", *books])
+    labels = book_labels(books)
+    next_book = st.session_state.pop("open_book_next", None)
+    if next_book in books:
+        st.session_state["active_book"] = next_book
+    active = st.selectbox("打开作品", [None, *books], key="active_book",
+                          format_func=lambda book_id: "新建作品" if book_id is None else labels[book_id])
 
 
 def report_error(exc):
@@ -32,22 +38,17 @@ def report_error(exc):
     else:
         st.error(f"操作未完成（{type(exc).__name__}），请检查配置、网络和存档。")
 
-@st.cache_data(show_spinner=False)
-def export_payloads(book_id, checkpoint_stamp):
-    """Build download payloads once per checkpoint version instead of on every rerun."""
-    workspace = load_checkpoint(book_path(book_id))
+
+@st.cache_data(show_spinner=False, max_entries=8, ttl=600)
+def export_payloads(snapshot):
+    """Cache the displayed snapshot; never reread a newer checkpoint for export."""
+    workspace = Workspace.from_dict(snapshot)
     return export_markdown(workspace), json.dumps(workspace.to_dict(), ensure_ascii=False, indent=2)
-def checkpoint_stamp(book_id):
-    try:
-        return book_path(book_id).stat().st_mtime_ns
-    except OSError:
-        return 0
 
 
-if active == "新建作品":
+if active is None:
     st.subheader("规划一部小说")
     with st.form("new_book"):
-        book_id = st.text_input("作品ID（英文字母、数字、下划线或短横线）", "my-novel")
         title = st.text_input("作品名称", "灯塔来信")
         prompt = st.text_area("故事构想、人物、世界观与写作要求", height=200,
                               placeholder="描述主角、核心冲突、情节方向、叙述视角和风格。")
@@ -62,8 +63,11 @@ if active == "新建作品":
         else:
             try:
                 with st.spinner("正在规划故事前提、详细梗概、幕结构与章节大纲…"):
+                    # Keep the same internal identity on retry, without asking the author to manage it.
+                    book_id = st.session_state.setdefault("new_book_id", new_book_id())
                     create_book(book_id, title, prompt, int(chapters), int(target))
-                st.success("大纲已保存，请从左侧打开作品。")
+                st.session_state.pop("new_book_id", None)
+                st.session_state["open_book_next"] = book_id
                 st.rerun()
             except Exception as exc:
                 report_error(exc)
@@ -105,7 +109,6 @@ else:
                 st.text(text)
     with outline_tab:
         st.write(workspace.prompt)
-        st.json(workspace.planning, expanded=False)
         outline_text = st.text_area("章节大纲 JSON（仅开始生成前可修改）", json.dumps(workspace.outline, ensure_ascii=False, indent=2), height=350)
         if st.button("保存大纲", disabled=bool(workspace.chapters)):
             try:
@@ -113,7 +116,7 @@ else:
                 st.rerun()
             except Exception as exc:
                 report_error(exc)
-                # Rendered only on request: four-stage planning is the largest payload on the page.
+        # Hidden JSON is not sent to the browser until explicitly requested.
         if st.toggle("显示四阶段规划原始 JSON", key=f"planning-{active}"):
             st.json(workspace.planning, expanded=False)
     with memory_tab:
@@ -127,13 +130,27 @@ else:
                          hide_index=True)
         else:
             st.info("暂无已入库事实。")
-        for label, entries in (("角色", view["characters"]), ("历史事件", view["past_events"]),
-                               ("未来义务", view["future_requirements"])):
+        for label, entries in (("角色", view["characters"]), ("历史事件", view["past_events"])):
             if entries:
                 st.markdown(f"**{label}**")
                 for name, item in entries.items():
                     text = item.get("description") if isinstance(item, dict) else item
-                    st.markdown(f"- `{name}`：{text}")
+                    st.text(f"• {name}：{text}")
+        requirements = view["future_requirements"]
+        st.markdown("**未来义务 · 待完成**")
+        pending = {key: item for key, item in requirements.items() if not item.get("resolved", False)}
+        resolved = {key: item for key, item in requirements.items() if item.get("resolved", False)}
+        if pending:
+            for key, item in pending.items():
+                st.text(f"• {key}：{item['description']}")
+        else:
+            st.caption("暂无待完成义务。")
+        if resolved:
+            with st.expander(f"已完成义务（{len(resolved)}）"):
+                for key, item in resolved.items():
+                    chapter = item.get("resolved_chapter")
+                    source = f"第{chapter}章完成" if chapter is not None else "完成章节未记录"
+                    st.text(f"• {key}：{item['description']}（{source}）")
         if workspace.state.history:
             st.subheader(f"历史归档（{len(workspace.state.history)}）")
             st.dataframe([{"主体": h["subject"], "属性": h["key"], "旧值": str(h["value"]),
@@ -143,7 +160,11 @@ else:
             st.json(view, expanded=False)
             st.json(workspace.state.history, expanded=False)
     with export_tab:
-        markdown_text, book_json = export_payloads(active, checkpoint_stamp(active))
-        st.download_button("下载小说 Markdown", markdown_text, f"{active}.md", "text/markdown")
-        st.download_button("下载作品数据 JSON", book_json, f"{active}.json", "application/json")
-        st.caption("存档、过程记录与用量文件位于 data/books/作品ID/。")
+        try:
+            markdown_text, book_json = export_payloads(workspace.to_dict())
+        except Exception as exc:
+            report_error(exc)
+        else:
+            st.download_button("下载小说 Markdown", markdown_text, f"{active}.md", "text/markdown")
+            st.download_button("下载作品数据 JSON", book_json, f"{active}.json", "application/json")
+        st.caption("作品和创作记录保存在本机，导出文件可用于分享。")

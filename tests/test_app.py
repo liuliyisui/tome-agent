@@ -17,6 +17,7 @@ class WorkbenchTests(unittest.TestCase):
             app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py")).run()
             self.assertFalse(app.exception)
             self.assertTrue(any(x.label == "生成分层大纲" for x in app.button))
+            self.assertEqual([x.label for x in app.text_input], ["作品名称"])
 
     def test_existing_book_screen(self):
         book = Workspace("测试作品", "测试构想", [{"title": "开篇", "goal": "出发", "target_units": 100}])
