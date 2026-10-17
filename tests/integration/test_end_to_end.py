@@ -5,9 +5,9 @@ from pathlib import Path
 from unittest.mock import patch
 import httpx
 from openai import OpenAI
-from tome_agent.providers.deepseek import Settings, DeepSeekModel
-from tome_agent.service import create_book, generate, export_markdown, operation_lock
-from tome_agent.checkpoints import load_checkpoint
+from tome_backend.providers.deepseek import Settings, DeepSeekModel
+from tome_backend.service import create_book, generate, export_markdown, operation_lock
+from tome_backend.checkpoints import load_checkpoint
 from tome_agent.offline import group, entry
 
 
@@ -35,7 +35,7 @@ class EndToEndTests(unittest.TestCase):
                         http_client=httpx.Client(transport=httpx.MockTransport(respond)))
         self.addCleanup(client.close)
         model = DeepSeekModel(Settings("fake"), client)
-        with tempfile.TemporaryDirectory() as tmp, patch("tome_agent.service.BOOKS", Path(tmp)):
+        with tempfile.TemporaryDirectory() as tmp, patch("tome_backend.service.BOOKS", Path(tmp)):
             workspace = create_book("sample", "样例", "出发清点背包", 1, 3, model)
             self.assertFalse(workspace.chapters)
             workspace = generate("sample", model=model)

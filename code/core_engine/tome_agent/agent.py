@@ -6,8 +6,8 @@ from typing import Protocol
 import re
 from .state import canonical, digest, Workspace
 from .submissions import submit_groups
-from .checkpoints import save_checkpoint
-from .storage import save_payload
+from tome_backend.checkpoints import save_checkpoint
+from tome_backend.storage import save_payload
 
 
 @dataclass

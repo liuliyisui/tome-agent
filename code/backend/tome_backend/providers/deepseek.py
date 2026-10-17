@@ -6,9 +6,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 from dotenv import dotenv_values
 from openai import OpenAI, APIError
-from ..agent import Response, ToolCall
+from tome_agent.agent import Response, ToolCall
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 
 
 @dataclass

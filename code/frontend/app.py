@@ -1,9 +1,9 @@
 """Local author workbench. Model calls require explicit button clicks."""
 import json
 import streamlit as st
-from tome_agent.checkpoints import load_checkpoint
-from tome_agent.providers.deepseek import Settings
-from tome_agent.service import (book_path, create_book, generate, list_books,
+from tome_backend.checkpoints import load_checkpoint
+from tome_backend.providers.deepseek import Settings
+from tome_backend.service import (book_path, create_book, generate, list_books,
                                 export_markdown, update_outline, new_book_id, book_labels)
 from tome_agent.agent import count_units
 from tome_agent.state import Workspace

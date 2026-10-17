@@ -1,7 +1,7 @@
 """Sequential whole-book coordinator; checkpoints after each successful chapter."""
 import json
 from pathlib import Path
-from .checkpoints import load_checkpoint, save_checkpoint
+from tome_backend.checkpoints import load_checkpoint, save_checkpoint
 from .state import digest, canonical
 
 

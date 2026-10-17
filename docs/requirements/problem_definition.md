@@ -68,7 +68,7 @@ Tome Agent——面向长篇小说生成的写作助手。
 
 - [团队计划](../mgmt/TEAM_PLAN.md)
 - [Kanban](../mgmt/KANBAN.md)
-- [沟通与风险管理计划](../COMMUNICATION_AND_RISK_PLAN.md)
-- [系统架构](../ARCHITECTURE.md)
-- [验证记录](../VALIDATION.md)
+- [沟通与风险管理计划](../mgmt/COMMUNICATION_AND_RISK_PLAN.md)
+- [系统架构](../algorithm/ARCHITECTURE.md)
+- [验证记录](../software/VALIDATION.md)
 

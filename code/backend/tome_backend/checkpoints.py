@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 from .storage import save_payload
-from .state import Workspace
+from tome_agent.state import Workspace
 
 
 def save_checkpoint(workspace, path):

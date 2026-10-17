@@ -4,7 +4,7 @@ import os
 import tempfile
 from dataclasses import asdict
 from pathlib import Path
-from .domain import Chapter, ChapterPlan, Fact, Story
+from tome_agent.domain import Chapter, ChapterPlan, Fact, Story
 
 
 def save_story(story: Story, path: Path) -> None:

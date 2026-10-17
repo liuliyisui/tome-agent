@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 from tome_agent.domain import Chapter, ChapterPlan, Story
 from tome_agent.pipeline import commit_chapter
-from tome_agent.storage import load_story
+from tome_backend.storage import load_story
 
 
 class FrameworkTests(unittest.TestCase):
@@ -51,7 +51,7 @@ class FrameworkTests(unittest.TestCase):
     def test_failed_replace_preserves_snapshot(self):
         first = self.first()
         old = self.path.read_bytes()
-        with patch("tome_agent.storage.os.replace", side_effect=OSError("disk failure")):
+        with patch("tome_backend.storage.os.replace", side_effect=OSError("disk failure")):
             with self.assertRaises(OSError):
                 commit_chapter(first, Chapter(2, "二", "继续前行。"), [], self.path)
         self.assertEqual(self.path.read_bytes(), old)

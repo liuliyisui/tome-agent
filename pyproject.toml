@@ -12,5 +12,6 @@ dynamic = ["dependencies"]
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 
-[tool.setuptools.packages.find]
-include = ["tome_agent*"]
+[tool.setuptools]
+packages = ["tome_agent", "tome_backend", "tome_backend.providers"]
+package-dir = {tome_agent = "code/core_engine/tome_agent", tome_backend = "code/backend/tome_backend"}

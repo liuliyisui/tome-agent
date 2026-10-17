@@ -3,8 +3,8 @@ import argparse
 from pathlib import Path
 from .domain import Chapter, ChapterPlan, Story
 from .pipeline import commit_chapter
-from .storage import load_story
-from .checkpoints import load_checkpoint
+from tome_backend.storage import load_story
+from tome_backend.checkpoints import load_checkpoint
 from .offline import demo as architecture_demo
 
 
@@ -37,13 +37,13 @@ def main() -> None:
     run.add_argument("--allow-paid", action="store_true")
     args = parser.parse_args()
     if args.command == "check":
-        from .providers.deepseek import Settings
+        from tome_backend.providers.deepseek import Settings
         cfg = Settings.load(require_key=False)
         print(f"Model: {cfg.model}; API key: {'configured' if cfg.api_key else 'missing'}; network: not used")
     elif args.command in ("plan", "generate"):
         if not args.allow_paid:
             parser.error("真实模型调用会产生费用，请明确添加 --allow-paid")
-        from .service import create_book, generate
+        from tome_backend.service import create_book, generate
         try:
             if args.command == "plan":
                 workspace = create_book(args.id, args.title, args.prompt_file.read_text(encoding="utf-8"), args.chapters, args.target_units)

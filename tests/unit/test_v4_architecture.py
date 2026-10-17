@@ -7,7 +7,7 @@ from tome_agent.state import NarrativeState, Workspace
 from tome_agent.submissions import submit_groups, attribute_history
 from tome_agent.agent import ChapterAgent, Response, Limits
 from tome_agent.offline import entry, group, tool, ScriptedModel, demo
-from tome_agent.checkpoints import save_checkpoint, load_checkpoint
+from tome_backend.checkpoints import save_checkpoint, load_checkpoint
 from tome_agent.planning import OutlinePlanner
 
 

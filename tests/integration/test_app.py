@@ -5,7 +5,7 @@ from unittest.mock import patch
 import streamlit as st
 from streamlit.testing.v1 import AppTest
 from tome_agent.state import Workspace
-from tome_agent.providers.deepseek import Settings
+from tome_backend.providers.deepseek import Settings
 
 
 class WorkbenchTests(unittest.TestCase):
@@ -13,16 +13,16 @@ class WorkbenchTests(unittest.TestCase):
         st.cache_data.clear()
 
     def test_creation_screen_no_model_call(self):
-        with patch("tome_agent.providers.deepseek.Settings.load", return_value=Settings("fake")), patch("tome_agent.service.list_books", return_value=[]):
-            app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py")).run()
+        with patch("tome_backend.providers.deepseek.Settings.load", return_value=Settings("fake")), patch("tome_backend.service.list_books", return_value=[]):
+            app = AppTest.from_file(str(Path(__file__).resolve().parents[2] / "code" / "frontend" / "app.py")).run()
             self.assertFalse(app.exception)
             self.assertTrue(any(x.label == "生成分层大纲" for x in app.button))
             self.assertEqual([x.label for x in app.text_input], ["作品名称"])
 
     def test_existing_book_screen(self):
         book = Workspace("测试作品", "测试构想", [{"title": "开篇", "goal": "出发", "target_units": 100}])
-        with patch("tome_agent.providers.deepseek.Settings.load", return_value=Settings("fake")), patch("tome_agent.service.list_books", return_value=["test-book"]), patch("tome_agent.checkpoints.load_checkpoint", return_value=book):
-            app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py")).run()
+        with patch("tome_backend.providers.deepseek.Settings.load", return_value=Settings("fake")), patch("tome_backend.service.list_books", return_value=["test-book"]), patch("tome_backend.checkpoints.load_checkpoint", return_value=book):
+            app = AppTest.from_file(str(Path(__file__).resolve().parents[2] / "code" / "frontend" / "app.py")).run()
             app.selectbox[0].select("test-book").run()
             self.assertFalse(app.exception)
             self.assertTrue(any(x.label == "开始续写" for x in app.button))
@@ -35,8 +35,8 @@ class WorkbenchTests(unittest.TestCase):
         book.state.facts = {"fact": {"subject": "林舟", "key": "location", "value": "灯塔",
             "revision": 1, "category": "behavior_constraint", "epistemic_status": "objective",
             "status": "active", "evidence": {"chapter": 1}}}
-        with patch("tome_agent.providers.deepseek.Settings.load", return_value=Settings("fake")), patch("tome_agent.service.list_books", return_value=["memory-book"]), patch("tome_agent.checkpoints.load_checkpoint", return_value=book):
-            app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py")).run()
+        with patch("tome_backend.providers.deepseek.Settings.load", return_value=Settings("fake")), patch("tome_backend.service.list_books", return_value=["memory-book"]), patch("tome_backend.checkpoints.load_checkpoint", return_value=book):
+            app = AppTest.from_file(str(Path(__file__).resolve().parents[2] / "code" / "frontend" / "app.py")).run()
             app.selectbox[0].select("memory-book").run()
             self.assertFalse(app.exception)
             self.assertEqual(len(app.json), 0)
@@ -51,12 +51,12 @@ class WorkbenchTests(unittest.TestCase):
             self.assertEqual(len(app.json), 3)
 
     def test_export_cache_uses_displayed_snapshot_and_refreshes(self):
-        from tome_agent.service import export_markdown
+        from tome_backend.service import export_markdown
         book = Workspace("导出测试", "构想", [{"title": "开篇", "goal": "出发"}])
         newer = deepcopy(book)
         newer.chapters = {1: "已更新的正文"}
-        with patch("tome_agent.providers.deepseek.Settings.load", return_value=Settings("fake")), patch("tome_agent.service.list_books", return_value=["export-book"]), patch("tome_agent.checkpoints.load_checkpoint", return_value=book) as loader, patch("tome_agent.service.export_markdown", wraps=export_markdown) as exporter:
-            app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py")).run()
+        with patch("tome_backend.providers.deepseek.Settings.load", return_value=Settings("fake")), patch("tome_backend.service.list_books", return_value=["export-book"]), patch("tome_backend.checkpoints.load_checkpoint", return_value=book) as loader, patch("tome_backend.service.export_markdown", wraps=export_markdown) as exporter:
+            app = AppTest.from_file(str(Path(__file__).resolve().parents[2] / "code" / "frontend" / "app.py")).run()
             app.selectbox[0].select("export-book").run()
             self.assertFalse(app.exception)
             self.assertEqual(loader.call_count, 1)
@@ -71,8 +71,8 @@ class WorkbenchTests(unittest.TestCase):
             self.assertEqual(exporter.call_args.args[0].chapters, newer.chapters)
 
     def test_failed_checkpoint_read_has_no_export(self):
-        with patch("tome_agent.providers.deepseek.Settings.load", return_value=Settings("fake")), patch("tome_agent.service.list_books", return_value=["missing-book"]), patch("tome_agent.checkpoints.load_checkpoint", side_effect=FileNotFoundError), patch("tome_agent.service.export_markdown") as exporter:
-            app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py")).run()
+        with patch("tome_backend.providers.deepseek.Settings.load", return_value=Settings("fake")), patch("tome_backend.service.list_books", return_value=["missing-book"]), patch("tome_backend.checkpoints.load_checkpoint", side_effect=FileNotFoundError), patch("tome_backend.service.export_markdown") as exporter:
+            app = AppTest.from_file(str(Path(__file__).resolve().parents[2] / "code" / "frontend" / "app.py")).run()
             app.selectbox[0].select("missing-book").run()
             self.assertFalse(app.exception)
             self.assertTrue(app.error)

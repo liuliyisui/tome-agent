@@ -6,7 +6,7 @@ from types import SimpleNamespace as NS
 from unittest.mock import patch, Mock
 import httpx
 from openai import OpenAI
-from tome_agent.providers.deepseek import Settings, DeepSeekModel
+from tome_backend.providers.deepseek import Settings, DeepSeekModel
 from tome_agent.agent import ToolCall
 
 

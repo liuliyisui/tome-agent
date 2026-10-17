@@ -29,7 +29,7 @@
 
 模型默认deepseek-flash；.env中空模型名也使用该默认值。依赖已安装在本机项目.venv，其他成员需运行setup.cmd。requirements.txt锁定直接依赖；requirements-lock.txt锁定完整解析结果。安装依赖仍需要网络，项目压缩包不是离线依赖安装包。
 
-[问题定义与5W1H](docs/requirements/problem_definition.md) · [团队计划](docs/mgmt/TEAM_PLAN.md) · [Kanban](docs/mgmt/KANBAN.md) · [完整使用说明](docs/USER_GUIDE.md) · [架构对应说明](docs/ARCHITECTURE.md) · [验证记录](docs/VALIDATION.md)
+[问题定义与5W1H](docs/requirements/problem_definition.md) · [团队计划](docs/mgmt/TEAM_PLAN.md) · [Kanban](docs/mgmt/KANBAN.md) · [完整使用说明](docs/software/USER_GUIDE.md) · [架构对应说明](docs/algorithm/ARCHITECTURE.md) · [验证记录](docs/software/VALIDATION.md)
 
 ## 命令行
 
@@ -47,23 +47,13 @@ check和demo不联网。plan/generate产生模型费用，须显式添加--allow
 ## 目录
 
 ```text
-app.py                       本地网页工作台
 setup.cmd / start.cmd        安装与启动
 requirements*.txt            依赖及完整版本锁
-tome_agent/
-  providers/deepseek.py       DeepSeek SDK适配及环境配置
-  planning.py                四阶段规划和大纲缓存
-  state.py                   工作区、叙事状态、事实账本
-  submissions.py             候选、依赖分组、pending、V4归档
-  tools.py                   模型工具契约
-  agent.py                   章节工具循环及事务
-  checkpoints.py             正式检查点、来源与指纹核验
-  runner.py                  全书调度及恢复
-  service.py                 页面/命令行共享服务与作品锁
-  offline.py                 模拟模型演示
-  storage.py                 原子文件写入
-tests/                       32项本地测试
-code/                        课程要求的前端、后端与核心引擎位置索引
+code/frontend/app.py         本地网页工作台
+code/backend/tome_backend/   DeepSeek适配、服务、检查点和存储
+code/core_engine/tome_agent/ 规划、章节循环、记忆和全书调度
+tests/unit/                  单元测试
+tests/integration/           集成与页面测试
 docs/requirements/           5W1H、产品描述与需求资料
 docs/algorithm/              长文本生成算法说明
 docs/software/               软件设计资料

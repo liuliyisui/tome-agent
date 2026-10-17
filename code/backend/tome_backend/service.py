@@ -5,11 +5,11 @@ from collections import Counter
 from uuid import uuid4
 from contextlib import contextmanager
 from pathlib import Path
-from .agent import ChapterAgent, Limits
+from tome_agent.agent import ChapterAgent, Limits
 from .checkpoints import load_checkpoint, save_checkpoint
-from .planning import OutlinePlanner
+from tome_agent.planning import OutlinePlanner
 from .providers.deepseek import DeepSeekModel, Settings, PROJECT_ROOT
-from .runner import StoryRunner
+from tome_agent.runner import StoryRunner
 from .storage import save_payload
 
 BOOKS = PROJECT_ROOT / "data" / "books"

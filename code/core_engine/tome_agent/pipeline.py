@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Protocol
 from .domain import Chapter, ChapterPlan, Story
 from .memory import update_fact
-from .storage import save_story
+from tome_backend.storage import save_story
 
 
 class Planner(Protocol):
