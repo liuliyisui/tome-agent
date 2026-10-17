@@ -6,6 +6,7 @@ from tome_agent.providers.deepseek import Settings
 from tome_agent.service import (book_path, create_book, generate, list_books,
                                 export_markdown, update_outline)
 from tome_agent.agent import count_units
+from tome_agent.state import Workspace
 
 st.set_page_config(page_title="Tome Agent · 长篇创作", page_icon="📖", layout="wide")
 st.title("Tome Agent")
@@ -31,6 +32,13 @@ def report_error(exc):
         st.error(str(exc))
     else:
         st.error(f"操作未完成（{type(exc).__name__}），请检查配置、网络和存档。")
+
+
+@st.cache_data(show_spinner=False, max_entries=8, ttl=600)
+def export_payloads(snapshot):
+    """Cache the displayed snapshot; never reread a newer checkpoint for export."""
+    workspace = Workspace.from_dict(snapshot)
+    return export_markdown(workspace), json.dumps(workspace.to_dict(), ensure_ascii=False, indent=2)
 
 
 if active == "新建作品":
@@ -94,7 +102,6 @@ else:
                 st.text(text)
     with outline_tab:
         st.write(workspace.prompt)
-        st.json(workspace.planning, expanded=False)
         outline_text = st.text_area("章节大纲 JSON（仅开始生成前可修改）", json.dumps(workspace.outline, ensure_ascii=False, indent=2), height=350)
         if st.button("保存大纲", disabled=bool(workspace.chapters)):
             try:
@@ -102,13 +109,55 @@ else:
                 st.rerun()
             except Exception as exc:
                 report_error(exc)
+        # Hidden JSON is not sent to the browser until explicitly requested.
+        if st.toggle("显示四阶段规划原始 JSON", key=f"planning-{active}"):
+            st.json(workspace.planning, expanded=False)
     with memory_tab:
         st.caption("引文和版本检查不保证事实语义正确。历史版本与故事内时间并不等同。")
-        st.subheader("当前事实")
-        st.json(workspace.state.view(), expanded=False)
-        st.subheader("历史归档")
-        st.json(workspace.state.history, expanded=False)
+        view = workspace.state.view()
+        st.subheader(f"当前事实（{len(view['facts'])}）")
+        if view["facts"]:
+            st.dataframe([{"主体": f["subject"], "属性": f["key"], "值": str(f["value"]),
+                           "版本": f["revision"], "类别": f["category"], "认知": f["epistemic_status"],
+                           "出处": f"第{f['evidence']['chapter']}章"} for f in view["facts"]],
+                         hide_index=True)
+        else:
+            st.info("暂无已入库事实。")
+        for label, entries in (("角色", view["characters"]), ("历史事件", view["past_events"])):
+            if entries:
+                st.markdown(f"**{label}**")
+                for name, item in entries.items():
+                    text = item.get("description") if isinstance(item, dict) else item
+                    st.text(f"• {name}：{text}")
+        requirements = view["future_requirements"]
+        st.markdown("**未来义务 · 待完成**")
+        pending = {key: item for key, item in requirements.items() if not item.get("resolved", False)}
+        resolved = {key: item for key, item in requirements.items() if item.get("resolved", False)}
+        if pending:
+            for key, item in pending.items():
+                st.text(f"• {key}：{item['description']}")
+        else:
+            st.caption("暂无待完成义务。")
+        if resolved:
+            with st.expander(f"已完成义务（{len(resolved)}）"):
+                for key, item in resolved.items():
+                    chapter = item.get("resolved_chapter")
+                    source = f"第{chapter}章完成" if chapter is not None else "完成章节未记录"
+                    st.text(f"• {key}：{item['description']}（{source}）")
+        if workspace.state.history:
+            st.subheader(f"历史归档（{len(workspace.state.history)}）")
+            st.dataframe([{"主体": h["subject"], "属性": h["key"], "旧值": str(h["value"]),
+                           "归档于": f"第{h['archived_by']['chapter']}章", "原因": h["archived_by"].get("reason", "")}
+                          for h in workspace.state.history], hide_index=True)
+        if st.toggle("显示事实账本原始 JSON", key=f"facts-{active}"):
+            st.json(view, expanded=False)
+            st.json(workspace.state.history, expanded=False)
     with export_tab:
-        st.download_button("下载小说 Markdown", export_markdown(workspace), f"{active}.md", "text/markdown")
-        st.download_button("下载作品数据 JSON", json.dumps(workspace.to_dict(), ensure_ascii=False, indent=2), f"{active}.json", "application/json")
+        try:
+            markdown_text, book_json = export_payloads(workspace.to_dict())
+        except Exception as exc:
+            report_error(exc)
+        else:
+            st.download_button("下载小说 Markdown", markdown_text, f"{active}.md", "text/markdown")
+            st.download_button("下载作品数据 JSON", book_json, f"{active}.json", "application/json")
         st.caption("存档、过程记录与用量文件位于 data/books/作品ID/。")

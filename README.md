@@ -62,7 +62,7 @@ tome_agent/
   service.py                 页面/命令行共享服务与作品锁
   offline.py                 模拟模型演示
   storage.py                 原子文件写入
-tests/                       27项本地测试
+tests/                       30项本地测试
 docs/                        架构、操作、验证与开发路线
 data/books/                  本地作品与过程记录（不提交）
 ```
