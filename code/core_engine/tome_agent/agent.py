@@ -6,8 +6,8 @@ from typing import Protocol
 import re
 from .state import canonical, digest, Workspace
 from .submissions import submit_groups
-from tome_backend.checkpoints import save_checkpoint
-from tome_backend.storage import save_payload
+from .checkpoints import save_checkpoint
+from .storage import save_payload
 
 
 @dataclass
@@ -36,17 +36,31 @@ class Limits:
     read_calls: int = 8
     search_calls: int = 8
     correct_calls: int = 3
-    fact_bytes: int = 12000
+    fact_bytes: int = 24000
     read_chars: int = 12000
-    min_length_ratio: float = .8
-    max_length_ratio: float = 1.3
+    # Measured against deepseek-flash: a "1250 unit" chapter reliably lands at
+    # 1550-1700 units, so a 1.3 ceiling rejected 27 of 30 turns in practice.
+    min_length_ratio: float = .7
+    max_length_ratio: float = 1.6
 
 
 def count_units(text):
     return len(re.findall(r"[\u3400-\u9fff]|[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*", text))
 
 
+def is_done(content):
+    """The model must end with an explicit DONE line, not merely a chatty summary.
+
+    Chat models often append a recap after DONE (or wrap DONE in a sentence).
+    The completion verdict therefore accepts DONE as the first or last non-empty
+    line, and rejects anything that never states it.
+    """
+    lines = [line.strip() for line in (content or "").splitlines() if line.strip()]
+    return bool(lines) and (lines[0] == "DONE" or lines[-1] == "DONE")
+
+
 GUIDANCE = """按冻结大纲逐章写作。先read/search相关前文，再write完整正文，再update故事状态，最后仅回复DONE。
+最终回复只写DONE这一行；总结、解释、正文都不要附在这条消息里。
 update使用groups；每个候选只填写一次entry。使用稳定属性key，值改变时update，程序归档旧版本。
 只引用本章接受正文。计划不是完成；历史不是当前；主观认知使用认知者subject和belief_键。
 未提及不是删除。单次观察不能建立长期人格。不确定用defer，短暂无关内容用omit。
@@ -153,8 +167,12 @@ class ChapterAgent:
                 target = workspace.outline[number-1].get("target_units", workspace.config.get("chapter_target_units", 1000))
                 actual = count_units(args["text"])
                 if not limits.min_length_ratio * target <= actual <= limits.max_length_ratio * target:
+                    low, high = limits.min_length_ratio * target, limits.max_length_ratio * target
+                    advice = (f"删减约 {int(actual - high)} 个单位" if actual > high
+                              else f"补充约 {int(low - actual)} 个单位")
                     return {"ok": False, "error": "Length outside target range", "actual": actual,
-                            "target": target, "min": limits.min_length_ratio*target, "max": limits.max_length_ratio*target}
+                            "target": target, "min": low, "max": high,
+                            "action": f"重写本章并{advice}；正文必须一次完整提交，不要只交片段"}
                 draft, updated = args["text"], False
                 return {"ok": True, "units": actual}
             if name == "update":
@@ -185,8 +203,17 @@ class ChapterAgent:
                 messages.append(message)
                 trace.append({"turn": turns, "usage": response.usage, "finish_reason": response.finish_reason})
                 if not calls:
-                    if response.content.strip() != "DONE" or draft is None or not updated or trial.state.pending:
-                        raise ValueError("Completion requires accepted write, successful update, no pending and DONE")
+                    if not is_done(response.content) or draft is None or not updated or trial.state.pending:
+                        missing = []
+                        if draft is None:
+                            missing.append("没有通过长度检查的正文")
+                        if not updated:
+                            missing.append("update 未成功")
+                        if trial.state.pending:
+                            missing.append(f"仍有 {len(trial.state.pending)} 个 pending 组")
+                        if not is_done(response.content):
+                            missing.append("最后回复没有 DONE")
+                        raise ValueError("章节未提交：" + "、".join(missing))
                     trial.chapters[number] = draft
                     trial.validate()
                     trial.state.view(limits.fact_bytes)
@@ -204,6 +231,12 @@ class ChapterAgent:
                     trace.append({"tool": call.name, "arguments": deepcopy(call.arguments), "result": deepcopy(result)})
                 snapshot("IN_PROGRESS")
             raise ValueError("Chapter turn budget exhausted")
+        except Exception as exc:
+            snapshot("FAILED", str(exc))
+            raise
+        finally:
+            self._running = False
+
         except Exception as exc:
             snapshot("FAILED", str(exc))
             raise
