@@ -10,3 +10,7 @@ gatherUsageStats = false
 
 [server]
 address = "127.0.0.1"
+
+[client]
+# Hide the Deploy button and developer menu: this app always runs locally.
+toolbarMode = "viewer"
