@@ -44,5 +44,5 @@
 - 每日异步更新 Issue；阻塞问题当天说明。
 - 每周至少一次 20 分钟会议：同步进度、风险、下一步和需要协助的事项。
 - 周末检查仓库链接、Kanban、打开的 Issue、测试状态和演示风险。
-- 沟通内容和风险跟踪频率见[沟通与风险管理计划](COMMUNICATION_AND_RISK_PLAN.md)。
+- 沟通内容和风险跟踪频率见[沟通管理计划](communication_mgmt_plan.md)与[风险管理计划](risk_mgmt_plan.md)。
 
