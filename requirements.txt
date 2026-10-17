@@ -1,0 +1,4 @@
+# Python >= 3.11; complete resolved versions are in requirements-lock.txt.
+openai==2.54.0
+python-dotenv==1.2.4
+streamlit==1.66.0
