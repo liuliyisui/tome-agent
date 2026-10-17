@@ -42,7 +42,7 @@
 .venv/Scripts/python.exe -m unittest discover -s tests -v
 ```
 
-check和demo不联网。plan/generate产生模型费用，须显式添加--allow-paid；网页中需要主动确认。密钥不展示、不写入存档，.env、作品和运行数据已加入Git忽略规则。
+check和demo不联网。plan/generate产生模型费用，须显式添加--allow-paid；网页中需要主动确认。密钥不展示、不写入存档；.env随仓库提交，只放空模板与默认值，填了真实密钥后请勿提交。作品与运行数据同样不入库。
 
 ## 目录
 
