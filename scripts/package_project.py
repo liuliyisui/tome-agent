@@ -6,7 +6,7 @@ from hashlib import sha256
 root = Path(__file__).resolve().parent.parent
 destination = root.parent / "tome-agent-framework.zip"
 root_files = {"README.md", "setup.cmd", "start.cmd",
-              "requirements.txt", "requirements-lock.txt", ".env.example"}
+              "requirements.txt", ".env.example"}
 folders = {"code", "tests", "docs", "scripts", ".github"}
 files = []
 for path in root.rglob("*"):

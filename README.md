@@ -27,7 +27,7 @@
 3. 双击start.cmd，打开显示的本地网页地址。
 4. 新建作品，生成大纲，再选择作品逐章续写。
 
-模型默认deepseek-flash；.env中空模型名也使用该默认值。依赖已安装在本机项目.venv，其他成员需运行setup.cmd。requirements.txt锁定直接依赖；requirements-lock.txt锁定完整解析结果。安装依赖仍需要网络，项目压缩包不是离线依赖安装包。
+模型默认deepseek-flash；.env中空模型名也使用该默认值。依赖已安装在本机项目.venv，其他成员需运行setup.cmd。requirements.txt锁定全部依赖及其版本（含传递依赖），更改直接依赖后用pip freeze重新生成。安装依赖仍需要网络，项目压缩包不是离线依赖安装包。
 
 [问题定义与5W1H](docs/requirements/problem_definition.md) · [团队计划](docs/mgmt/TEAM_PLAN.md) · [Kanban](docs/mgmt/KANBAN.md) · [完整使用说明](docs/software/USER_GUIDE.md) · [架构对应说明](docs/algorithm/ARCHITECTURE.md) · [验证记录](docs/software/VALIDATION.md)
 
@@ -48,7 +48,7 @@ check和demo不联网。plan/generate产生模型费用，须显式添加--allow
 
 ```text
 setup.cmd / start.cmd        安装与启动
-requirements*.txt            依赖及完整版本锁
+requirements.txt             全部依赖与版本（含传递依赖）
 scripts/package_project.py   交付打包脚本
 code/frontend/app.py         本地网页工作台（界面主题等配置写在start.cmd里）
 code/backend/tome_backend/   DeepSeek适配、服务、检查点和存储
