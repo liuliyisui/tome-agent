@@ -8,7 +8,7 @@ from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.request import Request, build_opener, ProxyHandler
 
-from inf_backend import service
+from inf_backend import service, official_pricing
 from inf_backend.web import WebServer
 from inf_backend.settings import Settings
 from inf_writer.demo import DemoModel
@@ -20,6 +20,9 @@ class WebIntegrationTests(unittest.TestCase):
         self.folder = tempfile.TemporaryDirectory()
         self.books_patch = patch.object(service, "BOOKS", Path(self.folder.name))
         self.books_patch.start()
+        self.prices_patch = patch.object(official_pricing, "get_table", return_value={
+            "models": official_pricing.SNAPSHOT, "checked_at": "2026-10-24", "status": "verified_snapshot"})
+        self.prices_patch.start()
         self.server = WebServer(("127.0.0.1", 0))
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
@@ -31,9 +34,13 @@ class WebIntegrationTests(unittest.TestCase):
         self.server.server_close()
         self.thread.join()
         self.books_patch.stop()
+        self.prices_patch.stop()
         self.folder.cleanup()
 
     def request(self, path, data=None, headers=None):
+        if path.endswith("/generate") and data == {}:
+            estimate = self.request(path.removesuffix("/generate") + "/estimate", {})
+            data = {"estimate_id": estimate["estimate_id"], "confirmed": True}
         body = None if data is None else json.dumps(data).encode()
         req = Request(self.base + path, body, headers={"Content-Type": "application/json", **(headers or {})})
         with self.client.open(req, timeout=5) as response:
@@ -62,7 +69,9 @@ class WebIntegrationTests(unittest.TestCase):
         saved = self.request(f"/api/books/{book_id}")
         self.assertEqual(len(saved["state"]["chapters"]), 2)
         self.assertEqual(next(iter(saved["state"]["facts"].values()))["value"], "金色")
-        self.assertIn("第2章", self.request(f"/api/books/{book_id}/export"))
+        exported = self.request(f"/api/books/{book_id}/export")
+        self.assertIn("第2章", exported)
+        self.assertIn("\n\n\u3000\u3000艾岚", exported)
         self.assertEqual(self.request("/api/books")["books"][0]["chapters"], 2)
         with self.assertRaises(HTTPError) as error:
             self.request(f"/api/books/{book_id}/generate", {})
@@ -77,6 +86,55 @@ class WebIntegrationTests(unittest.TestCase):
         with self.assertRaises(HTTPError) as error:
             self.request("/api/books/missing-book")
         self.assertEqual(error.exception.code, 404)
+
+    def test_estimate_is_offline_and_generation_requires_confirmation(self):
+        book = self.request("/api/books", {"title": "预估测试", "prompt": "故事", "chapters": 5, "target_units": 10000})
+        book_id = book["state"]["project_id"]
+        with patch.object(service, "_gateway") as gateway:
+            estimate = self.request(f"/api/books/{book_id}/estimate", {"count": 1})
+            self.assertGreater(estimate["total_tokens"], 0)
+            expected = (estimate["input_tokens"] * estimate["prices"]["input"] + estimate["output_tokens"] * estimate["prices"]["output"]) / 1_000_000
+            self.assertAlmostEqual(estimate["estimated_cost_cny"], expected)
+            self.assertEqual(estimate["pricing"]["currency"], "CNY")
+            self.assertIn("参考价", estimate["pricing"]["warning"])
+            gateway.assert_not_called()
+            with self.assertRaises(HTTPError) as error:
+                self.request(f"/api/books/{book_id}/generate", {"estimate_id": estimate["estimate_id"], "confirmed": False})
+            self.assertEqual(error.exception.code, 400)
+            gateway.assert_not_called()
+        self.assertEqual(self.server.jobs, {})
+        with self.assertRaises(HTTPError) as error:
+            self.request(f"/api/books/{book_id}/estimate", {"count": 1, "prices": {"input": 0, "output": 0}})
+        self.assertEqual(error.exception.code, 400)
+        with self.assertRaises(HTTPError) as error:
+            self.request(f"/api/books/{book_id}/estimate", {"count": 3, "approved_first": True})
+        self.assertEqual(error.exception.code, 400)
+        self.request(f"/api/books/{book_id}/style", {"instructions": "短句", "reference": ""})
+        with self.assertRaises(HTTPError) as error:
+            self.request(f"/api/books/{book_id}/generate", {"estimate_id": estimate["estimate_id"], "confirmed": True})
+        self.assertEqual(error.exception.code, 400)
+
+    def test_confirmed_batch_passes_count_and_tracks_progress(self):
+        book = self.request("/api/books", {"title": "批量测试", "prompt": "故事", "chapters": 5, "target_units": 10000})
+        book_id = book["state"]["project_id"]
+        state = {"chapters": [{"number": 1, "title": "首章", "text": "首章正文。"}], "memory": {"items": {}}, "pending": []}
+
+        def batch(*args, **kwargs):
+            self.assertEqual(kwargs["count"], 3)
+            kwargs["progress"]({"completed": 2, "current_chapter": 4})
+
+        with patch.object(service, "load_book", return_value={"metadata": book["metadata"], "state": state}), \
+                patch("inf_backend.web.Settings.load", return_value=Settings(api_key="FAKE_TEST_KEY")), \
+                patch.object(service, "generate", side_effect=batch) as generate:
+            with self.assertRaises(HTTPError):
+                self.request(f"/api/books/{book_id}/estimate", {"count": 3})
+            estimate = self.request(f"/api/books/{book_id}/estimate", {"count": 3, "approved_first": True})
+            job = self.request(f"/api/books/{book_id}/generate", {"estimate_id": estimate["estimate_id"], "confirmed": True})
+            self.wait_job(job["job_id"])
+            result = self.request(f"/api/jobs/{job['job_id']}")
+            self.assertEqual(result["count"], 3)
+            self.assertEqual(result["completed"], 3)
+            generate.assert_called_once()
 
     def test_create_edit_reload_and_clear_writing_style(self):
         style = {"instructions": "短句、对白自然。", "reference": "他推开门，雨已经停了。"}

@@ -15,6 +15,7 @@ from inf_writer.memory_temporality import current_claim, has_current_content
 
 from . import service
 from .settings import Settings
+from . import generation
 
 FRONTEND = Path(__file__).resolve().parents[2] / "frontend"
 DEMO_SETTINGS = Settings(api_key="", model="offline-demo")
@@ -58,6 +59,7 @@ class WebServer(ThreadingHTTPServer):
         super().__init__(address, Handler)
         self.jobs = {}
         self.busy = set()
+        self.estimates = {}
         self.job_lock = threading.Lock()
 
     def job_for_book(self, book_id):
@@ -67,7 +69,32 @@ class WebServer(ThreadingHTTPServer):
                     return {**job, "job_id": job_id}
         return None
 
-    def start_generation(self, book_id):
+    def prepare_generation(self, book_id, data):
+        if "prices" in data:
+            raise ValueError("单价由官方价表自动匹配，无需手动填写")
+        result = generation.estimate(book_id, data.get("count", 1), data.get("approved_first", False))
+        estimate_id = uuid4().hex
+        with self.job_lock:
+            self.estimates = {k: v for k, v in self.estimates.items() if v["expires_at"] > time.time()}
+            self.estimates[estimate_id] = {**result, "expires_at": time.time() + 600}
+        return {**result, "estimate_id": estimate_id}
+
+    def start_generation(self, book_id, data):
+        with self.job_lock:
+            if book_id in self.busy:
+                for job_id, job in self.jobs.items():
+                    if job["book_id"] == book_id and job["status"] == "running":
+                        return {"job_id": job_id}
+            estimate = self.estimates.get(data.get("estimate_id"))
+        if data.get("confirmed") is not True or not estimate or estimate["book_id"] != book_id or estimate["expires_at"] < time.time():
+            raise ValueError("请先查看本次 token 和费用预估，再点击继续生成")
+        if estimate["signature"] != generation.signature(book_id):
+            raise ValueError("作品或文风已更新，请重新查看费用预估后再确认")
+        count = estimate["count"]
+        if estimate["pricing"]["period"] != "offline":
+            current_price = generation.official_pricing.quote(service._metadata(book_id)["model"]["model"])
+            if current_price["period"] != estimate["pricing"]["period"] or current_price["rates"] != estimate["prices"]:
+                raise ValueError("官方单价或峰谷时段已变化，请关闭确认框后重新预估再确认")
         book = service.load_book(book_id)
         demo = book["metadata"]["model"]["model"] == "offline-demo"
         view = serialize({**book, "id": book_id})
@@ -84,23 +111,31 @@ class WebServer(ThreadingHTTPServer):
             job_id = uuid4().hex
             self.busy.add(book_id)
             started_at = time.time()
-            self.jobs[job_id] = {"status": "running", "book_id": book_id, "started_at": started_at}
+            self.estimates.pop(data["estimate_id"], None)
+            self.jobs[job_id] = {"status": "running", "book_id": book_id, "started_at": started_at,
+                                 "count": count, "completed": 0, "current_chapter": estimate["first_chapter"]}
+
+        def progress(update):
+            with self.job_lock:
+                self.jobs[job_id].update(update)
 
         def run():
             try:
-                options = {"settings": settings}
+                options = {"settings": settings, "count": count}
                 if demo:
-                    budget = Budget(max_calls=4, max_cost_usd=0)
+                    budget = Budget(max_calls=4 * count, max_cost_usd=0)
                     options.update(gateway=ModelGateway(DemoModel(), budget), budget=budget)
                     service.generate_legacy(book_id, **options)
+                    progress({"completed": count})
                 else:
                     with service.operation_lock(service.book_path(book_id)):
-                        service.generate(book_id, **options)
+                        service.generate(book_id, progress=progress, **options)
+                    progress({"completed": count})
                 result = {"status": "completed", "book_id": book_id}
             except Exception as exc:
                 result = {"status": "failed", "book_id": book_id, "error": str(exc)}
             with self.job_lock:
-                self.jobs[job_id] = {**result, "started_at": started_at}
+                self.jobs[job_id] = {**self.jobs[job_id], **result, "started_at": started_at}
                 self.busy.discard(book_id)
 
         threading.Thread(target=run, daemon=True).start()
@@ -178,7 +213,9 @@ class Handler(BaseHTTPRequestHandler):
                 parts = path.strip("/").split("/")
                 book_id = parts[2]
                 if post and len(parts) == 4 and parts[3] == "generate":
-                    self.reply(202, self.server.start_generation(book_id))
+                    self.reply(202, self.server.start_generation(book_id, data))
+                elif post and len(parts) == 4 and parts[3] == "estimate":
+                    self.reply(200, self.server.prepare_generation(book_id, data))
                 elif post and len(parts) == 4 and parts[3] == "style":
                     with self.server.job_lock:
                         if book_id in self.server.busy:

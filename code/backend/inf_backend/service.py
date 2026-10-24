@@ -160,7 +160,9 @@ def _gateway(settings):
     )
     budget = Budget(max_calls=settings.max_calls, max_cost_usd=settings.max_cost_usd,
                     max_seconds=max(120.0, settings.timeout * settings.max_calls))
-    return ModelGateway(provider, budget, reserve_per_call=0.0), budget
+    reservation = (1_048_576 * settings.input_usd_per_million
+                   + 32768 * settings.output_usd_per_million) / 1_000_000
+    return ModelGateway(provider, budget, reserve_per_call=reservation), budget
 
 
 def generate_legacy(book_id, count=1, gateway=None, budget=None, settings=None):
@@ -230,7 +232,7 @@ def _load_longform_book(book_id, plan):
     return load_resume(checkpoint, plan)
 
 
-def generate_longform(book_id, count=1, gateway=None, budget=None, settings=None):
+def generate_longform(book_id, count=1, gateway=None, budget=None, settings=None, progress=None):
     """Generate chapters with the event-first, three-tier-memory runtime.
 
     This is the backend integration point for the future frontend.  Each call
@@ -248,13 +250,15 @@ def generate_longform(book_id, count=1, gateway=None, budget=None, settings=None
     if cfg.public_config() != meta["model"]:
         raise ValueError("当前模型配置与创建作品时不一致")
     if gateway is None:
-        gateway, budget = _gateway(cfg)
+        gateway, budget = _gateway(replace(cfg, max_calls=cfg.max_calls * count))
     gateway = StyleGateway(gateway, load_writing_style(book_id))
     run = book_path(book_id) / "longform-runs" / ("run-" + uuid4().hex)
     session = WritingSession(run, gateway, plan, book=previous)
     failure = None
     for _ in range(count):
         number = len(session.book["chapters"]) + 1
+        if progress:
+            progress({"completed": len(session.book["chapters"]) - written, "current_chapter": number})
         used = sum(count_units(chapter["text"]) for chapter in session.book["chapters"])
         slots = max(1, meta["target_chapters"] - number + 1)
         target = max(300, (meta["target_units"] - used + slots - 1) // slots)
@@ -263,18 +267,23 @@ def generate_longform(book_id, count=1, gateway=None, budget=None, settings=None
             f"作品《{meta['title']}》，现在创作第{number}章；本章约{target}字。"
             "先规划可验证的场景事件，再写完整正文；保持人物、时间、物品和因果连续。"
         )
-        outcome = session.write_next(instruction)
+        try:
+            outcome = session.write_next(instruction)
+        finally:
+            checkpoint = session.latest_checkpoint.resolve()
+            relative = checkpoint.relative_to(book_path(book_id).resolve()).as_posix()
+            _atomic_json(_longform_pointer(book_id), {"checkpoint": relative})
+            if budget is not None:
+                _atomic_json(book_path(book_id) / "last-usage.json", {
+                    "calls": budget.calls, "input_tokens": budget.input_tokens,
+                    "output_tokens": budget.output_tokens, "estimated_cost_upper_usd": budget.cost_upper_usd,
+                    "chapters_completed": len(session.book["chapters"]) - written,
+                })
+        if progress:
+            progress({"completed": len(session.book["chapters"]) - written, "current_chapter": number})
         if outcome["status"] == "NO_DRAFT":
             failure = outcome
             break
-    checkpoint = session.latest_checkpoint.resolve()
-    relative = checkpoint.relative_to(book_path(book_id).resolve()).as_posix()
-    _atomic_json(_longform_pointer(book_id), {"checkpoint": relative})
-    if budget is not None:
-        _atomic_json(book_path(book_id) / "last-usage.json", {
-            "calls": budget.calls, "input_tokens": budget.input_tokens,
-            "output_tokens": budget.output_tokens, "estimated_cost_upper_usd": budget.cost_upper_usd,
-        })
     if failure is not None:
         detail = json.dumps(failure.get("errors", []), ensure_ascii=False)
         raise RuntimeError(f"第{failure['chapter_number']}章未生成正文：{detail}")
@@ -294,8 +303,14 @@ generate = generate_longform
 def export_markdown(book):
     meta, state = book["metadata"], book["state"]
     chapters = state["chapters"] if isinstance(state, dict) else state.chapters
-    return f"# {meta['title']}\n\n" + "\n\n".join(
-        f"## 第{chapter['number']}章 {chapter['title']}\n\n{chapter['text']}" for chapter in chapters)
+    sections = [f"# {meta['title']}"]
+    for chapter in chapters:
+        paragraphs = [line.strip() for line in chapter["text"].splitlines() if line.strip()]
+        # Full-width spaces keep a two-character indent in plain text and
+        # Markdown without triggering Markdown's four-ASCII-space code blocks.
+        prose = "\n\n".join("\u3000\u3000" + paragraph for paragraph in paragraphs)
+        sections.append(f"## 第{chapter['number']}章 {chapter['title']}\n\n{prose}")
+    return "\n\n".join(sections) + "\n"
 
 
 def list_books():

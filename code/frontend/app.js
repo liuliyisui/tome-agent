@@ -4,6 +4,9 @@ const jobs = new Map();
 const pollingJobs = new Set();
 const jobErrors = new Map();
 const styleDrafts = new Map();
+const batchChoices = new Map();
+let pendingEstimate = null;
+let preparing = false;
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function api(path, data) {
   const response = await fetch(path, data === undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
@@ -34,6 +37,7 @@ async function selectBook(id, latest = false) {
   selectedChapter = latest ? Math.max(0, book.state.chapters.length - 1) : (current?.state.project_id === id ? selectedChapter : 0);
   current = book;
   renderStyle();
+  renderBatch();
   if (book.job?.status === 'running') {
     jobs.set(id, book.job.job_id);
     jobErrors.delete(id);
@@ -80,15 +84,35 @@ function renderGeneration() {
   const running = jobs.has(current.state.project_id);
   const complete = current.state.chapters.length >= current.metadata.target_chapters;
   const legacy = current.mode === 'legacy';
-  $('generate').disabled = running || complete || legacy;
+  $('generate').disabled = running || complete || legacy || preparing;
+  $('approve-first').disabled = running || !current.state.chapters.length || complete;
+  $('generation-count').disabled = running || !batchChoices.get(current.state.project_id)?.approved || complete;
   $('style-save').disabled = running;
   $('style-instructions').disabled = running;
   $('style-reference').disabled = running;
-  $('generate').textContent = running ? '◌ 正在创作…' : legacy ? '旧版存档 · 仅供阅读' : complete ? '✓ 全书章节已完成' : '✧ 生成下一章';
+  const chosen = Number($('generation-count').value) || 1;
+  $('generate').textContent = running ? '◌ 正在创作…' : preparing ? '正在估算…' : legacy ? '旧版存档 · 仅供阅读' : complete ? '✓ 全书章节已完成' : chosen > 1 ? `预估并生成 ${chosen} 章` : '预估并生成下一章';
   const error = jobErrors.get(current.state.project_id);
   $('job-status').classList.toggle('error', Boolean(error));
-  $('job-status').textContent = running ? error || '已提交，正在生成。通常需要数十秒至数分钟；可刷新页面，完成后会自动显示正文。' : error ? `生成失败：${error}` : complete ? '所有目标章节已存档，可导出作品。' : current.job?.status === 'completed' ? '✓ 上一章已生成并存档。' : '';
+  const progress = current.job?.count ? `本批次已完成 ${current.job.completed || 0} / ${current.job.count} 章，正在生成第 ${current.job.current_chapter} 章。` : '已提交，正在生成。';
+  $('job-status').textContent = running ? error || `${progress}可刷新页面，完成后自动显示正文。` : error ? `生成停止：${error}。已保存章节仍可阅读和导出。` : complete ? '所有目标章节已存档，可导出作品。' : current.job?.status === 'completed' ? `✓ 本批次 ${current.job.count || 1} 章已生成并存档。` : '';
 }
+function renderBatch() {
+  const remaining = Math.max(0, current.metadata.target_chapters - current.state.chapters.length);
+  const choice = batchChoices.get(current.state.project_id) || {approved:false,count:1};
+  $('approve-first').checked = choice.approved;
+  $('generation-count').max = Math.max(1,remaining);
+  $('generation-count').value = Math.max(1,Math.min(choice.count,remaining));
+  $('batch-hint').textContent = !current.state.chapters.length ? '先生成第一章，阅读确认后再自动续写。' : `剩余 ${remaining} 章。确认首章后自动填入剩余章节数，可修改；提交前会显示用量和费用预估。`;
+}
+$('approve-first').onchange = () => {
+  batchChoices.set(current.state.project_id, {approved:$('approve-first').checked,count:$('approve-first').checked ? Math.max(1,current.metadata.target_chapters-current.state.chapters.length) : 1});
+  renderBatch(); renderGeneration();
+};
+$('generation-count').oninput = () => {
+  batchChoices.set(current.state.project_id, {approved:$('approve-first').checked,count:Number($('generation-count').value)});
+  renderGeneration();
+};
 function renderStyle() {
   const id = current.state.project_id;
   const style = styleDrafts.get(id) || current.style || {instructions:'',reference:''};
@@ -151,14 +175,50 @@ $('demo').onclick = async () => {
 };
 $('generate').onclick = async () => {
   const id = current.state.project_id;
-  jobErrors.delete(id);
-  jobs.set(id, null); renderGeneration(); notice();
+  preparing = true; renderGeneration(); notice();
   try {
     if (styleDrafts.has(id)) await saveStyle(id);
-    const {job_id} = await api(`/api/books/${encodeURIComponent(id)}/generate`, {});
-    jobs.set(id, job_id);
-    startPolling(id, job_id);
-  } catch(e) { jobs.delete(id); jobErrors.set(id,e.message); renderGeneration(); notice(e.message); }
+    const estimate = await api(`/api/books/${encodeURIComponent(id)}/estimate`, {count:Number($('generation-count').value),approved_first:$('approve-first').checked});
+    pendingEstimate = estimate;
+    showEstimate(estimate);
+    $('estimate-error').textContent = '';
+    $('estimate-continue').disabled = false;
+    $('estimate-dialog').showModal();
+  } catch(e) { notice(e.message); }
+  finally { preparing = false; renderGeneration(); }
+};
+function showEstimate(estimate) {
+  $('estimate-scope').textContent = `《${current.metadata.title}》· 第 ${estimate.first_chapter} 至 ${estimate.last_chapter} 章，共 ${estimate.count} 章`;
+  $('estimate-input').textContent = estimate.input_tokens.toLocaleString();
+  $('estimate-output').textContent = estimate.output_tokens.toLocaleString();
+  $('estimate-total').textContent = '≈ ' + estimate.total_tokens.toLocaleString();
+  $('estimate-basis').textContent = estimate.basis;
+  $('estimate-cost').textContent = estimate.estimated_cost_cny === null ? '该模型暂无法自动匹配官方价格' : `≈ ¥ ${estimate.estimated_cost_cny.toFixed(4)}`;
+  $('estimate-input-price').textContent = estimate.prices ? `¥ ${estimate.prices.input} / 百万 token` : '未匹配';
+  $('estimate-output-price').textContent = estimate.prices ? `¥ ${estimate.prices.output} / 百万 token` : '未匹配';
+  $('estimate-period').textContent = `${estimate.pricing.label} · ${estimate.pricing.model}`;
+  $('estimate-price-rule').textContent = estimate.pricing.rule;
+  $('estimate-price-source').href = estimate.pricing.source;
+  $('estimate-price-date').textContent = estimate.pricing.status === 'offline' ? '' : `核验：${estimate.pricing.checked_at} ${estimate.pricing.status === 'live' ? '· 官方实时同步' : '· 已核验缓存价，联网不可用时使用'}`;
+  $('estimate-price-warning').textContent = estimate.pricing.warning;
+  $('estimate-price-warning').hidden = !estimate.pricing.warning;
+  $('estimate-peak-cost').textContent = estimate.peak_cost_cny !== null && estimate.pricing.period === 'off_peak' ? `若按高峰价计：约 ¥ ${estimate.peak_cost_cny.toFixed(4)}` : '';
+  $('estimate-note').textContent = estimate.note;
+}
+$('estimate-close').onclick = $('estimate-cancel').onclick = () => { $('estimate-dialog').close(); pendingEstimate = null; };
+$('estimate-dialog').oncancel = () => { pendingEstimate = null; };
+$('estimate-continue').onclick = async () => {
+  if (!pendingEstimate) return;
+  const estimate = pendingEstimate, id = estimate.book_id;
+  $('estimate-continue').disabled = true;
+  try {
+    const {job_id} = await api(`/api/books/${encodeURIComponent(id)}/generate`, {estimate_id:estimate.estimate_id,confirmed:true});
+    jobs.set(id,job_id); jobErrors.delete(id);
+    current.job = {count:estimate.count,completed:0,current_chapter:estimate.first_chapter};
+    $('estimate-dialog').close(); pendingEstimate = null;
+    renderGeneration(); startPolling(id,job_id);
+  } catch(e) { $('estimate-error').textContent = e.message; }
+  finally { $('estimate-continue').disabled = false; }
 };
 function startPolling(id, jobId) {
   if (pollingJobs.has(jobId)) return;
@@ -168,8 +228,12 @@ function startPolling(id, jobId) {
 async function pollJob(id, jobId) {
   try {
     const job = await api(`/api/jobs/${jobId}`);
+    if (current?.state.project_id === id) current.job = job;
     jobErrors.delete(id);
-    if (job.status === 'running') { renderGeneration(); setTimeout(() => pollJob(id,jobId), 1500); return; }
+    if (job.status === 'running') {
+      if (current?.state.project_id === id && current.state.chapters.length < (job.current_chapter || 1) - 1) await selectBook(id,true);
+      renderGeneration(); setTimeout(() => pollJob(id,jobId), 1500); return;
+    }
     pollingJobs.delete(jobId);
     jobs.delete(id);
     if (current?.state.project_id === id) await selectBook(id, true);
