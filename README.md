@@ -32,8 +32,13 @@ tests/                 单元测试与集成测试
 
 ## 快速验证（Windows）
 
+数据库采用 PostgreSQL。首次使用请按 [本机数据库启动与迁移说明](docs/software/POSTGRESQL.md) 配置本地数据库、初始化表并导入旧作品；现有 .env 需要补充 DATABASE_URL。引擎检查点继续保留在本地文件中。
+
 ```powershell
 code\backend\setup.cmd
+# 按数据库说明填写 code/backend/.env
+code\backend\run-db.cmd
+code\backend\migrate-db.cmd init
 code\backend\run-web.cmd
 ```
 
@@ -48,7 +53,7 @@ code\backend\.venv\Scripts\python.exe -m unittest discover -s tests -v
 
 ## 当前边界
 
-本次通过 97 项应用回归及 74 个发布代码文件的哈希校验。历史引擎测试仍有 66 项依赖未随包提供的旧资产，详见引擎更新说明。升级前请保留旧代码与作品：旧检查点的运行时哈希与新版不一致，不能直接续写。
+本次通过 104 项应用与数据库回归，其中 7 项是真实 PostgreSQL 集成测试，并在 PostgreSQL 18.6 上再次验证通过；核心引擎的 74 个发布代码文件通过哈希校验。历史引擎测试仍有 66 项依赖未随包提供的旧资产，详见引擎更新说明。升级前请保留旧代码与作品：旧检查点的运行时哈希与新版不一致，不能直接续写。
 
 模型生成仍可能出现情节质量、文风和事实判断问题。系统保存的结构化状态与模型审核结果都应视为辅助信息，最终作品仍需人工检查。
 

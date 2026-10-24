@@ -16,6 +16,7 @@ from inf_writer.storage import FileStore
 from memory_runtime.writing import WritingSession, load_resume
 
 from .settings import BACKEND_ROOT, Settings
+from . import database
 
 DATA = BACKEND_ROOT / "data"
 BOOKS = DATA / "inf_books"
@@ -31,6 +32,14 @@ def new_book_id():
 
 def book_path(book_id):
     project_id(book_id)
+    if database.enabled():
+        key = database.storage_key(book_id)
+        if key != book_id and not re.fullmatch(r"\.trash/[a-f0-9]{32}", key):
+            raise ValueError("检查点目录不安全")
+        folder = BOOKS / key
+        if not folder.resolve().is_relative_to(BOOKS.resolve()) or folder.is_symlink():
+            raise ValueError("检查点目录不安全")
+        return folder
     return BOOKS / book_id
 
 
@@ -52,6 +61,10 @@ def _atomic_json(path, value):
 @contextmanager
 def operation_lock(folder):
     folder = Path(folder)
+    if database.enabled():
+        with database.lock("tome:" + str(folder.resolve())):
+            yield
+        return
     folder.mkdir(parents=True, exist_ok=True)
     lock = folder / "operation.lock"
     try:
@@ -67,6 +80,9 @@ def operation_lock(folder):
 
 
 def _metadata(book_id):
+    project_id(book_id)
+    if database.enabled():
+        return database.row(book_id)["metadata"]
     path = book_path(book_id) / "metadata.json"
     data = strict_json(path.read_text(encoding="utf-8"))
     required = {"schema_version", "title", "prompt", "target_chapters", "target_units", "model"}
@@ -76,6 +92,11 @@ def _metadata(book_id):
 
 
 def load_book(book_id):
+    if database.enabled():
+        project_id(book_id)
+        record = database.row(book_id)
+        state = record["state"] if record["state_kind"] == "longform" else Snapshot.from_dict(record["state"])
+        return {"metadata": record["metadata"], "state": state}
     if (book_path(book_id) / "longform-current.json").exists():
         return load_longform(book_id)
     return {"metadata": _metadata(book_id), "state": FileStore(BOOKS).load(book_id)}
@@ -93,6 +114,8 @@ def validate_writing_style(value):
 
 
 def load_writing_style(book_id):
+    if database.enabled():
+        return validate_writing_style(database.style(book_id))
     path = book_path(book_id) / "writing-style.json"
     if not path.exists():
         return {"instructions": "", "reference": ""}
@@ -103,6 +126,8 @@ def save_writing_style(book_id, value):
     _metadata(book_id)
     style = validate_writing_style(value)
     with operation_lock(book_path(book_id)):
+        if database.enabled():
+            return database.style(book_id, style)
         _atomic_json(book_path(book_id) / "writing-style.json", style)
     return style
 
@@ -139,9 +164,12 @@ def create_book(book_id, title, prompt, chapters, target_units, settings=None, s
         raise ValueError("作品已存在")
     cfg = settings or Settings.load(require_key=False)
     state = Snapshot(book_id, prompt.strip(), [f"全书目标{chapters}章", f"目标篇幅约{target_units}字"])
-    FileStore(BOOKS).initialize(state)
     metadata = {"schema_version": 1, "title": title.strip(), "prompt": prompt.strip(),
                 "target_chapters": chapters, "target_units": target_units, "model": cfg.public_config()}
+    if database.enabled():
+        database.create(book_id, metadata, state.to_dict(), style)
+        return load_book(book_id)
+    FileStore(BOOKS).initialize(state)
     _atomic_json(folder / "metadata.json", metadata)
     if any(style.values()):
         _atomic_json(folder / "writing-style.json", style)
@@ -185,6 +213,19 @@ def _longform_pointer(book_id):
 
 
 def _load_longform_book(book_id, plan):
+    if database.enabled():
+        record = database.row(book_id)
+        if record["state_kind"] != "longform":
+            if record["state"].get("chapters"):
+                raise ValueError("旧版章节存档仅供阅读和导出，请新建作品")
+            return None
+        relative = record["checkpoint"]
+        if not relative:
+            raise ValueError("长文本存档缺少恢复检查点")
+        checkpoint = (book_path(book_id) / relative).resolve()
+        if not checkpoint.is_relative_to(book_path(book_id).resolve()):
+            raise ValueError("检查点路径不安全")
+        return load_resume(checkpoint, plan)
     pointer = _longform_pointer(book_id)
     if not pointer.exists():
         return None
@@ -238,6 +279,11 @@ def generate_longform(book_id, count=1, gateway=None, budget=None, settings=None
         finally:
             checkpoint = session.latest_checkpoint.resolve()
             relative = checkpoint.relative_to(book_path(book_id).resolve()).as_posix()
+            usage = None if budget is None else {
+                "calls": budget.calls, "input_tokens": budget.input_tokens,
+                "output_tokens": budget.output_tokens, "estimated_cost_upper_usd": budget.cost_upper_usd,
+                "chapters_completed": len(session.book["chapters"]) - written,
+            }
             _atomic_json(_longform_pointer(book_id), {"checkpoint": relative})
             if budget is not None:
                 _atomic_json(book_path(book_id) / "last-usage.json", {
@@ -245,6 +291,8 @@ def generate_longform(book_id, count=1, gateway=None, budget=None, settings=None
                     "output_tokens": budget.output_tokens, "estimated_cost_upper_usd": budget.cost_upper_usd,
                     "chapters_completed": len(session.book["chapters"]) - written,
                 })
+            if database.enabled():
+                database.save(book_id, session.book, "longform", relative, usage)
         if progress:
             progress({"completed": len(session.book["chapters"]) - written, "current_chapter": number})
         if outcome["status"] == "NO_DRAFT":
@@ -257,6 +305,8 @@ def generate_longform(book_id, count=1, gateway=None, budget=None, settings=None
 
 
 def load_longform(book_id):
+    if database.enabled():
+        return load_book(book_id)
     meta = _metadata(book_id)
     state = _load_longform_book(book_id, _longform_plan(meta))
     return {"metadata": meta, "state": state}
@@ -280,6 +330,8 @@ def export_markdown(book):
 
 
 def list_books():
+    if database.enabled():
+        return database.books()
     books = []
     for path in sorted(BOOKS.glob("*/metadata.json")):
         try:
@@ -289,6 +341,13 @@ def list_books():
             pass
         books.append(path.parent.name)
     return books
+
+
+def last_usage(book_id):
+    if database.enabled():
+        return database.row(book_id)["last_usage"]
+    path = book_path(book_id) / "last-usage.json"
+    return strict_json(path.read_text(encoding="utf-8")) if path.exists() else None
 
 
 def book_labels(book_ids):

@@ -1,8 +1,8 @@
 **/__pycache__/
 **/*.py[cod]
 backend/.env
-backend/.env-*
 backend/.venv/
+backend/.postgres/
 backend/data/*
 !backend/data/.gitkeep
 **/*.egg-info/
