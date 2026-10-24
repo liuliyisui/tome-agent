@@ -1,11 +1,12 @@
 # Tome Agent
 
-Tome Agent 是一个面向长篇小说生成的软件创新作业。核心代码已更新为 F 盘的 `tested-c-20261024` 实测版本，后端默认使用事件先行和三层记忆流程。
+Tome Agent 是一个面向长篇小说生成的软件创新作业。当前采用 **LangGraph 多智能体编排**，在 `tested-c-20261024` 引擎基础上保留事件先行和三层记忆流程。网页与命令行的实际写作入口均通过编译后的 `StateGraph` 执行。
 
-本版上游真实测试记录为 18 章、36250 个汉字、189 次请求，生成没有中断。基础结局具备，但严格收束判定未通过；仍有阶段叙述重复、篇幅超标等问题。详见 [引擎更新与兼容说明](docs/software/ENGINE_UPDATE_20261024.md)。
+迁移说明、图节点、存档兼容性与验证记录见 [LangGraph 迁移说明](docs/software/LANGGRAPH_MIGRATION.md)。上游引擎历史真实测试记录为 18 章、36250 个汉字、189 次请求；这不是迁移后版本的真实模型测试。基础结局具备，但严格收束判定未通过，仍有阶段叙述重复、篇幅超标等问题。
 
 ## 当前能力
 
+- LangGraph 编排：规划、写作、提交、记忆处理和审核为独立节点，写作请求修订时通过条件边返回规划节点。
 - 事件先行：先规划场景事件并推演状态，再生成正文，避免正文先写完后再猜关键事实。
 - 三层记忆：工作记忆、近期记忆和长期记忆分别保存，并保留正文来源。
 - 连续性管理：跟踪人物、物品、时间、任务、知识来源和状态版本。
@@ -22,7 +23,7 @@ Tome Agent 是一个面向长篇小说生成的软件创新作业。核心代码
 ```text
 .github/               GitHub 工作流和 Issue 模板
 code/backend/          DeepSeek 配置、应用服务、启动脚本和本地作品数据
-code/core_engine/      稳定长文本核心、三层记忆、检查点和发布清单
+code/core_engine/      LangGraph 长文本编排、三层记忆、检查点和发布清单
 code/frontend/         本地网页工作室
 docs/                  需求、设计、管理和使用文档
 tests/                 单元测试与集成测试
@@ -47,13 +48,16 @@ code\backend\run-web.cmd
 ```powershell
 $env:PYTHONPATH="$PWD\code\core_engine;$PWD\code\backend"
 code\backend\.venv\Scripts\python.exe -m unittest discover -s tests -v
+code\backend\.venv\Scripts\python.exe tests\run_engine_regression.py
 ```
 
 真实模型配置写入 `code/backend/.env`，该文件不会提交到 Git。配置模板见 `code/backend/.env.example`。
 
 ## 当前边界
 
-本次通过 104 项应用与数据库回归，其中 7 项是真实 PostgreSQL 集成测试，并在 PostgreSQL 18.6 上再次验证通过；核心引擎的 74 个发布代码文件通过哈希校验。历史引擎测试仍有 66 项依赖未随包提供的旧资产，详见引擎更新说明。升级前请保留旧代码与作品：旧检查点的运行时哈希与新版不一致，不能直接续写。
+迁移后本地应用回归共 112 项：105 项通过，7 项因没有配置真实 PostgreSQL 而跳过。专项长篇入口回归共 42 项：39 项通过，3 项因缺少历史运行资产而跳过。验证使用离线模型和本机模拟 HTTP 服务，没有调用真实 DeepSeek，也没有认证迁移后的小说质量。
+
+`stable_release_manifest.json` 保留为迁移前引擎的历史记录；当前源码已变化，不能再用它宣称逐字节一致。升级前请保留旧代码与作品：旧检查点的运行时哈希与新版不一致，不能直接续写。新版恢复仍使用应用检查点，未启用 LangGraph 原生节点级持久化或人工暂停功能。
 
 模型生成仍可能出现情节质量、文风和事实判断问题。系统保存的结构化状态与模型审核结果都应视为辅助信息，最终作品仍需人工检查。
 

@@ -15,6 +15,7 @@ jobs:
         env:
           DATABASE_URL: ''
           PYTHONPATH: ${{ github.workspace }}\code\core_engine;${{ github.workspace }}\code\backend
+      - run: python tests/run_engine_regression.py
   postgresql:
     runs-on: ubuntu-latest
     strategy:

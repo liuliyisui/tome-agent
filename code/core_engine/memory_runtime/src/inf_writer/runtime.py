@@ -4,6 +4,8 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import TypedDict
+from langgraph.graph import StateGraph, START, END
 from .domain import ContractError, canonical, digest, text, evidence_segments
 from .memory import VersionedMemory
 from .ports import Agent, CheckpointStore
@@ -47,6 +49,7 @@ class Coordinator:
         if any(agent.role!=role for role,agent in agents.items()): raise ContractError("Agent role binding mismatch")
         self.memory_policy=memory_policy or VersionedMemory()
         self.store=store; self.agents=agents; self.context_builder=context_builder or ContextBuilder(memory_reader=self.memory_policy,include_fact_sources=not getattr(agents['planner'],'compact_narrative',False))
+        self.graph=self._build_graph()
     def write_next(self,identifier,request_id,instruction=""):
         attempt_id="attempt_"+uuid.uuid4().hex; trace=[]; started=datetime.now().astimezone().isoformat(); begin=time.monotonic()
         result=Outcome("FAILED",attempt_id=attempt_id); revision=None
@@ -59,33 +62,9 @@ class Coordinator:
                 if receipt["instruction_hash"]!=instruction_hash: raise ContractError("Idempotency key reused with a different instruction")
                 result=Outcome("ALREADY_COMMITTED",receipt["chapter_number"],attempt_id=attempt_id)
             else:
-                context=self.context_builder.build(state); context["instruction"]=instruction
-                proposed_plan=self.agents["planner"].run(context,trace)
-                if proposed_plan["number"]!=len(state.chapters)+1: raise ContractError("Planner returned a non-next chapter")
-                writing_context={**context,"chapter_plan":proposed_plan}
-                draft=self.agents["writer"].run(writing_context,trace)["text"]
-                memory_context={**writing_context,"current_draft":draft,"evidence_segments":evidence_segments(draft)}
-                from .drafting import normalize_memory
-                changes=self.agents["memory"].run(memory_context,trace,
-                    validator=lambda value:normalize_memory(value,state,proposed_plan,draft)
-                    if getattr(self.agents['reviewer'],'review_mode',None)=='light_memory' or
-                        getattr(self.agents['reviewer'],'review_contract_version',0)==1 or
-                        any(isinstance(row,dict) and 'claim_ops' in row for row in value['changes']) else value)["changes"]
-                # Validate mechanical constraints before reviewer; no partial promotion.
-                candidate=self.memory_policy.stage(state,proposed_plan,draft,changes,request_id,instruction_hash)
-                review_context={**memory_context,"memory_changes":changes}
-                if getattr(self.agents['reviewer'],'review_contract_version',0)==1:
-                    from .review_contract import prepare_review_context
-                    review_context=prepare_review_context(review_context)
-                    if getattr(self.agents['reviewer'],'review_policy_version',0) in (1,2,3,4,5):
-                        from .review_policy import prepare_policy_context
-                        review_context['review_policy_version']=self.agents['reviewer'].review_policy_version
-                        review_context=prepare_policy_context(review_context)
-                review=self.agents["reviewer"].run(review_context,trace)
-                if not review["approved"]: result=Outcome("REJECTED",issues=review["issues"],attempt_id=attempt_id)
-                else:
-                    self.store.commit(candidate,expected_revision=state.revision)
-                    result=Outcome("COMMITTED",len(candidate.chapters),attempt_id=attempt_id)
+                work=dict(snapshot=state,instruction=instruction,request_id=request_id,
+                    instruction_hash=instruction_hash,trace=trace,attempt_id=attempt_id)
+                result=self.graph.invoke({'work':work})['work']['result']
         except Exception as exc:
             # Local chapter failure does not stop another story. Caller decides retry policy.
             result.error=type(exc).__name__+": "+str(exc)
@@ -98,3 +77,73 @@ class Coordinator:
             # A failed audit write must never disguise a successfully committed receipt as a failed chapter.
             result.audit_warning="Audit persistence failed: "+type(exc).__name__
         return result
+
+
+    def _build_graph(self):
+        class TransactionState(TypedDict):
+            work: dict
+
+        def planner(state):
+            work=state['work'];snapshot=work['snapshot']
+            context=self.context_builder.build(snapshot);context['instruction']=work['instruction']
+            proposed=self.agents['planner'].run(context,work['trace'])
+            if proposed['number']!=len(snapshot.chapters)+1:
+                raise ContractError('Planner returned a non-next chapter')
+            work.update(plan=proposed,writing_context={**context,'chapter_plan':proposed})
+            return {'work':work}
+
+        def writer(state):
+            work=state['work']
+            draft=self.agents['writer'].run(work['writing_context'],work['trace'])['text']
+            work.update(draft=draft,memory_context={**work['writing_context'],
+                'current_draft':draft,'evidence_segments':evidence_segments(draft)})
+            return {'work':work}
+
+        def memory(state):
+            from .drafting import normalize_memory
+            work=state['work']
+            changes=self.agents['memory'].run(work['memory_context'],work['trace'],
+                validator=lambda value:normalize_memory(value,work['snapshot'],work['plan'],work['draft'])
+                if getattr(self.agents['reviewer'],'review_mode',None)=='light_memory' or
+                getattr(self.agents['reviewer'],'review_contract_version',0)==1 or
+                any(isinstance(row,dict) and 'claim_ops' in row for row in value['changes']) else value)['changes']
+            work['candidate']=self.memory_policy.stage(work['snapshot'],work['plan'],work['draft'],
+                changes,work['request_id'],work['instruction_hash'])
+            work['review_context']={**work['memory_context'],'memory_changes':changes}
+            return {'work':work}
+
+        def reviewer(state):
+            work=state['work'];context=work['review_context']
+            if getattr(self.agents['reviewer'],'review_contract_version',0)==1:
+                from .review_contract import prepare_review_context
+                context=prepare_review_context(context)
+                if getattr(self.agents['reviewer'],'review_policy_version',0) in (1,2,3,4,5):
+                    from .review_policy import prepare_policy_context
+                    context['review_policy_version']=self.agents['reviewer'].review_policy_version
+                    context=prepare_policy_context(context)
+            work['review']=self.agents['reviewer'].run(context,work['trace'])
+            return {'work':work}
+
+        def commit(state):
+            work=state['work'];candidate=work['candidate']
+            self.store.commit(candidate,expected_revision=work['snapshot'].revision)
+            work['result']=Outcome('COMMITTED',len(candidate.chapters),attempt_id=work['attempt_id'])
+            return {'work':work}
+
+        def reject(state):
+            work=state['work']
+            work['result']=Outcome('REJECTED',issues=work['review']['issues'],attempt_id=work['attempt_id'])
+            return {'work':work}
+
+        graph=StateGraph(TransactionState)
+        for name,node in [('planner',planner),('writer',writer),('memory',memory),
+                          ('reviewer',reviewer),('commit',commit),('reject',reject)]:
+            graph.add_node(name,node)
+        graph.add_edge(START,'planner')
+        graph.add_edge('planner','writer');graph.add_edge('writer','memory')
+        graph.add_edge('memory','reviewer')
+        graph.add_conditional_edges('reviewer',
+            lambda state:'commit' if state['work']['review']['approved'] else 'reject',
+            {'commit':'commit','reject':'reject'})
+        graph.add_edge('commit',END);graph.add_edge('reject',END)
+        return graph.compile(name='tome_strict_chapter')
