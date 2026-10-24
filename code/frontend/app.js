@@ -39,19 +39,10 @@ function showHome() {
   $('book-workspace').hidden = true;
   $('welcome').hidden = false;
   $('breadcrumb-title').textContent = '首页';
-  $('breadcrumb-title').disabled = false;
-  $('breadcrumb-title').title = '刷新首页';
   notice();
   document.querySelectorAll('.book-row.selected').forEach(row => row.classList.remove('selected'));
   window.scrollTo({top:0,left:0});
 }
-$('workspace-home').onclick = event => {
-  if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-  event.preventDefault();
-  showHome();
-  refreshBooks().catch(e => notice(e.message));
-};
-$('breadcrumb-title').onclick = () => { if (!current) window.location.reload(); };
 async function refreshBooks() {
   books = (await api('/api/books')).books;
   $('book-count').textContent = books.length;
@@ -176,8 +167,6 @@ function renderBook() {
   $('welcome').hidden = true;
   $('book-workspace').hidden = false;
   $('breadcrumb-title').textContent = meta.title;
-  $('breadcrumb-title').disabled = true;
-  $('breadcrumb-title').title = '';
   $('book-kind').textContent = current.mode === 'legacy' ? 'LEGACY / 旧版存档' : 'EVENT FIRST / 事件先行 · 三层记忆';
   $('book-title').textContent = meta.title;
   $('book-prompt').textContent = meta.prompt;
