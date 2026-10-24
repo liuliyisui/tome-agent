@@ -26,7 +26,7 @@ def now():return datetime.now(timezone(timedelta(hours=8))).isoformat()
 def validate_config(value):
     required={'title','goal','constraints','chapters','max_chapters','target_han_chars',
               'endpoint','model','input_usd_per_million','output_usd_per_million','thinking_enabled'}
-    legacy={'max_calls','max_cost_usd','pricing_confirmed','story_review_enabled','event_first'}
+    legacy={'max_calls','max_cost_usd','pricing_confirmed','story_review_enabled','event_first','closure_enabled'}
     if not isinstance(value,dict) or not required<=set(value) or set(value)-required-legacy:
         raise ContractError('配置字段缺失或多余；密钥不得放进JSON，请参照novel_config.json')
     for key in ('title','goal','model'):
@@ -45,6 +45,8 @@ def validate_config(value):
         raise ContractError('story_review_enabled必须为true或false')
     if type(value.get('event_first',True)) is not bool:
         raise ContractError('event_first必须为true或false')
+    if type(value.get('closure_enabled',True)) is not bool:
+        raise ContractError('closure_enabled必须为true或false')
     if not isinstance(value['endpoint'],str):raise ContractError('endpoint必须是HTTPS地址')
     try:
         url=urlsplit(value['endpoint']);port=url.port
@@ -55,7 +57,8 @@ def validate_config(value):
     return {k:value[k] for k in ('title','goal','constraints','chapters','max_chapters','target_han_chars','model')} | dict(
         execution_mode='draft_first',review_contract_version=0,review_transport_version=0,
         review_mode='tiered_memory',memory_update_policy='defer_failures_continue_writing',
-        story_review_enabled=False if value.get('event_first',True) else value.get('story_review_enabled',True),event_first=value.get('event_first',True))
+        story_review_enabled=False if value.get('event_first',True) else value.get('story_review_enabled',True),event_first=value.get('event_first',True),
+        closure_enabled=value.get('closure_enabled',True))
 
 ENV_FIELDS={'INF_API_KEY','INF_MODEL','INF_BASE_URL','INF_INPUT_USD_PER_MILLION',
             'INF_OUTPUT_USD_PER_MILLION','INF_THINKING_ENABLED'}
@@ -174,6 +177,10 @@ def launch(config,output,*,execute=True,confirmed=None,resume=None):
         raise ContractError('写作异常退出；已保留部分记录。请检查launcher_failure.json，不要盲目重试。') from None
     print(f'正文：{output / "正文.md"}')
     print(f'问题清单：{output / "问题清单.json"}；字数/章节完成不等于质量通过。')
+    if result.get('story_closure_enabled'):
+        message=('主线收束检查通过（模型判断，非质量认证）' if result.get('narrative_closure_model_passed')
+            else '故事尚未确认收束，请查看story_closure.json中的待完成问题和检查失败记录')
+        print(f'结尾状态：{message}；整体完成标记：{result["draft_completed"]}。')
     return result
 
 def main():

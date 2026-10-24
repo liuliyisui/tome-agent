@@ -23,7 +23,7 @@ from inf_writer.models import ModelRequest
 def config(chapters=4):
     return dict(title='接入测试',goal='甲的记录逐章增长',constraints=[],chapters=chapters,max_chapters=chapters,
         target_han_chars=1,endpoint='https://fixture.invalid/chat/completions',model='offline',
-        input_usd_per_million=0.3,output_usd_per_million=1.2,thinking_enabled=False,event_first=False)
+        input_usd_per_million=0.3,output_usd_per_million=1.2,thinking_enabled=False,event_first=False,closure_enabled=False)
 
 
 class Local:

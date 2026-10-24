@@ -79,7 +79,16 @@ def compile_plan(proposal,choices,chapter):
     return _compile_plan(proposal,choices,chapter)
 
 
-def _compile_plan(proposal,choices,chapter):
+def compile_independent_stages(proposal,choices,chapter):
+    """Keep allocated IDs stable while quarantining scenes with bad selectors."""
+    validate_formal_input(proposal);errors=[]
+    result=_compile_plan(proposal,choices,chapter,stage_errors=errors)
+    invalid={r['stage'] for r in errors}
+    result['scenes']=[s for i,s in enumerate(result['scenes']) if i not in invalid]
+    return result,errors
+
+
+def _compile_plan(proposal,choices,chapter,*,stage_errors=None):
     result=copy.deepcopy(proposal);actions={};records={};record_number=0
     scenes=result.get('scenes',[])
     if not isinstance(scenes,list):return result
@@ -93,7 +102,7 @@ def _compile_plan(proposal,choices,chapter):
             for ci,row in enumerate(action.get('changes',[]) if isinstance(action.get('changes'),list) else [],1):
                 if not isinstance(row,dict) or not isinstance(row.get('operation'),str) or row['operation'] not in RECORD_KINDS:continue
                 record_number+=1;row.setdefault('record_id',f'n{chapter:04d}r{record_number:04d}')
-                kind='pending_intention' if row.get('fact_class')=='planned_intention' else RECORD_KINDS[row['operation']]
+                kind='pending_intention' if action.get('assertion_scope')=='proposed_action' or row.get('fact_class')=='planned_intention' else RECORD_KINDS[row['operation']]
                 if isinstance(row['record_id'],str):records[(si,bi,ci)]=kind+':'+row['record_id']
     def resolve(value,current,depth=0):
         if depth>8:raise ContractError('Reference selector wrapper nesting exceeds limit')
@@ -144,20 +153,26 @@ def _compile_plan(proposal,choices,chapter):
             if not isinstance(action,dict):continue
             current+=1
             prefix=f'scenes[{si}].beats[{bi}]'
-            if isinstance(action.get('requires'),list):
-                converted=[]
-                for ri,value in enumerate(action['requires']):
-                    path=prefix+f'.requires[{ri}]'
-                    versioned=isinstance(value,dict) and set(value)=={'reference_id','record_revision'}
-                    if versioned:
-                        value=copy.deepcopy(value);value['reference_id']=located(value['reference_id'],current,path)
-                        converted.append(value)
-                    else:converted.append(dict(reference_id=located(value,current,path)))
-                action['requires']=converted
-            for ci,row in enumerate(action.get('changes',[]) if isinstance(action.get('changes'),list) else []):
-                if not isinstance(row,dict):continue
-                for field in REFERENCE_FIELDS:
-                    if field in row:row[field]=located(row[field],current,prefix+f'.changes[{ci}].'+field,field)
-                for field in ('involved_object_refs','follows_dated_event_refs'):
-                    if isinstance(row.get(field),list):row[field]=[located(v,current,prefix+f'.changes[{ci}].{field}[{i}]',field) for i,v in enumerate(row[field])]
+            try:
+                if isinstance(action.get('requires'),list):
+                    converted=[]
+                    for ri,value in enumerate(action['requires']):
+                        path=prefix+f'.requires[{ri}]'
+                        versioned=isinstance(value,dict) and set(value)=={'reference_id','record_revision'}
+                        if versioned:
+                            value=copy.deepcopy(value);value['reference_id']=located(value['reference_id'],current,path)
+                            converted.append(value)
+                        else:converted.append(dict(reference_id=located(value,current,path)))
+                    action['requires']=converted
+                for ci,row in enumerate(action.get('changes',[]) if isinstance(action.get('changes'),list) else []):
+                    if not isinstance(row,dict):continue
+                    for field in REFERENCE_FIELDS:
+                        if field in row:row[field]=located(row[field],current,prefix+f'.changes[{ci}].'+field,field)
+                    for field in ('involved_object_refs','follows_dated_event_refs'):
+                        if isinstance(row.get(field),list):row[field]=[located(v,current,prefix+f'.changes[{ci}].{field}[{i}]',field) for i,v in enumerate(row[field])]
+            except ContractError as exc:
+                if stage_errors is None:raise
+                if not any(r['stage']==si for r in stage_errors):
+                    stage_errors.append(dict(stage=si,status='DEFERRED',scene_id=scene['id'],error=str(exc),
+                        details=copy.deepcopy(getattr(exc,'repair_details',{})),proposed_scene=copy.deepcopy(proposal['scenes'][si])))
     return result

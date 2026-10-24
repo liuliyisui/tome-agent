@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 import time
 from memory_runtime.writing import WritingSession
+from memory_runtime.story_closure import StoryClosure
 from inf_writer.domain import ContractError, digest, integer, text
 from inf_writer.memory_temporality import has_current_content
 from inf_writer.models import ModelReply
@@ -57,21 +58,29 @@ def run_draft_trial(output,provider,plan,*,resume_book=None):
         resumed=resume_book is not None))
     recorder=RecordedProvider(provider,output);meter=MeteredGateway(recorder)
     session=WritingSession(output/'working',meter,plan,book=resume_book)
+    closure=StoryClosure(session)
     started=time.monotonic();stop=None;interrupted=False
     try:
         session.finish_pending()
+        closure.initialize()
         for number in range(len(session.book['chapters'])+1,plan['max_chapters']+1):
             written=sum(len(re.findall(r'[\u3400-\u9fff]',ch['text'])) for ch in session.book['chapters'])
-            if number>plan['chapters'] and written>=plan['target_han_chars']:break
+            if (number>plan['chapters'] and written>=plan['target_han_chars']
+                    and (not closure.enabled or closure.passed())):break
             remaining=max(1,plan['chapters']-number+1)
             target=max(1,(plan['target_han_chars']-written+remaining-1)//remaining)
+            if number>plan['chapters'] and written>=plan['target_han_chars']:
+                # Repair a missing ending with a scene, not a one-character length remainder.
+                target=max(500,plan['target_han_chars']//plan['chapters'])
             instruction=(f"连续草稿目标{plan['target_han_chars']}汉字，名义{plan['chapters']}章，现在第{number}章。"
                 f'已写{written}汉字，剩余篇幅{max(0,plan["target_han_chars"]-written)}汉字，须分配给剩余{remaining}章。'
                 f'本章约{target}汉字，用完整场景、对话推进，不用梗概，不重复凑字数。'
                 '根据已写事实局部调整后续计划，保持人物和世界因果一致；待修章节不假称已通过。'
                 '名义最后一章解决主要冲突；如需补章，补与结局相容的场景，不推翻前文。')
+            instruction+=closure.instruction()
             session.chapter_length_target=target
             row=session.write_next(instruction)
+            if row['status']!='NO_DRAFT':closure.observe(session.book['chapters'][-1])
             saved_label='未保存' if row['status']=='NO_DRAFT' else '已保存'
             print(f"第{number}章{saved_label}：{row['status']}；累计请求{recorder.calls}次。",flush=True)
             if row['stop_reason'] or row['status']=='NO_DRAFT':
@@ -81,6 +90,8 @@ def run_draft_trial(output,provider,plan,*,resume_book=None):
     except Exception as exc:
         stop='MEMORY_PENDING' if session.book['pending'] else 'REVIEW_PENDING' if session.book['review_jobs'] else 'RUNTIME_FAILURE'
         save_new(output/'runtime_failure.json',dict(error_type=type(exc).__name__,stop_reason=stop))
+    if not interrupted:closure.retry_pending(final=True)
+    if closure.enabled and not closure.covered():closure.state['status']='UNKNOWN'
     state=session.book;memory=state['memory']
     prose='# '+plan['title']+'\n\n> 待修草稿，不表示质量通过。\n\n'
     prose+='\n\n'.join(f"## 第{ch['number']}章 {ch['title']}\n\n{ch['text']}" for ch in state['chapters'])
@@ -93,10 +104,14 @@ def run_draft_trial(output,provider,plan,*,resume_book=None):
     save_new(output/'问题清单.json',dict(scope='Model-reviewed reports, not independently certified error counts',
         chapters=pending,story_review_counts=review_counts,
         pending_story_review_chapters=sorted(int(n) for n in state['review_jobs']),
+        pending_closure_repair_jobs=[j['key'] for j in closure.repairs.pending()],
         story_review_failures=state.get('review_failures',[]),
         nonblocking_review_suggestions=[dict(chapter=r['chapter_number'],items=r['dismissed_review_issues'])
             for r in state['outcomes'] if r.get('dismissed_review_issues')]))
     save_new(output/'final_state.json',state)
+    save_new(output/'story_closure.json',dict(closure.state,
+        enabled=closure.enabled,model_passed=closure.passed(),
+        scope='Sequential bounded prose review with exact-quote validation; not independent semantic certification'))
     if plan.get('event_first',True):
         save_new(output/'事件链.json',dict(scope='Canonical events simulated before prose; not a semantic correctness certificate',
             commits=[c['event_commit'] for c in state['chapters']],current_state=state['writing_state'],
@@ -115,15 +130,23 @@ def run_draft_trial(output,provider,plan,*,resume_book=None):
     han=sum(len(re.findall(r'[\u3400-\u9fff]',ch['text'])) for ch in state['chapters'])
     length_met=han>=plan['target_han_chars']
     if stop is None and not length_met:stop='CHAPTER_CAP_BEFORE_LENGTH_TARGET'
+    if stop is None and closure.enabled and not closure.passed():
+        stop='STORY_CLOSURE_UNVERIFIED' if closure.state['status']=='UNKNOWN' else 'STORY_UNRESOLVED'
     memory_processing_complete=memory['processed_through']==len(state['chapters']) and not state['pending']
     from memory_runtime.prose_memory import verify_prose_coverage
     prose_memory_complete=all(verify_prose_coverage(memory,c) for c in state['chapters'] if c.get('prose_policy')=='unchecked')
     memory_complete=memory_processing_complete and prose_memory_complete
     memory_layers_complete=not memory.get('layer_deferred_ids',[])
-    unprojected=[c['number'] for c in state['chapters'] if c.get('event_plan_status')=='unavailable']
+    unprojected=[c['number'] for c in state['chapters'] if c.get('event_plan_status') in ('partial','unavailable')]
     result=dict(scope='USER_WRITING_NOT_COMPARATIVE_EXPERIMENT',chapters=len(state['chapters']),han_chars=han,
         target_chapters=plan['chapters'],target_han_chars=plan['target_han_chars'],length_target_met=length_met,
         draft_completed=not stop and length_met and len(state['chapters'])>=plan['chapters'],stop_reason=stop,
+        generation_completed=length_met and len(state['chapters'])>=plan['chapters'],
+        narrative_closure_model_passed=closure.passed(),story_closure_enabled=closure.enabled,
+        story_closure_status=closure.state['status'],
+        pending_closure_repair_jobs=[j['key'] for j in closure.repairs.pending()],
+        closure_repair_attempts=len(closure.state['repair_history']),
+        completion_scope='LENGTH_AND_MODEL_CLOSURE' if closure.enabled else 'LEGACY_LENGTH_ONLY',
         checked_draft_chapters=sum(r['status']=='DRAFT_CHECKED' for r in state['outcomes']),pending_draft_chapters=len(pending),
         quality_gate_passed=False,story_and_mechanical_checks_passed=not stop and memory_complete and memory_layers_complete and not pending and length_met and len(state['chapters'])>=plan['chapters'],
         prose_content_checks='disabled' if plan.get('event_first',True) else 'legacy',
@@ -131,6 +154,7 @@ def run_draft_trial(output,provider,plan,*,resume_book=None):
         memory_projection_omissions=memory.get('projection_omissions',{}),
         event_alignment_complete=not memory.get('projection_omissions',{}) and not unprojected,
         unprojected_chapters=unprojected,
+        pending_state_repair_chapters=sorted(map(int,state.get('state_repair_jobs',{}))),
         generation_warning_count=sum(len(r.get('generation_warnings',[])) for r in state['outcomes']),
         memory_processing_complete=memory_processing_complete,prose_memory_complete=prose_memory_complete,
         prose_excerpt_count=sum(i['kind']=='prose_excerpt' for i in memory['items'].values()),

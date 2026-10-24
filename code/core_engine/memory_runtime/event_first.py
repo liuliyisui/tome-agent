@@ -285,7 +285,12 @@ def _prepare(state,proposal,chapter,cursor,references):
                 if local in candidate['event_log']:
                     matches.append(dict(type='occurrence',record=copy.deepcopy(candidate['event_log'][local])))
                 available_reference_ids=[reference_id(m['type'],m['record']['id']) for m in matches]
-                if 'reference_id' in req:matches=[m for m in matches if m['type']==req['type']]
+                if 'reference_id' in req or req.get('type')=='plan':
+                    matches=[m for m in matches if m['type']==req['type']]
+                elif req.get('type'):
+                    # Internal ID-only bindings may derive their actual kind,
+                    # but a future intention must never satisfy a fact/action.
+                    matches=[m for m in matches if m['type']!='plan']
                 if len(matches)==1:
                     original=copy.deepcopy(req);match=matches[0]
                     req['type']=match['type'];req['id']=match['record']['id']
@@ -382,11 +387,12 @@ def _prepare(state,proposal,chapter,cursor,references):
             event_kind='task' if beat['mode']=='planned' else 'knowledge' if beat['mode']=='reported' else 'event'
             projection.append(dict(ref='event:'+eid,subject='event:'+eid,attribute='occurrence',kind=event_kind,
                 status='planned' if event_kind=='task' else 'active',claim=statement,beat_id=bid))
-            if beat['mode']!='planned':
-                for planned in planned_effects:
-                    projection.append(dict(ref='plan:'+planned['id'],subject=planned.get('subject','event:'+eid),
-                        attribute=attribute_identifier(planned.get('attribute','intention')),
-                        kind='task',status='planned',claim=statement,beat_id=bid,proposed_record=copy.deepcopy(planned)))
+            # A proposed action still declares an intention with its allocated
+            # record ID. Its existence never means the action was performed.
+            for planned in planned_effects:
+                projection.append(dict(ref='plan:'+planned['id'],subject=planned.get('subject','event:'+eid),
+                    attribute=attribute_identifier(planned.get('attribute','intention')),
+                    kind='task',status='planned',claim=statement,beat_id=bid,proposed_record=copy.deepcopy(planned)))
             for row in projection:
                 if row['beat_id']==bid and row['kind']=='task':
                     identifier=row.get('proposed_record',{}).get('id') or record_identifier('plan:'+eid)
@@ -435,6 +441,9 @@ def prepare(state,proposal,chapter,references=None):
 def verify(commit):
     if not isinstance(commit,dict) or commit.get('version')!=1 or commit.get('sha256')!=digest(canonical({k:v for k,v in commit.items() if k!='sha256'})):
         raise ContractError('Frozen event transaction integrity failure')
+    if 'stage_transactions' in commit:
+        from .stage_planning import verify_stage_chain
+        verify_stage_chain(commit)
     return commit
 
 

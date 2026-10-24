@@ -48,6 +48,13 @@ def load_resume(path,plan):
             from .prose_rendering import saved_text
             if digest(chapter['text'])!=chapter['sha256'] or saved_text(chapter)!=chapter['text']:
                 raise ContractError('Saved prose data integrity failure')
+            if 'event_stage_sources' in chapter:
+                chunks=chapter['event_stage_sources'];parts=commit.get('stage_transactions',[])
+                if len(chunks)!=len(parts) or '\n\n'.join(c['text'] for c in chunks)!=chapter['text']:
+                    raise ContractError('Saved event stages differ from chapter prose')
+                for chunk,part in zip(chunks,parts):
+                    if digest(chunk['text'])!=chunk['sha256'] or chunk['commit_sha256']!=part['sha256']:
+                        raise ContractError('Saved event-stage source hash mismatch')
             if commit['chapter']!=chapter['number'] or commit['base_state_sha256']!=expected:
                 raise ContractError('Canonical event history has a state-chain gap')
             expected=commit['state_sha256']
@@ -64,7 +71,19 @@ def load_resume(path,plan):
                 raise ContractError('Prepared event transaction has an invalid chapter or base state')
             if digest(canonical(prepared['candidate_state']))!=commit['state_sha256'] or digest(canonical(prepared['proposal']))!=commit['proposal_sha256']:
                 raise ContractError('Prepared event proposal/state integrity failure')
+            verify_stage_realizations(prepared)
     return copy.deepcopy(book)
+
+
+def verify_stage_realizations(prepared):
+    packets=prepared.get('stage_packets',[]);chunks=prepared.get('stage_realizations',[])
+    if len(chunks)>len(packets):raise ContractError('Too many saved event stages')
+    for chunk,packet in zip(chunks,packets):
+        verify_events(packet['commit'])
+        if (chunk['stage']!=packet['stage'] or chunk['commit_sha256']!=packet['commit']['sha256']
+                or digest(chunk['text'])!=chunk['sha256']
+                or digest(canonical(packet['candidate_state']))!=packet['commit']['state_sha256']):
+            raise ContractError('Saved event-stage prose/state integrity failure')
 
 
 class WritingSession:
@@ -73,7 +92,7 @@ class WritingSession:
         self.plan=copy.deepcopy(plan);self.gateway=gateway;self.engine=MemoryEngine(gateway)
         if self.plan.get('event_first',True):self.plan['story_review_enabled']=False
         self.story_gateway=StoryReferenceGateway(gateway)
-        self.agents=dict(planner=JsonAgent('planner',gateway,compact_narrative=True,max_output_tokens=16384),
+        self.agents=dict(planner=JsonAgent('planner',gateway,compact_narrative=True,max_format_retries=0,max_output_tokens=16384),
             writer=JsonAgent('writer',gateway,compact_narrative=True,max_output_tokens=16384),
             reviewer=StoryReviewAgent(self.story_gateway))
         self.book=copy.deepcopy(book) if book is not None else dict(
@@ -111,7 +130,7 @@ class WritingSession:
                 'Pending chapter changes may be absent from memory. Read recent prose for newer events; do not treat older memory or historical quotes as unconditionally current authority.')
         context['calculation_contract']=copy.deepcopy(TIME_CONTRACT)
         context['quantity_policy']=QUANTITY_POLICY
-        context['unprojected_chapters']=[c['number'] for c in book['chapters'] if c.get('event_plan_status')=='unavailable']
+        context['unprojected_chapters']=[c['number'] for c in book['chapters'] if c.get('event_plan_status') in ('partial','unavailable')]
         if context['unprojected_chapters']:
             context['fact_bank_status']+=' Some chapters have prose only; event state omits their changes. Prefer saved prose for these chapters.'
         context['continuity_contract']=copy.deepcopy(CONTINUITY_CONTRACT)
@@ -151,6 +170,9 @@ class WritingSession:
                 prose_storage_complete=all(verify_prose_coverage(memory,c) for c in book['chapters'] if c.get('prose_policy')=='unchecked'),
                 event_alignment_complete=not memory.get('projection_omissions',{}) and not context['unprojected_chapters'])
             context['memory_coverage'].pop('complete',None)
+        if self.plan.get('closure_enabled',True):
+            from .story_closure import context as closure_context
+            context['story_closure']=closure_context(book,self.plan)
         self._bound(context)
         return context
 
@@ -230,6 +252,7 @@ class WritingSession:
         key=str(number);saved=self.book['prepared_events'].get(key)
         if saved and not saved.get('revision_request'):
             verify_events(saved['commit'])
+            verify_stage_realizations(saved)
             if saved['commit']['base_state_sha256']!=digest(canonical(self.book['writing_state'])):
                 raise ContractError('Prepared events no longer match committed canonical state')
             return copy.deepcopy(saved)
@@ -240,9 +263,11 @@ class WritingSession:
             if 'public_proposal' not in saved:raise ContractError('Prepared revision lacks the original public proposal')
             context['previous_event_plan']=copy.deepcopy(saved['public_proposal'])
         public_proposal=None
+        last_public=None;last_compiled=None;last_error=None
         def validate(value):
-            nonlocal public_proposal
+            nonlocal public_proposal,last_public,last_compiled
             incoming=copy.deepcopy(value)
+            last_public=copy.deepcopy(value)
             from .reference_choices import compile_plan
             value=compile_plan(value,context['reference_choices'],number)
             if type(value['number']) is not int or value['number']!=number:raise ContractError('Planner must address next chapter')
@@ -260,32 +285,120 @@ class WritingSession:
                 raise
             calculate(value.get('time_calculations',[]))
             public_proposal=incoming
+            last_compiled=copy.deepcopy(value)
             return value
-        for attempt in range(2):
+        def accept(prepared,source):
+            prepared['public_proposal']=copy.deepcopy(source)
+            prepared['revision_count']=(saved or {}).get('revision_count',0)
+            self.book['prepared_events'][key]=copy.deepcopy(prepared)
+            trace.append(dict(role='event_simulation',status='PREPARED',commit_sha256=prepared['commit']['sha256'],
+                before_state_sha256=prepared['commit']['base_state_sha256'],after_state_sha256=prepared['commit']['state_sha256']))
+            self._save(trace,'EVENTS_PREPARED_NOT_COMMITTED')
+            return prepared
+        def recover(error):
+            from .plan_repair import repair
+            from .stage_planning import prepare_stages
+            from .interface_contract import public_repair_details
+            if last_public is not None:
+                try:
+                    fixed=repair(self.gateway,last_public,context['reference_choices'],
+                        public_repair_details(getattr(error,'repair_details',{}),last_compiled or {}),trace)
+                    compiled=validate(fixed)
+                    prepare_events(self.book['writing_state'],compiled,number,references=reference_catalogue(self.book))
+                    return accept(prepare_stages(self.book['writing_state'],compiled,number,reference_catalogue(self.book)),fixed)
+                except Exception as repair_error:
+                    trace.append(dict(role='state_repair',status='DEFERRED',error_type=type(repair_error).__name__,
+                        error=str(repair_error) if isinstance(repair_error,ContractError) else 'Local repair unavailable'))
+            if last_compiled is not None:
+                packet=prepare_stages(self.book['writing_state'],last_compiled,number,reference_catalogue(self.book))
+                return accept(packet,public_proposal)
+            if last_public is not None:
+                try:
+                    from .reference_choices import compile_independent_stages
+                    compiled,deferred=compile_independent_stages(last_public,context['reference_choices'],number)
+                    packet=prepare_stages(self.book['writing_state'],compiled,number,reference_catalogue(self.book),deferred)
+                except ContractError:
+                    raise PlanningOutputFailure(str(error)) from error
+                return accept(packet,last_public)
+            raise PlanningOutputFailure(str(error)) from error
+        attempts=self.book.setdefault('planning_attempts',{})
+        remaining=max(0,5-attempts.get(key,0))
+        for attempt in range(remaining):
             try:self._bound(context)
             except ContextCapacityError as exc:raise PlanningOutputFailure(str(exc)) from exc
             start=len(trace)
-            try:proposal=self.agents['planner'].run(context,trace,validator=validate)
+            attempts[key]=attempts.get(key,0)+1
+            agent=copy.copy(self.agents['planner'])
+            if context.get('output_was_truncated'):agent.max_output_tokens=min(65536,agent.max_output_tokens*2)
+            try:proposal=agent.run(context,trace,validator=validate)
             except ContractError as exc:
                 if any(r.get('role')=='planner' and r.get('status') in ('FORMAT_FAILED','INPUT_REJECTED') for r in trace[start:]):
-                    raise PlanningOutputFailure(str(exc)) from exc
+                    if attempts[key]>=5:return recover(exc)
+                    from .interface_contract import public_repair_details
+                    previous=next((r.get('raw_output') for r in reversed(trace[start:]) if r.get('role')=='planner'),None)
+                    details=public_repair_details(getattr(exc,'repair_details',{}),{})
+                    from inf_writer.narrative_context import prepare_repair
+                    context=prepare_repair(context,exc,previous,details)
+                    context['event_preflight_error']=dict(error=str(exc),instruction='Repair listed output errors; do not invent references or treat intentions as completed actions.')
+                    if any(r.get('finish_reason')=='length' for r in trace[start:]):context['output_was_truncated']=True
+                    self._save(trace,'PLANNING_OUTPUT_REJECTED_RETRY')
+                    continue
                 raise
             try:
                 prepared=prepare_events(self.book['writing_state'],proposal,number,references=reference_catalogue(self.book))
-                prepared['public_proposal']=copy.deepcopy(public_proposal)
-                prepared['revision_count']=(saved or {}).get('revision_count',0)
-                self.book['prepared_events'][key]=copy.deepcopy(prepared)
-                trace.append(dict(role='event_simulation',status='PREPARED',commit_sha256=prepared['commit']['sha256'],
-                    before_state_sha256=prepared['commit']['base_state_sha256'],after_state_sha256=prepared['commit']['state_sha256']))
-                self._save(trace,'EVENTS_PREPARED_NOT_COMMITTED')
-                return prepared
+                from .stage_planning import prepare_stages
+                prepared=prepare_stages(self.book['writing_state'],proposal,number,reference_catalogue(self.book))
+                return accept(prepared,public_proposal)
             except ContractError as exc:
                 trace.append(dict(role='event_simulation',status='REJECTED',proposal=proposal,error=str(exc),repair_details=getattr(exc,'repair_details',None)))
-                if attempt:raise PlanningOutputFailure(str(exc)) from exc
+                if attempts[key]>=5:return recover(exc)
                 from .interface_contract import public_repair_details
+                context.pop('repair',None)
                 context['event_preflight_error']=dict(error=str(exc),details=public_repair_details(getattr(exc,'repair_details',{}),proposal),
                     previous_plan=copy.deepcopy(public_proposal),instruction='Replan only unwritten events; resolve preconditions before any prose, preserve committed history. Keep the public fields; IDs are program-owned.')
-        raise ContractError('Event preflight exhausted')
+        raise PlanningOutputFailure('Five planner outputs exhausted for this chapter')
+
+    def _realize_stages(self,prepared,instruction,number,trace,row):
+        """Persist each successful stage before requesting the next one."""
+        from inf_writer.narrative_context import event_role_context
+        packets=prepared['stage_packets'];key=str(number)
+        verify_stage_realizations(prepared)
+        for packet in packets[len(prepared['stage_realizations']):]:
+            ordinal=len(prepared['stage_realizations'])+1
+            earlier='\n\n'.join(c['text'] for c in prepared['stage_realizations'])
+            stage_instruction=instruction+f' 本次只展开第{ordinal}/{len(packets)}个事件阶段，不重复此前阶段，不输出章节标题。'
+            try:
+                context=self.context(stage_instruction,prepared['proposal']['brief'])
+                context['chapter_plan']={k:prepared['proposal'][k] for k in ('number','title','brief')}
+                context['frozen_events']=writer_view(packet)
+                context['quantity_sources']=quantity_sources(packet['commit'])
+                context['quantity_policy']=QUANTITY_POLICY;context['prose_content_checks']='disabled'
+                context['earlier_stage_prose']=earlier
+                context=event_role_context(context,'writer');self._bound(context)
+                start=len(trace)
+                try:output=self.agents['writer'].run(context,trace)
+                except ContractError:
+                    if not any(t.get('role')=='writer' and t.get('status') in ('FORMAT_FAILED','INPUT_REJECTED') for t in trace[start:]):raise
+                    raw=[t.get('raw_output') for t in trace[start:] if t.get('role')=='writer']
+                    output=dict(text=continue_prose(self.gateway,self.book,stage_instruction+' 已写阶段：'+earlier,number,trace,raw))
+                if 'event_revision_request' in output:
+                    output=dict(text=continue_prose(self.gateway,self.book,stage_instruction+' 已写阶段：'+earlier,number,trace))
+                    row.setdefault('generation_warnings',[]).append(dict(stage='stage_revision',event_stage=packet['stage'],policy='CONTINUE_STAGE_PROSE'))
+                try:prose=render_prose(output['text'],packet['commit'],context['quantity_sources'])
+                except ContractError as exc:
+                    prose=output['text'];row.setdefault('generation_warnings',[]).append(dict(stage='stage_prose_reference',event_stage=packet['stage'],error=str(exc),policy='PRESERVE_LITERAL_PROSE'))
+            except ContextCapacityError:
+                prose=continue_prose(self.gateway,self.book,stage_instruction+' 已写阶段：'+earlier,number,trace)
+            report=None
+            if getattr(self,'chapter_length_target',None) is not None:
+                from .length_control import adjust,han_count
+                target=max(1,(self.chapter_length_target-han_count(earlier)+len(packets)-ordinal)//(len(packets)-ordinal+1))
+                prose,report=adjust(prose,target,self.book,number,self.gateway,trace)
+            prepared['stage_realizations'].append(dict(stage=packet['stage'],text=prose,sha256=digest(prose),
+                commit_sha256=packet['commit']['sha256'],length_report=report))
+            self.book['prepared_events'][key]=copy.deepcopy(prepared)
+            self._save(trace,'EVENT_STAGE_PROSE_SAVED_NOT_CHAPTER_COMMITTED')
+        return '\n\n'.join(c['text'] for c in prepared['stage_realizations'])
 
     def _write_event_next(self,instruction):
         trace=[];number=len(self.book['chapters'])+1;key=str(number)
@@ -299,6 +412,14 @@ class WritingSession:
                 row.setdefault('generation_warnings',[]).append(dict(stage='planning',error=str(exc),policy='CONTINUE_PROSE_WITHOUT_STATE_CHANGES'))
                 self._save(trace,'PLANNING_DEFERRED_CONTINUE_PROSE')
             while True:
+                deferred=[r for r in prepared.get('stage_reports',[]) if r['status']=='DEFERRED']
+                if deferred:
+                    row['deferred_event_stages']=copy.deepcopy(deferred)
+                    row.setdefault('generation_warnings',[]).append(dict(stage='event_stages',policy='COMMIT_INDEPENDENT_VALID_STAGES',deferred_stages=[r['stage'] for r in deferred]))
+                if prepared.get('stage_packets') and (len(prepared['stage_packets'])>1 or deferred):
+                    context=dict(recent_chapters=self.book['chapters'][-2:],historical_memory=dict(items=[]),quantity_sources=quantity_sources(prepared['commit']))
+                    output=dict(text=self._realize_stages(prepared,instruction,number,trace,row))
+                    break
                 if prepared['commit'].get('event_plan_status')=='unavailable':
                     context=dict(recent_chapters=self.book['chapters'][-2:],historical_memory=dict(items=[]),quantity_sources=[])
                     output=dict(text=continue_prose(self.gateway,self.book,instruction,number,trace))
@@ -353,7 +474,7 @@ class WritingSession:
             if draft!=template:
                 trace.append(dict(role='event_realization',status='REFERENCES_RENDERED',input_sha256=digest(template),output_sha256=digest(draft)))
             length_report=None
-            if getattr(self,'chapter_length_target',None) is not None:
+            if getattr(self,'chapter_length_target',None) is not None and not prepared.get('stage_realizations'):
                 from .length_control import adjust
                 revised,length_report=adjust(draft,self.chapter_length_target,self.book,number,self.gateway,trace)
                 if revised!=draft:draft=revised;template=revised;encoding='literal'
@@ -366,6 +487,9 @@ class WritingSession:
                 prose_encoding=encoding,event_plan_status=prepared['commit'].get('event_plan_status','prepared'),
                 time_calculations=copy.deepcopy(prepared['commit']['computed_times']))
             if length_report is not None:chapter['length_report']=length_report
+            if prepared.get('stage_realizations'):
+                chapter['event_stage_sources']=copy.deepcopy(prepared['stage_realizations'])
+            if prepared.get('stage_reports'):chapter['event_stage_reports']=copy.deepcopy(prepared['stage_reports'])
             refs={f'constraint_{i}':rule for i,rule in enumerate(self.book['constraints'],1)}
             refs.update({f'draft_{s["id"]}':s['text'] for s in evidence_segments(draft)})
             refs.update({f'past_{c["number"]}':c['text'] for c in context['recent_chapters']})
@@ -383,6 +507,10 @@ class WritingSession:
                 event_commit_sha256=prepared['commit']['sha256'],
                 story_review_status='PENDING' if self.plan.get('story_review_enabled',True) else 'DISABLED')
             self.book['outcomes'].append(row)
+            if chapter['event_plan_status'] in ('partial','unavailable'):
+                self.book.setdefault('state_repair_jobs',{})[key]=dict(status='PENDING',chapter_sha256=chapter['sha256'],
+                    deferred_stages=copy.deepcopy(row.get('deferred_event_stages',[])),
+                    instruction='Rebuild only from saved prose with source evidence; rejected proposals are not facts.')
             if self.plan.get('story_review_enabled',True):self.book['review_jobs'][key]=review_context
             try:self._save(trace,'DRAFT_SAVED_MEMORY_PENDING')
             except BaseException:
