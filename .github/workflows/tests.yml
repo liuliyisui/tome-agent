@@ -10,7 +10,37 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: pip
-      - run: python -m pip install -r requirements.txt
-      - run: python -m pip check
+      - run: python -m pip install -r code/backend/requirements.txt
       - run: python -m unittest discover -s tests -v
+        env:
+          DATABASE_URL: ''
+          PYTHONPATH: ${{ github.workspace }}\code\core_engine;${{ github.workspace }}\code\backend
+      - run: python tests/run_engine_regression.py
+  postgresql:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        postgres: ['17', '18']
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres }}
+        env:
+          POSTGRES_DB: tome_test
+          POSTGRES_USER: tome_test
+          POSTGRES_PASSWORD: test_only_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tome_test -d tome_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r code/backend/requirements.txt
+      - run: python -m unittest tests.integration.test_postgresql -v
+        env:
+          DATABASE_URL: ''
+          PYTHONPATH: ${{ github.workspace }}/code/core_engine:${{ github.workspace }}/code/backend
+          TOME_TEST_DATABASE_URL: postgresql://tome_test:test_only_password@127.0.0.1:5432/tome_test

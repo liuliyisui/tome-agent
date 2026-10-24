@@ -1,0 +1,40 @@
+{
+  "chapters": 25,
+  "han_chars": 50107,
+  "draft_completed": true,
+  "stop_reason": null,
+  "writing_mode": "event_first",
+  "canonical_event_chapters": 22,
+  "unprojected_chapters": [
+    1,
+    11,
+    22
+  ],
+  "generation_warning_count": 4,
+  "memory_complete": true,
+  "memory_processed_through": 25,
+  "prose_memory_complete": true,
+  "prose_excerpt_count": 1176,
+  "event_alignment_complete": false,
+  "story_review_counts": {
+    "proposed": 0,
+    "confirmed": 0,
+    "unresolved": 0,
+    "suggestions": 0
+  },
+  "story_review_usage": {
+    "attempted_calls": 0,
+    "successful_calls": 0,
+    "failed_calls": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cost_usd_estimate_not_bill": 0.0,
+    "elapsed_seconds": 0.0
+  },
+  "calls": 111,
+  "cost_usd_estimate_not_bill": 0.8122628999999999,
+  "resume_checkpoint": "D:\\学习\\INF writer\\runs\\event_first_50000_20261022_ar\\working\\checkpoint_0075.json",
+  "source_unchanged": true,
+  "memory_layers_complete": true,
+  "pending_layer_ids": []
+}

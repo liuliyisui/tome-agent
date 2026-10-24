@@ -1,65 +1,49 @@
 # 使用说明
 
-## Windows启动
+## 环境准备
 
-1. 安装Python 3.11或更高版本，并在安装时勾选加入PATH。
-2. 双击setup.cmd，下载依赖到项目.venv。此步骤需要网络，不调用模型。
-3. 用文本编辑器打开项目根目录.env，填写DEEPSEEK_API_KEY；空模型名自动使用deepseek-flash。
-4. 双击start.cmd，打开终端提示的本地地址，通常为http://127.0.0.1:8501。
-5. 新建作品，只需填写作品名称、故事要求和篇幅；系统自动分配内部标识，确认费用后生成大纲。
-6. 大纲生成后自动打开作品。左侧按书名选择作品，重名时显示区分标识，旧作品无需迁移。开始写作前可在大纲页修改JSON并保存。
-7. 在续写页确认费用，先生成1章检查效果，再增加章节数。
-8. 在故事记忆页查看事实表格、角色和事件列表。义务分为待完成与已完成，已完成项显示完成章节。原始JSON仅在开启相应开关后显示。
-9. 在导出页下载Markdown和作品JSON。导出与当前页面使用同一存档快照，缓存随内容变化更新；要查看其他窗口刚生成的章节，请刷新页面。
-
-默认只监听本机，不用于公开部署。关闭窗口不会保证取消已发送请求；暂停采用每次生成1章的方式。不要把API密钥发到群聊或上传GitHub。
-
-## 配置
-
-系统环境变量优先于.env。配置文件以UTF-8保存。
-
-| 配置项 | 默认 | 含义 |
-|---|---|---|
-| DEEPSEEK_API_KEY | 空 | 必填，本地保存 |
-| DEEPSEEK_MODEL | deepseek-flash | 模型名称 |
-| DEEPSEEK_BASE_URL | https://api.deepseek.com | 官方接口 |
-| DEEPSEEK_THINKING | false | true启用思考模式 |
-| DEEPSEEK_MAX_TOKENS | 8192 | 单请求输出上限 |
-| DEEPSEEK_TIMEOUT | 180 | 网络超时秒数 |
-| TOME_MAX_REQUESTS | 100 | 每次操作请求上限 |
-| TOME_MAX_TOTAL_TOKENS | 300000 | 每次操作token软上限 |
-
-预算针对一次大纲/续写操作，不是账户或整本书累计费用。token总量在响应后获得，单次响应可能超预算；不能作为严格扣费上限。没有自动重试，也不自动换算金额。思考模式消耗的输出预算可能影响正文与工具参数长度。
-
-作品配置绑定模型、接口、思考模式和max_tokens。续写时保持一致；轮次、超时与操作预算可显式调整。
-
-## 命令行
-
-在项目目录运行（非Windows环境将.venv/Scripts/python.exe换为.venv/bin/python）：
+安装 Python 3.11 或更高版本。在仓库根目录运行：
 
 ```powershell
-.venv/Scripts/python.exe -m tome_agent check
-.venv/Scripts/python.exe -m tome_agent demo-v4 --output data/v4-demo.json
-.venv/Scripts/python.exe -m tome_agent plan --id my-novel --title 我的小说 --prompt-file story.txt --chapters 8 --target-units 10000 --allow-paid
-.venv/Scripts/python.exe -m tome_agent generate --id my-novel --chapters 1 --allow-paid
-.venv/Scripts/python.exe -m tome_agent generate --id my-novel --chapters 1 --resume-attempt --max-turns 40 --allow-paid
-.venv/Scripts/python.exe -m tome_agent export-v4 --input data/books/my-novel/book.json --output data/my-novel.md
+code\backend\setup.cmd
 ```
 
-check不联网且不展示密钥；demo-v4只调用模拟模型。plan/generate真实调用模型，必须显式allow-paid。
+INF 当前只使用 Python 标准库，因此无需下载第三方包。脚本会在 `code/backend/.venv` 创建独立环境，并在缺少配置时复制 `.env.example`。
 
-## 存档与故障
+## 离线演示
 
-- 正式存档：data/books/作品ID/book.json。每章成功后保存。
-- 失败工作副本：book.json.attempt.json，包括工具消息、pending和已用轮次。
-- 用量：planning-usage.json、generation-usage.json记录最近一次相应操作；正文工具轨迹在attempt中。不是累计账单。
-- 网络失败后打开同一作品并勾选恢复工作副本。恢复要求基准一致；预算耗尽时增加轮次需要你明确设置。
-- 作品锁operation.lock阻止应用同时写同一作品。若进程崩溃，确认无运行任务后可手动删除该锁。
-- 模型完成后仍无法提交时检查pending、引文和工具反馈，不能手动清pending伪装成功。
-- 当前页面不支持直接编辑已提交章节；它们绑定记忆来源。需要更改时另建作品或开发显式复核流程。
+```powershell
+code\backend\run-demo.cmd
+```
 
-## 交付边界
+演示使用固定响应依次运行 planner、writer、memory、reviewer，生成两章并验证事实版本变化。它不会联网，也不会消耗 DeepSeek 额度。结果位于 `code/backend/data/runs/`。
 
-本版本实现真实DeepSeek适配器与本地工作台，已用模拟HTTP和Streamlit测试工具验证。未使用真实密钥进行在线生成，模型权限、余额、提供商实时行为及长篇质量仍需用户实际验证。自动提交通过结构校验的章节，不包含人工逐条记忆审核模式。
+## DeepSeek 配置
 
-正文会发送至模型提供商；不在请求中包含本机API密钥以外的配置内容。系统不自动上传INF writer材料。作品与过程记录不随仓库提交；.env随仓库提交但只含空模板，填写密钥后请勿提交。
+打开 `code/backend/.env`，填写：
+
+```text
+DEEPSEEK_API_KEY=你的密钥
+```
+
+其他可选配置见 `.env.example`。默认模型为 `deepseek-chat`，接口限定为 DeepSeek 官方 `chat/completions` 地址。`.env` 已被 Git 忽略，不能上传或发到群聊。
+
+当前版本已提供后端服务函数，但尚未重新接入图形前端。真实生成入口留到后续前端开发时再接入；目前只运行离线演示和测试，不会误用模型额度。
+
+## 自动测试
+
+```powershell
+$env:PYTHONPATH="$PWD\code\core_engine;$PWD\code\backend"
+code\backend\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+测试数据写入 `code/backend/data/`，不会进入 Git。
+
+## 存档规则
+
+- 每本作品存放在 `code/backend/data/inf_books/<作品ID>/`。
+- 正式章节、计划和事实记忆保存在检查点 JSON 中。
+- 每章成功后快照版本加一；同一请求 ID 可安全重复调用。
+- 同一作品同时只能有一个写入操作。
+- 审核拒绝、输出格式错误、预算耗尽或存档冲突都不会部分提交正式章节。
+

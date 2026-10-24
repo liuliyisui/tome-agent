@@ -1,78 +1,63 @@
 # Tome Agent
 
-面向长篇小说生成的写作助手。
+Tome Agent 是一个面向长篇小说生成的软件创新作业。当前采用 **LangGraph 多智能体编排**，在 `tested-c-20261024` 引擎基础上保留事件先行和三层记忆流程。网页与命令行的实际写作入口均通过编译后的 `StateGraph` 执行。
 
-通过分层规划、故事状态记忆和可恢复的逐章工具循环，把故事构想发展为连续章节。
+迁移说明、图节点、存档兼容性与验证记录见 [LangGraph 迁移说明](docs/software/LANGGRAPH_MIGRATION.md)。上游引擎历史真实测试记录为 18 章、36250 个汉字、189 次请求；这不是迁移后版本的真实模型测试。基础结局具备，但严格收束判定未通过，仍有阶段叙述重复、篇幅超标等问题。
 
-## 当前交付
+## 当前能力
 
-- DeepSeek真实接口适配器：.env配置、工具调用、推理内容回传、超时、用量与操作预算。
-- 四阶段规划：前提→详细梗概→幕结构→冻结章节大纲。
-- 逐章生成：read/search/correct/write/update→DONE。
-- 三类叙事状态：人物、历史事件、未来义务。
-- V4式事实账本：稳定属性、版本校验、来源引文、旧值及替换证据归档。
-- 事务与恢复：依赖分组、pending修复、幂等收据、正式存档与失败工作副本。
-- 全书调度：限定本次章节数、章间暂停、失败后显式恢复。
-- 本地网页：创建作品、大纲编辑、续写、状态查看、Markdown与JSON导出。
-- 依赖清单、完整锁定版本、Windows安装及启动脚本、自动测试工作流。
+- LangGraph 编排：规划、写作、提交、记忆处理和审核为独立节点，写作请求修订时通过条件边返回规划节点。
+- 事件先行：先规划场景事件并推演状态，再生成正文，避免正文先写完后再猜关键事实。
+- 三层记忆：工作记忆、近期记忆和长期记忆分别保存，并保留正文来源。
+- 连续性管理：跟踪人物、物品、时间、任务、知识来源和状态版本。
+- 断点恢复：每个阶段保存检查点，失败时保留已经完成的章节和待处理任务。
+- 长度控制：根据总字数、剩余章节和实际进度动态分配章节篇幅。
+- 失败降级：局部规划或记忆处理失败时记录问题，尽量继续保存有效正文。
+- DeepSeek 接入：使用 Python 标准库访问官方 Chat Completions 接口。
+- 本地网页：创建作品、配置文风、确认费用后逐章或批量生成，支持导出排版后的 Markdown。
 
-**已完成本地模拟验证，未发起真实付费生成。** 真实模型权限、连续长篇完成率和质量提升尚未验证。当前章节自动提交，作者逐条审核及编辑已提交正文后的记忆复核还未实现。
-
-## 启动
-
-需要Python 3.11或更高版本。
-
-1. 双击setup.cmd安装依赖。
-2. 在.env的DEEPSEEK_API_KEY=后填写密钥。
-3. 双击start.cmd，打开显示的本地网页地址。
-4. 新建作品，生成大纲，再选择作品逐章续写。
-
-模型默认deepseek-flash；.env中空模型名也使用该默认值。依赖已安装在本机项目.venv，其他成员需运行setup.cmd。requirements.txt锁定全部依赖及其版本（含传递依赖），更改直接依赖后用pip freeze重新生成。安装依赖仍需要网络，项目压缩包不是离线依赖安装包。
-
-[问题定义与5W1H](docs/requirements/problem_definition.md) · [团队计划](docs/mgmt/TEAM_PLAN.md) · [Kanban](docs/mgmt/KANBAN.md) · [完整使用说明](docs/software/USER_GUIDE.md) · [架构对应说明](docs/algorithm/ARCHITECTURE.md) · [验证记录](docs/software/VALIDATION.md)
-
-## 命令行
-
-```powershell
-.venv/Scripts/python.exe -m tome_agent check
-.venv/Scripts/python.exe -m tome_agent demo-v4 --output data/v4-demo.json
-.venv/Scripts/python.exe -m tome_agent plan --id my-novel --title 我的小说 --prompt-file story.txt --chapters 8 --target-units 10000 --allow-paid
-.venv/Scripts/python.exe -m tome_agent generate --id my-novel --chapters 1 --allow-paid
-.venv/Scripts/python.exe -m tome_agent export-v4 --input data/books/my-novel/book.json --output data/my-novel.md
-.venv/Scripts/python.exe -m unittest discover -s tests -v
-```
-
-check和demo不联网。plan/generate产生模型费用，须显式添加--allow-paid；网页中需要主动确认。密钥不展示、不写入存档；.env随仓库提交，只放空模板与默认值，填了真实密钥后请勿提交。作品与运行数据同样不入库。
+图形前端位于 `code/frontend/`，使用 HTML、CSS、JavaScript，并包含本地 Vue 运行时及交互组件。
 
 ## 目录
 
 ```text
-setup.cmd / start.cmd        安装与启动
-requirements.txt             全部依赖与版本（含传递依赖）
-code/frontend/app.py         本地网页工作台（界面主题等配置写在start.cmd里）
-code/backend/tome_backend/   DeepSeek适配、服务、检查点和存储
-code/core_engine/tome_agent/ 规划、章节循环、记忆和全书调度
-tests/unit/                  单元测试
-tests/integration/           集成与页面测试
-docs/requirements/           5W1H、产品描述与需求资料
-docs/algorithm/              长文本生成算法说明
-docs/software/               软件设计资料
-docs/mgmt/                   团队计划、Kanban与缺陷流程
-docs/retrospection/          迭代复盘
-data/books/                  本地作品与过程记录（不提交）
+.github/               GitHub 工作流和 Issue 模板
+code/backend/          DeepSeek 配置、应用服务、启动脚本和本地作品数据
+code/core_engine/      LangGraph 长文本编排、三层记忆、检查点和发布清单
+code/frontend/         本地网页工作室
+docs/                  需求、设计、管理和使用文档
+tests/                 单元测试与集成测试
 ```
 
-第一轮简化框架domain.py/memory.py/pipeline.py及旧demo/export命令保留作历史实现；当前主流程使用Workspace、ChapterAgent和StoryRunner，两种存档不混用。
+仓库根目录只保留 `README.md` 和以上四个项目目录；`.git` 是 Git 自身的隐藏元数据。
 
-## 长文本验证计划
+## 快速验证（Windows）
 
-先验证约一万中文字、8–10章的完整创作，再测试更长篇幅。这是目标，不是已验证能力。使用同一DeepSeek模型、相同输入和大纲对比摘要续写与状态记忆续写，记录实际篇幅、完成率、明确跨章矛盾、情节完成度、重复停滞、耗时及token用量。未涉及目标事实不计为修复成功。
+数据库采用 PostgreSQL。首次使用请按 [本机数据库启动与迁移说明](docs/software/POSTGRESQL.md) 配置本地数据库、初始化表并导入旧作品；现有 .env 需要补充 DATABASE_URL。引擎检查点继续保留在本地文件中。
 
-## 参考与原创边界
+```powershell
+code\backend\setup.cmd
+# 按数据库说明填写 code/backend/.env
+code\backend\run-db.cmd
+code\backend\migrate-db.cmd init
+code\backend\run-web.cmd
+```
 
-参考[NSTAgent](https://github.com/zhennan1/NstAgent)及本地INF writer的原版核心→method1→V2→V3→V4依赖链。未复制或导入其源码，不依赖参考文件运行，也不声称相关方法首次提出。工具和检查点使用Tome独立格式。
+打开 http://127.0.0.1:8765。生成正文前，在 `code/backend/.env` 配置 DeepSeek API 密钥。作品存放于 `code/backend/data/inf_books/`。运行自动测试：
 
-DeepSeek适配依据[官方首次调用说明](https://api-docs.deepseek.com/)和[工具调用文档](https://api-docs.deepseek.com/guides/tool_calls/)，核对日期2026-10-17。
+```powershell
+$env:PYTHONPATH="$PWD\code\core_engine;$PWD\code\backend"
+code\backend\.venv\Scripts\python.exe -m unittest discover -s tests -v
+code\backend\.venv\Scripts\python.exe tests\run_engine_regression.py
+```
 
-格式正确和引文存在不等于语义正确，归档不自动证明旧值真实；工程测试不能替代长篇效果评测。更详细的接口差异、未移植优化及已知边界见架构说明。
+真实模型配置写入 `code/backend/.env`，该文件不会提交到 Git。配置模板见 `code/backend/.env.example`。
+
+## 当前边界
+
+迁移后本地应用回归共 112 项：105 项通过，7 项因没有配置真实 PostgreSQL 而跳过。专项长篇入口回归共 42 项：39 项通过，3 项因缺少历史运行资产而跳过。验证使用离线模型和本机模拟 HTTP 服务，没有调用真实 DeepSeek，也没有认证迁移后的小说质量。
+
+`stable_release_manifest.json` 保留为迁移前引擎的历史记录；当前源码已变化，不能再用它宣称逐字节一致。升级前请保留旧代码与作品：旧检查点的运行时哈希与新版不一致，不能直接续写。新版恢复仍使用应用检查点，未启用 LangGraph 原生节点级持久化或人工暂停功能。
+
+模型生成仍可能出现情节质量、文风和事实判断问题。系统保存的结构化状态与模型审核结果都应视为辅助信息，最终作品仍需人工检查。
 
