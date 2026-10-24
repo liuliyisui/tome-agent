@@ -15,8 +15,9 @@ class ContextCapacityError(ContractError):
     pass
 
 
-def unplanned_packet(state,number,instruction):
-    proposal=dict(number=number,title=f'续写{number}',brief=instruction,future_updates=[])
+def unplanned_packet(state,number,instruction,title=None):
+    from .chapter_titles import clean_title
+    proposal=dict(number=number,title=clean_title(title) or f'第{number}章',brief=instruction,future_updates=[])
     body=dict(version=1,chapter=number,base_state_sha256=digest(canonical(state)),
         state_sha256=digest(canonical(state)),proposal_sha256=digest(canonical(proposal)),
         scenes=[],computed_times=[],memory_projection=[],identifier_normalizations=[],
