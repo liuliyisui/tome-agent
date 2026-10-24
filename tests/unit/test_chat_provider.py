@@ -8,7 +8,7 @@ import threading
 import time
 import unittest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "code" / "core_engine"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from inf_writer.chat_provider import ChatCompletionProvider, ProviderError
 from inf_writer.models import Budget, ModelGateway, ModelRequest
 from inf_writer.agents import build_agents
@@ -120,8 +120,11 @@ class ChatProviderTests(unittest.TestCase):
         with self.assertRaises(ProviderError):
             self.provider().complete(self.request())
 
-    def test_truncated_and_filtered_outputs_rejected(self):
-        for reason in ("length", "content_filter", "tool_calls"):
+    def test_length_output_is_preserved_but_filtered_outputs_are_rejected(self):
+        type(self).response = self.reply(finish="length")
+        reply = self.provider().complete(self.request())
+        self.assertTrue(reply.content)
+        for reason in ("content_filter", "tool_calls"):
             type(self).response = self.reply(finish=reason)
             with self.subTest(reason=reason), self.assertRaises(ProviderError):
                 self.provider().complete(self.request())
@@ -170,7 +173,7 @@ class ChatProviderTests(unittest.TestCase):
             return self.reply(fixture.content)
 
         type(self).response = respond
-        root = Path(__file__).resolve().parents[2] / "code" / "backend" / "data" / "test-tmp"
+        root = Path(__file__).resolve().parents[1] / "runs" / "test-tmp"
         root.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(dir=root) as folder:
             store = FileStore(folder)

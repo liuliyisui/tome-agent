@@ -5,7 +5,7 @@ import sys
 import tempfile
 import unittest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "code" / "core_engine"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from inf_writer.agents import JsonAgent, build_agents, validate
 from inf_writer.demo import DemoModel
 from inf_writer.domain import ContractError, Snapshot
@@ -35,8 +35,12 @@ class WriterFormatTests(unittest.TestCase):
             with self.subTest(name=name), self.assertRaises(ContractError):
                 validate("writer", {"type": "json_object", "text": BODY, name: "extra"})
 
-    def test_unknown_or_invalid_type_rejected(self):
-        for kind in ("tool_call", "text", "image", None, True, 3, [], {}):
+    def test_wrapper_labels_do_not_select_operations(self):
+        for kind in ('chapter_text','tool_call','text','image'):
+            self.assertEqual(validate('writer',{'type':kind,'text':BODY}),{'text':BODY})
+
+    def test_invalid_type_rejected(self):
+        for kind in (None, True, 3, [], {}):
             with self.subTest(kind=kind), self.assertRaises(ContractError):
                 validate("writer", {"type": kind, "text": BODY})
 
@@ -62,7 +66,7 @@ class WriterFormatTests(unittest.TestCase):
     def test_invalid_type_keeps_bounded_repair(self):
         class Invalid:
             def complete(self, request):
-                return ModelReply(json.dumps({"type": "tool_call", "text": BODY}), 0, 0, 0)
+                return ModelReply(json.dumps({"type": [], "text": BODY}), 0, 0, 0)
         budget = Budget(max_calls=2)
         agent = JsonAgent("writer", ModelGateway(Invalid(), budget))
         with self.assertRaises(ContractError):
@@ -85,7 +89,7 @@ class WriterFormatTests(unittest.TestCase):
                     value["type"] = "json_object"
                     return ModelReply(json.dumps(value, ensure_ascii=False), 0, 0, 0)
                 return reply
-        root = Path(__file__).resolve().parents[2] / "code" / "backend" / "data" / "test-tmp"
+        root = Path(__file__).resolve().parents[1] / "runs" / "test-tmp"
         root.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(dir=root) as folder:
             store = FileStore(folder)

@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "code" / "core_engine"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from inf_writer.domain import Snapshot, ContractError, ConflictError, apply_chapter
 from inf_writer.models import Budget, ModelReply, ModelGateway
 from inf_writer.agents import build_agents
@@ -72,7 +72,7 @@ class DomainTests(unittest.TestCase):
 
 class RuntimeTests(unittest.TestCase):
     def setUp(self):
-        sandbox=Path(__file__).resolve().parents[2]/"code"/"backend"/"data"/"test-tmp"
+        sandbox=Path(__file__).resolve().parents[1]/"runs"/"test-tmp"
         sandbox.mkdir(parents=True,exist_ok=True)
         self.temp=tempfile.TemporaryDirectory(dir=sandbox); self.addCleanup(self.temp.cleanup)
         self.store=FileStore(Path(self.temp.name)); self.store.initialize(Snapshot("demo","写故事"))
@@ -151,7 +151,7 @@ class RuntimeTests(unittest.TestCase):
         self.assertTrue(lock.exists()); self.assertEqual(self.store.load("demo").revision,0)
     def test_no_nst_code_dependency(self):
         import ast
-        source=Path(__file__).resolve().parents[2]/"code"/"core_engine"/"inf_writer"
+        source=Path(__file__).resolve().parents[1]/"src"/"inf_writer"
         for path in source.rglob("*.py"):
             for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
                 names=[n.name for n in node.names] if isinstance(node,ast.Import) else [node.module or ""] if isinstance(node,ast.ImportFrom) else []

@@ -19,6 +19,7 @@ class ModelReply:
     input_tokens: int
     output_tokens: int
     cost_usd: float
+    finish_reason: str = 'stop'
 
 class ModelProvider(Protocol):
     def complete(self, request: ModelRequest) -> ModelReply: ...

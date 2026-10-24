@@ -10,16 +10,21 @@ from inf_writer.models import Budget, ModelGateway
 
 
 class ServiceIntegrationTests(unittest.TestCase):
+    def test_default_generation_entry_uses_stable_longform_runtime(self):
+        self.assertIs(service.generate, service.generate_longform)
+
     def test_create_generate_and_export_with_offline_model(self):
         settings = Settings(api_key="FAKE_TEST_KEY")
         budget = Budget(max_calls=8, max_cost_usd=0)
         gateway = ModelGateway(DemoModel(), budget)
-        with tempfile.TemporaryDirectory() as folder, patch.object(service, "BOOKS", Path(folder)):
+        local_tmp = Path(__file__).resolve().parents[2] / "code" / "backend" / "data"
+        local_tmp.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=local_tmp) as folder, patch.object(service, "BOOKS", Path(folder)):
             created = service.create_book(
                 "demo-book", "守灯人", "身份核验故事", 2, 1000, settings=settings
             )
             self.assertEqual(created["metadata"]["title"], "守灯人")
-            completed = service.generate(
+            completed = service.generate_legacy(
                 "demo-book", count=2, gateway=gateway, budget=budget, settings=settings
             )
             self.assertEqual(len(completed["state"].chapters), 2)

@@ -70,6 +70,7 @@ class ChatCompletionProvider:
             "stream": False,
             "response_format": {"type": "json_object"},
         }
+        if request.payload.get('output_mode')=='plain_prose':payload.pop('response_format')
         if self.thinking_enabled is not None:
             payload["thinking"] = {"type": "enabled" if self.thinking_enabled else "disabled"}
         body = canonical(payload).encode("utf-8")
@@ -101,7 +102,7 @@ class ChatCompletionProvider:
             if not isinstance(choices, list) or len(choices) != 1:
                 raise ContractError("One completion required")
             choice = choices[0]
-            if choice["finish_reason"] != "stop":
+            if choice["finish_reason"] not in ('stop','length'):
                 raise ContractError("Completion not normally finished")
             content = text(choice["message"]["content"], "completion")
             usage = data["usage"]
@@ -114,6 +115,6 @@ class ChatCompletionProvider:
             cost = (incoming * self.input_usd_per_million + outgoing * self.output_usd_per_million) / 1_000_000
             if not math.isfinite(cost):
                 raise ContractError("Nonfinite cost estimate")
-            return ModelReply(content, incoming, outgoing, cost)
+            return ModelReply(content, incoming, outgoing, cost,choice['finish_reason'])
         except (ContractError, UnicodeError, KeyError, TypeError, IndexError, AttributeError):
             raise ProviderError("Invalid, incomplete or unsupported completion/usage; reservation retained") from None

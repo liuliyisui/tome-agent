@@ -4,7 +4,7 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from .domain import ContractError, canonical, digest, text
+from .domain import ContractError, canonical, digest, text, evidence_segments
 from .memory import VersionedMemory
 from .ports import Agent, CheckpointStore
 
@@ -14,15 +14,21 @@ class ContextBuilder:
     max_chars: int = 100_000
     max_facts: int = 128
     memory_reader: object = None
+    include_fact_sources: bool = True
     def build(self,state):
         if type(self.recent_chapters) is not int or self.recent_chapters<0: raise ContractError("Invalid recent chapter limit")
         facts=(self.memory_reader or VersionedMemory()).current(state)
         if len(facts)>self.max_facts: raise ContractError("Active fact limit exceeded; configure an explicit retrieval policy")
+        if type(self.include_fact_sources) is not bool:raise ContractError('include_fact_sources must be boolean')
+        if not self.include_fact_sources:
+            from .narrative_context import project_facts
+            facts=project_facts(facts)
         chapters=state.chapters[-self.recent_chapters:] if self.recent_chapters else []
         result={"goal":state.goal,"constraints":copy.deepcopy(state.constraints),"checkpoint_revision":state.revision,
                 "chapter_number":len(state.chapters)+1,"recent_chapters":copy.deepcopy(chapters),"active_facts":facts,
                 "planned_next_chapters":[copy.deepcopy(v) for k,v in sorted(state.plan.items(),key=lambda p:int(p[0])) if int(k)>len(state.chapters)],
                 "context_policy":{"recent_chapters":self.recent_chapters,"older_prose_omitted":max(0,len(state.chapters)-len(chapters)),"history_included":False}}
+        if not self.include_fact_sources:result['context_policy']['fact_sources_included']=False
         if len(canonical(result))>self.max_chars: raise ContractError("Context size exceeded; no silent truncation of facts")
         return result
 
@@ -40,7 +46,7 @@ class Coordinator:
         if set(agents)!={"planner","writer","memory","reviewer"}: raise ContractError("Four role agents required")
         if any(agent.role!=role for role,agent in agents.items()): raise ContractError("Agent role binding mismatch")
         self.memory_policy=memory_policy or VersionedMemory()
-        self.store=store; self.agents=agents; self.context_builder=context_builder or ContextBuilder(memory_reader=self.memory_policy)
+        self.store=store; self.agents=agents; self.context_builder=context_builder or ContextBuilder(memory_reader=self.memory_policy,include_fact_sources=not getattr(agents['planner'],'compact_narrative',False))
     def write_next(self,identifier,request_id,instruction=""):
         attempt_id="attempt_"+uuid.uuid4().hex; trace=[]; started=datetime.now().astimezone().isoformat(); begin=time.monotonic()
         result=Outcome("FAILED",attempt_id=attempt_id); revision=None
@@ -58,11 +64,24 @@ class Coordinator:
                 if proposed_plan["number"]!=len(state.chapters)+1: raise ContractError("Planner returned a non-next chapter")
                 writing_context={**context,"chapter_plan":proposed_plan}
                 draft=self.agents["writer"].run(writing_context,trace)["text"]
-                memory_context={**writing_context,"current_draft":draft}
-                changes=self.agents["memory"].run(memory_context,trace)["changes"]
+                memory_context={**writing_context,"current_draft":draft,"evidence_segments":evidence_segments(draft)}
+                from .drafting import normalize_memory
+                changes=self.agents["memory"].run(memory_context,trace,
+                    validator=lambda value:normalize_memory(value,state,proposed_plan,draft)
+                    if getattr(self.agents['reviewer'],'review_mode',None)=='light_memory' or
+                        getattr(self.agents['reviewer'],'review_contract_version',0)==1 or
+                        any(isinstance(row,dict) and 'claim_ops' in row for row in value['changes']) else value)["changes"]
                 # Validate mechanical constraints before reviewer; no partial promotion.
                 candidate=self.memory_policy.stage(state,proposed_plan,draft,changes,request_id,instruction_hash)
-                review=self.agents["reviewer"].run({**memory_context,"memory_changes":changes},trace)
+                review_context={**memory_context,"memory_changes":changes}
+                if getattr(self.agents['reviewer'],'review_contract_version',0)==1:
+                    from .review_contract import prepare_review_context
+                    review_context=prepare_review_context(review_context)
+                    if getattr(self.agents['reviewer'],'review_policy_version',0) in (1,2,3,4,5):
+                        from .review_policy import prepare_policy_context
+                        review_context['review_policy_version']=self.agents['reviewer'].review_policy_version
+                        review_context=prepare_policy_context(review_context)
+                review=self.agents["reviewer"].run(review_context,trace)
                 if not review["approved"]: result=Outcome("REJECTED",issues=review["issues"],attempt_id=attempt_id)
                 else:
                     self.store.commit(candidate,expected_revision=state.revision)

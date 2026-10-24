@@ -1,0 +1,522 @@
+{
+  "scope": "Data integrity and completion, not story correctness",
+  "run": "ar",
+  "chapters": 25,
+  "han_chars": 50107,
+  "target_han_chars": 50000,
+  "difference": 107,
+  "difference_percent": 0.214,
+  "draft_completed": true,
+  "resume_integrity_passed": true,
+  "export_matches_saved_chapters": true,
+  "memory_complete": true,
+  "memory_layers_complete": true,
+  "prose_excerpt_count": 1176,
+  "moves": {
+    "demote": 1526,
+    "recall": 83
+  },
+  "generation_warnings": [
+    {
+      "chapter": 1,
+      "items": [
+        {
+          "stage": "planning",
+          "error": "Reference selection is outside the supplied directory",
+          "policy": "CONTINUE_PROSE_WITHOUT_STATE_CHANGES"
+        }
+      ]
+    },
+    {
+      "chapter": 7,
+      "items": [
+        {
+          "stage": "prose_reference",
+          "error": "Malformed quantity source slot",
+          "policy": "PRESERVE_LITERAL_PROSE"
+        }
+      ]
+    },
+    {
+      "chapter": 11,
+      "items": [
+        {
+          "stage": "planning",
+          "error": "Event preflight rejected 1 item(s): Event precondition does not match canonical state",
+          "policy": "CONTINUE_PROSE_WITHOUT_STATE_CHANGES"
+        }
+      ]
+    },
+    {
+      "chapter": 22,
+      "items": [
+        {
+          "stage": "planning",
+          "error": "Reference selection is outside the supplied directory",
+          "policy": "CONTINUE_PROSE_WITHOUT_STATE_CHANGES"
+        }
+      ]
+    }
+  ],
+  "unprojected_chapters": [
+    1,
+    11,
+    22
+  ],
+  "event_alignment_complete": false,
+  "input_selection_count": 15,
+  "input_selections": [
+    {
+      "call": 80,
+      "role": "planner",
+      "selection": {
+        "original_bytes": 87313,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 10,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    },
+    {
+      "call": 81,
+      "role": "writer",
+      "selection": {
+        "original_bytes": 87160,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 9,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    },
+    {
+      "call": 84,
+      "role": "planner",
+      "selection": {
+        "original_bytes": 87444,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 9,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    },
+    {
+      "call": 85,
+      "role": "writer",
+      "selection": {
+        "original_bytes": 87441,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 10,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    },
+    {
+      "call": 88,
+      "role": "planner",
+      "selection": {
+        "original_bytes": 85833,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 5,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    },
+    {
+      "call": 89,
+      "role": "planner",
+      "selection": {
+        "original_bytes": 85833,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 5,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    },
+    {
+      "call": 90,
+      "role": "writer",
+      "selection": {
+        "original_bytes": 85726,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 5,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    },
+    {
+      "call": 93,
+      "role": "planner",
+      "selection": {
+        "original_bytes": 84834,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 3,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    },
+    {
+      "call": 94,
+      "role": "planner",
+      "selection": {
+        "original_bytes": 84834,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 3,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    },
+    {
+      "call": 98,
+      "role": "planner",
+      "selection": {
+        "original_bytes": 85685,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 5,
+            "scope": "request_view_only"
+          },
+          {
+            "field": "retrieved_memory",
+            "omitted_rows": 1,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    },
+    {
+      "call": 99,
+      "role": "planner",
+      "selection": {
+        "original_bytes": 85685,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 5,
+            "scope": "request_view_only"
+          },
+          {
+            "field": "retrieved_memory",
+            "omitted_rows": 1,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    },
+    {
+      "call": 100,
+      "role": "planner",
+      "selection": {
+        "original_bytes": 85685,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 5,
+            "scope": "request_view_only"
+          },
+          {
+            "field": "retrieved_memory",
+            "omitted_rows": 1,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    },
+    {
+      "call": 101,
+      "role": "writer",
+      "selection": {
+        "original_bytes": 85542,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 4,
+            "scope": "request_view_only"
+          },
+          {
+            "field": "retrieved_memory",
+            "omitted_rows": 1,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    },
+    {
+      "call": 104,
+      "role": "planner",
+      "selection": {
+        "original_bytes": 84950,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 3,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    },
+    {
+      "call": 105,
+      "role": "writer",
+      "selection": {
+        "original_bytes": 84737,
+        "limit_bytes": 84000,
+        "stored_sources_unchanged": true,
+        "changes": [
+          {
+            "field": "source_evidence",
+            "omitted_rows": 3,
+            "scope": "request_view_only"
+          }
+        ]
+      }
+    }
+  ],
+  "max_recorded_request_bytes": 98028,
+  "truncated_responses": 0,
+  "length_adjustments": {
+    "not_needed": 2,
+    "accepted": 23
+  },
+  "chapter_lengths": [
+    {
+      "chapter": 1,
+      "target": 2000,
+      "before": 2111,
+      "after": 2111,
+      "adjustment": "not_needed"
+    },
+    {
+      "chapter": 2,
+      "target": 1996,
+      "before": 1933,
+      "after": 1933,
+      "adjustment": "not_needed"
+    },
+    {
+      "chapter": 3,
+      "target": 1999,
+      "before": 3742,
+      "after": 3240,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 4,
+      "target": 1942,
+      "before": 2503,
+      "after": 2404,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 5,
+      "target": 1920,
+      "before": 3610,
+      "after": 2929,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 6,
+      "target": 1870,
+      "before": 2241,
+      "after": 2012,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 7,
+      "target": 1862,
+      "before": 2889,
+      "after": 2749,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 8,
+      "target": 1813,
+      "before": 3513,
+      "after": 3054,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 9,
+      "target": 1740,
+      "before": 2981,
+      "after": 2261,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 10,
+      "target": 1707,
+      "before": 2998,
+      "after": 2795,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 11,
+      "target": 1635,
+      "before": 2873,
+      "after": 2628,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 12,
+      "target": 1564,
+      "before": 2112,
+      "after": 2006,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 13,
+      "target": 1530,
+      "before": 2299,
+      "after": 1681,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 14,
+      "target": 1517,
+      "before": 2107,
+      "after": 1984,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 15,
+      "target": 1474,
+      "before": 2266,
+      "after": 2101,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 16,
+      "target": 1412,
+      "before": 1944,
+      "after": 1710,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 17,
+      "target": 1378,
+      "before": 1727,
+      "after": 1655,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 18,
+      "target": 1344,
+      "before": 2630,
+      "after": 2376,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 19,
+      "target": 1196,
+      "before": 1806,
+      "after": 1500,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 20,
+      "target": 1146,
+      "before": 2070,
+      "after": 1771,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 21,
+      "target": 1020,
+      "before": 1416,
+      "after": 1250,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 22,
+      "target": 963,
+      "before": 2184,
+      "after": 1472,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 23,
+      "target": 793,
+      "before": 1493,
+      "after": 1125,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 24,
+      "target": 627,
+      "before": 1660,
+      "after": 658,
+      "adjustment": "accepted"
+    },
+    {
+      "chapter": 25,
+      "target": 595,
+      "before": 388,
+      "after": 702,
+      "adjustment": "accepted"
+    }
+  ],
+  "calls": 111,
+  "cost_usd_estimate_not_bill": 0.8122628999999999,
+  "source_unchanged": true,
+  "original_novel_unchanged": true,
+  "original_sha256": "56d5aed0e6d8a518a6847a6befbefc61f430d797889b0488e9d2d4877d879176",
+  "novel_sha256": "5e704592670289764901ed8eb11fb9bde9a8b9ef69cda6e466cc2bf547589882",
+  "story_review_calls": 0,
+  "quality_checked": false,
+  "audit_remote_calls": 0
+}

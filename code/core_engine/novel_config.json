@@ -1,0 +1,13 @@
+{
+  "title": "回潮之前",
+  "goal": "写一部完整的中文现实悬疑小说。档案修复员许闻发现旧事故卷宗与证言不符，与闸站工程师梁策共同追查，在下一场风暴前公开真相并承担代价。总纲保持调查、阻力升级、证据反转、公开选择的因果链；每章小纲根据已写事实局部调整。许闻少言、反复核对，逐步学会公开作证，但不会因一次勇敢就改变稳定习惯。关键证据的来源、持有人和时间必须可追踪。最后一章完成主要冲突，不另开未完成主线。",
+  "constraints": ["现实背景，无超自然或万能证据。", "已发生事实不重写，状态变化须有事件依据。", "区分人物知道的、猜测的和客观事实。", "用完整场景推进情节，避免重复和梗概。"],
+  "chapters": 8,
+  "max_chapters": 10,
+  "target_han_chars": 10000,
+  "endpoint": "https://api.deepseek.com/chat/completions",
+  "model": "deepseek-flash",
+  "input_usd_per_million": 0.3,
+  "output_usd_per_million": 1.2,
+  "thinking_enabled": false
+}

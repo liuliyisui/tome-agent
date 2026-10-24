@@ -11,15 +11,13 @@ from .models import Budget, ModelGateway
 from .runtime import Coordinator
 from .storage import FileStore
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
-
 def main():
     parser=argparse.ArgumentParser(description="INF independent offline multi-agent foundation")
     sub=parser.add_subparsers(dest="command",required=True)
     demo=sub.add_parser("demo",help="Run two deterministic fixture chapters; no API")
     demo.add_argument("--output",type=Path,default=None)
     args=parser.parse_args()
-    output=args.output or PROJECT_ROOT/"code"/"backend"/"data"/"runs"/("offline_"+datetime.now().strftime("%Y%m%d_%H%M%S")+"_"+uuid4().hex[:8])
+    output=args.output or Path("runs")/("offline_"+datetime.now().strftime("%Y%m%d_%H%M%S")+"_"+uuid4().hex[:8])
     store=FileStore(output); store.initialize(Snapshot("demo","守灯人的身份核验故事",["真实身体变化必须有事件依据"]))
     budget=Budget(max_calls=8,max_cost_usd=0)
     coordinator=Coordinator(store,build_agents(ModelGateway(DemoModel(),budget)))

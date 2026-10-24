@@ -6,7 +6,7 @@ import sys
 import tempfile
 import unittest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "code" / "core_engine"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from inf_writer.drafting import DraftSession, evidence_segments, normalize_memory, validate_review
 from inf_writer.agents import build_agents
 from inf_writer.domain import ContractError, Snapshot
@@ -46,7 +46,7 @@ class DraftFixture:
 
 class DraftingTests(unittest.TestCase):
     def setUp(self):
-        root = Path(__file__).resolve().parents[2] / "code" / "backend" / "data" / "test-tmp"
+        root = Path(__file__).resolve().parents[1] / "runs" / "test-tmp"
         root.mkdir(parents=True, exist_ok=True)
         self.temp = tempfile.TemporaryDirectory(dir=root)
         self.addCleanup(self.temp.cleanup)

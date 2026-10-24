@@ -14,6 +14,7 @@ from inf_writer.domain import Snapshot, canonical, project_id, strict_json
 from inf_writer.models import Budget, ModelGateway
 from inf_writer.runtime import Coordinator
 from inf_writer.storage import FileStore
+from memory_runtime.writing import WritingSession, load_resume
 
 from .settings import BACKEND_ROOT, Settings
 
@@ -76,6 +77,8 @@ def _metadata(book_id):
 
 
 def load_book(book_id):
+    if (book_path(book_id) / "longform-current.json").exists():
+        return load_longform(book_id)
     return {"metadata": _metadata(book_id), "state": FileStore(BOOKS).load(book_id)}
 
 
@@ -112,7 +115,7 @@ def _gateway(settings):
     return ModelGateway(provider, budget, reserve_per_call=0.0), budget
 
 
-def generate(book_id, count=1, gateway=None, budget=None, settings=None):
+def generate_legacy(book_id, count=1, gateway=None, budget=None, settings=None):
     current = load_book(book_id)
     meta, state = current["metadata"], current["state"]
     remaining = meta["target_chapters"] - len(state.chapters)
@@ -144,10 +147,106 @@ def generate(book_id, count=1, gateway=None, budget=None, settings=None):
     return load_book(book_id)
 
 
+def _longform_plan(meta):
+    return {
+        "title": meta["title"],
+        "goal": meta["prompt"],
+        "constraints": [
+            f"全书目标{meta['target_chapters']}章",
+            f"目标篇幅约{meta['target_units']}字",
+            "保持人物、时间、物品和因果关系连续",
+        ],
+        "chapters": meta["target_chapters"],
+        "max_chapters": meta["target_chapters"],
+        "target_han_chars": meta["target_units"],
+        "event_first": True,
+        "story_review_enabled": False,
+    }
+
+
+def _longform_pointer(book_id):
+    return book_path(book_id) / "longform-current.json"
+
+
+def _load_longform_book(book_id, plan):
+    pointer = _longform_pointer(book_id)
+    if not pointer.exists():
+        return None
+    record = strict_json(pointer.read_text(encoding="utf-8-sig"))
+    if not isinstance(record, dict) or set(record) != {"checkpoint"}:
+        raise ValueError("长文本检查点索引格式不正确")
+    checkpoint = (book_path(book_id) / record["checkpoint"]).resolve()
+    root = book_path(book_id).resolve()
+    if checkpoint == root or not checkpoint.is_relative_to(root):
+        raise ValueError("长文本检查点路径不安全")
+    return load_resume(checkpoint, plan)
+
+
+def generate_longform(book_id, count=1, gateway=None, budget=None, settings=None):
+    """Generate chapters with the event-first, three-tier-memory runtime.
+
+    This is the backend integration point for the future frontend.  Each call
+    writes a new checkpoint directory so an interrupted run never overwrites
+    the last recoverable state.
+    """
+    meta = _metadata(book_id)
+    plan = _longform_plan(meta)
+    previous = _load_longform_book(book_id, plan)
+    written = len(previous["chapters"]) if previous else 0
+    remaining = meta["target_chapters"] - written
+    if type(count) is not int or not 1 <= count <= remaining:
+        raise ValueError("本次章节数超出剩余范围")
+    cfg = settings or Settings.load()
+    if cfg.public_config() != meta["model"]:
+        raise ValueError("当前模型配置与创建作品时不一致")
+    if gateway is None:
+        gateway, budget = _gateway(cfg)
+    run = book_path(book_id) / "longform-runs" / ("run-" + uuid4().hex)
+    session = WritingSession(run, gateway, plan, book=previous)
+    failure = None
+    for _ in range(count):
+        number = len(session.book["chapters"]) + 1
+        used = sum(count_units(chapter["text"]) for chapter in session.book["chapters"])
+        slots = max(1, meta["target_chapters"] - number + 1)
+        target = max(300, (meta["target_units"] - used + slots - 1) // slots)
+        session.chapter_length_target = target
+        instruction = (
+            f"作品《{meta['title']}》，现在创作第{number}章；本章约{target}字。"
+            "先规划可验证的场景事件，再写完整正文；保持人物、时间、物品和因果连续。"
+        )
+        outcome = session.write_next(instruction)
+        if outcome["status"] == "NO_DRAFT":
+            failure = outcome
+            break
+    checkpoint = session.latest_checkpoint.resolve()
+    relative = checkpoint.relative_to(book_path(book_id).resolve()).as_posix()
+    _atomic_json(_longform_pointer(book_id), {"checkpoint": relative})
+    if budget is not None:
+        _atomic_json(book_path(book_id) / "last-usage.json", {
+            "calls": budget.calls, "input_tokens": budget.input_tokens,
+            "output_tokens": budget.output_tokens, "estimated_cost_upper_usd": budget.cost_upper_usd,
+        })
+    if failure is not None:
+        detail = json.dumps(failure.get("errors", []), ensure_ascii=False)
+        raise RuntimeError(f"第{failure['chapter_number']}章未生成正文：{detail}")
+    return {"metadata": meta, "state": session.book}
+
+
+def load_longform(book_id):
+    meta = _metadata(book_id)
+    state = _load_longform_book(book_id, _longform_plan(meta))
+    return {"metadata": meta, "state": state}
+
+
+# 默认生成入口直接使用经过五万字实测的长文本流程。
+generate = generate_longform
+
+
 def export_markdown(book):
     meta, state = book["metadata"], book["state"]
+    chapters = state["chapters"] if isinstance(state, dict) else state.chapters
     return f"# {meta['title']}\n\n" + "\n\n".join(
-        f"## 第{chapter['number']}章 {chapter['title']}\n\n{chapter['text']}" for chapter in state.chapters)
+        f"## 第{chapter['number']}章 {chapter['title']}\n\n{chapter['text']}" for chapter in chapters)
 
 
 def list_books():
