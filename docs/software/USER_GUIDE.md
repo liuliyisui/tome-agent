@@ -8,7 +8,7 @@
 code\backend\setup.cmd
 ```
 
-INF 当前只使用 Python 标准库，因此无需下载第三方包。脚本会在 `code/backend/.venv` 创建独立环境，并在缺少配置时复制 `.env.example`。
+脚本会在 `code/backend/.venv` 创建独立环境，安装包括 LangGraph 与 Psycopg 的依赖，并在缺少配置时复制 `.env.example`。数据库初始化及旧作品导入见 [PostgreSQL 说明](POSTGRESQL.md)。
 
 ## 启动网页
 
@@ -38,8 +38,9 @@ code\backend\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ## 存档规则
 
 - 每本作品存放在 `code/backend/data/inf_books/<作品ID>/`。
-- 正式章节、计划和事实记忆保存在检查点 JSON 中。
+- 作品与章节记录由 PostgreSQL 管理，引擎完整阶段状态仍保存在本地检查点 JSON 中。
 - 每章成功后快照版本加一；同一请求 ID 可安全重复调用。
 - 同一作品同时只能有一个写入操作。
-- 审核拒绝、输出格式错误、预算耗尽或存档冲突都不会部分提交正式章节。
+- 基础严格事务入口审核拒绝时不提交候选章节；实际长篇入口会保留未审核草稿并记录待处理任务，两种策略不可混淆。
+- 升级后的运行时指纹不同，旧版检查点不能直接续写；恢复范围见 [LangGraph 迁移说明](LANGGRAPH_MIGRATION.md)。
 
