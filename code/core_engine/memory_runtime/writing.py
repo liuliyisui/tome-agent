@@ -424,7 +424,8 @@ class WritingSession:
         instruction=run['instruction'];number=run['number'];key=str(number);trace=run['trace'];row=run['row']
         try:prepared=self._prepare_events(instruction,number,trace)
         except PlanningOutputFailure as exc:
-            prepared=unplanned_packet(self.book['writing_state'],number,instruction)
+            prepared=unplanned_packet(self.book['writing_state'],number,instruction,
+                title=self.book['plan'].get(key,{}).get('title'))
             self.book['prepared_events'][key]=copy.deepcopy(prepared)
             row.setdefault('generation_warnings',[]).append(dict(stage='planning',error=str(exc),policy='CONTINUE_PROSE_WITHOUT_STATE_CHANGES'))
             self._save(trace,'PLANNING_DEFERRED_CONTINUE_PROSE')
@@ -504,7 +505,9 @@ class WritingSession:
         if digest(canonical(prepared['candidate_state']))!=prepared['commit']['state_sha256']:
             raise ContractError('Prepared candidate state integrity failure')
         proposal=prepared['proposal']
-        chapter=dict(number=number,title=proposal['title'],text=draft,sha256=digest(draft),
+        from .chapter_titles import resolve_title
+        title=resolve_title(proposal['title'],draft,number,self.book['plan'].get(key,{}).get('title'),gateway=self.gateway,trace=trace)
+        chapter=dict(number=number,title=title,text=draft,sha256=digest(draft),
             event_commit=copy.deepcopy(prepared['commit']),realization_template=template,
             prose_policy='unchecked',quantity_sources=copy.deepcopy(context['quantity_sources']),
             prose_encoding=encoding,event_plan_status=prepared['commit'].get('event_plan_status','prepared'),
@@ -525,6 +528,7 @@ class WritingSession:
         self.book['writing_state']=copy.deepcopy(prepared['candidate_state'])
         del self.book['prepared_events'][key]
         self.book['plan'][key]={k:proposal[k] for k in ('number','title','brief')}
+        self.book['plan'][key]['title']=title
         for future in proposal['future_updates']:self.book['plan'][str(future['number'])]=copy.deepcopy(future)
         row.update(status='DRAFT_UNCHECKED',memory_update_status='PENDING',writing_invariants='EVENT_DATA_COMMITTED_PROSE_UNCHECKED',
             event_commit_sha256=prepared['commit']['sha256'],
@@ -576,7 +580,9 @@ class WritingSession:
 
     def _graph_legacy_commit(self,run):
         number=run['number'];trace=run['trace'];row=run['row'];proposal=run['proposal'];context=run['context'];draft=run['draft'];calculations=run['calculations'];writing_state=run['writing_state']
-        chapter=dict(number=number,title=proposal['title'],text=draft,sha256=digest(draft),time_calculations=calculations)
+        from .chapter_titles import resolve_title
+        title=resolve_title(proposal['title'],draft,number,self.book['plan'].get(str(number),{}).get('title'),gateway=self.gateway,trace=trace)
+        chapter=dict(number=number,title=title,text=draft,sha256=digest(draft),time_calculations=calculations)
         review_context=dict(context,current_draft=draft)
         refs={f'constraint_{i}':rule for i,rule in enumerate(self.book['constraints'],1)}
         refs.update({f'draft_{s["id"]}':s['text'] for s in evidence_segments(draft)})
@@ -586,6 +592,7 @@ class WritingSession:
         self.book['chapters'].append(chapter);self.book['pending'].append(number)
         self.book['writing_state']=writing_state
         self.book['plan'][str(number)]={k:proposal[k] for k in ('number','title','brief')}
+        self.book['plan'][str(number)]['title']=title
         for future in proposal['future_updates']:self.book['plan'][str(future['number'])]=copy.deepcopy(future)
         row.update(status='DRAFT_UNCHECKED',memory_update_status='PENDING',stop_reason=None,
             writing_invariants='VALIDATED_DECLARATIONS',story_review_status='PENDING' if self.plan.get('story_review_enabled',True) else 'DISABLED')
