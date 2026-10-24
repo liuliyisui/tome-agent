@@ -14,6 +14,7 @@ from inf_writer.memory_temporality import current_claim, has_current_content
 from . import service
 from .settings import Settings
 from . import generation
+from . import library
 
 FRONTEND = Path(__file__).resolve().parents[2] / "frontend"
 
@@ -31,6 +32,7 @@ def serialize(book):
                 continue
             sources = item.get("sources", [])
             facts[key] = {"subject": item["subject"], "attribute": item["attribute"],
+                          "kind": item.get("kind"),
                           "value": current_claim(item), "revision": item["revision"],
                           "status": "active", "tier": item.get("tier"),
                           "source": sources[-1] if sources else {"chapter_number": "—", "quote": ""}}
@@ -180,10 +182,12 @@ class Handler(BaseHTTPRequestHandler):
                     try:
                         book = load_view(book_id)
                         books.append({"id": book_id, "metadata": book["metadata"],
+                                      "pinned": library.is_pinned(book_id),
                                       "chapters": len(book["state"]["chapters"]),
                                       "units": sum(service.count_units(c["text"]) for c in book["state"]["chapters"])})
                     except (ValueError, OSError):
                         books.append({"id": book_id, "error": "存档无法读取"})
+                books.sort(key=lambda book: not book.get("pinned", False))
                 self.reply(200, {"books": books})
             elif post and path == "/api/books":
                 book_id = service.new_book_id()
@@ -191,6 +195,10 @@ class Handler(BaseHTTPRequestHandler):
                     data.get("title"), data.get("prompt"), data.get("chapters"), data.get("target_units"),
                     style=data.get("style"))
                 self.reply(201, load_view(book_id))
+            elif post and path == "/api/books/restore":
+                with self.server.job_lock:
+                    book_id = library.restore_book(data.get("restore_token"))
+                self.reply(200, load_view(book_id))
             elif not post and path.startswith("/api/jobs/"):
                 with self.server.job_lock:
                     job = self.server.jobs.get(path.removeprefix("/api/jobs/"))
@@ -202,6 +210,19 @@ class Handler(BaseHTTPRequestHandler):
                     self.reply(202, self.server.start_generation(book_id, data))
                 elif post and len(parts) == 4 and parts[3] == "estimate":
                     self.reply(200, self.server.prepare_generation(book_id, data))
+                elif post and len(parts) == 4 and parts[3] == "pin":
+                    with self.server.job_lock:
+                        result = library.pin_book(book_id, data.get("pinned"))
+                    self.reply(200, result)
+                elif post and len(parts) == 4 and parts[3] == "delete":
+                    if data.get("confirmed") is not True:
+                        raise ValueError("请先确认要删除的作品")
+                    with self.server.job_lock:
+                        if book_id in self.server.busy:
+                            raise ValueError("作品正在生成，请等当前任务结束后再删除")
+                        result = library.delete_book(book_id)
+                        self.server.estimates = {k: v for k, v in self.server.estimates.items() if v["book_id"] != book_id}
+                    self.reply(200, result)
                 elif post and len(parts) == 4 and parts[3] == "style":
                     with self.server.job_lock:
                         if book_id in self.server.busy:

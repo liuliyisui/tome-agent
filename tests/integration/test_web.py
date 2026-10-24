@@ -86,6 +86,41 @@ class WebIntegrationTests(unittest.TestCase):
             self.request("/api/books/missing-book")
         self.assertEqual(error.exception.code, 404)
 
+    def test_pin_delete_restore_and_block_deleting_running_book(self):
+        payload = {"title": "书架测试", "prompt": "故事", "chapters": 3, "target_units": 3000}
+        first = self.request("/api/books", payload)["state"]["project_id"]
+        second = self.request("/api/books", {**payload, "title": "置顶作品"})["state"]["project_id"]
+        self.assertEqual(self.request(f"/api/books/{second}/pin", {"pinned": True}), {"pinned": True})
+        shelf = self.request("/api/books")["books"]
+        self.assertEqual(shelf[0]["id"], second)
+        self.assertTrue(shelf[0]["pinned"])
+        self.request(f"/api/books/{second}/pin", {"pinned": False})
+        self.assertFalse(next(b for b in self.request("/api/books")["books"] if b["id"] == second)["pinned"])
+        self.server.busy.add(first)
+        try:
+            with self.assertRaises(HTTPError) as error:
+                self.request(f"/api/books/{first}/delete", {"confirmed": True})
+            self.assertEqual(error.exception.code, 400)
+            self.assertTrue(service.book_path(first).exists())
+        finally:
+            self.server.busy.discard(first)
+        with self.assertRaises(HTTPError):
+            self.request(f"/api/books/{first}/delete", {"confirmed": False})
+        original = (service.book_path(first) / "state.json").read_bytes() if (service.book_path(first) / "state.json").exists() else None
+        deleted = self.request(f"/api/books/{first}/delete", {"confirmed": True})
+        self.assertEqual([b["id"] for b in self.request("/api/books")["books"]], [second])
+        with self.assertRaises(HTTPError) as error:
+            self.request(f"/api/books/{first}")
+        self.assertEqual(error.exception.code, 404)
+        restored = self.request("/api/books/restore", {"restore_token": deleted["restore_token"]})
+        self.assertEqual(restored["state"]["project_id"], first)
+        if original is not None:
+            self.assertEqual((service.book_path(first) / "state.json").read_bytes(), original)
+        self.assertFalse((service.book_path(first) / "operation.lock").exists())
+        self.assertFalse((service.book_path(first) / "deleted-book.json").exists())
+        with self.assertRaises(HTTPError):
+            self.request("/api/books/restore", {"restore_token": "../../bad"})
+
     def test_estimate_is_offline_and_generation_requires_confirmation(self):
         book = self.request("/api/books", {"title": "预估测试", "prompt": "故事", "chapters": 5, "target_units": 10000})
         book_id = book["state"]["project_id"]

@@ -7,6 +7,9 @@ const styleDrafts = new Map();
 const batchChoices = new Map();
 let pendingEstimate = null;
 let preparing = false;
+let pendingDelete = null;
+let lastDeleted = null;
+const factSelections = new Map();
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function api(path, data) {
   const response = await fetch(path, data === undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
@@ -29,9 +32,61 @@ $('close-dialog').onclick = () => $('create-dialog').close();
 async function refreshBooks() {
   books = (await api('/api/books')).books;
   $('book-count').textContent = books.length;
-  $('book-list').innerHTML = books.length ? books.map(book => `<button class="book-item ${current?.state.project_id === book.id ? 'selected' : ''}" data-book="${esc(book.id)}"><span class="mini-book"></span><span><strong>${esc(book.metadata?.title || book.id)}</strong><small>${book.error ? esc(book.error) : `${book.chapters} / ${book.metadata.target_chapters} 章 · 创作中`}</small></span></button>`).join('') : '<p class="empty-library">书架还是空的。<br>为第一个故事留个位置吧。</p>';
+  $('book-list').innerHTML = books.length ? books.map(book => {
+    const title = book.metadata?.title || book.id;
+    return `<div class="book-row ${current?.state.project_id === book.id ? 'selected' : ''}"><button class="book-item" data-book="${esc(book.id)}"><span class="mini-book"></span><span><strong>${esc(title)}</strong><small>${book.pinned ? '<span class="pin-mark">置顶 · </span>' : ''}${book.error ? esc(book.error) : `${book.chapters} / ${book.metadata.target_chapters} 章`}</small></span></button><details class="book-menu"><summary aria-label="管理《${esc(title)}》" title="管理作品">⋯</summary><div class="book-menu-options"><button type="button" data-pin="${esc(book.id)}" data-pinned="${!book.pinned}">${book.pinned ? '取消置顶' : '置顶'}</button><button type="button" class="danger-text" data-delete="${esc(book.id)}">删除作品</button></div></details></div>`;
+  }).join('') : '<p class="empty-library">书架还是空的。<br>为第一个故事留个位置吧。</p>';
   document.querySelectorAll('[data-book]').forEach(button => button.onclick = () => selectBook(button.dataset.book).catch(e => notice(e.message)));
+  document.querySelectorAll('[data-pin]').forEach(button => button.onclick = async () => {
+    button.disabled = true;
+    try { await api(`/api/books/${encodeURIComponent(button.dataset.pin)}/pin`, {pinned:button.dataset.pinned === 'true'}); await refreshBooks(); }
+    catch(e) { notice(e.message); button.disabled = false; }
+  });
+  document.querySelectorAll('[data-delete]').forEach(button => button.onclick = () => {
+    pendingDelete = books.find(book => book.id === button.dataset.delete);
+    button.closest('details').open = false;
+    $('delete-book-title').textContent = `《${pendingDelete.metadata?.title || pendingDelete.id}》`;
+    $('delete-error').textContent = '';
+    $('delete-dialog').showModal();
+  });
 }
+document.addEventListener('click', event => {
+  if (!event.target.closest('.book-menu')) document.querySelectorAll('.book-menu[open]').forEach(menu => menu.open = false);
+});
+$('delete-cancel').onclick = () => { $('delete-dialog').close(); pendingDelete = null; };
+$('delete-dialog').oncancel = () => { pendingDelete = null; };
+$('delete-confirm').onclick = async () => {
+  if (!pendingDelete) return;
+  const book = pendingDelete;
+  $('delete-confirm').disabled = true;
+  try {
+    const result = await api(`/api/books/${encodeURIComponent(book.id)}/delete`, {confirmed:true});
+    lastDeleted = {token:result.restore_token,title:book.metadata?.title || book.id};
+    localStorage.setItem('tome-last-deleted',JSON.stringify(lastDeleted));
+    styleDrafts.delete(book.id); batchChoices.delete(book.id); factSelections.delete(book.id); jobErrors.delete(book.id);
+    if (current?.state.project_id === book.id) {
+      current = null; selectedChapter = 0; localStorage.removeItem('tome-selected-book');
+      $('book-workspace').hidden = true; $('welcome').hidden = false; $('breadcrumb-title').textContent = '创作空间';
+    }
+    $('delete-dialog').close(); pendingDelete = null;
+    await refreshBooks();
+    if (!current) { const next = books.find(item => !item.error); if (next) await selectBook(next.id); }
+    $('undo-delete-message').textContent = `已从书架删除《${lastDeleted.title}》。`;
+    $('undo-delete-panel').hidden = false;
+  } catch(e) { $('delete-error').textContent = e.message; }
+  finally { $('delete-confirm').disabled = false; }
+};
+$('undo-delete').onclick = async () => {
+  if (!lastDeleted) return;
+  $('undo-delete').disabled = true;
+  try {
+    const book = await api('/api/books/restore', {restore_token:lastDeleted.token});
+    await selectBook(book.state.project_id);
+    $('undo-delete-panel').hidden = true; lastDeleted = null;
+    localStorage.removeItem('tome-last-deleted');
+  } catch(e) { notice(e.message); }
+  finally { $('undo-delete').disabled = false; }
+};
 async function selectBook(id, latest = false) {
   const book = await api(`/api/books/${encodeURIComponent(id)}`);
   selectedChapter = latest ? Math.max(0, book.state.chapters.length - 1) : (current?.state.project_id === id ? selectedChapter : 0);
@@ -70,13 +125,51 @@ function renderBook() {
   $('revision').textContent = `存档版本 ${state.revision}`;
   $('export').href = `/api/books/${encodeURIComponent(state.project_id)}/export`;
   $('generation-description').textContent = current.mode === 'legacy' ? '旧版正文可阅读和导出。请新建作品使用新版引擎，保留旧存档。' : `使用 ${meta.model.model}，先规划事件，再生成正文并维护三层记忆。每次生成一章，可能需要数分钟；已保存正文仍需人工检查。`;
-  $('facts').innerHTML = facts.length ? facts.map(f => `<div class="fact"><strong>${esc(f.subject)} · ${esc(f.attribute === 'eye_color' ? '眼睛颜色' : f.attribute)}</strong><p>${esc(typeof f.value === 'object' ? JSON.stringify(f.value) : f.value)}</p><small>第 ${f.source.chapter_number} 章 · 版本 ${f.revision}</small><blockquote>${esc(f.source.quote)}</blockquote></div>`).join('') : '<p class="empty-facts">章节生成后，人物事实将在这里留存。</p>';
+  renderFacts(facts);
   $('chapter-tabs').innerHTML = state.chapters.map((c,i) => `<button data-chapter="${i}" class="${i === selectedChapter ? 'active' : ''}" aria-pressed="${i === selectedChapter}">第 ${c.number} 章</button>`).join('');
   document.querySelectorAll('[data-chapter]').forEach(button => button.onclick = () => { selectedChapter = Number(button.dataset.chapter); renderBook(); });
   const chapter = state.chapters[selectedChapter];
   const paragraphs = chapter ? chapter.text.split(/\r\n|[\n\r\u2028\u2029]/).map(p => p.trim()).filter(Boolean) : [];
   $('chapter-body').innerHTML = chapter ? `<h3>第${chapter.number}章 · ${esc(chapter.title)}</h3>${paragraphs.map(p => `<p class="prose-paragraph">${esc(p)}</p>`).join('')}` : '<div class="chapter-empty"><span>✧</span><h3>故事，正待落笔。</h3><p>点击「生成下一章」，让你的构想变成正文。</p></div>';
   renderGeneration();
+}
+function concise(value, limit = 18) {
+  const text = String(value ?? '').replace(/\s+/g,' ').replace(/^[“”「」『』"'\s]+/g,'').trim();
+  const first = text.split(/[。！？；\n]/)[0] || text;
+  return Array.from(first).length > limit ? Array.from(first).slice(0,limit).join('') + '…' : first;
+}
+function renderFacts(facts) {
+  const groups = new Map();
+  const valueOf = fact => typeof fact.value === 'object' ? JSON.stringify(fact.value) : String(fact.value ?? '');
+  facts.forEach(fact => {
+    const excerpt = fact.kind === 'prose_excerpt' || String(fact.subject).startsWith('prose:');
+    const number = fact.source?.chapter_number;
+    const chapter = current.state.chapters.find(ch => ch.number === number);
+    const key = excerpt ? `chapter:${number}` : `subject:${fact.subject}`;
+    const label = excerpt ? `第${number}章 · ${concise(chapter?.title || valueOf(fact),12)}` : concise(fact.subject,12);
+    if (!groups.has(key)) groups.set(key,{key,label,facts:[],number:excerpt ? Number(number) || 0 : null});
+    groups.get(key).facts.push(fact);
+  });
+  const items = [...groups.values()].sort((a,b) => a.number !== null && b.number !== null ? b.number-a.number : a.number === null ? b.number === null ? a.label.localeCompare(b.label,'zh-CN') : -1 : 1);
+  const preferred = factSelections.get(current.state.project_id) || `chapter:${selectedChapter+1}`;
+  $('fact-topic').innerHTML = items.length ? items.map(group => `<option value="${esc(group.key)}">${esc(group.label)}（${group.facts.length}）</option>`).join('') : '<option value="">暂无事实主题</option>';
+  $('fact-topic').disabled = !items.length;
+  $('fact-topic').value = groups.has(preferred) ? preferred : items[0]?.key || '';
+  $('fact-topic-summary').textContent = items.length ? `${items.length} 个主题 · ${facts.length} 条记忆，选择标题查看。` : '生成章节后，将自动整理事实主题。';
+  function showGroup() {
+    const group = groups.get($('fact-topic').value);
+    if (!group) { $('facts').innerHTML = '<p class="empty-facts">暂时没有可查看的事实记忆。</p>'; return; }
+    factSelections.set(current.state.project_id,group.key);
+    const tiers = {working:'工作记忆',recent:'近期记忆',long:'长期记忆'};
+    $('facts').innerHTML = group.facts.map(fact => {
+      const value = valueOf(fact), quote = fact.source?.quote || '';
+      const excerpt = fact.kind === 'prose_excerpt' || String(fact.subject).startsWith('prose:');
+      const title = excerpt ? concise(value,20) : `${concise(fact.subject,10)} · ${concise(value,14)}`;
+      return `<div class="fact">${excerpt ? '' : `<h4>${esc(title)}</h4>`}<p>${esc(value)}</p><small>第 ${esc(fact.source?.chapter_number || '—')} 章 · 版本 ${esc(fact.revision)}${fact.tier ? ' · ' + esc(tiers[fact.tier] || fact.tier) : ''}</small>${quote && quote !== value ? `<details class="fact-source"><summary>查看正文依据</summary><blockquote>${esc(quote)}</blockquote></details>` : ''}</div>`;
+    }).join('');
+  }
+  $('fact-topic').onchange = showGroup;
+  showGroup();
 }
 function renderGeneration() {
   if (!current) return;
@@ -250,6 +343,12 @@ async function pollJob(id, jobId) {
 }
 async function init() {
   try {
+    try { lastDeleted = JSON.parse(localStorage.getItem('tome-last-deleted') || 'null'); }
+    catch(e) { localStorage.removeItem('tome-last-deleted'); }
+    if (lastDeleted?.token && lastDeleted?.title) {
+      $('undo-delete-message').textContent = `已从书架删除《${lastDeleted.title}》。`;
+      $('undo-delete-panel').hidden = false;
+    }
     const cfg = await api('/api/config');
     $('connection-text').textContent = cfg.configured ? `${cfg.model} 已就绪` : '引擎已连接 · 离线可用';
     $('connection-dot').classList.add('ready');
