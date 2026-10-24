@@ -10,13 +10,9 @@ code\backend\setup.cmd
 
 INF 当前只使用 Python 标准库，因此无需下载第三方包。脚本会在 `code/backend/.venv` 创建独立环境，并在缺少配置时复制 `.env.example`。
 
-## 离线演示
+## 启动网页
 
-```powershell
-code\backend\run-demo.cmd
-```
-
-演示使用固定响应依次运行 planner、writer、memory、reviewer，生成两章并验证事实版本变化。它不会联网，也不会消耗 DeepSeek 额度。结果位于 `code/backend/data/runs/`。
+运行 `code\backend\run-web.cmd`，打开 http://127.0.0.1:8765。创建作品并配置文风，生成前会显示 token 和费用预估，确认后才调用模型。
 
 ## DeepSeek 配置
 
@@ -28,7 +24,7 @@ DEEPSEEK_API_KEY=你的密钥
 
 其他可选配置见 `.env.example`。默认模型为 `deepseek-chat`，接口限定为 DeepSeek 官方 `chat/completions` 地址。`.env` 已被 Git 忽略，不能上传或发到群聊。
 
-当前版本已提供后端服务函数，但尚未重新接入图形前端。真实生成入口留到后续前端开发时再接入；目前只运行离线演示和测试，不会误用模型额度。
+网页已接入事件先行和三层记忆引擎。真实生成需配置密钥；先生成首章并人工确认后，可批量续写。
 
 ## 自动测试
 

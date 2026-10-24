@@ -9,8 +9,6 @@ from pathlib import Path
 from urllib.parse import urlsplit
 from uuid import uuid4
 
-from inf_writer.demo import DemoModel
-from inf_writer.models import Budget, ModelGateway
 from inf_writer.memory_temporality import current_claim, has_current_content
 
 from . import service
@@ -18,15 +16,13 @@ from .settings import Settings
 from . import generation
 
 FRONTEND = Path(__file__).resolve().parents[2] / "frontend"
-DEMO_SETTINGS = Settings(api_key="", model="offline-demo")
 
 
 def serialize(book):
     raw = book["state"]
-    demo = book["metadata"]["model"]["model"] == "offline-demo"
     if not isinstance(raw, dict):
         state = raw.to_dict()
-        mode = "demo" if demo else "legacy" if state["chapters"] else "longform"
+        mode = "legacy" if state["chapters"] else "longform"
     else:
         memory = raw.get("memory", {})
         facts = {}
@@ -48,6 +44,8 @@ def serialize(book):
 
 
 def load_view(book_id):
+    if service._metadata(book_id)["model"]["model"] == "offline-demo":
+        raise FileNotFoundError("离线演示已移除")
     return {**serialize({**service.load_book(book_id), "id": book_id}),
             "style": service.load_writing_style(book_id)}
 
@@ -91,18 +89,16 @@ class WebServer(ThreadingHTTPServer):
         if estimate["signature"] != generation.signature(book_id):
             raise ValueError("作品或文风已更新，请重新查看费用预估后再确认")
         count = estimate["count"]
-        if estimate["pricing"]["period"] != "offline":
-            current_price = generation.official_pricing.quote(service._metadata(book_id)["model"]["model"])
-            if current_price["period"] != estimate["pricing"]["period"] or current_price["rates"] != estimate["prices"]:
-                raise ValueError("官方单价或峰谷时段已变化，请关闭确认框后重新预估再确认")
+        current_price = generation.official_pricing.quote(service._metadata(book_id)["model"]["model"])
+        if current_price["period"] != estimate["pricing"]["period"] or current_price["rates"] != estimate["prices"]:
+            raise ValueError("官方单价或峰谷时段已变化，请关闭确认框后重新预估再确认")
         book = service.load_book(book_id)
-        demo = book["metadata"]["model"]["model"] == "offline-demo"
         view = serialize({**book, "id": book_id})
         if view["mode"] == "legacy":
             raise ValueError("此作品是旧版章节存档，可阅读和导出。请新建作品使用新版引擎，避免覆盖旧正文。")
         if len(view["state"]["chapters"]) >= book["metadata"]["target_chapters"]:
             raise ValueError("全书章节已完成")
-        settings = DEMO_SETTINGS if demo else Settings.load()
+        settings = Settings.load()
         with self.job_lock:
             if book_id in self.busy:
                 for job_id, job in self.jobs.items():
@@ -122,15 +118,9 @@ class WebServer(ThreadingHTTPServer):
         def run():
             try:
                 options = {"settings": settings, "count": count}
-                if demo:
-                    budget = Budget(max_calls=4 * count, max_cost_usd=0)
-                    options.update(gateway=ModelGateway(DemoModel(), budget), budget=budget)
-                    service.generate_legacy(book_id, **options)
-                    progress({"completed": count})
-                else:
-                    with service.operation_lock(service.book_path(book_id)):
-                        service.generate(book_id, progress=progress, **options)
-                    progress({"completed": count})
+                with service.operation_lock(service.book_path(book_id)):
+                    service.generate(book_id, progress=progress, **options)
+                progress({"completed": count})
                 result = {"status": "completed", "book_id": book_id}
             except Exception as exc:
                 result = {"status": "failed", "book_id": book_id, "error": str(exc)}
@@ -195,15 +185,11 @@ class Handler(BaseHTTPRequestHandler):
                     except (ValueError, OSError):
                         books.append({"id": book_id, "error": "存档无法读取"})
                 self.reply(200, {"books": books})
-            elif post and path in ("/api/books", "/api/demo"):
-                demo = path == "/api/demo"
+            elif post and path == "/api/books":
                 book_id = service.new_book_id()
                 service.create_book(book_id,
-                    "守灯人" if demo else data.get("title"),
-                    "艾岚来到灯塔，守卫通过眼睛的颜色核验身份。一瓶药剂改变了她的命运。" if demo else data.get("prompt"),
-                    2 if demo else data.get("chapters"), 1000 if demo else data.get("target_units"),
-                    settings=DEMO_SETTINGS if demo else None,
-                    style=None if demo else data.get("style"))
+                    data.get("title"), data.get("prompt"), data.get("chapters"), data.get("target_units"),
+                    style=data.get("style"))
                 self.reply(201, load_view(book_id))
             elif not post and path.startswith("/api/jobs/"):
                 with self.server.job_lock:

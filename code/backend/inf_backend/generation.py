@@ -23,7 +23,8 @@ def estimate(book_id, count=1, approved_first=False):
         raise ValueError("本次章节数必须在 1 到剩余章节数之间")
     if count > 1 and (not chapters or approved_first is not True):
         raise ValueError("请先生成并阅读第一章，确认合适后再自动续写多章")
-    demo = meta["model"]["model"] == "offline-demo"
+    if meta["model"]["model"] == "offline-demo":
+        raise ValueError("离线演示已移除，请创建真实作品")
     style = service.load_writing_style(book_id)
     used = sum(service.count_units(c["text"]) for c in chapters)
     target = max(300, (meta["target_units"] - used) // max(1, remaining))
@@ -32,7 +33,7 @@ def estimate(book_id, count=1, approved_first=False):
     base_output = target * 2 + 2500
     basis = "按故事上下文、目标篇幅和多阶段调用粗估，无历史用量时误差较大。"
     usage_path = service.book_path(book_id) / "last-usage.json"
-    if usage_path.exists() and not demo:
+    if usage_path.exists():
         try:
             usage = strict_json(usage_path.read_text(encoding="utf-8"))
             samples = max(1, usage.get("chapters_completed", 1))
@@ -43,18 +44,15 @@ def estimate(book_id, count=1, approved_first=False):
                 basis = "结合上次实际用量与本次上下文粗估，并计入后续章节上下文增长。"
         except (OSError, ValueError, TypeError, KeyError):
             pass
-    incoming = 0 if demo else math.ceil(sum(base_input * (1 + min(i * .06, .6)) for i in range(count)))
-    outgoing = 0 if demo else math.ceil(base_output * count)
-    pricing = ({"rates": {"input": 0, "output": 0}, "peak_rates": {"input": 0, "output": 0},
-                "label": "离线演示", "period": "offline", "currency": "CNY", "warning": "", "rule": "不调用模型，不产生费用。", "source": official_pricing.SOURCE,
-                "checked_at": "", "status": "offline", "model": "offline-demo"}
-               if demo else official_pricing.quote(meta["model"]["model"]))
+    incoming = math.ceil(sum(base_input * (1 + min(i * .06, .6)) for i in range(count)))
+    outgoing = math.ceil(base_output * count)
+    pricing = official_pricing.quote(meta["model"]["model"])
     rates, peak = pricing["rates"], pricing["peak_rates"]
     cost = (incoming * rates["input"] + outgoing * rates["output"]) / 1_000_000 if rates else None
     peak_cost = (incoming * peak["input"] + outgoing * peak["output"]) / 1_000_000 if peak else None
     return {"book_id": book_id, "count": count, "first_chapter": len(chapters) + 1,
             "last_chapter": len(chapters) + count, "input_tokens": incoming, "output_tokens": outgoing,
             "total_tokens": incoming + outgoing, "estimated_cost_cny": cost, "peak_cost_cny": peak_cost,
-            "prices": rates, "pricing": pricing, "basis": "固定离线样本，不联网、不消耗额度。" if demo else basis,
+            "prices": rates, "pricing": pricing, "basis": basis,
             "note": "按输入未命中缓存估算；缓存优惠可能降低费用。按当前时段报价，长任务跨时段时可能变化。实际用量和费用以服务商账单为准，不按估算值强制截断。",
             "signature": signature(book_id, book)}

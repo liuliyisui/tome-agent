@@ -29,7 +29,7 @@ $('close-dialog').onclick = () => $('create-dialog').close();
 async function refreshBooks() {
   books = (await api('/api/books')).books;
   $('book-count').textContent = books.length;
-  $('book-list').innerHTML = books.length ? books.map(book => `<button class="book-item ${current?.state.project_id === book.id ? 'selected' : ''}" data-book="${esc(book.id)}"><span class="mini-book"></span><span><strong>${esc(book.metadata?.title || book.id)}</strong><small>${book.error ? esc(book.error) : `${book.chapters} / ${book.metadata.target_chapters} 章 · ${book.metadata.model.model === 'offline-demo' ? '离线演示' : '创作中'}`}</small></span></button>`).join('') : '<p class="empty-library">书架还是空的。<br>为第一个故事留个位置吧。</p>';
+  $('book-list').innerHTML = books.length ? books.map(book => `<button class="book-item ${current?.state.project_id === book.id ? 'selected' : ''}" data-book="${esc(book.id)}"><span class="mini-book"></span><span><strong>${esc(book.metadata?.title || book.id)}</strong><small>${book.error ? esc(book.error) : `${book.chapters} / ${book.metadata.target_chapters} 章 · 创作中`}</small></span></button>`).join('') : '<p class="empty-library">书架还是空的。<br>为第一个故事留个位置吧。</p>';
   document.querySelectorAll('[data-book]').forEach(button => button.onclick = () => selectBook(button.dataset.book).catch(e => notice(e.message)));
 }
 async function selectBook(id, latest = false) {
@@ -55,11 +55,10 @@ async function selectBook(id, latest = false) {
 function renderBook() {
   if (!current) return;
   const {metadata:meta,state} = current;
-  const demo = meta.model.model === 'offline-demo';
   $('welcome').hidden = true;
   $('book-workspace').hidden = false;
   $('breadcrumb-title').textContent = meta.title;
-  $('book-kind').textContent = demo ? 'OFFLINE DEMO / 离线样本' : current.mode === 'legacy' ? 'LEGACY / 旧版存档' : 'EVENT FIRST / 事件先行 · 三层记忆';
+  $('book-kind').textContent = current.mode === 'legacy' ? 'LEGACY / 旧版存档' : 'EVENT FIRST / 事件先行 · 三层记忆';
   $('book-title').textContent = meta.title;
   $('book-prompt').textContent = meta.prompt;
   $('stat-chapters').textContent = `${state.chapters.length} / ${meta.target_chapters}`;
@@ -70,7 +69,7 @@ function renderBook() {
   $('stat-progress').textContent = Math.round(state.chapters.length / meta.target_chapters * 100) + '%';
   $('revision').textContent = `存档版本 ${state.revision}`;
   $('export').href = `/api/books/${encodeURIComponent(state.project_id)}/export`;
-  $('generation-description').textContent = demo ? '固定两章的旧版四角色流程演示，不联网，不消耗额度。样本篇幅不代表实际生成长度。' : current.mode === 'legacy' ? '旧版正文可阅读和导出。请新建作品使用新版引擎，保留旧存档。' : `使用 ${meta.model.model}，先规划事件，再生成正文并维护三层记忆。每次生成一章，可能需要数分钟；已保存正文仍需人工检查。`;
+  $('generation-description').textContent = current.mode === 'legacy' ? '旧版正文可阅读和导出。请新建作品使用新版引擎，保留旧存档。' : `使用 ${meta.model.model}，先规划事件，再生成正文并维护三层记忆。每次生成一章，可能需要数分钟；已保存正文仍需人工检查。`;
   $('facts').innerHTML = facts.length ? facts.map(f => `<div class="fact"><strong>${esc(f.subject)} · ${esc(f.attribute === 'eye_color' ? '眼睛颜色' : f.attribute)}</strong><p>${esc(typeof f.value === 'object' ? JSON.stringify(f.value) : f.value)}</p><small>第 ${f.source.chapter_number} 章 · 版本 ${f.revision}</small><blockquote>${esc(f.source.quote)}</blockquote></div>`).join('') : '<p class="empty-facts">章节生成后，人物事实将在这里留存。</p>';
   $('chapter-tabs').innerHTML = state.chapters.map((c,i) => `<button data-chapter="${i}" class="${i === selectedChapter ? 'active' : ''}" aria-pressed="${i === selectedChapter}">第 ${c.number} 章</button>`).join('');
   document.querySelectorAll('[data-chapter]').forEach(button => button.onclick = () => { selectedChapter = Number(button.dataset.chapter); renderBook(); });
@@ -119,7 +118,7 @@ function renderStyle() {
   $('style-instructions').value = style.instructions;
   $('style-reference').value = style.reference;
   $('style-status').classList.remove('error');
-  $('style-status').textContent = current.mode === 'demo' ? '离线演示使用固定正文；文风设定仅对真实创作生效。' : styleDrafts.has(id) ? '有未保存的修改；生成下一章时会先自动保存。' : style.instructions || style.reference ? '已保存 · 从下一章生效。' : '尚未设置，使用默认文风。';
+  $('style-status').textContent = styleDrafts.has(id) ? '有未保存的修改；生成下一章时会先自动保存。' : style.instructions || style.reference ? '已保存 · 从下一章生效。' : '尚未设置，使用默认文风。';
 }
 function editStyle() {
   if (!current) return;
@@ -140,7 +139,7 @@ async function saveStyle(id) {
     if (current?.state.project_id === id) {
       current.style = result.style;
       renderStyle();
-      if (current.mode !== 'demo' && !result.style.instructions && !result.style.reference) {
+      if (!result.style.instructions && !result.style.reference) {
         $('style-status').textContent = '已保存 · 使用默认文风。';
       }
     }
@@ -166,12 +165,6 @@ $('create-form').onsubmit = async event => {
     await selectBook(book.state.project_id);
   } catch(e) { $('form-error').textContent = e.message; }
   finally { $('create-submit').disabled = false; }
-};
-$('demo').onclick = async () => {
-  $('demo').disabled = true;
-  try { const book = await api('/api/demo', {}); await selectBook(book.state.project_id); }
-  catch(e) { notice(e.message); }
-  finally { $('demo').disabled = false; }
 };
 $('generate').onclick = async () => {
   const id = current.state.project_id;
@@ -199,7 +192,7 @@ function showEstimate(estimate) {
   $('estimate-period').textContent = `${estimate.pricing.label} · ${estimate.pricing.model}`;
   $('estimate-price-rule').textContent = estimate.pricing.rule;
   $('estimate-price-source').href = estimate.pricing.source;
-  $('estimate-price-date').textContent = estimate.pricing.status === 'offline' ? '' : `核验：${estimate.pricing.checked_at} ${estimate.pricing.status === 'live' ? '· 官方实时同步' : '· 已核验缓存价，联网不可用时使用'}`;
+  $('estimate-price-date').textContent = `核验：${estimate.pricing.checked_at} ${estimate.pricing.status === 'live' ? '· 官方实时同步' : '· 已核验缓存价，联网不可用时使用'}`;
   $('estimate-price-warning').textContent = estimate.pricing.warning;
   $('estimate-price-warning').hidden = !estimate.pricing.warning;
   $('estimate-peak-cost').textContent = estimate.peak_cost_cny !== null && estimate.pricing.period === 'off_peak' ? `若按高峰价计：约 ¥ ${estimate.peak_cost_cny.toFixed(4)}` : '';

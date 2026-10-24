@@ -13,9 +13,9 @@ Tome Agent 是一个面向长篇小说生成的软件创新作业。核心代码
 - 长度控制：根据总字数、剩余章节和实际进度动态分配章节篇幅。
 - 失败降级：局部规划或记忆处理失败时记录问题，尽量继续保存有效正文。
 - DeepSeek 接入：使用 Python 标准库访问官方 Chat Completions 接口。
-- 离线演示：固定生成两章，不联网、不消耗额度。
+- 本地网页：创建作品、配置文风、确认费用后逐章或批量生成，支持导出排版后的 Markdown。
 
-图形前端尚未重新接入；`code/frontend/` 是后续界面的预留目录。
+图形前端位于 `code/frontend/`，使用原生 HTML、CSS 和 JavaScript。
 
 ## 目录
 
@@ -23,7 +23,7 @@ Tome Agent 是一个面向长篇小说生成的软件创新作业。核心代码
 .github/               GitHub 工作流和 Issue 模板
 code/backend/          DeepSeek 配置、应用服务、启动脚本和本地作品数据
 code/core_engine/      稳定长文本核心、三层记忆、检查点和发布清单
-code/frontend/         前端预留目录
+code/frontend/         本地网页工作室
 docs/                  需求、设计、管理和使用文档
 tests/                 单元测试与集成测试
 ```
@@ -34,10 +34,10 @@ tests/                 单元测试与集成测试
 
 ```powershell
 code\backend\setup.cmd
-code\backend\run-demo.cmd
+code\backend\run-web.cmd
 ```
 
-离线演示结果保存在 `code/backend/data/runs/`。运行自动测试：
+打开 http://127.0.0.1:8765。生成正文前，在 `code/backend/.env` 配置 DeepSeek API 密钥。作品存放于 `code/backend/data/inf_books/`。运行自动测试：
 
 ```powershell
 $env:PYTHONPATH="$PWD\code\core_engine;$PWD\code\backend"

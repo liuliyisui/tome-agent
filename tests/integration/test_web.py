@@ -11,8 +11,8 @@ from urllib.request import Request, build_opener, ProxyHandler
 from inf_backend import service, official_pricing
 from inf_backend.web import WebServer
 from inf_backend.settings import Settings
-from inf_writer.demo import DemoModel
-from inf_writer.models import Budget, ModelGateway
+from inf_writer.domain import apply_chapter, digest
+from inf_writer.storage import FileStore
 
 
 class WebIntegrationTests(unittest.TestCase):
@@ -57,25 +57,24 @@ class WebIntegrationTests(unittest.TestCase):
             time.sleep(.01)
         self.fail("generation timed out")
 
-    def test_demo_two_chapters_memory_and_export(self):
-        self.assertIn("故事工作室", self.request("/"))
-        book = self.request("/api/demo", {})
-        book_id = book["state"]["project_id"]
-        self.assertEqual(book["metadata"]["model"]["model"], "offline-demo")
-        self.assertNotIn("api_key", self.request("/api/config"))
-        for _ in range(2):
-            job = self.request(f"/api/books/{book_id}/generate", {})
-            self.wait_job(job["job_id"])
-        saved = self.request(f"/api/books/{book_id}")
-        self.assertEqual(len(saved["state"]["chapters"]), 2)
-        self.assertEqual(next(iter(saved["state"]["facts"].values()))["value"], "金色")
-        exported = self.request(f"/api/books/{book_id}/export")
-        self.assertIn("第2章", exported)
-        self.assertIn("\n\n\u3000\u3000艾岚", exported)
-        self.assertEqual(self.request("/api/books")["books"][0]["chapters"], 2)
+    def save_legacy_chapter(self, book_id):
+        store = FileStore(service.BOOKS)
+        state = store.load(book_id)
+        state = apply_chapter(state, {"number": 1, "title": "首章", "brief": "旧存档测试", "future_updates": []},
+                              "旧版正文。", [], "legacy-fixture", digest("legacy-fixture"))
+        store.commit(state, expected_revision=0)
+
+    def test_demo_entry_and_endpoint_removed_and_old_samples_hidden(self):
+        self.assertNotIn('id="demo"', self.request("/"))
         with self.assertRaises(HTTPError) as error:
-            self.request(f"/api/books/{book_id}/generate", {})
-        self.assertEqual(error.exception.code, 400)
+            self.request("/api/demo", {})
+        self.assertEqual(error.exception.code, 404)
+        service.create_book("old-demo", "旧演示", "测试", 2, 1000,
+                            settings=Settings(api_key="", model="offline-demo"))
+        self.assertEqual(self.request("/api/books")["books"], [])
+        with self.assertRaises(HTTPError) as error:
+            self.request("/api/books/old-demo")
+        self.assertEqual(error.exception.code, 404)
 
     def test_create_validation_and_missing_book(self):
         with self.assertRaises(HTTPError) as error:
@@ -154,17 +153,17 @@ class WebIntegrationTests(unittest.TestCase):
         self.assertEqual(self.request(f"/api/books/{book_id}")["style"], empty)
 
     def test_refresh_recovers_job_and_duplicate_submit_reuses_it(self):
-        book = self.request("/api/demo", {})
+        book = self.request("/api/books", {"title": "任务恢复", "prompt": "测试故事", "chapters": 3, "target_units": 3000})
         book_id = book["state"]["project_id"]
         release = threading.Event()
-        original = service.generate_legacy
 
         def blocked(*args, **kwargs):
             if not release.wait(5):
                 raise RuntimeError("test generation timed out")
-            return original(*args, **kwargs)
+            kwargs["progress"]({"completed": 1, "current_chapter": 1})
 
-        with patch.object(service, "generate_legacy", side_effect=blocked) as generate:
+        with patch.object(service, "generate", side_effect=blocked) as generate, \
+                patch("inf_backend.web.Settings.load", return_value=Settings(api_key="FAKE_TEST_KEY")):
             try:
                 first = self.request(f"/api/books/{book_id}/generate", {})
                 reloaded = self.request(f"/api/books/{book_id}")
@@ -178,11 +177,11 @@ class WebIntegrationTests(unittest.TestCase):
             generate.assert_called_once()
         completed = self.request(f"/api/books/{book_id}")
         self.assertEqual(completed["job"]["status"], "completed")
-        self.assertEqual(len(completed["state"]["chapters"]), 1)
+        self.assertEqual(completed["job"]["completed"], 1)
 
     def test_reject_cross_origin_and_path_escape(self):
         with self.assertRaises(HTTPError) as error:
-            self.request("/api/demo", {}, {"Origin": "https://example.com"})
+            self.request("/api/books", {}, {"Origin": "https://example.com"})
         self.assertEqual(error.exception.code, 403)
         with self.assertRaises(HTTPError) as error:
             self.request("/../backend/.env")
@@ -200,8 +199,7 @@ class WebIntegrationTests(unittest.TestCase):
                      "tier": "working", "revision": 1, "kind": "event", "sources": [{"chapter_number": 1, "quote": "许闻发现档案。"}]}}}}
         with patch.object(service, "load_book", return_value={"metadata": book["metadata"], "state": state}), \
                 patch("inf_backend.web.Settings.load", return_value=Settings(api_key="FAKE_TEST_KEY")), \
-                patch.object(service, "generate") as generate, \
-                patch.object(service, "generate_legacy") as legacy:
+                patch.object(service, "generate") as generate:
             view = self.request(f"/api/books/{book_id}")
             self.assertEqual(view["mode"], "longform")
             self.assertEqual(view["state"]["project_id"], book_id)
@@ -211,13 +209,11 @@ class WebIntegrationTests(unittest.TestCase):
             job = self.request(f"/api/books/{book_id}/generate", {})
             self.wait_job(job["job_id"])
             generate.assert_called_once()
-            legacy.assert_not_called()
 
     def test_legacy_prose_cannot_be_overwritten_by_new_engine(self):
         cfg = Settings(api_key="FAKE_TEST_KEY")
         service.create_book("legacy-book", "旧版作品", "故事", 3, 1000, settings=cfg)
-        budget = Budget(max_calls=4, max_cost_usd=0)
-        service.generate_legacy("legacy-book", settings=cfg, gateway=ModelGateway(DemoModel(), budget), budget=budget)
+        self.save_legacy_chapter("legacy-book")
         self.assertEqual(self.request("/api/books/legacy-book")["mode"], "legacy")
         with self.assertRaises(HTTPError) as error:
             self.request("/api/books/legacy-book/generate", {})

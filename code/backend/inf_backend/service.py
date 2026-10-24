@@ -9,11 +9,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
 
-from inf_writer.agents import build_agents
 from inf_writer.chat_provider import ChatCompletionProvider
 from inf_writer.domain import Snapshot, canonical, project_id, strict_json
 from inf_writer.models import Budget, ModelGateway
-from inf_writer.runtime import Coordinator
 from inf_writer.storage import FileStore
 from memory_runtime.writing import WritingSession, load_resume
 
@@ -165,38 +163,6 @@ def _gateway(settings):
     return ModelGateway(provider, budget, reserve_per_call=reservation), budget
 
 
-def generate_legacy(book_id, count=1, gateway=None, budget=None, settings=None):
-    current = load_book(book_id)
-    meta, state = current["metadata"], current["state"]
-    remaining = meta["target_chapters"] - len(state.chapters)
-    if type(count) is not int or not 1 <= count <= remaining:
-        raise ValueError("本次章节数超出剩余范围")
-    cfg = settings or Settings.load()
-    if cfg.public_config() != meta["model"]:
-        raise ValueError("当前模型配置与创建作品时不一致")
-    if gateway is None:
-        gateway, budget = _gateway(cfg)
-    coordinator = Coordinator(FileStore(BOOKS), build_agents(gateway))
-    with operation_lock(book_path(book_id)):
-        for _ in range(count):
-            state = FileStore(BOOKS).load(book_id)
-            number = len(state.chapters) + 1
-            target = max(300, (meta["target_units"] - sum(count_units(c["text"]) for c in state.chapters))
-                         // max(1, meta["target_chapters"] - len(state.chapters)))
-            instruction = (f"作品《{meta['title']}》，全书共{meta['target_chapters']}章。"
-                           f"现在创作第{number}章，正文目标约{target}个中文字；保持前文连续并推进核心冲突。")
-            outcome = coordinator.write_next(book_id, f"chapter-{number}-{uuid4().hex}", instruction)
-            if outcome.status not in ("COMMITTED", "ALREADY_COMMITTED"):
-                detail = json.dumps(outcome.issues, ensure_ascii=False) if outcome.issues else outcome.error or outcome.status
-                raise RuntimeError(f"第{number}章未通过 INF 审核：{detail}")
-    if budget is not None:
-        _atomic_json(book_path(book_id) / "last-usage.json", {
-            "calls": budget.calls, "input_tokens": budget.input_tokens,
-            "output_tokens": budget.output_tokens, "estimated_cost_upper_usd": budget.cost_upper_usd,
-        })
-    return load_book(book_id)
-
-
 def _longform_plan(meta):
     return {
         "title": meta["title"],
@@ -314,7 +280,15 @@ def export_markdown(book):
 
 
 def list_books():
-    return sorted(p.parent.name for p in BOOKS.glob("*/metadata.json")) if BOOKS.exists() else []
+    books = []
+    for path in sorted(BOOKS.glob("*/metadata.json")):
+        try:
+            if _metadata(path.parent.name)["model"]["model"] == "offline-demo":
+                continue
+        except (OSError, ValueError, KeyError):
+            pass
+        books.append(path.parent.name)
+    return books
 
 
 def book_labels(book_ids):
