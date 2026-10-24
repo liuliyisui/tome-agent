@@ -3,3 +3,5 @@
 .job-status.error{color:#a35b45;font-weight:500}
 
 .style-panel{margin-bottom:24px}.style-fields{display:grid;grid-template-columns:1fr 1fr;gap:24px}.style-fields label{margin:6px 0 0}.style-fields small{font-size:10px;color:#949d86;line-height:1.7}.style-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:18px}.style-actions span{font-size:11px;color:#8c9581}.style-actions span.error{color:#a35b45}.style-actions button{color:var(--green)}.create-style{border-top:1px solid var(--line);padding-top:12px}.create-style summary{cursor:pointer;color:var(--green);font-size:12px;margin-bottom:16px}.create-style[open] summary{margin-bottom:20px}@media(max-width:800px){.style-fields{grid-template-columns:1fr;gap:18px}.style-actions{align-items:flex-start}.style-actions button{flex-shrink:0}}
+
+#chapter-body>.prose-paragraph{text-indent:2em;line-height:2.15;letter-spacing:.025em;margin:0 0 1em;white-space:normal;text-align:justify}#chapter-body>.prose-paragraph:last-child{margin-bottom:0}
