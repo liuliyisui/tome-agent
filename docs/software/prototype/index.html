@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tome · AI 交互原型</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script src="./vue.runtime.global.prod.js" defer></script>
+    <script src="./vue-components.js" defer></script>
+    <script src="./prototype.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <div class="prototype-banner" role="note">AI 辅助制作 · 交互原型 · 示例数据，不调用模型、不产生费用 <button id="prototype-reset" type="button">重置示例</button></div>
+    <div id="tome-app"><p class="muted">正在打开故事工作室…</p></div>
+    <!-- Source template, precompiled by build-vue.cjs. Never compiled in the browser. -->
+    <template id="tome-template">
+      <div
+        :class="{'home-view':state.view==='home','sidebar-collapsed':sidebarHidden}"
+        @click="state.menuId=$event.target.closest('.book-menu')?state.menuId:null"
+        @keydown.esc="state.menuId=null"
+      >
+        <aside
+          id="workspace-sidebar"
+          class="sidebar"
+          :inert="sidebarHidden"
+          :aria-hidden="sidebarHidden"
+        >
+          <a class="brand" href="./index.html" aria-label="Tome 首页"
+            ><span class="brand-icon">T</span>tome<span class="brand-dot"
+              >.</span
+            ></a
+          >
+          <div class="workspace-label">你的故事工作室 <span>LOCAL</span></div>
+          <button id="new-book" class="primary wide" @click="openCreate">
+            <span>＋</span> 开始一个新故事
+          </button>
+          <div class="library-heading">
+            作品书架 <span id="book-count">{{state.books.length}}</span>
+          </div>
+          <nav id="book-list" aria-label="作品列表">
+            <div
+              v-for="book in state.books"
+              :key="book.id"
+              class="book-row"
+              :class="{selected:id===book.id}"
+            >
+              <button
+                class="book-item"
+                :data-book="book.id"
+                :disabled="state.pending.has(book.id)"
+                @click="selectBook(book.id)"
+              >
+                <span class="mini-book"></span
+                ><span
+                  ><strong>{{titleOf(book)}}</strong
+                  ><small
+                    ><span v-if="book.pinned" class="pin-mark">置顶 · </span
+                    >{{book.error || `${book.chapters} / ${book.metadata.target_chapters} 章`}}</small
+                  ></span
+                >
+              </button>
+              <details class="book-menu" :open="state.menuId===book.id">
+                <summary
+                  :aria-label="`管理《${titleOf(book)}》`"
+                  title="管理作品"
+                  @click.prevent="state.menuId=state.menuId===book.id?null:book.id"
+                >
+                  ⋯
+                </summary>
+                <div class="book-menu-options">
+                  <button
+                    type="button"
+                    :data-pin="book.id"
+                    :disabled="state.pending.has(book.id)"
+                    @click="pinBook(book)"
+                  >
+                    {{book.pinned?'取消置顶':'置顶'}}</button
+                  ><button
+                    type="button"
+                    class="danger-text"
+                    :data-delete="book.id"
+                    :disabled="state.pending.has(book.id)"
+                    @click="requestDelete(book)"
+                  >
+                    删除作品
+                  </button>
+                </div>
+              </details>
+            </div>
+            <p v-if="!state.books.length" class="empty-library">
+              书架还是空的。<br />为第一个故事留个位置吧。
+            </p>
+          </nav>
+          <button
+            id="trash-open"
+            class="trash-entry"
+            type="button"
+            @click="openTrash"
+          >
+            <span aria-hidden="true">▱</span><span>废案箱</span
+            ><span id="trash-count" class="trash-count"
+              >{{state.trash.length}}</span
+            >
+          </button>
+          <div class="sidebar-bottom">
+            <div class="connection">
+              <i
+                id="connection-dot"
+                :class="{ready:state.configured&&!state.connectionError}"
+              ></i
+              ><span id="connection-text">{{connectionText}}</span>
+            </div>
+            <p>让灵感成书，让故事延续。</p>
+            <span class="version">TOME AGENT / INF ENGINE</span>
+          </div>
+        </aside>
+        <main>
+          <header>
+            <div class="header-navigation">
+              <button
+                id="sidebar-toggle"
+                v-show="state.view!=='home'"
+                type="button"
+                class="sidebar-toggle"
+                :aria-label="sidebarHidden?'展开侧栏':'收起侧栏'"
+                :title="sidebarHidden?'展开侧栏':'收起侧栏'"
+                aria-controls="workspace-sidebar"
+                :aria-expanded="!sidebarHidden"
+                @click="toggleSidebar"
+              >
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                  <path d="M9 4v16"></path>
+                  <path class="sidebar-chevron" d="m15 9-3 3 3 3"></path>
+                </svg>
+              </button>
+              <nav class="breadcrumb" aria-label="页面导航">
+                <a id="workspace-home" href="./index.html" title="刷新并返回首页">工作室</a
+                ><span aria-hidden="true">/</span
+                ><span id="breadcrumb-title" aria-current="page"
+                  >{{breadcrumb}}</span
+                >
+              </nav>
+            </div>
+            <button
+              id="my-works"
+              class="my-works-button"
+              type="button"
+              @click="showLibrary"
+            >
+              我的作品 ↗
+            </button>
+          </header>
+          <div class="content">
+            <section class="intro">
+              <div>
+                <div class="eyebrow">A SPACE FOR YOUR NEXT CHAPTER</div>
+                <h1>每一个世界，都始于一个念头<span>。</span></h1>
+                <p>把故事交给灵感，把连续性交给 Tome。</p>
+              </div>
+              <span class="intro-mark" aria-hidden="true">✳</span>
+            </section>
+            <div
+              id="notice"
+              ref="noticePanel"
+              class="notice"
+              role="status"
+              v-show="state.notice"
+            >
+              {{state.notice}}
+            </div>
+            <section id="welcome" class="welcome" v-show="state.view==='home'">
+              <div class="welcome-art" aria-hidden="true">
+                <span class="orbit one"></span><span class="orbit two"></span
+                ><span class="book-art"
+                  >T<span>THE UNTOLD<br />STORIES</span></span
+                ><span class="spark">✧</span>
+              </div>
+              <div class="welcome-copy">
+                <div class="eyebrow">从这里，写向远方</div>
+                <h2>你的下一部作品<br />正在等待第一章。</h2>
+                <p>
+                  从一个构想到完整长篇。事件规划、正文写作与三层记忆，让故事持续向前。
+                </p>
+                <div class="welcome-actions">
+                  <button
+                    id="welcome-create"
+                    class="primary"
+                    @click="openCreate"
+                  >
+                    {{state.configured?'创建新的作品':'配置 API Key'}}
+                    <span>↗</span>
+                  </button>
+                </div>
+                <small
+                  >{{state.configured?'创作引擎已就绪，开始你的下一个故事。':'配置 DeepSeek API 密钥后，即可开始创作。'}}</small
+                >
+              </div>
+            </section>
+            <section
+              id="works-view"
+              v-show="state.view==='library'"
+              aria-labelledby="works-title"
+            >
+              <div class="book-heading">
+                <div>
+                  <div class="eyebrow">YOUR STORY COLLECTION</div>
+                  <h2 id="works-title">我的作品</h2>
+                </div>
+                <button
+                  id="works-create"
+                  type="button"
+                  class="outline"
+                  @click="openCreate"
+                >
+                  ＋ 创建新的作品
+                </button>
+              </div>
+              <p class="muted">从书架选择一部作品，继续你的故事。</p>
+              <div id="works-grid" class="works-grid">
+                <button
+                  v-for="book in state.books"
+                  :key="book.id"
+                  class="work-card"
+                  type="button"
+                  :disabled="state.pending.has(book.id)"
+                  @click="selectBook(book.id)"
+                >
+                  <span class="work-card-cover" aria-hidden="true">T</span
+                  ><span class="work-card-info"
+                    ><strong>{{titleOf(book)}}</strong
+                    ><small
+                      >{{book.error || `${book.chapters} / ${book.metadata.target_chapters} 章`}}</small
+                    ><span class="work-card-open">继续创作 ↗</span></span
+                  >
+                </button>
+                <div v-if="!state.books.length" class="works-empty">
+                  <h3>书架还是空的</h3>
+                  <p>创建一部新作品，让故事从这里开始。</p>
+                </div>
+              </div>
+            </section>
+            <section
+              id="book-workspace"
+              v-if="state.current"
+              v-show="state.view==='book'"
+            >
+              <div class="book-heading">
+                <div>
+                  <div class="eyebrow" id="book-kind">
+                    {{state.current.mode==='legacy'?'LEGACY / 旧版存档':'EVENT FIRST / 事件先行 · 三层记忆'}}
+                  </div>
+                  <h2 id="book-title">{{meta.title}}</h2>
+                </div>
+                <a
+                  id="export"
+                  class="outline"
+                  :href="`/api/books/${encodeURIComponent(id)}/export`"
+                  download
+                  >↓ 导出作品</a
+                >
+              </div>
+              <div class="stats">
+                <div>
+                  <span>已完成章节</span
+                  ><strong id="stat-chapters"
+                    >{{chapters.length}} / {{meta.target_chapters}}</strong
+                  >
+                </div>
+                <div>
+                  <span>累计字数</span
+                  ><strong id="stat-units">{{fmt(units)}}</strong>
+                </div>
+                <div>
+                  <span>故事记忆</span
+                  ><strong id="stat-facts">{{facts.length}}</strong>
+                </div>
+                <div>
+                  <span>创作进度</span
+                  ><strong id="stat-progress"
+                    >{{Math.round(chapters.length/meta.target_chapters*100)}}%</strong
+                  >
+                </div>
+              </div>
+              <section
+                class="panel style-panel"
+                aria-labelledby="style-heading"
+              >
+                <div class="panel-heading">
+                  <h3 id="style-heading">文风设定</h3>
+                  <span class="tiny-label">WRITING STYLE</span>
+                </div>
+                <p class="muted">
+                  为这部作品固定叙述方式。保存后从下一章生效，已生成的正文保留原样。
+                </p>
+                <form id="style-form" @submit.prevent="submitStyle">
+                  <div class="style-fields">
+                    <label
+                      >文风要求<textarea
+                        id="style-instructions"
+                        name="instructions"
+                        rows="5"
+                        maxlength="2000"
+                        v-model="style.instructions"
+                        :disabled="running||state.busy.style"
+                        @input="state.errors.style=''"
+                        placeholder="例如：第三人称，短句为主，叙述克制；通过动作和对白展现情绪。避免堆砌比喻、重复心理描写和章末说教。"
+                      ></textarea
+                      ><small
+                        >可描述视角、句式、节奏、对白比例，以及希望避免的写法。最多
+                        2,000 字。</small
+                      ></label
+                    ><label
+                      >参考片段<textarea
+                        id="style-reference"
+                        name="reference"
+                        rows="5"
+                        maxlength="6000"
+                        v-model="style.reference"
+                        :disabled="running||state.busy.style"
+                        @input="state.errors.style=''"
+                        placeholder="粘贴你自己写的或有权使用的片段，仅作写法参考。"
+                      ></textarea
+                      ><small
+                        >建议 1,000～3,000 字，最多 6,000
+                        字。仅作写法参考。</small
+                      ></label
+                    >
+                  </div>
+                  <div class="style-actions">
+                    <span
+                      id="style-status"
+                      role="status"
+                      :class="{error:state.errors.style}"
+                      >{{styleStatus}}</span
+                    ><button
+                      id="style-save"
+                      class="outline"
+                      type="submit"
+                      :disabled="running||state.busy.style"
+                    >
+                      保存文风设定
+                    </button>
+                  </div>
+                </form>
+              </section>
+              <div class="writing-grid">
+                <section class="manuscript panel">
+                  <div class="panel-heading">
+                    <h3>故事正文</h3>
+                    <span id="revision"
+                      >存档版本 {{state.current.state.revision}}</span
+                    >
+                  </div>
+                  <div
+                    id="chapter-tabs"
+                    class="chapter-tabs"
+                    aria-label="章节选择"
+                  >
+                    <button
+                      v-for="(item,index) in chapters"
+                      :key="item.number"
+                      :data-chapter="index"
+                      :class="{active:state.chapterIndex===index}"
+                      :aria-pressed="state.chapterIndex===index"
+                      @click="state.chapterIndex=index"
+                    >
+                      第 {{item.number}} 章
+                    </button>
+                  </div>
+                  <article id="chapter-body">
+                    <chapter-reader :chapter="chapter"></chapter-reader>
+                  </article>
+                </section>
+                <aside class="writing-aside">
+                  <section class="panel">
+                    <div class="panel-heading">
+                      <h3>创作台</h3>
+                      <span class="tiny-label">INF</span>
+                    </div>
+                    <p id="generation-description" class="muted">
+                      {{state.current.mode==='legacy'?'旧版正文可阅读和导出。请新建作品使用新版引擎，保留旧存档。':`使用 ${meta.model.model}，先规划事件，再生成正文并维护三层记忆。每次生成一章，可能需要数分钟；已保存正文仍需人工检查。`}}
+                    </p>
+                    <div class="batch-controls">
+                      <label class="check-label"
+                        ><input
+                          id="approve-first"
+                          type="checkbox"
+                          v-model="batch.approved"
+                          :disabled="running||!chapters.length||complete"
+                          @change="approveFirst"
+                        />我已阅读第一章，确认合适后自动续写</label
+                      ><label
+                        >本次输出章节数<input
+                          id="generation-count"
+                          type="number"
+                          min="1"
+                          :max="Math.max(1,remaining)"
+                          v-model.number="batch.count"
+                          :disabled="running||!batch.approved||complete"
+                          required
+                      /></label>
+                      <p id="batch-hint" class="muted">
+                        {{!chapters.length?'先生成第一章，阅读确认后再自动续写。':`剩余 ${remaining} 章。确认首章后自动填入剩余章节数，可修改；提交前会显示用量和费用预估。`}}
+                      </p>
+                    </div>
+                    <button
+                      id="generate"
+                      class="primary wide"
+                      :disabled="generationDisabled"
+                      @click="prepareGeneration"
+                    >
+                      {{generateLabel}}
+                    </button>
+                    <p
+                      id="job-status"
+                      class="job-status"
+                      role="status"
+                      :class="{error:state.jobErrors[id]}"
+                    >
+                      {{jobStatus}}
+                    </p>
+                  </section>
+                  <section class="panel">
+                    <div class="panel-heading">
+                      <h3>故事构想</h3>
+                      <span>↗</span>
+                    </div>
+                    <p id="book-prompt" class="prompt">{{meta.prompt}}</p>
+                  </section>
+                  <section class="panel">
+                    <div class="panel-heading">
+                      <h3>事实记忆</h3>
+                      <span class="tiny-label">MEMORY</span>
+                    </div>
+                    <label class="fact-topic-label" for="fact-topic"
+                      >选择事实主题</label
+                    ><select
+                      id="fact-topic"
+                      aria-describedby="fact-topic-summary"
+                      v-model="factTopic"
+                      :disabled="!factGroups.length"
+                    >
+                      <option v-if="!factGroups.length" value="">
+                        暂无事实主题
+                      </option>
+                      <option
+                        v-for="group in factGroups"
+                        :key="group.key"
+                        :value="group.key"
+                      >
+                        {{group.label}}（{{group.facts.length}}）
+                      </option>
+                    </select>
+                    <p id="fact-topic-summary" class="muted">
+                      {{factGroups.length?`${factGroups.length} 个主题 · ${facts.length} 条记忆，选择标题查看。`:'生成章节后，将自动整理事实主题。'}}
+                    </p>
+                    <div id="facts" class="fact-list">
+                      <fact-memory
+                        v-for="(fact,index) in selectedFacts"
+                        :key="`${factTopic}:${index}`"
+                        :fact="fact"
+                      ></fact-memory>
+                      <p v-if="!selectedFacts.length" class="empty-facts">
+                        暂时没有可查看的事实记忆。
+                      </p>
+                    </div>
+                  </section>
+                </aside>
+              </div>
+            </section>
+            <section class="workflow">
+              <div class="section-label">
+                让故事保持连贯 <span>THE INF WORKFLOW</span>
+              </div>
+              <div class="workflow-grid">
+                <div>
+                  <span class="step">01</span>
+                  <h3>规划 <small>Planner</small></h3>
+                  <p>先规划场景事件，推演状态变化。</p>
+                </div>
+                <div>
+                  <span class="step">02</span>
+                  <h3>写作 <small>Writer</small></h3>
+                  <p>将故事骨架，写成有温度的文字。</p>
+                </div>
+                <div>
+                  <span class="step">03</span>
+                  <h3>记忆 <small>Memory</small></h3>
+                  <p>留存人物与事实，让细节有迹可循。</p>
+                </div>
+                <div>
+                  <span class="step">04</span>
+                  <h3>存档 <small>Checkpoint</small></h3>
+                  <p>保存阶段检查点，支持断点恢复。</p>
+                </div>
+              </div>
+            </section>
+            <footer>
+              <span>为长篇故事，留一盏灯。</span><span>CRAFTED WITH TOME</span>
+            </footer>
+          </div>
+        </main>
+        <dialog
+          id="api-key-dialog"
+          v-dialog="state.dialogs.api"
+          aria-labelledby="api-key-title"
+          @cancel.prevent="closeDialog('api')"
+        >
+          <form id="api-key-form" @submit.prevent="configure">
+            <div class="eyebrow">WELCOME TO TOME</div>
+            <h2 id="api-key-title">先连接你的创作引擎</h2>
+            <p class="muted">
+              首次使用，请配置 DeepSeek API Key。保存后即可开始创作，无需重启。
+            </p>
+            <label for="api-key-input">DeepSeek API Key</label
+            ><input
+              id="api-key-input"
+              type="password"
+              required
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="sk-…"
+              maxlength="253"
+              v-model="state.apiKey"
+              :disabled="state.busy.api"
+            />
+            <p class="form-hint">
+              密钥仅保存在本机后端配置文件中，不会回显到页面。保存只检查格式，实际可用性在生成时由
+              DeepSeek 校验。
+            </p>
+            <p id="api-key-error" class="error" role="alert">
+              {{state.errors.api}}
+            </p>
+            <div class="confirm-actions">
+              <button
+                id="api-key-later"
+                type="button"
+                class="outline"
+                :disabled="state.busy.api"
+                @click="closeDialog('api')"
+              >
+                稍后配置</button
+              ><button
+                id="api-key-save"
+                type="submit"
+                class="primary"
+                :disabled="state.busy.api"
+              >
+                保存并开始使用
+              </button>
+            </div>
+          </form>
+        </dialog>
+        <dialog
+          id="create-dialog"
+          v-dialog="state.dialogs.create"
+          @cancel.prevent="closeDialog('create')"
+        >
+          <form id="create-form" @submit.prevent="createBook">
+            <div class="dialog-heading">
+              <div>
+                <div class="eyebrow">A NEW BEGINNING</div>
+                <h2>让一个新世界诞生。</h2>
+              </div>
+              <button
+                type="button"
+                id="close-dialog"
+                class="icon-button"
+                aria-label="关闭"
+                :disabled="state.busy.create"
+                @click="closeDialog('create')"
+              >
+                ×
+              </button>
+            </div>
+            <label
+              >作品名称<input
+                name="title"
+                required
+                maxlength="120"
+                placeholder="为你的故事取一个名字"
+                v-model="state.createForm.title"
+                :disabled="state.busy.create" /></label
+            ><label
+              >故事构想<textarea
+                name="prompt"
+                required
+                maxlength="12000"
+                rows="5"
+                placeholder="谁是主角？故事发生在哪里？有什么冲突正等待发生？"
+                v-model="state.createForm.prompt"
+                :disabled="state.busy.create"
+              ></textarea>
+            </label>
+            <div class="form-row">
+              <label
+                >目标章节<input
+                  name="chapters"
+                  type="number"
+                  min="1"
+                  max="100"
+                  v-model.number="state.createForm.chapters"
+                  :disabled="state.busy.create"
+                  required /></label
+              ><label
+                >目标总字数<input
+                  name="target_units"
+                  type="number"
+                  min="500"
+                  max="200000"
+                  v-model.number="state.createForm.target_units"
+                  :disabled="state.busy.create"
+                  required
+              /></label>
+            </div>
+            <details class="create-style">
+              <summary>文风设定（可选）</summary>
+              <label
+                >文风要求<textarea
+                  name="style_instructions"
+                  rows="3"
+                  maxlength="2000"
+                  placeholder="描述视角、句式、节奏、对白及希望避免的写法"
+                  v-model="state.createForm.instructions"
+                  :disabled="state.busy.create"
+                ></textarea></label
+              ><label
+                >参考片段<textarea
+                  name="style_reference"
+                  rows="4"
+                  maxlength="6000"
+                  placeholder="粘贴你自己写的或有权使用的片段，仅作写法参考"
+                  v-model="state.createForm.reference"
+                  :disabled="state.busy.create"
+                ></textarea>
+              </label>
+            </details>
+            <p class="form-hint">
+              创建后可逐章生成。首次使用时可直接在页面配置 DeepSeek API 密钥。
+            </p>
+            <p id="form-error" role="alert">{{state.errors.create}}</p>
+            <button
+              id="create-submit"
+              class="primary wide"
+              type="submit"
+              :disabled="state.busy.create"
+            >
+              创建作品 ↗
+            </button>
+          </form>
+        </dialog>
+        <dialog
+          id="estimate-dialog"
+          v-dialog="state.dialogs.estimate"
+          aria-labelledby="estimate-title"
+          @cancel.prevent="closeDialog('estimate')"
+        >
+          <div class="dialog-heading">
+            <div>
+              <div class="eyebrow">BEFORE YOU WRITE</div>
+              <h2 id="estimate-title">确认本次生成</h2>
+            </div>
+            <button
+              id="estimate-close"
+              class="icon-button"
+              aria-label="关闭费用预估"
+              type="button"
+              :disabled="state.busy.start"
+              @click="closeDialog('estimate')"
+            >
+              ×
+            </button>
+          </div>
+          <template v-if="state.estimate"
+            ><p id="estimate-scope">
+              《{{state.estimateTitle}}》· 第 {{state.estimate.first_chapter}}
+              至 {{state.estimate.last_chapter}} 章，共 {{state.estimate.count}}
+              章
+            </p>
+            <div class="estimate-stats">
+              <div>
+                <span>预计输入 token</span
+                ><strong id="estimate-input"
+                  >{{fmt(state.estimate.input_tokens)}}</strong
+                >
+              </div>
+              <div>
+                <span>预计输出 token</span
+                ><strong id="estimate-output"
+                  >{{fmt(state.estimate.output_tokens)}}</strong
+                >
+              </div>
+              <div>
+                <span>预计 token 合计</span
+                ><strong id="estimate-total"
+                  >≈ {{fmt(state.estimate.total_tokens)}}</strong
+                >
+              </div>
+            </div>
+            <p id="estimate-basis" class="muted">{{state.estimate.basis}}</p>
+            <div class="official-price-panel">
+              <strong id="estimate-period"
+                >{{state.estimate.pricing.label}} ·
+                {{state.estimate.pricing.model}}</strong
+              >
+              <dl>
+                <div>
+                  <dt>输入单价（未命中缓存）</dt>
+                  <dd id="estimate-input-price">
+                    {{price(state.estimate.prices?.input)}}
+                  </dd>
+                </div>
+                <div>
+                  <dt>输出单价</dt>
+                  <dd id="estimate-output-price">
+                    {{price(state.estimate.prices?.output)}}
+                  </dd>
+                </div>
+              </dl>
+              <p id="estimate-price-rule">{{state.estimate.pricing.rule}}</p>
+              <a
+                id="estimate-price-source"
+                :href="state.estimate.pricing.source"
+                target="_blank"
+                rel="noopener noreferrer"
+                >DeepSeek 官方定价 ↗</a
+              ><small id="estimate-price-date"
+                >核验：{{state.estimate.pricing.checked_at}}
+                {{state.estimate.pricing.status==='live'?'· 官方实时同步':'· 已核验缓存价，联网不可用时使用'}}</small
+              >
+              <p
+                id="estimate-price-warning"
+                class="error"
+                v-show="state.estimate.pricing.warning"
+              >
+                {{state.estimate.pricing.warning}}
+              </p>
+            </div>
+            <p class="estimate-cost">
+              预计费用
+              <strong id="estimate-cost"
+                >{{cost(state.estimate.estimated_cost_cny)}}</strong
+              >
+            </p>
+            <p
+              id="estimate-peak-cost"
+              class="form-hint"
+              v-show="state.estimate.peak_cost_cny!==null&&state.estimate.pricing.period==='off_peak'"
+            >
+              若按高峰价计：{{cost(state.estimate.peak_cost_cny)}}
+            </p>
+            <p id="estimate-note" class="form-hint">
+              {{state.estimate.note}}
+            </p></template
+          >
+          <p id="estimate-error" class="error" role="alert">
+            {{state.errors.estimate}}
+          </p>
+          <div class="confirm-actions">
+            <button
+              id="estimate-cancel"
+              type="button"
+              class="outline"
+              :disabled="state.busy.start"
+              @click="closeDialog('estimate')"
+            >
+              取消</button
+            ><button
+              id="estimate-continue"
+              type="button"
+              class="primary"
+              :disabled="state.busy.start||!state.estimate"
+              @click="confirmGeneration"
+            >
+              继续生成
+            </button>
+          </div>
+        </dialog>
+        <dialog
+          id="delete-dialog"
+          v-dialog="state.dialogs.delete"
+          aria-labelledby="delete-title"
+          @cancel.prevent="closeDialog('delete')"
+        >
+          <div class="eyebrow">MANAGE YOUR LIBRARY</div>
+          <h2 id="delete-title">删除这部作品？</h2>
+          <p id="delete-book-title">《{{titleOf(state.deleteBook)}}》</p>
+          <p class="muted">
+            作品会移出书架，正文和存档保存在废案箱。删除后可从书架底部的「废案箱」恢复；正在生成的作品需先等待任务结束。
+          </p>
+          <p id="delete-error" class="error" role="alert">
+            {{state.errors.delete}}
+          </p>
+          <div class="confirm-actions">
+            <button
+              id="delete-cancel"
+              type="button"
+              class="outline"
+              :disabled="state.busy.delete"
+              @click="closeDialog('delete')"
+            >
+              取消删除</button
+            ><button
+              id="delete-confirm"
+              type="button"
+              class="primary danger-button"
+              :disabled="state.busy.delete"
+              @click="deleteBook"
+            >
+              删除作品
+            </button>
+          </div>
+        </dialog>
+        <dialog
+          id="trash-dialog"
+          v-dialog="state.dialogs.trash"
+          aria-labelledby="trash-title"
+          @cancel.prevent="closeDialog('trash')"
+        >
+          <div class="dialog-heading">
+            <div>
+              <div class="eyebrow">STORIES CAN BEGIN AGAIN</div>
+              <h2 id="trash-title">废案箱</h2>
+            </div>
+            <button
+              id="trash-close"
+              type="button"
+              class="icon-button"
+              aria-label="关闭废案箱"
+              @click="closeDialog('trash')"
+            >
+              ×
+            </button>
+          </div>
+          <p class="muted">
+            暂时放下的故事，也可以重新开始。作品正文、文风和存档都保留在这里。
+          </p>
+          <div id="trash-list">
+            <div
+              v-for="book in state.trash"
+              :key="book.restore_token"
+              class="trash-book"
+            >
+              <div>
+                <strong>{{book.title}}</strong
+                ><small>移入时间：{{deletedAt(book.deleted_at)}}</small>
+              </div>
+              <div class="trash-book-actions">
+                <button
+                  class="outline"
+                  type="button"
+                  :data-restore="book.restore_token"
+                  :disabled="state.pending.has(book.restore_token)"
+                  @click="restoreBook(book)"
+                >
+                  {{state.pending.has(book.restore_token)?'正在恢复…':'恢复到书架'}}</button
+                ><button
+                  class="purge-button"
+                  type="button"
+                  :data-purge="book.restore_token"
+                  :disabled="state.pending.has(book.restore_token)"
+                  @click="requestPurge(book)"
+                >
+                  彻底删除
+                </button>
+              </div>
+            </div>
+            <div v-if="!state.trash.length" class="trash-empty">
+              <span aria-hidden="true">◇</span>
+              <h3>废案箱还是空的</h3>
+              <p>从书架删除的作品会保存在这里，可随时恢复。</p>
+            </div>
+          </div>
+          <p id="trash-message" role="status" class="muted">
+            {{state.trashMessage}}
+          </p>
+        </dialog>
+        <dialog
+          id="purge-dialog"
+          v-dialog="state.dialogs.purge"
+          aria-labelledby="purge-title"
+          @cancel.prevent="closeDialog('purge')"
+        >
+          <div class="eyebrow">PERMANENT DELETION</div>
+          <h2 id="purge-title">彻底删除这部作品？</h2>
+          <p id="purge-book-title">《{{titleOf(state.purgeBook)}}》</p>
+          <p class="purge-warning">
+            将永久删除全部正文、文风设定和存档，无法恢复。
+          </p>
+          <label for="purge-title-input">输入完整作品名称以确认</label
+          ><input
+            id="purge-title-input"
+            type="text"
+            autocomplete="off"
+            placeholder="请输入上方作品名称"
+            v-model="state.purgeTitle"
+            :disabled="state.busy.purge"
+          />
+          <p id="purge-error" class="error" role="alert">
+            {{state.errors.purge}}
+          </p>
+          <div class="confirm-actions">
+            <button
+              id="purge-cancel"
+              class="outline"
+              type="button"
+              :disabled="state.busy.purge"
+              @click="closeDialog('purge')"
+            >
+              取消彻底删除</button
+            ><button
+              id="purge-confirm"
+              class="primary danger-button"
+              type="button"
+              :disabled="state.busy.purge||!state.purgeBook||state.purgeTitle!==state.purgeBook.title"
+              @click="purgeBook"
+            >
+              确认彻底删除
+            </button>
+          </div>
+        </dialog>
+      </div>
+    </template>
+  </body>
+</html>
