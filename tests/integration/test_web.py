@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 import threading
 import time
@@ -8,7 +9,7 @@ from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.request import Request, build_opener, ProxyHandler
 
-from inf_backend import service, official_pricing
+from inf_backend import service, official_pricing, settings
 from inf_backend.web import WebServer
 from inf_backend.settings import Settings
 from inf_writer.domain import apply_chapter, digest
@@ -76,6 +77,16 @@ class WebIntegrationTests(unittest.TestCase):
             self.request("/api/books/old-demo")
         self.assertEqual(error.exception.code, 404)
 
+    def test_vue_assets_are_local_and_keep_strict_script_policy(self):
+        html = self.request("/")
+        self.assertIn('src="/vue.runtime.global.prod.js"', html)
+        self.assertIn('src="/vue-components.js"', html)
+        self.assertIn("createTomeLibrary", self.request("/vue-components.js"))
+        with self.client.open(self.base + "/vue.runtime.global.prod.js", timeout=5) as response:
+            self.assertTrue(response.headers["Content-Type"].startswith("text/javascript"))
+            self.assertNotIn("unsafe-eval", response.headers["Content-Security-Policy"])
+            self.assertIn("Vue", response.read().decode())
+
     def test_create_validation_and_missing_book(self):
         with self.assertRaises(HTTPError) as error:
             self.request("/api/books", {"title": "", "prompt": "idea", "chapters": 3, "target_units": 500})
@@ -85,6 +96,30 @@ class WebIntegrationTests(unittest.TestCase):
         with self.assertRaises(HTTPError) as error:
             self.request("/api/books/missing-book")
         self.assertEqual(error.exception.code, 404)
+
+    def test_first_run_api_configuration_is_private_persistent_and_one_time(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(settings, "BACKEND_ROOT", Path(folder)), patch.dict(os.environ, {"DEEPSEEK_API_KEY": ""}, clear=True):
+            path = Path(folder) / ".env"
+            path.write_text("# keep settings\nDEEPSEEK_MODEL=deepseek-chat\nDEEPSEEK_API_KEY=\n", encoding="utf-8")
+            self.assertFalse(self.request("/api/config")["configured"])
+            key = "sk-" + "TEST_ONLY_" * 3
+            for value in ("", "bad", key + "\nINJECTED=yes"):
+                with self.assertRaises(HTTPError) as error:
+                    self.request("/api/config", {"api_key": value})
+                self.assertEqual(error.exception.code, 400)
+            with self.assertRaises(HTTPError) as error:
+                self.request("/api/config", {"api_key": key}, {"Origin": "https://other.example"})
+            self.assertEqual(error.exception.code, 403)
+            self.assertFalse(self.request("/api/config")["configured"])
+            result = self.request("/api/config", {"api_key": key})
+            self.assertEqual(result, {"configured": True, "model": "deepseek-chat"})
+            self.assertNotIn(key, json.dumps(self.request("/api/config")))
+            self.assertEqual(Settings.load().api_key, key)
+            self.assertIn("# keep settings", path.read_text(encoding="utf-8"))
+            with self.assertRaises(HTTPError) as error:
+                self.request("/api/config", {"api_key": "sk-" + "OTHER_TEST_" * 3})
+            self.assertEqual(error.exception.code, 400)
+            self.assertEqual(Settings.load().api_key, key)
 
     def test_pin_delete_restore_and_block_deleting_running_book(self):
         payload = {"title": "书架测试", "prompt": "故事", "chapters": 3, "target_units": 3000}

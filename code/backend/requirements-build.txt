@@ -1,0 +1,2 @@
+# Build dependency only; end users do not install Python or pip.
+PyInstaller==6.22.3

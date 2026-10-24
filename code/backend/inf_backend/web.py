@@ -2,6 +2,7 @@
 import argparse
 import json
 import logging
+import sys
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -12,11 +13,12 @@ from uuid import uuid4
 from inf_writer.memory_temporality import current_claim, has_current_content
 
 from . import service
-from .settings import Settings
+from .settings import Settings, configure_api_key
 from . import generation
 from . import library
 
-FRONTEND = Path(__file__).resolve().parents[2] / "frontend"
+FRONTEND = (Path(sys._MEIPASS) / "frontend" if getattr(sys, "frozen", False)
+            else Path(__file__).resolve().parents[2] / "frontend")
 
 
 def serialize(book):
@@ -176,6 +178,9 @@ class Handler(BaseHTTPRequestHandler):
             if not post and path == "/api/config":
                 cfg = Settings.load(require_key=False)
                 self.reply(200, {"configured": bool(cfg.api_key.strip()), "model": cfg.model})
+            elif post and path == "/api/config":
+                cfg = configure_api_key(data.get("api_key"))
+                self.reply(200, {"configured": bool(cfg.api_key.strip()), "model": cfg.model})
             elif not post and path == "/api/books":
                 books = []
                 for book_id in service.list_books():
@@ -246,9 +251,9 @@ class Handler(BaseHTTPRequestHandler):
                     self.reply(200, body, "text/markdown; charset=utf-8", attachment=True)
                 else:
                     self.reply(404, {"error": "接口不存在"})
-            elif not post and path in ("/", "/app.js", "/style.css"):
+            elif not post and path in ("/", "/app.js", "/style.css", "/vue.runtime.global.prod.js", "/vue-components.js"):
                 name = "index.html" if path == "/" else path[1:]
-                mime = {"index.html": "text/html", "app.js": "text/javascript", "style.css": "text/css"}[name]
+                mime = "text/css" if name.endswith(".css") else "text/javascript" if name.endswith(".js") else "text/html"
                 self.reply(200, (FRONTEND / name).read_bytes(), mime + "; charset=utf-8")
             else:
                 self.reply(404, {"error": "页面不存在"})

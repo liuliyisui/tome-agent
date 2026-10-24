@@ -1,7 +1,77 @@
 const $ = (id) => document.getElementById(id);
+let activeView = 'home';
+let sidebarPreference = false;
+try { sidebarPreference = localStorage.getItem('tome-sidebar-collapsed') === 'true'; } catch {}
+function setSidebarCollapsed(collapsed) {
+  collapsed = activeView === 'home' || collapsed;
+  document.body.classList.toggle('sidebar-collapsed', collapsed);
+  $('workspace-sidebar').inert = collapsed;
+  $('workspace-sidebar').setAttribute('aria-hidden', String(collapsed));
+  $('sidebar-toggle').setAttribute('aria-expanded', String(!collapsed));
+  $('sidebar-toggle').setAttribute('aria-label', collapsed ? '展开侧栏' : '收起侧栏');
+  $('sidebar-toggle').title = collapsed ? '展开侧栏' : '收起侧栏';
+}
+setSidebarCollapsed(true);
+$('sidebar-toggle').onclick = () => {
+  const collapsed = !document.body.classList.contains('sidebar-collapsed');
+  sidebarPreference = collapsed;
+  setSidebarCollapsed(collapsed);
+  try { localStorage.setItem('tome-sidebar-collapsed', String(collapsed)); } catch {}
+};
+$('workspace-home').onclick = event => {
+  if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  setSidebarCollapsed(true);
+  // Keep the link's normal navigation: reload at home with the sidebar hidden.
+};
+function setView(view) {
+  activeView = view;
+  document.body.classList.toggle('home-view', view === 'home');
+  $('sidebar-toggle').hidden = view === 'home';
+  $('welcome').hidden = view !== 'home';
+  $('works-view').hidden = view !== 'library';
+  $('book-workspace').hidden = view !== 'book';
+  setSidebarCollapsed(view === 'home' || sidebarPreference);
+}
+$('my-works').onclick = async () => {
+  navigationVersion++;
+  current = null;
+  libraryView.selectedId = null;
+  setView('library');
+  $('breadcrumb-title').textContent = '我的作品';
+  notice();
+  window.scrollTo({top:0,left:0});
+  try { await refreshBooks(); } catch(e) { notice(e.message); }
+};
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 let books = [], current = null, selectedChapter = 0;
 let navigationVersion = 0;
+let apiConfigured = false;
+function openApiConfig() {
+  $('api-key-error').textContent = '';
+  $('api-key-input').value = '';
+  if (!$('api-key-dialog').open) $('api-key-dialog').showModal();
+}
+function updateConnection(cfg) {
+  apiConfigured = cfg.configured;
+  $('connection-text').textContent = cfg.configured ? `${cfg.model} 已就绪` : '请先配置 API Key';
+  $('connection-dot').classList.toggle('ready', cfg.configured);
+  $('welcome-create').innerHTML = cfg.configured ? '创建新的作品 <span>↗</span>' : '配置 API Key <span>↗</span>';
+}
+$('api-key-later').onclick = () => { $('api-key-input').value = ''; $('api-key-dialog').close(); };
+$('api-key-dialog').oncancel = () => { $('api-key-input').value = ''; };
+$('api-key-form').onsubmit = async event => {
+  event.preventDefault();
+  $('api-key-save').disabled = true;
+  $('api-key-error').textContent = '';
+  try {
+    const cfg = await api('/api/config', {api_key:$('api-key-input').value.trim()});
+    $('api-key-input').value = '';
+    updateConnection(cfg);
+    $('api-key-dialog').close();
+    notice('API Key 已保存，可以开始创作。');
+  } catch(e) { $('api-key-error').textContent = e.message; }
+  finally { $('api-key-save').disabled = false; }
+};
 const jobs = new Map();
 const pollingJobs = new Set();
 const jobErrors = new Map();
@@ -13,6 +83,36 @@ let pendingDelete = null;
 let pendingPurge = null;
 let purging = false;
 const factSelections = new Map();
+const libraryView = createTomeLibrary({
+  select:id => selectBook(id),
+  pin:async book => {
+    await api(`/api/books/${encodeURIComponent(book.id)}/pin`, {pinned:!book.pinned});
+    await refreshBooks();
+  },
+  remove:book => {
+    pendingDelete = book;
+    $('delete-book-title').textContent = `《${book.metadata?.title || book.id}》`;
+    $('delete-error').textContent = '';
+    $('delete-dialog').showModal();
+  },
+  restore:async book => {
+    $('trash-message').textContent = '正在恢复…';
+    try {
+      const result = await api('/api/books/restore', {restore_token:book.restore_token});
+      await refreshBooks();
+      $('trash-message').textContent = `《${result.metadata.title}》已恢复到书架。`;
+    } catch(e) { $('trash-message').textContent = e.message; }
+  },
+  purge:book => {
+    pendingPurge = book;
+    $('purge-book-title').textContent = `《${book.title}》`;
+    $('purge-title-input').value = '';
+    $('purge-confirm').disabled = true;
+    $('purge-error').textContent = '';
+    $('purge-dialog').showModal();
+  },
+  error:error => notice(error.message)
+});
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function api(path, data) {
   const response = await fetch(path, data === undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
@@ -29,40 +129,25 @@ function notice(message = '') {
   $('notice').hidden = !message;
   if (message) $('notice').scrollIntoView({behavior:'smooth',block:'center'});
 }
-function openCreate() { $('form-error').textContent = ''; $('create-dialog').showModal(); }
+function openCreate() { if (!apiConfigured) { openApiConfig(); return; } $('form-error').textContent = ''; $('create-dialog').showModal(); }
 $('new-book').onclick = $('welcome-create').onclick = openCreate;
+$('works-create').onclick = openCreate;
 $('close-dialog').onclick = () => $('create-dialog').close();
 function showHome() {
   navigationVersion++;
   current = null;
   selectedChapter = 0;
-  $('book-workspace').hidden = true;
-  $('welcome').hidden = false;
+  setView('home');
   $('breadcrumb-title').textContent = '首页';
   notice();
-  document.querySelectorAll('.book-row.selected').forEach(row => row.classList.remove('selected'));
+  libraryView.selectedId = null;
   window.scrollTo({top:0,left:0});
 }
 async function refreshBooks() {
   books = (await api('/api/books')).books;
   $('book-count').textContent = books.length;
-  $('book-list').innerHTML = books.length ? books.map(book => {
-    const title = book.metadata?.title || book.id;
-    return `<div class="book-row ${current?.state.project_id === book.id ? 'selected' : ''}"><button class="book-item" data-book="${esc(book.id)}"><span class="mini-book"></span><span><strong>${esc(title)}</strong><small>${book.pinned ? '<span class="pin-mark">置顶 · </span>' : ''}${book.error ? esc(book.error) : `${book.chapters} / ${book.metadata.target_chapters} 章`}</small></span></button><details class="book-menu"><summary aria-label="管理《${esc(title)}》" title="管理作品">⋯</summary><div class="book-menu-options"><button type="button" data-pin="${esc(book.id)}" data-pinned="${!book.pinned}">${book.pinned ? '取消置顶' : '置顶'}</button><button type="button" class="danger-text" data-delete="${esc(book.id)}">删除作品</button></div></details></div>`;
-  }).join('') : '<p class="empty-library">书架还是空的。<br>为第一个故事留个位置吧。</p>';
-  document.querySelectorAll('[data-book]').forEach(button => button.onclick = () => selectBook(button.dataset.book).catch(e => notice(e.message)));
-  document.querySelectorAll('[data-pin]').forEach(button => button.onclick = async () => {
-    button.disabled = true;
-    try { await api(`/api/books/${encodeURIComponent(button.dataset.pin)}/pin`, {pinned:button.dataset.pinned === 'true'}); await refreshBooks(); }
-    catch(e) { notice(e.message); button.disabled = false; }
-  });
-  document.querySelectorAll('[data-delete]').forEach(button => button.onclick = () => {
-    pendingDelete = books.find(book => book.id === button.dataset.delete);
-    button.closest('details').open = false;
-    $('delete-book-title').textContent = `《${pendingDelete.metadata?.title || pendingDelete.id}》`;
-    $('delete-error').textContent = '';
-    $('delete-dialog').showModal();
-  });
+  libraryView.books = books;
+  libraryView.selectedId = current?.state.project_id || null;
   await refreshTrash();
 }
 document.addEventListener('click', event => {
@@ -89,28 +174,7 @@ $('delete-confirm').onclick = async () => {
 async function refreshTrash() {
   const removed = (await api('/api/books/trash')).books;
   $('trash-count').textContent = removed.length;
-  $('trash-list').innerHTML = removed.length ? removed.map(book => {
-    const date = new Date(book.deleted_at);
-    const when = Number.isNaN(date.getTime()) ? '删除时间未记录' : date.toLocaleString('zh-CN',{timeZone:'Asia/Shanghai',hour12:false});
-    return `<div class="trash-book"><div><strong>${esc(book.title)}</strong><small>移入时间：${esc(when)}</small></div><div class="trash-book-actions"><button class="outline" type="button" data-restore="${esc(book.restore_token)}">恢复到书架</button><button class="purge-button" type="button" data-purge="${esc(book.restore_token)}">彻底删除</button></div></div>`;
-  }).join('') : '<div class="trash-empty"><span aria-hidden="true">◇</span><h3>废案箱还是空的</h3><p>从书架删除的作品会保存在这里，可随时恢复。</p></div>';
-  document.querySelectorAll('[data-restore]').forEach(button => button.onclick = async () => {
-    button.disabled = true;
-    $('trash-message').textContent = '正在恢复…';
-    try {
-      const result = await api('/api/books/restore',{restore_token:button.dataset.restore});
-      await refreshBooks();
-      $('trash-message').textContent = `《${result.metadata.title}》已恢复到书架。`;
-    } catch(e) { $('trash-message').textContent = e.message; button.disabled = false; }
-  });
-  document.querySelectorAll('[data-purge]').forEach(button => button.onclick = () => {
-    pendingPurge = removed.find(book => book.restore_token === button.dataset.purge);
-    $('purge-book-title').textContent = `《${pendingPurge.title}》`;
-    $('purge-title-input').value = '';
-    $('purge-confirm').disabled = true;
-    $('purge-error').textContent = '';
-    $('purge-dialog').showModal();
-  });
+  libraryView.trash = removed;
 }
 $('purge-title-input').oninput = () => {
   $('purge-confirm').disabled = !pendingPurge || $('purge-title-input').value !== pendingPurge.title;
@@ -164,8 +228,7 @@ async function selectBook(id, latest = false) {
 function renderBook() {
   if (!current) return;
   const {metadata:meta,state} = current;
-  $('welcome').hidden = true;
-  $('book-workspace').hidden = false;
+  setView('book');
   $('breadcrumb-title').textContent = meta.title;
   $('book-kind').textContent = current.mode === 'legacy' ? 'LEGACY / 旧版存档' : 'EVENT FIRST / 事件先行 · 三层记忆';
   $('book-title').textContent = meta.title;
@@ -396,13 +459,14 @@ async function pollJob(id, jobId) {
   }
 }
 async function init() {
+  setView('home');
   try {
     localStorage.removeItem('tome-selected-book');
     $('breadcrumb-title').textContent = '首页';
     localStorage.removeItem('tome-last-deleted');
     const cfg = await api('/api/config');
-    $('connection-text').textContent = cfg.configured ? `${cfg.model} 已就绪` : '引擎已连接 · 离线可用';
-    $('connection-dot').classList.add('ready');
+    updateConnection(cfg);
+    if (!cfg.configured) openApiConfig();
     await refreshBooks();
   } catch(e) { $('connection-text').textContent = '连接失败'; notice(e.message); }
   finally { window.scrollTo({top:0,left:0}); }

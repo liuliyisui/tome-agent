@@ -1,10 +1,17 @@
 # Frontend
 
-本地 Tome 网页工作室，使用原生 HTML、CSS 和 JavaScript，无需安装前端依赖。
+本地 Tome 网页工作室，使用 HTML、CSS、JavaScript，并逐步引入 Vue 3。作品书架和废案箱已改为 Vue 响应式组件，其余创作界面继续使用原有交互，无需安装 Node.js 或前端开发工具即可运行。
+
+Vue 试用实现位于 `vue-components.js`，使用 `createApp`、`reactive` 和 `h()` 管理列表、选中状态及操作中的按钮状态。组件通过回调复用 `app.js` 的现有后端接口，不重复实现删除确认或费用确认。采用 runtime-only 渲染函数，保持现有 CSP，不需要 `unsafe-eval`，也不在运行时编译模板。
+
+`vue.runtime.global.prod.js` 固定为 Vue 3.5.44，来自官方 npm 包 `https://registry.npmjs.org/vue/-/vue-3.5.44.tgz`；MIT 许可证保存在同目录的 `vue.LICENSE.txt`。运行时随本地服务和 Windows 程序一起分发，不依赖 CDN，不新增源码目录。参考：[Vue 渐进式使用方式](https://vuejs.org/guide/extras/ways-of-using-vue) 与 [渲染函数](https://vuejs.org/guide/extras/render-function)。
 
 从仓库根目录运行 `code\backend\run-web.cmd`，打开 http://127.0.0.1:8765。
 
 - 创建作品、设置故事构想和目标篇幅。
+- 首页不显示侧栏及侧栏图标；所有页面右上角固定显示「我的作品」，点击进入作品书架页面，可选择作品继续创作。
+- 作品书架和作品页左上角可收起或展开侧栏；记录侧栏偏好。点击「工作室」刷新返回首页，恢复首页独立展示。
+- 首次使用且未配置 API Key 时自动弹出配置窗口；可稍后配置，再从首页按钮重新打开。保存到本机后立即生效。
 - 书架右侧菜单支持置顶、取消置顶和删除；删除先移入作品目录的 `.trash/`。书架底部左侧的「废案箱」显示数量，可查看并恢复所有已删除作品；生成中的作品不能删除。
 - 废案箱支持单部作品「彻底删除」；需要输入完整作品名称并二次确认，删除正文、文风和存档后不可恢复。
 - 生成下一章，后台执行新版事件先行、三层记忆流程。
@@ -22,5 +29,5 @@
 
 批量生成逐章保存检查点并显示已完成数量；中断、失败时已保存章节仍可阅读和导出。确认前若已切换峰谷时段或官价变化，需要重新预估并确认。
 
-同源 API 由 `code/backend/inf_backend/web.py` 提供，服务仅监听 `127.0.0.1`。真实生成需要在 `code/backend/.env` 中配置 DeepSeek 密钥；密钥不会发送到浏览器。
+同源 API 由 `code/backend/inf_backend/web.py` 提供，服务仅监听 `127.0.0.1`。真实生成可通过首次配置窗口保存 DeepSeek 密钥，也支持手动配置 `code/backend/.env`；已保存的密钥不会回传给浏览器。
 

@@ -1,6 +1,7 @@
 **/__pycache__/
 **/*.py[cod]
 backend/.env
+backend/.env-*
 backend/.venv/
 backend/data/*
 !backend/data/.gitkeep
