@@ -3,6 +3,7 @@ import json
 import os
 import re
 import tempfile
+from dataclasses import replace
 from collections import Counter
 from contextlib import contextmanager
 from pathlib import Path
@@ -82,7 +83,51 @@ def load_book(book_id):
     return {"metadata": _metadata(book_id), "state": FileStore(BOOKS).load(book_id)}
 
 
-def create_book(book_id, title, prompt, chapters, target_units, settings=None):
+def validate_writing_style(value):
+    if not isinstance(value, dict) or set(value) != {"instructions", "reference"}:
+        raise ValueError("文风设定须包含文风要求和参考片段")
+    result = {}
+    for key, limit in (("instructions", 2000), ("reference", 6000)):
+        if not isinstance(value[key], str) or len(value[key]) > limit:
+            raise ValueError(f"{'文风要求' if key == 'instructions' else '参考片段'}须为不超过{limit}字的文本")
+        result[key] = value[key].strip()
+    return result
+
+
+def load_writing_style(book_id):
+    path = book_path(book_id) / "writing-style.json"
+    if not path.exists():
+        return {"instructions": "", "reference": ""}
+    return validate_writing_style(strict_json(path.read_text(encoding="utf-8")))
+
+
+def save_writing_style(book_id, value):
+    _metadata(book_id)
+    style = validate_writing_style(value)
+    with operation_lock(book_path(book_id)):
+        _atomic_json(book_path(book_id) / "writing-style.json", style)
+    return style
+
+
+class StyleGateway:
+    """Apply the saved prose style to every writer call, including length edits.
+
+    Keep style outside the frozen writing plan so editing it does not invalidate
+    existing checkpoint plan hashes. Planner/memory requests remain untouched.
+    """
+    def __init__(self, gateway, style):
+        self.gateway = gateway
+        self.style = validate_writing_style(style)
+
+    def complete(self, request):
+        if request.role == "writer" and any(self.style.values()):
+            request = replace(request,
+                system=request.system + "\n正文写法遵循 writing_style 中的文风要求。参考片段仅用于学习叙述节奏、句式、对白和描写方式；不将其中的人物、事件或事实写入本故事，不续写或照抄参考片段。保持原有输出格式和故事事实约束。",
+                payload={**request.payload, "writing_style": dict(self.style)})
+        return self.gateway.complete(request)
+
+
+def create_book(book_id, title, prompt, chapters, target_units, settings=None, style=None):
     project_id(book_id)
     if not isinstance(title, str) or not title.strip() or not isinstance(prompt, str) or not prompt.strip():
         raise ValueError("作品名称和故事构想不能为空")
@@ -90,6 +135,7 @@ def create_book(book_id, title, prompt, chapters, target_units, settings=None):
         raise ValueError("章节数必须在 1 到 100 之间")
     if type(target_units) is not int or not 500 <= target_units <= 200000:
         raise ValueError("目标篇幅必须在 500 到 200000 之间")
+    style = validate_writing_style(style) if style is not None else {"instructions": "", "reference": ""}
     folder = book_path(book_id)
     if folder.exists():
         raise ValueError("作品已存在")
@@ -99,6 +145,8 @@ def create_book(book_id, title, prompt, chapters, target_units, settings=None):
     metadata = {"schema_version": 1, "title": title.strip(), "prompt": prompt.strip(),
                 "target_chapters": chapters, "target_units": target_units, "model": cfg.public_config()}
     _atomic_json(folder / "metadata.json", metadata)
+    if any(style.values()):
+        _atomic_json(folder / "writing-style.json", style)
     return load_book(book_id)
 
 
@@ -201,6 +249,7 @@ def generate_longform(book_id, count=1, gateway=None, budget=None, settings=None
         raise ValueError("当前模型配置与创建作品时不一致")
     if gateway is None:
         gateway, budget = _gateway(cfg)
+    gateway = StyleGateway(gateway, load_writing_style(book_id))
     run = book_path(book_id) / "longform-runs" / ("run-" + uuid4().hex)
     session = WritingSession(run, gateway, plan, book=previous)
     failure = None

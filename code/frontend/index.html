@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tome · 故事工作室</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<body>
+<aside class="sidebar">
+  <a class="brand" href="/" aria-label="Tome 首页"><span class="brand-icon">T</span>tome<span class="brand-dot">.</span></a>
+  <div class="workspace-label">你的故事工作室 <span>LOCAL</span></div>
+  <button id="new-book" class="primary wide"><span>＋</span> 开始一个新故事</button>
+  <div class="library-heading">作品书架 <span id="book-count">0</span></div>
+  <nav id="book-list" aria-label="作品列表"></nav>
+  <div class="sidebar-bottom"><div class="connection"><i id="connection-dot"></i><span id="connection-text">正在连接引擎</span></div><p>让灵感成书，让故事延续。</p><span class="version">TOME AGENT / INF ENGINE</span></div>
+</aside>
+<main>
+  <header><div class="breadcrumb">工作室 <span>/</span> <span id="breadcrumb-title">创作空间</span></div><span class="local-badge"><i></i> 本地工作空间</span></header>
+  <div class="content">
+    <section class="intro"><div><div class="eyebrow">A SPACE FOR YOUR NEXT CHAPTER</div><h1>每一个世界，都始于一个念头<span>。</span></h1><p>把故事交给灵感，把连续性交给 Tome。</p></div><span class="intro-mark" aria-hidden="true">✳</span></section>
+    <div id="notice" class="notice" role="status" hidden></div>
+    <section id="welcome" class="welcome">
+      <div class="welcome-art" aria-hidden="true"><span class="orbit one"></span><span class="orbit two"></span><span class="book-art">T<span>THE UNTOLD<br>STORIES</span></span><span class="spark">✧</span></div>
+      <div class="welcome-copy"><div class="eyebrow">从这里，写向远方</div><h2>你的下一部作品<br>正在等待第一章。</h2><p>从一个构想到完整长篇。事件规划、正文写作与三层记忆，让故事持续向前。</p><div class="welcome-actions"><button id="welcome-create" class="primary">创建第一部作品 <span>↗</span></button><button id="demo" class="text-button">体验离线演示 →</button></div><small>离线演示使用固定的两章样本，无需 API 密钥。</small></div>
+    </section>
+    <section id="book-workspace" hidden>
+      <div class="book-heading"><div><div class="eyebrow" id="book-kind"></div><h2 id="book-title"></h2></div><a id="export" class="outline" download>↓ 导出作品</a></div>
+      <div class="stats"><div><span>已完成章节</span><strong id="stat-chapters"></strong></div><div><span>累计字数</span><strong id="stat-units"></strong></div><div><span>故事记忆</span><strong id="stat-facts"></strong></div><div><span>创作进度</span><strong id="stat-progress"></strong></div></div>
+      <section class="panel style-panel" aria-labelledby="style-heading">
+        <div class="panel-heading"><h3 id="style-heading">文风设定</h3><span class="tiny-label">WRITING STYLE</span></div>
+        <p class="muted">为这部作品固定叙述方式。保存后从下一章生效，已生成的正文保留原样。</p>
+        <form id="style-form"><div class="style-fields">
+          <label>文风要求<textarea id="style-instructions" name="instructions" rows="5" maxlength="2000" placeholder="例如：第三人称，短句为主，叙述克制；通过动作和对白展现情绪。避免堆砌比喻、重复心理描写和章末说教。"></textarea><small>可描述视角、句式、节奏、对白比例，以及希望避免的写法。最多 2,000 字。</small></label>
+          <label>参考片段<textarea id="style-reference" name="reference" rows="5" maxlength="6000" placeholder="粘贴你自己写的或有权使用的片段。引擎参考它的句式、节奏和表达方式，不将其中情节当作本书事实。"></textarea><small>建议 1,000～3,000 字，最多 6,000 字。仅作写法参考。</small></label>
+        </div><div class="style-actions"><span id="style-status" role="status">尚未设置，使用默认文风。</span><button id="style-save" class="outline" type="submit">保存文风设定</button></div></form>
+      </section>
+      <div class="writing-grid"><section class="manuscript panel"><div class="panel-heading"><h3>故事正文</h3><span id="revision"></span></div><div id="chapter-tabs" class="chapter-tabs" aria-label="章节选择"></div><article id="chapter-body"></article></section>
+      <aside class="writing-aside"><section class="panel"><div class="panel-heading"><h3>创作台</h3><span class="tiny-label">INF</span></div><p id="generation-description" class="muted"></p><button id="generate" class="primary wide">✧ 生成下一章</button><p id="job-status" class="job-status" role="status"></p></section><section class="panel"><div class="panel-heading"><h3>故事构想</h3><span>↗</span></div><p id="book-prompt" class="prompt"></p></section><section class="panel"><div class="panel-heading"><h3>事实记忆</h3><span class="tiny-label">MEMORY</span></div><div id="facts"></div></section></aside></div>
+    </section>
+    <section class="workflow"><div class="section-label">让故事保持连贯 <span>THE INF WORKFLOW</span></div><div class="workflow-grid"><div><span class="step">01</span><h3>规划 <small>Planner</small></h3><p>先规划场景事件，推演状态变化。</p></div><div><span class="step">02</span><h3>写作 <small>Writer</small></h3><p>将故事骨架，写成有温度的文字。</p></div><div><span class="step">03</span><h3>记忆 <small>Memory</small></h3><p>留存人物与事实，让细节有迹可循。</p></div><div><span class="step">04</span><h3>存档 <small>Checkpoint</small></h3><p>保存阶段检查点，支持断点恢复。</p></div></div></section>
+    <footer><span>为长篇故事，留一盏灯。</span><span>CRAFTED WITH TOME</span></footer>
+  </div>
+</main>
+<dialog id="create-dialog"><form id="create-form"><div class="dialog-heading"><div><div class="eyebrow">A NEW BEGINNING</div><h2>让一个新世界诞生。</h2></div><button type="button" id="close-dialog" class="icon-button" aria-label="关闭">×</button></div><label>作品名称<input name="title" required maxlength="120" placeholder="为你的故事取一个名字"></label><label>故事构想<textarea name="prompt" required maxlength="12000" rows="5" placeholder="谁是主角？故事发生在哪里？有什么冲突正等待发生？"></textarea></label><div class="form-row"><label>目标章节<input name="chapters" type="number" min="1" max="100" value="10" required></label><label>目标总字数<input name="target_units" type="number" min="500" max="200000" value="10000" required></label></div><details class="create-style"><summary>文风设定（可选）</summary><label>文风要求<textarea name="style_instructions" rows="3" maxlength="2000" placeholder="描述视角、句式、节奏、对白及希望避免的写法"></textarea></label><label>参考片段<textarea name="style_reference" rows="4" maxlength="6000" placeholder="粘贴你自己写的或有权使用的片段，仅作写法参考"></textarea></label></details><p class="form-hint">创建后可逐章生成。真实创作需要在本地 .env 中配置 DeepSeek API 密钥。</p><p id="form-error" role="alert"></p><button id="create-submit" class="primary wide" type="submit">创建作品 ↗</button></form></dialog>
+</body></html>
