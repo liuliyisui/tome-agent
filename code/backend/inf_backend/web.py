@@ -189,12 +189,22 @@ class Handler(BaseHTTPRequestHandler):
                         books.append({"id": book_id, "error": "存档无法读取"})
                 books.sort(key=lambda book: not book.get("pinned", False))
                 self.reply(200, {"books": books})
+            elif not post and path == "/api/books/trash":
+                with self.server.job_lock:
+                    books = library.list_deleted_books()
+                self.reply(200, {"books": books})
             elif post and path == "/api/books":
                 book_id = service.new_book_id()
                 service.create_book(book_id,
                     data.get("title"), data.get("prompt"), data.get("chapters"), data.get("target_units"),
                     style=data.get("style"))
                 self.reply(201, load_view(book_id))
+            elif post and path == "/api/books/trash/purge":
+                if data.get("confirmed") is not True:
+                    raise ValueError("彻底删除无法恢复，请先确认")
+                with self.server.job_lock:
+                    result = library.permanently_delete_book(data.get("restore_token"), data.get("confirmation_title"))
+                self.reply(200, result)
             elif post and path == "/api/books/restore":
                 with self.server.job_lock:
                     book_id = library.restore_book(data.get("restore_token"))

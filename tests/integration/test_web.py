@@ -89,6 +89,7 @@ class WebIntegrationTests(unittest.TestCase):
     def test_pin_delete_restore_and_block_deleting_running_book(self):
         payload = {"title": "书架测试", "prompt": "故事", "chapters": 3, "target_units": 3000}
         first = self.request("/api/books", payload)["state"]["project_id"]
+        self.assertEqual(self.request("/api/books/trash")["books"], [])
         second = self.request("/api/books", {**payload, "title": "置顶作品"})["state"]["project_id"]
         self.assertEqual(self.request(f"/api/books/{second}/pin", {"pinned": True}), {"pinned": True})
         shelf = self.request("/api/books")["books"]
@@ -108,11 +109,17 @@ class WebIntegrationTests(unittest.TestCase):
             self.request(f"/api/books/{first}/delete", {"confirmed": False})
         original = (service.book_path(first) / "state.json").read_bytes() if (service.book_path(first) / "state.json").exists() else None
         deleted = self.request(f"/api/books/{first}/delete", {"confirmed": True})
+        trash = self.request("/api/books/trash")["books"]
+        self.assertEqual(len(trash), 1)
+        self.assertEqual(trash[0]["title"], "书架测试")
+        self.assertEqual(trash[0]["restore_token"], deleted["restore_token"])
+        self.assertEqual(self.request("/api/books/trash")["books"], trash)
         self.assertEqual([b["id"] for b in self.request("/api/books")["books"]], [second])
         with self.assertRaises(HTTPError) as error:
             self.request(f"/api/books/{first}")
         self.assertEqual(error.exception.code, 404)
         restored = self.request("/api/books/restore", {"restore_token": deleted["restore_token"]})
+        self.assertEqual(self.request("/api/books/trash")["books"], [])
         self.assertEqual(restored["state"]["project_id"], first)
         if original is not None:
             self.assertEqual((service.book_path(first) / "state.json").read_bytes(), original)
@@ -120,6 +127,23 @@ class WebIntegrationTests(unittest.TestCase):
         self.assertFalse((service.book_path(first) / "deleted-book.json").exists())
         with self.assertRaises(HTTPError):
             self.request("/api/books/restore", {"restore_token": "../../bad"})
+
+    def test_permanent_delete_endpoint_requires_confirmation_and_correct_title(self):
+        book = self.request("/api/books", {"title": "可删除测试作品", "prompt": "故事", "chapters": 3, "target_units": 3000})
+        book_id = book["state"]["project_id"]
+        token = self.request(f"/api/books/{book_id}/delete", {"confirmed": True})["restore_token"]
+        for payload in ({"restore_token": token, "confirmation_title": "可删除测试作品", "confirmed": False},
+                        {"restore_token": token, "confirmation_title": "错误标题", "confirmed": True}):
+            with self.assertRaises(HTTPError) as error:
+                self.request("/api/books/trash/purge", payload)
+            self.assertEqual(error.exception.code, 400)
+            self.assertEqual(len(self.request("/api/books/trash")["books"]), 1)
+        result = self.request("/api/books/trash/purge", {"restore_token": token, "confirmation_title": "可删除测试作品", "confirmed": True})
+        self.assertEqual(result, {"purged": True})
+        self.assertEqual(self.request("/api/books/trash")["books"], [])
+        with self.assertRaises(HTTPError) as error:
+            self.request("/api/books/restore", {"restore_token": token})
+        self.assertEqual(error.exception.code, 404)
 
     def test_estimate_is_offline_and_generation_requires_confirmation(self):
         book = self.request("/api/books", {"title": "预估测试", "prompt": "故事", "chapters": 5, "target_units": 10000})
