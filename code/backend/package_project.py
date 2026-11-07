@@ -15,6 +15,8 @@ for path in project.rglob("*"):
     posix = relative.as_posix()
     if (
         "__pycache__" in relative.parts
+        or "node_modules" in relative.parts
+        or path.name.startswith(".env-")
         or path.suffix in (".pyc", ".pyo")
         or posix == "code/backend/.env"
         or "code/backend/.venv/" in posix

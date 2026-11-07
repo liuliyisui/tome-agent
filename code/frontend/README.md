@@ -1,8 +1,12 @@
 # Frontend
 
-本地 Tome 网页工作室，使用 HTML、CSS、JavaScript，并逐步引入 Vue 3。作品书架和废案箱已改为 Vue 响应式组件，其余创作界面继续使用原有交互，无需安装 Node.js 或前端开发工具即可运行。
+本地 Tome 网页工作室，前端交互已统一使用 Vue 3：页面切换、侧栏、作品书架、文风表单、章节阅读、事实记忆、生成状态与所有弹窗都由响应式状态驱动。运行已有源码无需安装 Node.js 或前端开发工具。
 
-Vue 试用实现位于 `vue-components.js`，使用 `createApp`、`reactive` 和 `h()` 管理列表、选中状态及操作中的按钮状态。组件通过回调复用 `app.js` 的现有后端接口，不重复实现删除确认或费用确认。采用 runtime-only 渲染函数，保持现有 CSP，不需要 `unsafe-eval`，也不在运行时编译模板。
+`app.js` 使用 Composition API 管理状态、请求和任务轮询；章节阅读与事实展示是独立 Vue 组件。`index.html` 中的 `tome-template` 使用 `v-model`、`v-for`、事件绑定与条件展示，`build-vue.cjs` 将它预编译为 `vue-components.js`。浏览器使用 runtime-only 运行时，无需 `unsafe-eval`。原生 dialog 的显示与关闭封装为 Vue 指令，其余界面不再使用手动 DOM 渲染。
+
+修改模板后，在仓库根目录执行 `npm --prefix code/frontend install`，再执行 `npm --prefix code/frontend run build`，并提交更新后的模板和预编译文件。仅修改 `app.js` 状态逻辑或 CSS 无需重新编译。Node.js 和模板编译器仅为开发依赖，不分发给普通用户；Windows 打包直接包含预编译资源。源码仍位于原有目录内。
+
+开发验证：`npm --prefix code/frontend run check` 检查模板与预编译代码一致，`npm --prefix code/frontend test` 运行真实 Vue 响应式模型的 5 项回归测试。`tests/integration/vue_ui_preview.py` 提供仅用于浏览器验证的临时测试服务，使用模拟生成和临时作品，不连接真实模型，不作为产品入口或演示模块。
 
 `vue.runtime.global.prod.js` 固定为 Vue 3.5.44，来自官方 npm 包 `https://registry.npmjs.org/vue/-/vue-3.5.44.tgz`；MIT 许可证保存在同目录的 `vue.LICENSE.txt`。运行时随本地服务和 Windows 程序一起分发，不依赖 CDN，不新增源码目录。参考：[Vue 渐进式使用方式](https://vuejs.org/guide/extras/ways-of-using-vue) 与 [渲染函数](https://vuejs.org/guide/extras/render-function)。
 

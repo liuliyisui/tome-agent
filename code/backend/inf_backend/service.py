@@ -1,9 +1,12 @@
 """UI services backed by INF's planner/writer/memory/reviewer transaction."""
 
+import base64
+import binascii
 import json
 import os
 import re
 import tempfile
+import time
 from collections import Counter
 from contextlib import contextmanager
 from dataclasses import replace
@@ -12,8 +15,10 @@ from uuid import uuid4
 
 from inf_writer.chat_provider import ChatCompletionProvider
 from inf_writer.domain import (
+    ContractError,
     Snapshot,
     canonical,
+    digest,
     project_id,
     sanitize_title,
     strict_json,
@@ -67,6 +72,55 @@ def _atomic_json(path, value):
             os.unlink(name)
 
 
+def _process_alive(pid):
+    if pid <= 0:
+        return False
+    if os.name == "nt":
+        import ctypes
+
+        kernel32 = ctypes.windll.kernel32
+        kernel32.OpenProcess.restype = ctypes.c_void_p
+        kernel32.OpenProcess.argtypes = (ctypes.c_ulong, ctypes.c_int, ctypes.c_ulong)
+        kernel32.CloseHandle.argtypes = (ctypes.c_void_p,)
+        # Never use os.kill on Windows: any signal other than Ctrl-C terminates.
+        handle = kernel32.OpenProcess(0x1000, False, pid)
+        if not handle:
+            return False
+        try:
+            code = ctypes.c_ulong()
+            return (
+                bool(kernel32.GetExitCodeProcess(handle, ctypes.byref(code)))
+                and code.value == 259
+            )
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _stale_lock(lock):
+    """A lock left by a killed process is recoverable; a live owner is not."""
+    try:
+        raw = lock.read_text(encoding="utf-8").strip()
+    except OSError:
+        return False
+    try:
+        pid = int(raw)
+    except ValueError:
+        pid = None
+    if pid is not None:
+        return not _process_alive(pid)
+    try:
+        return time.time() - lock.stat().st_mtime > 60
+    except OSError:
+        return False
+
+
 @contextmanager
 def operation_lock(folder):
     folder = Path(folder)
@@ -79,9 +133,17 @@ def operation_lock(folder):
     try:
         handle = lock.open("x", encoding="utf-8")
     except FileExistsError:
-        raise ValueError(
-            "此作品有操作正在进行；确认没有运行任务后才能清理 operation.lock"
-        ) from None
+        if not _stale_lock(lock):
+            raise ValueError(
+                "此作品有操作正在进行；确认没有运行任务后才能清理 operation.lock"
+            ) from None
+        lock.unlink(missing_ok=True)
+        try:
+            handle = lock.open("x", encoding="utf-8")
+        except FileExistsError:
+            raise ValueError(
+                "此作品有操作正在进行；确认没有运行任务后才能清理 operation.lock"
+            ) from None
     try:
         with handle:
             handle.write(str(os.getpid()))
@@ -126,6 +188,64 @@ def load_book(book_id):
     if (book_path(book_id) / "longform-current.json").exists():
         return load_longform(book_id)
     return {"metadata": _metadata(book_id), "state": FileStore(BOOKS).load(book_id)}
+
+
+def cover_path(book_id):
+    _metadata(book_id)
+    folder = book_path(book_id)
+    if folder.is_symlink() or getattr(folder, "is_junction", lambda: False)():
+        raise ValueError("作品目录不安全")
+    if folder.exists() and not folder.is_dir():
+        raise ValueError("作品目录不可用")
+    if not folder.exists() and not database.enabled():
+        raise FileNotFoundError("作品目录不存在")
+    path = folder / "cover.image"
+    if path.is_symlink():
+        raise ValueError("封面路径不安全")
+    return path
+
+
+def cover_type(data):
+    if data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if data.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    raise ValueError("请选择 PNG、JPEG 或 WebP 图片")
+
+
+def cover_version(book_id):
+    path = cover_path(book_id)
+    return path.stat().st_mtime_ns if path.is_file() else None
+
+
+def save_cover(book_id, value):
+    if not isinstance(value, str) or len(value) > 2_800_000:
+        raise ValueError("封面图片不能超过 2 MB")
+    try:
+        data = base64.b64decode(value, validate=True)
+    except (ValueError, binascii.Error):
+        raise ValueError("封面图片格式无效") from None
+    if not data or len(data) > 2 * 1024 * 1024:
+        raise ValueError("封面图片不能超过 2 MB")
+    cover_type(data)
+    with operation_lock(BOOKS):
+        path = cover_path(book_id)
+        if database.enabled():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path = cover_path(book_id)
+        fd, temporary = tempfile.mkstemp(prefix=".cover-", dir=path.parent)
+        try:
+            with os.fdopen(fd, "wb") as output:
+                output.write(data)
+                output.flush()
+                os.fsync(output.fileno())
+            os.replace(temporary, path)
+        finally:
+            if os.path.exists(temporary):
+                os.unlink(temporary)
+        return cover_version(book_id)
 
 
 def validate_writing_style(value):
@@ -406,7 +526,28 @@ def load_longform(book_id):
     if database.enabled():
         return load_book(book_id)
     meta = _metadata(book_id)
-    state = _load_longform_book(book_id, _longform_plan(meta))
+    plan = _longform_plan(meta)
+    try:
+        state = _load_longform_book(book_id, plan)
+    except ContractError as exc:
+        if str(exc) != "写作运行时版本不一致，不能直接恢复旧检查点":
+            raise
+        pointer = strict_json(_longform_pointer(book_id).read_text(encoding="utf-8-sig"))
+        if not isinstance(pointer, dict) or set(pointer) != {"checkpoint"}:
+            raise ValueError("长文本检查点索引格式不正确")
+        root = book_path(book_id).resolve()
+        checkpoint = (root / pointer["checkpoint"]).resolve()
+        if checkpoint == root or not checkpoint.is_relative_to(root):
+            raise ValueError("长文本检查点路径不安全")
+        record = strict_json(checkpoint.read_text(encoding="utf-8-sig"))
+        state = record.get("book")
+        if (record.get("schema") != "inf-writing-checkpoint-v1"
+                or record.get("writing_plan_sha256") != digest(canonical(plan))
+                or not isinstance(state, dict)
+                or record.get("book_sha256") != digest(canonical(state))
+                or not isinstance(state.get("chapters"), list)):
+            raise ValueError("旧版存档完整性校验失败") from exc
+        return {"metadata": meta, "state": state, "read_only": True}
     return {"metadata": meta, "state": state}
 
 

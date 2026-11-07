@@ -59,7 +59,7 @@ def serialize(book):
                 for tier in ("working", "recent", "long")
             },
         }
-        mode = "longform"
+        mode = "legacy" if book.get("read_only") else "longform"
     state["project_id"] = book["id"]
     return {"metadata": book["metadata"], "state": state, "mode": mode}
 
@@ -69,6 +69,7 @@ def load_view(book_id):
         raise FileNotFoundError("离线演示已移除")
     return {
         **serialize({**service.load_book(book_id), "id": book_id}),
+        "cover_version": service.cover_version(book_id),
         "style": service.load_writing_style(book_id),
     }
 
@@ -256,7 +257,7 @@ class Handler(BaseHTTPRequestHandler):
                     self.reply(415, {"error": "请求必须使用 JSON"})
                     return
                 length = int(self.headers.get("Content-Length", "0"))
-                if not 0 < length <= 65536:
+                if not 0 < length <= (2_800_100 if path.endswith("/cover") else 65536):
                     raise ValueError("请求大小无效")
                 data = json.loads(self.rfile.read(length))
                 if not isinstance(data, dict):
@@ -281,6 +282,7 @@ class Handler(BaseHTTPRequestHandler):
                                 "id": book_id,
                                 "metadata": book["metadata"],
                                 "pinned": library.is_pinned(book_id),
+                                "cover_version": book["cover_version"],
                                 "chapters": len(book["state"]["chapters"]),
                                 "units": sum(
                                     service.count_units(c["text"])
@@ -331,7 +333,13 @@ class Handler(BaseHTTPRequestHandler):
             elif path.startswith("/api/books/"):
                 parts = path.strip("/").split("/")
                 book_id = parts[2]
-                if post and len(parts) == 4 and parts[3] == "generate":
+                if len(parts) == 4 and parts[3] == "cover" and post:
+                    version = service.save_cover(book_id, data.get("image"))
+                    self.reply(200, {"cover_version": version})
+                elif len(parts) == 4 and parts[3] == "cover" and not post:
+                    cover = service.cover_path(book_id).read_bytes()
+                    self.reply(200, cover, service.cover_type(cover))
+                elif post and len(parts) == 4 and parts[3] == "generate":
                     self.reply(202, self.server.start_generation(book_id, data))
                 elif post and len(parts) == 4 and parts[3] == "estimate":
                     self.reply(200, self.server.prepare_generation(book_id, data))
@@ -373,6 +381,10 @@ class Handler(BaseHTTPRequestHandler):
                     )
                 else:
                     self.reply(404, {"error": "接口不存在"})
+            elif not post and path == "/favicon.ico":
+                self.send_response(204)
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.end_headers()
             elif not post and path in (
                 "/",
                 "/app.js",

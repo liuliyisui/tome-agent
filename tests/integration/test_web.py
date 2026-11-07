@@ -108,7 +108,7 @@ class WebIntegrationTests(unittest.TestCase):
         html = self.request("/")
         self.assertIn('src="/vue.runtime.global.prod.js"', html)
         self.assertIn('src="/vue-components.js"', html)
-        self.assertIn("createTomeLibrary", self.request("/vue-components.js"))
+        self.assertIn("TomeRender", self.request("/vue-components.js"))
         with self.client.open(
             self.base + "/vue.runtime.global.prod.js", timeout=5
         ) as response:
@@ -452,6 +452,11 @@ class WebIntegrationTests(unittest.TestCase):
         completed = self.request(f"/api/books/{book_id}")
         self.assertEqual(completed["job"]["status"], "completed")
         self.assertEqual(completed["job"]["completed"], 1)
+
+    def test_favicon_request_is_answered_without_error(self):
+        with self.client.open(self.base + "/favicon.ico", timeout=5) as response:
+            self.assertEqual(response.status, 204)
+            self.assertEqual(response.read(), b"")
 
     def test_reject_cross_origin_and_path_escape(self):
         with self.assertRaises(HTTPError) as error:
