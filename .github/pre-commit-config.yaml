@@ -1,13 +1,14 @@
 # Commit gate: run `pre-commit install` once (and `pre-commit run --all-files`
 # for a full sweep). The lint/format versions match the ones CI pins, and all
-# rule configuration comes from pyproject.toml.
+# rule configuration comes from code/backend/pyproject.toml.
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.17.4
     hooks:
       - id: ruff
-        args: [--fix]
+        args: [--fix, --config, code/backend/pyproject.toml, --no-cache]
       - id: ruff-format
+        args: [--config, code/backend/pyproject.toml, --no-cache]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0

@@ -327,8 +327,7 @@ def load_book_skills(book_id):
     return strict_json(path.read_text(encoding="utf-8")) if path.exists() else []
 
 
-def save_book_skills(book_id, ids):
-    _metadata(book_id)
+def validate_skill_selection(ids):
     if (
         not isinstance(ids, list)
         or len(ids) > 5
@@ -339,6 +338,12 @@ def save_book_skills(book_id, ids):
     available = {item["id"] for item in list_skills()}
     if any(x not in available for x in ids):
         raise ValueError("所选技能不存在")
+    return ids
+
+
+def save_book_skills(book_id, ids):
+    _metadata(book_id)
+    validate_skill_selection(ids)
     with operation_lock(book_path(book_id)):
         _atomic_json(book_path(book_id) / "skills.json", ids)
     return ids
@@ -361,7 +366,14 @@ class SkillGateway:
 
 
 def create_book(
-    book_id, title, prompt, chapters, target_units, settings=None, style=None
+    book_id,
+    title,
+    prompt,
+    chapters,
+    target_units,
+    settings=None,
+    style=None,
+    skills=None,
 ):
     project_id(book_id)
     if (
@@ -380,6 +392,7 @@ def create_book(
         if style is not None
         else {"instructions": "", "reference": ""}
     )
+    selected_skills = validate_skill_selection(skills) if skills is not None else []
     folder = book_path(book_id)
     if folder.exists():
         raise ValueError("作品已存在")
@@ -399,11 +412,15 @@ def create_book(
     }
     if database.enabled():
         database.create(book_id, metadata, state.to_dict(), style)
+        if selected_skills:
+            save_book_skills(book_id, selected_skills)
         return load_book(book_id)
     FileStore(BOOKS).initialize(state)
     _atomic_json(folder / "metadata.json", metadata)
     if any(style.values()):
         _atomic_json(folder / "writing-style.json", style)
+    if selected_skills:
+        save_book_skills(book_id, selected_skills)
     return load_book(book_id)
 
 

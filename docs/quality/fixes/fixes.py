@@ -1637,8 +1637,8 @@ def main(argv=None):
     )
     parser.add_argument(
         "--root",
-        default=str(pathlib.Path(__file__).resolve().parent.parent),
-        help="repository root (default: parent directory of fixes/)",
+        default=str(pathlib.Path(__file__).resolve().parents[3]),
+        help="repository root (defaults to the project containing docs/quality/fixes)",
     )
     parser.add_argument(
         "--check", action="store_true", help="report only, write nothing"

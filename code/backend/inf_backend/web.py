@@ -319,6 +319,7 @@ class Handler(BaseHTTPRequestHandler):
                     data.get("chapters"),
                     data.get("target_units"),
                     style=data.get("style"),
+                    skills=data.get("skills"),
                 )
                 self.reply(201, load_view(book_id))
             elif post and path == "/api/books/trash/purge":

@@ -11,9 +11,9 @@ jobs:
         with:
           python-version: '3.11'
       - run: python -m pip install ruff==0.17.4
-      # Configuration comes from the repo-root pyproject.toml.
-      - run: ruff check .
-      - run: ruff format --check .
+      # Keep the shared rules inside the existing backend directory.
+      - run: ruff check --config code/backend/pyproject.toml --no-cache .
+      - run: ruff format --config code/backend/pyproject.toml --no-cache --check .
 
   test:
     runs-on: windows-latest

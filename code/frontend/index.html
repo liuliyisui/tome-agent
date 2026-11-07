@@ -658,6 +658,15 @@
                 ></textarea>
               </label>
             </details>
+            <details class="create-style">
+              <summary>写作 Skill（可选）</summary>
+              <p class="form-hint">导入技能文件并选择最多 5 个，创建后可随时调整。仅使用文本指导，不执行脚本。</p>
+              <label>安装技能文件 <input type="file" accept=".md,text/markdown,text/plain" @change="installSkill" @cancel.stop :disabled="state.busy.create||state.busy.skill" /></label>
+              <p v-if="!state.skills.length" class="form-hint">尚未安装技能。</p>
+              <label v-for="skill in state.skills" :key="skill.id" class="skill-option">
+                <input type="checkbox" :value="skill.id" v-model="state.createForm.skills" :disabled="state.busy.create||(!state.createForm.skills.includes(skill.id) && state.createForm.skills.length >= 5)" /> {{skill.name}}
+              </label>
+            </details>
             <p class="form-hint">
               创建后可逐章生成。首次使用时可直接在页面配置 DeepSeek API 密钥。
             </p>
@@ -666,7 +675,7 @@
               id="create-submit"
               class="primary wide"
               type="submit"
-              :disabled="state.busy.create"
+              :disabled="state.busy.create||state.busy.skill"
             >
               创建作品 ↗
             </button>

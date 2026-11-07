@@ -1,3 +1,20 @@
+# 目录调整说明
+
+为保持项目根目录结构，共享检查规则现位于 `code/backend/pyproject.toml`，预提交配置位于 `.github/pre-commit-config.yaml`，历史整改包位于 `docs/quality/fixes/`。下方有关根目录配置位置及历史整改结果的叙述是原始记录，不表示当前文件仍位于根目录；历史补丁包针对旧目录布局，请勿直接运行写入操作来配置当前项目。
+
+从仓库根目录检查：
+
+```powershell
+ruff check --config code/backend/pyproject.toml --no-cache .
+ruff format --config code/backend/pyproject.toml --no-cache --check .
+pre-commit install --config .github/pre-commit-config.yaml
+pre-commit run --config .github/pre-commit-config.yaml --all-files
+```
+
+编辑器的 Ruff 扩展也需要显式指向 `code/backend/pyproject.toml`。原根目录配置保存在 `docs/quality/legacy-root-pyproject.toml`，供对照历史报告。
+
+---
+
 # Python 代码质量整改清单
 
 依据：[VS Code Python 代码质量检查全景指南](https://github.com/bettermorn/ACMWDevHubPPT/blob/master/Methodology/VSCodePlugins.md)（下称"指南"），采用其中**方案 A：现代极速流（Ruff + Pylance）**。

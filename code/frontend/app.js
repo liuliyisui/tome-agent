@@ -133,6 +133,7 @@ const app = createApp({
       busy: {
         api: false,
         create: false,
+        skill: false,
         style: false,
         cover: false,
         estimate: false,
@@ -157,6 +158,7 @@ const app = createApp({
         target_units: 10000,
         instructions: "",
         reference: "",
+        skills: [],
       },
       styles: {},
       skills: [],
@@ -494,6 +496,7 @@ const app = createApp({
             chapters: Number(f.chapters),
             target_units: Number(f.target_units),
             style: { instructions: f.instructions, reference: f.reference },
+            skills: [...f.skills],
           });
         state.dialogs.create = false;
         state.createForm = {
@@ -503,6 +506,7 @@ const app = createApp({
           target_units: 10000,
           instructions: "",
           reference: "",
+          skills: [],
         };
         await selectBook(book.state.project_id);
       } catch (e) {
@@ -675,6 +679,7 @@ const app = createApp({
       const input = event.target;
       const file = input.files?.[0];
       if (!file) return;
+      state.busy.skill = true;
       try {
         if (file.size > 48000) throw new Error("技能文件过大");
         const content = await file.text();
@@ -684,7 +689,7 @@ const app = createApp({
         state.skills.push(result.skill);
         notify("技能已安装，请为作品选择后使用。");
       } catch (e) { notify(e.message); }
-      finally { input.value = ""; }
+      finally { input.value = ""; state.busy.skill = false; }
     }
     async function selectSkills(event) {
       const key = id.value;

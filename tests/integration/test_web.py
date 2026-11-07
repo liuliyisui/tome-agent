@@ -17,6 +17,28 @@ from inf_writer.storage import FileStore
 
 
 class WebIntegrationTests(unittest.TestCase):
+    def test_create_with_selected_skills(self):
+        with patch.object(service, "DATA", Path(self.folder.name) / "skill-data"):
+            item = self.request(
+                "/api/skills", {"name": "悬疑", "content": "缓慢揭示线索"}
+            )["skill"]
+            data = {
+                "title": "新书",
+                "prompt": "故事",
+                "chapters": 3,
+                "target_units": 3000,
+            }
+            with self.assertRaises(HTTPError) as error:
+                self.request("/api/books", {**data, "skills": ["missing"]})
+            self.assertEqual(error.exception.code, 400)
+            self.assertEqual(self.request("/api/books")["books"], [])
+            book = self.request("/api/books", {**data, "skills": [item["id"]]})
+            book_id = book["state"]["project_id"]
+            self.assertEqual(book["skills"], [item["id"]])
+            self.assertEqual(
+                self.request(f"/api/books/{book_id}")["skills"], [item["id"]]
+            )
+
     def test_skill_install_and_selection_survive_reload(self):
         with patch.object(service, "DATA", Path(self.folder.name) / "skill-data"):
             item = self.request(

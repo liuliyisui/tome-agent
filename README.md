@@ -55,6 +55,8 @@ tests/                 单元测试与集成测试
 ```
 
 
+代码质量检查配置位于 `code/backend/pyproject.toml`。从项目根目录运行 `ruff check --config code/backend/pyproject.toml --no-cache .`；预提交钩子配置及用法见[代码质量说明](docs/software/CODE_QUALITY_FIXES.md)。
+
 ## 快速验证（Windows）
 
 可以先使用文件模式。运行 `setup.cmd` 后，在 `code/backend/.env` 中配置 DeepSeek API 密钥，并将模板中的 `DATABASE_URL` 留空，再启动本地工作室：

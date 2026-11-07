@@ -68,6 +68,20 @@ class PostgreSQLTests(unittest.TestCase):
             settings=Settings(api_key="FAKE"),
         )
 
+    def test_create_book_with_selected_skill(self):
+        with patch.object(service, "DATA", self.root / "skills-data"):
+            skill = service.install_skill("悬疑", "逐步揭示线索")
+            service.create_book(
+                "skill-book",
+                "数据库测试",
+                "守住灯塔",
+                3,
+                3000,
+                settings=Settings(api_key="FAKE"),
+                skills=[skill["id"]],
+            )
+            self.assertEqual(service.load_book_skills("skill-book"), [skill["id"]])
+
     def test_roundtrip_chapter_versions_and_rollback(self):
         self.create()
         state = db.row("pg-book")["state"]

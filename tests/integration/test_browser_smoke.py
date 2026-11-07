@@ -108,6 +108,21 @@ class BrowserSmokeTests(unittest.TestCase):
         self.assertIn("书架还是空的", page.inner_text(".works-empty"))
         self.assertEqual(page.text_content("#book-count").strip(), "0")
 
+    def test_cancel_skill_picker_keeps_create_dialog_and_draft(self):
+        self.open_create_dialog()
+        self.page.fill('input[name="title"]', "未完成的故事")
+        self.page.fill('textarea[name="prompt"]', "夜里的图书馆")
+        self.page.locator('#create-dialog input[type="file"]').dispatch_event(
+            "cancel", {"bubbles": True}
+        )
+        self.assertTrue(self.page.locator("#create-dialog[open]").count())
+        self.assertEqual(self.page.input_value('input[name="title"]'), "未完成的故事")
+        self.assertEqual(
+            self.page.input_value('textarea[name="prompt"]'), "夜里的图书馆"
+        )
+        self.page.keyboard.press("Escape")
+        self.assertFalse(self.page.locator("#create-dialog[open]").count())
+
     def test_create_estimate_delete_and_refresh(self):
         page = self.page
         self.open_create_dialog()
