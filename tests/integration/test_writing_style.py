@@ -20,19 +20,40 @@ class WritingStyleTests(unittest.TestCase):
         self.folder.cleanup()
 
     def create(self, style=None):
-        return service.create_book("style-book", "故事", "一个故事", 3, 3000,
-                                   settings=Settings(api_key="FAKE_TEST_KEY"), style=style)
+        return service.create_book(
+            "style-book",
+            "故事",
+            "一个故事",
+            3,
+            3000,
+            settings=Settings(api_key="FAKE_TEST_KEY"),
+            style=style,
+        )
 
     def test_style_persists_without_changing_resume_plan_or_existing_checkpoint(self):
         book = self.create()
-        self.assertEqual(service.load_writing_style("style-book"), {"instructions": "", "reference": ""})
+        self.assertEqual(
+            service.load_writing_style("style-book"),
+            {"instructions": "", "reference": ""},
+        )
         plan = service._longform_plan(book["metadata"])
-        session = WritingSession(service.book_path("style-book") / "longform-runs" / "test", Mock(), plan)
+        session = WritingSession(
+            service.book_path("style-book") / "longform-runs" / "test", Mock(), plan
+        )
         checkpoint = session.latest_checkpoint
         before = checkpoint.read_bytes()
-        service._atomic_json(service._longform_pointer("style-book"), {
-            "checkpoint": checkpoint.relative_to(service.book_path("style-book")).as_posix()})
-        style = {"instructions": "短句，克制，避免说教。", "reference": "风停了。他收好信，推门出去。"}
+        service._atomic_json(
+            service._longform_pointer("style-book"),
+            {
+                "checkpoint": checkpoint.relative_to(
+                    service.book_path("style-book")
+                ).as_posix()
+            },
+        )
+        style = {
+            "instructions": "短句，克制，避免说教。",
+            "reference": "风停了。他收好信，推门出去。",
+        }
         service.save_writing_style("style-book", style)
         self.assertEqual(service.load_writing_style("style-book"), style)
         self.assertEqual(service.load_book("style-book")["state"]["chapters"], [])
@@ -46,7 +67,11 @@ class WritingStyleTests(unittest.TestCase):
         gateway = Mock()
         gateway.complete.return_value = ModelReply("正文", 0, 0, 0)
         styled = service.StyleGateway(gateway, style)
-        for payload in ({"chapter_number": 1}, {"output_mode": "plain_prose", "current_draft": "草稿"}, {"repair": {"attempt": 1}}):
+        for payload in (
+            {"chapter_number": 1},
+            {"output_mode": "plain_prose", "current_draft": "草稿"},
+            {"repair": {"attempt": 1}},
+        ):
             request = ModelRequest("writer", "输出JSON", payload)
             styled.complete(request)
             forwarded = gateway.complete.call_args.args[0]
@@ -68,7 +93,9 @@ class WritingStyleTests(unittest.TestCase):
         self.assertEqual(service.load_writing_style("style-book"), style)
         with service.operation_lock(service.book_path("style-book")):
             with self.assertRaises(ValueError):
-                service.save_writing_style("style-book", {"instructions": "不能保存", "reference": ""})
+                service.save_writing_style(
+                    "style-book", {"instructions": "不能保存", "reference": ""}
+                )
         self.assertEqual(service.load_writing_style("style-book"), style)
 
 

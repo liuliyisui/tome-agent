@@ -1,4 +1,5 @@
 """Local configuration for the official DeepSeek chat-completions endpoint."""
+
 import os
 import re
 import tempfile
@@ -7,12 +8,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlsplit
 
-BACKEND_ROOT = Path(os.environ.get("TOME_DATA_HOME") or Path(__file__).resolve().parents[1])
+BACKEND_ROOT = Path(
+    os.environ.get("TOME_DATA_HOME") or Path(__file__).resolve().parents[1]
+)
 _config_lock = threading.Lock()
 
 
 def configure_api_key(api_key):
-    if not isinstance(api_key, str) or not re.fullmatch(r"sk-[A-Za-z0-9_-]{16,250}", api_key.strip()):
+    if not isinstance(api_key, str) or not re.fullmatch(
+        r"sk-[A-Za-z0-9_-]{16,250}", api_key.strip()
+    ):
         raise ValueError("请填写有效的 DeepSeek API Key（以 sk- 开头）")
     with _config_lock:
         if Settings.load(require_key=False).api_key.strip():
@@ -20,12 +25,24 @@ def configure_api_key(api_key):
         path = BACKEND_ROOT / ".env"
         if path.is_symlink():
             raise ValueError("配置文件路径不安全")
-        lines = path.read_text(encoding="utf-8-sig").splitlines() if path.exists() else []
-        lines = [line for line in lines if line.split("=", 1)[0].strip() != "DEEPSEEK_API_KEY"]
+        lines = (
+            path.read_text(encoding="utf-8-sig").splitlines() if path.exists() else []
+        )
+        lines = [
+            line
+            for line in lines
+            if line.split("=", 1)[0].strip() != "DEEPSEEK_API_KEY"
+        ]
         lines.append("DEEPSEEK_API_KEY=" + api_key.strip())
         temporary = None
         try:
-            with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=BACKEND_ROOT, prefix=".env-", delete=False) as output:
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                dir=BACKEND_ROOT,
+                prefix=".env-",
+                delete=False,
+            ) as output:
                 temporary = Path(output.name)
                 output.write("\n".join(lines) + "\n")
             os.replace(temporary, path)
@@ -72,13 +89,17 @@ class Settings:
         values = {**file_values, **os.environ}
         if not os.environ.get("DEEPSEEK_API_KEY", "").strip():
             values["DEEPSEEK_API_KEY"] = file_values.get("DEEPSEEK_API_KEY", "")
+
         def get(name, default):
             return values.get(name) or default
+
         raw_thinking = str(get("DEEPSEEK_THINKING", "false")).lower()
         result = cls(
             api_key=get("DEEPSEEK_API_KEY", ""),
             model=get("DEEPSEEK_MODEL", "deepseek-chat"),
-            endpoint=get("DEEPSEEK_ENDPOINT", "https://api.deepseek.com/chat/completions"),
+            endpoint=get(
+                "DEEPSEEK_ENDPOINT", "https://api.deepseek.com/chat/completions"
+            ),
             thinking=raw_thinking == "true",
             timeout=float(get("DEEPSEEK_TIMEOUT", "180")),
             max_calls=int(get("INF_MAX_CALLS", "40")),
@@ -87,9 +108,15 @@ class Settings:
             output_usd_per_million=float(get("INF_OUTPUT_USD_PER_MILLION", "0")),
         )
         url = urlsplit(result.endpoint)
-        if (url.scheme != "https" or url.hostname != "api.deepseek.com" or url.username
-                or url.password or url.query or url.fragment
-                or url.path.rstrip("/") not in ("/chat/completions", "/v1/chat/completions")):
+        if (
+            url.scheme != "https"
+            or url.hostname != "api.deepseek.com"
+            or url.username
+            or url.password
+            or url.query
+            or url.fragment
+            or url.path.rstrip("/") not in ("/chat/completions", "/v1/chat/completions")
+        ):
             raise ValueError("只允许使用 DeepSeek 官方 HTTPS chat/completions 地址")
         if require_key and not result.api_key.strip():
             raise ValueError("请先在页面中配置 DeepSeek API Key")
@@ -98,5 +125,9 @@ class Settings:
         return result
 
     def public_config(self):
-        return {"provider": "deepseek", "model": self.model, "endpoint": self.endpoint,
-                "thinking": self.thinking}
+        return {
+            "provider": "deepseek",
+            "model": self.model,
+            "endpoint": self.endpoint,
+            "thinking": self.thinking,
+        }

@@ -1,19 +1,20 @@
 """Protocol tests use only a loopback HTTP server and a fake credential."""
+
 import json
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
 import sys
 import tempfile
 import threading
 import time
 import unittest
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from inf_writer.chat_provider import ChatCompletionProvider, ProviderError
-from inf_writer.models import Budget, ModelGateway, ModelRequest
 from inf_writer.agents import build_agents
+from inf_writer.chat_provider import ChatCompletionProvider, ProviderError
 from inf_writer.demo import DemoModel
 from inf_writer.domain import Snapshot
+from inf_writer.models import Budget, ModelGateway, ModelRequest
 from inf_writer.runtime import Coordinator
 from inf_writer.storage import FileStore
 
@@ -28,13 +29,19 @@ class ChatProviderTests(unittest.TestCase):
             def do_POST(self):
                 body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
                 cls.requests.append((self.path, dict(self.headers), body))
-                response = cls.response(body) if callable(cls.response) else cls.response
+                response = (
+                    cls.response(body) if callable(cls.response) else cls.response
+                )
                 if cls.delay:
                     time.sleep(cls.delay)
                 self.send_response(cls.status)
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
-                raw = response if isinstance(response, bytes) else json.dumps(response).encode()
+                raw = (
+                    response
+                    if isinstance(response, bytes)
+                    else json.dumps(response).encode()
+                )
                 try:
                     self.wfile.write(raw)
                 except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
@@ -58,14 +65,24 @@ class ChatProviderTests(unittest.TestCase):
 
     @staticmethod
     def reply(content='{"text":"离线假响应"}', finish="stop"):
-        return {"choices": [{"message": {"role": "assistant", "content": content},
-                             "finish_reason": finish}],
-                "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}}
+        return {
+            "choices": [
+                {
+                    "message": {"role": "assistant", "content": content},
+                    "finish_reason": finish,
+                }
+            ],
+            "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15},
+        }
 
     def provider(self, **kwargs):
-        options = dict(endpoint=f"http://127.0.0.1:{self.server.server_port}/chat/completions",
-                       model="local-fixture", api_key="FAKE_LOCAL_KEY",
-                       input_usd_per_million=1, output_usd_per_million=2)
+        options = {
+            "endpoint": f"http://127.0.0.1:{self.server.server_port}/chat/completions",
+            "model": "local-fixture",
+            "api_key": "FAKE_LOCAL_KEY",
+            "input_usd_per_million": 1,
+            "output_usd_per_million": 2,
+        }
         options.update(kwargs)
         return ChatCompletionProvider(**options)
 
@@ -79,7 +96,9 @@ class ChatProviderTests(unittest.TestCase):
         self.assertEqual(path, "/chat/completions")
         self.assertEqual(headers["Authorization"], "Bearer FAKE_LOCAL_KEY")
         self.assertEqual(body["messages"][0]["role"], "system")
-        self.assertEqual(json.loads(body["messages"][1]["content"])["chapter_number"], 1)
+        self.assertEqual(
+            json.loads(body["messages"][1]["content"])["chapter_number"], 1
+        )
         self.assertEqual(body["max_tokens"], 100)
         self.assertFalse(body["stream"])
 
@@ -93,9 +112,11 @@ class ChatProviderTests(unittest.TestCase):
         self.assertEqual(self.requests[0][2]["thinking"], {"type": "disabled"})
 
     def test_insecure_remote_and_embedded_credentials_rejected(self):
-        for endpoint in ("http://example.invalid/chat/completions",
-                         "https://user:password@example.invalid/chat/completions",
-                         "https://example.invalid/chat/completions?api_key=x"):
+        for endpoint in (
+            "http://example.invalid/chat/completions",
+            "https://user:password@example.invalid/chat/completions",
+            "https://example.invalid/chat/completions?api_key=x",
+        ):
             with self.subTest(endpoint=endpoint), self.assertRaises(ValueError):
                 self.provider(endpoint=endpoint, allow_remote=True)
 
@@ -136,9 +157,11 @@ class ChatProviderTests(unittest.TestCase):
                 self.provider(max_response_bytes=1024).complete(self.request())
 
     def test_bad_usage_rejected(self):
-        for usage in ({"prompt_tokens": True, "completion_tokens": 5},
-                      {"prompt_tokens": -1, "completion_tokens": 5},
-                      {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 99}):
+        for usage in (
+            {"prompt_tokens": True, "completion_tokens": 5},
+            {"prompt_tokens": -1, "completion_tokens": 5},
+            {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 99},
+        ):
             type(self).response = dict(self.reply(), usage=usage)
             with self.subTest(usage=usage), self.assertRaises(ProviderError):
                 self.provider().complete(self.request())
@@ -146,7 +169,9 @@ class ChatProviderTests(unittest.TestCase):
     def test_timeout_does_not_retry_and_reservation_remains(self):
         type(self).delay = 0.15
         budget = Budget(max_cost_usd=1)
-        gateway = ModelGateway(self.provider(timeout_seconds=0.03), budget, reserve_per_call=0.1)
+        gateway = ModelGateway(
+            self.provider(timeout_seconds=0.03), budget, reserve_per_call=0.1
+        )
         with self.assertRaises(ProviderError):
             gateway.complete(self.request())
         self.assertEqual(len(self.requests), 1)
@@ -155,9 +180,13 @@ class ChatProviderTests(unittest.TestCase):
         time.sleep(0.2)  # Drain this local fixture handler before the next test.
 
     def test_config_rejects_invalid_limits_and_prices(self):
-        for options in ({"timeout_seconds": 0}, {"input_usd_per_million": float("nan")},
-                        {"output_usd_per_million": -1}, {"max_response_bytes": True},
-                        {"api_key": "bad\r\nheader"}):
+        for options in (
+            {"timeout_seconds": 0},
+            {"input_usd_per_million": float("nan")},
+            {"output_usd_per_million": -1},
+            {"max_response_bytes": True},
+            {"api_key": "bad\r\nheader"},
+        ):
             with self.subTest(options=options), self.assertRaises(ValueError):
                 self.provider(**options)
 
@@ -165,11 +194,19 @@ class ChatProviderTests(unittest.TestCase):
         def respond(body):
             # Deterministic local fixture, not real model generation.
             prompt = body["messages"][0]["content"]
-            role = next(r for r, marker in (("planner", "规划智能体"), ("writer", "写作智能体"),
-                                            ("memory", "记忆维护智能体"), ("reviewer", "审核智能体"))
-                        if marker in prompt)
-            fixture = DemoModel().complete(ModelRequest(role, prompt,
-                json.loads(body["messages"][1]["content"])))
+            role = next(
+                r
+                for r, marker in (
+                    ("planner", "规划智能体"),
+                    ("writer", "写作智能体"),
+                    ("memory", "记忆维护智能体"),
+                    ("reviewer", "审核智能体"),
+                )
+                if marker in prompt
+            )
+            fixture = DemoModel().complete(
+                ModelRequest(role, prompt, json.loads(body["messages"][1]["content"]))
+            )
             return self.reply(fixture.content)
 
         type(self).response = respond
@@ -179,7 +216,9 @@ class ChatProviderTests(unittest.TestCase):
             store = FileStore(folder)
             store.initialize(Snapshot("httpdemo", "写守灯人的故事"))
             budget = Budget(max_calls=4, max_cost_usd=1)
-            coordinator = Coordinator(store, build_agents(ModelGateway(self.provider(), budget, 0.01)))
+            coordinator = Coordinator(
+                store, build_agents(ModelGateway(self.provider(), budget, 0.01))
+            )
             outcome = coordinator.write_next("httpdemo", "chapter1")
             self.assertEqual(outcome.status, "COMMITTED", outcome.error)
             self.assertEqual(len(self.requests), 4)

@@ -1,4 +1,5 @@
 """Package README and the four required top-level directories without secrets or runs."""
+
 from hashlib import sha256
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -12,9 +13,13 @@ for path in project.rglob("*"):
     if not path.is_file() or relative.parts[0] not in allowed:
         continue
     posix = relative.as_posix()
-    if ("__pycache__" in relative.parts or path.suffix in (".pyc", ".pyo")
-            or posix == "code/backend/.env" or "code/backend/.venv/" in posix
-            or (posix.startswith("code/backend/data/") and not posix.endswith("/.gitkeep"))):
+    if (
+        "__pycache__" in relative.parts
+        or path.suffix in (".pyc", ".pyo")
+        or posix == "code/backend/.env"
+        or "code/backend/.venv/" in posix
+        or (posix.startswith("code/backend/data/") and not posix.endswith("/.gitkeep"))
+    ):
         continue
     files.append(path)
 with ZipFile(destination, "w", ZIP_DEFLATED) as archive:
