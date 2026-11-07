@@ -151,6 +151,8 @@
                 >
               </nav>
             </div>
+            <div class="header-actions">
+              <button id="open-settings" class="outline settings-button" type="button" @click="state.dialogs.settings=true" aria-haspopup="dialog" aria-controls="settings-dialog">设置</button>
             <button
               id="my-works"
               class="my-works-button"
@@ -159,6 +161,7 @@
             >
               我的作品 ↗
             </button>
+            </div>
           </header>
           <div class="content">
             <section class="intro" v-show="state.view !== 'book'">
@@ -523,6 +526,19 @@
             </footer>
           </div>
         </main>
+        <dialog id="settings-dialog" v-dialog="state.dialogs.settings" aria-labelledby="settings-title" @cancel.prevent="closeDialog('settings')">
+          <div class="dialog-heading">
+            <h2 id="settings-title">Tome 设置</h2>
+            <button class="icon-button" type="button" aria-label="关闭设置" @click="closeDialog('settings')">×</button>
+          </div>
+          <fieldset class="theme-options" aria-describedby="theme-hint">
+            <legend>外观主题</legend>
+            <label><input type="radio" name="theme" value="light" v-model="state.theme" /><span>浅色<small>明亮的纸张与柔和的墨色</small></span></label>
+            <label><input type="radio" name="theme" value="dark" v-model="state.theme" /><span>深色<small>深色背景，适合夜间阅读</small></span></label>
+            <label><input type="radio" name="theme" value="system" v-model="state.theme" /><span>跟随系统<small>随设备的外观设置自动切换</small></span></label>
+          </fieldset>
+          <p id="theme-hint" class="form-hint">选择后立即生效，偏好保存在当前浏览器。</p>
+        </dialog>
         <dialog
           id="api-key-dialog"
           v-dialog="state.dialogs.api"
@@ -577,24 +593,25 @@
         <dialog
           id="create-dialog"
           v-dialog="state.dialogs.create"
+          aria-labelledby="create-dialog-title"
           @cancel.prevent="closeDialog('create')"
         >
+          <button
+            type="button"
+            id="close-dialog"
+            class="icon-button"
+            aria-label="关闭"
+            :disabled="state.busy.create"
+            @click="closeDialog('create')"
+          >
+            ×
+          </button>
           <form id="create-form" @submit.prevent="createBook">
             <div class="dialog-heading">
               <div>
                 <div class="eyebrow">A NEW BEGINNING</div>
-                <h2>让一个新世界诞生。</h2>
+                <h2 id="create-dialog-title">让一个新世界诞生。</h2>
               </div>
-              <button
-                type="button"
-                id="close-dialog"
-                class="icon-button"
-                aria-label="关闭"
-                :disabled="state.busy.create"
-                @click="closeDialog('create')"
-              >
-                ×
-              </button>
             </div>
             <label
               >作品名称<input
