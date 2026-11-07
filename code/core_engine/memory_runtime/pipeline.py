@@ -1018,7 +1018,7 @@ def recall_selection(memory, query, max_bytes=36000, *, focus="balanced"):
                         value[1],
                     )
 
-                for score, identifier, row in sorted(group, key=first_source):
+                for _score, identifier, row in sorted(group, key=first_source):
                     if (
                         len(canonical(row).encode("utf-8")) <= witness_budget
                         and len(canonical(selected + [row]).encode("utf-8"))
@@ -1081,7 +1081,7 @@ def recall_selection(memory, query, max_bytes=36000, *, focus="balanced"):
         ),
     )
     reserved_subjects = set()
-    for score, identifier, row in reserved:
+    for _score, _identifier, row in reserved:
         if len(selected) >= 4:
             break
         if row["subject"] in reserved_subjects:
@@ -1169,11 +1169,11 @@ class ReviewedTemporal:
             return TemporalReconciler(Capture()).run(
                 before, after, chapters, number, selection, trace
             )
-        except TemporalUnresolved:
+        except TemporalUnresolved as unresolved:
             if _depth >= 3:
                 raise TemporalUnresolved(
                     "Uncertainty review round limit reached; chapter remains pending"
-                )
+                ) from unresolved
             issue_entry = trace[-1]
             issues = issue_entry["issues"]
             payload = {
@@ -1209,20 +1209,26 @@ class ReviewedTemporal:
             decisions = parsed["decisions"]
             wanted = {f"u{i:03d}" for i in range(1, len(issues) + 1)}
             if not isinstance(decisions, list):
-                raise ContractError("Uncertainty decisions must be list")
+                raise ContractError(
+                    "Uncertainty decisions must be list"
+                ) from unresolved
             seen = set()
             for decision in decisions:
                 fields(decision, ("ref", "decision", "reason"))
                 if decision["ref"] not in wanted or decision["ref"] in seen:
-                    raise ContractError("Invalid uncertainty review coverage")
+                    raise ContractError(
+                        "Invalid uncertainty review coverage"
+                    ) from unresolved
                 seen.add(decision["ref"])
                 if decision["decision"] not in (
                     "keep_unconfirmed",
                     "block",
                 ) or not isinstance(decision["reason"], str):
-                    raise ContractError("Invalid uncertainty disposition")
+                    raise ContractError(
+                        "Invalid uncertainty disposition"
+                    ) from unresolved
             if seen != wanted:
-                raise ContractError("Uncertainty review incomplete")
+                raise ContractError("Uncertainty review incomplete") from unresolved
             trace.append(
                 {
                     "role": "uncertainty_review",
@@ -1234,7 +1240,9 @@ class ReviewedTemporal:
                 }
             )
             if any(d["decision"] == "block" for d in decisions):
-                raise TemporalUnresolved("Uncertainty review retained blocking issue")
+                raise TemporalUnresolved(
+                    "Uncertainty review retained blocking issue"
+                ) from unresolved
             # Replay the unchanged first-stage decisions, removing only the
             # separately reviewed keep-unconfirmed requests. Full checks still run.
             raw, _ = normalize(strict_json(replies[-1].content))
@@ -1271,7 +1279,7 @@ class ReviewedTemporal:
             ):
                 raise ContractError(
                     "Cannot both retain and reconcile the same uncertain portion"
-                )
+                ) from unresolved
             # Empty unresolved placeholders carry no actionable parts/evidence.
             # A keep-unconfirmed verdict leaves these targets wholly unchanged.
             raw["changes"] = [
@@ -1350,7 +1358,7 @@ class ReviewedTemporal:
                 if any(new_parts.get(pid) != old_parts[pid] for pid in part_ids):
                     raise ContractError(
                         "Repair changed a reviewed keep-unconfirmed portion"
-                    )
+                    ) from unresolved
             result.setdefault("uncertain_prior_arrangements", []).append(
                 {
                     "chapter_number": number,

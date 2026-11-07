@@ -247,8 +247,16 @@ class PostgreSQLTests(unittest.TestCase):
             self.assertFalse(service.book_path("pg-book").exists())
             import base64
             from urllib.request import Request
-            png = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=")
-            request = Request(base + "/api/books/pg-book/cover", data=json.dumps({"image": base64.b64encode(png).decode()}).encode(), headers={"Content-Type": "application/json"}, method="POST")
+
+            png = base64.b64decode(
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+            )
+            request = Request(
+                base + "/api/books/pg-book/cover",
+                data=json.dumps({"image": base64.b64encode(png).decode()}).encode(),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
             with client.open(request) as response:
                 self.assertIsNotNone(json.load(response)["cover_version"])
             with client.open(base + "/api/books/pg-book/cover") as response:

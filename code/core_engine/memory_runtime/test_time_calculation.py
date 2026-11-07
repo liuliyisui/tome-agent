@@ -10,7 +10,6 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from inf_writer.domain import ContractError, canonical
 from inf_writer.models import ModelReply
-
 from memory_runtime.time_calculation import (
     calculate,
     render,

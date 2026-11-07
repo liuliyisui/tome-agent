@@ -15,7 +15,6 @@ sys.path.insert(0, str(ROOT))
 import write_novel as cli
 from inf_writer.domain import ContractError, canonical, digest
 from inf_writer.models import ModelReply
-
 from memory_runtime.continuity import empty
 from memory_runtime.event_first import prepare, project_memory, realize
 from memory_runtime.test_writing import Local, config
@@ -252,7 +251,6 @@ class EventFirstTests(unittest.TestCase):
 
     def test_real_r_prepared_chapter_fits_writer_budget_without_losing_events(self):
         from inf_writer.narrative_context import event_role_context
-
         from memory_runtime.event_first import writer_view
         from memory_runtime.writing import WritingSession
 
@@ -401,48 +399,48 @@ class EventFirstTests(unittest.TestCase):
         }
         memory = project_memory(MemoryEngine.empty(), [chapter], 1, [])
         original = copy.deepcopy(memory)
+
+        class Partial:
+            def __init__(self, second):
+                self.second = second
+                self.requests = []
+
+            def complete(self, request):
+                second = self.second
+                self.requests.append(copy.deepcopy(request))
+                rows = request.payload["items"]
+                if len(self.requests) == 1:
+                    value = {
+                        "placements": [
+                            {
+                                "id": r["id"],
+                                "tier": "recent",
+                                "priority": 3,
+                                "reason": "已完成",
+                            }
+                            for r in rows[:-1]
+                        ]
+                    }
+                elif second == "malformed":
+                    return ModelReply("not json", 1, 1, 0)
+                else:
+                    value = {
+                        "placements": [
+                            {
+                                "id": r["id"],
+                                "tier": "recent" if second != "invalid" else "unknown",
+                                "priority": 3,
+                                "reason": "归档",
+                            }
+                            for r in rows
+                        ]
+                    }
+                    if second == "duplicate":
+                        value["placements"] *= 3
+                return ModelReply(canonical(value), 1, 1, 0)
+
         for second in ("valid", "invalid", "malformed", "duplicate"):
-
-            class Partial:
-                def __init__(self):
-                    self.requests = []
-
-                def complete(self, request):
-                    self.requests.append(copy.deepcopy(request))
-                    rows = request.payload["items"]
-                    if len(self.requests) == 1:
-                        value = {
-                            "placements": [
-                                {
-                                    "id": r["id"],
-                                    "tier": "recent",
-                                    "priority": 3,
-                                    "reason": "已完成",
-                                }
-                                for r in rows[:-1]
-                            ]
-                        }
-                    elif second == "malformed":
-                        return ModelReply("not json", 1, 1, 0)
-                    else:
-                        value = {
-                            "placements": [
-                                {
-                                    "id": r["id"],
-                                    "tier": "recent"
-                                    if second != "invalid"
-                                    else "unknown",
-                                    "priority": 3,
-                                    "reason": "归档",
-                                }
-                                for r in rows
-                            ]
-                        }
-                        if second == "duplicate":
-                            value["placements"] *= 3
-                    return ModelReply(canonical(value), 1, 1, 0)
-
-            gateway = Partial()
+            gateway = Partial(second)
             trace = []
             result, report = LayerAgent(gateway).run(
                 memory, [chapter], 1, "来信", trace

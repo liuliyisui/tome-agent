@@ -1,0 +1,62 @@
+# YAML-side fixes (bundle 2 of 4).
+#
+# Two targets: the CI workflow gains a lint job; .pre-commit-config.yaml is new.
+# Apply with: python fixes/fixes.py --only yaml
+# (PyYAML is used when installed; fixes.py falls back to a built-in parser for
+#  this file's own subset, so no third-party dependency is required.)
+#
+# mode: patch  -> unified diff against baseline e4d23ce
+# mode: create -> full file content
+#
+# Note: both bundles are covered by the workflow added here, so after applying
+# this file CI runs `ruff check .` and `ruff format --check .` on every push.
+
+files:
+  - target: .github/workflows/tests.yml
+    mode: patch
+    patch: |
+      diff --git a/.github/workflows/tests.yml b/.github/workflows/tests.yml
+      index 88344fe..a909e66 100644
+      --- a/.github/workflows/tests.yml
+      +++ b/.github/workflows/tests.yml
+      @@ -3,6 +3,18 @@ on: [push, pull_request]
+       permissions:
+         contents: read
+       jobs:
+      +  lint:
+      +    runs-on: ubuntu-latest
+      +    steps:
+      +      - uses: actions/checkout@v4
+      +      - uses: actions/setup-python@v5
+      +        with:
+      +          python-version: '3.11'
+      +      - run: python -m pip install ruff==0.17.4
+      +      # Configuration comes from the repo-root pyproject.toml.
+      +      - run: ruff check .
+      +      - run: ruff format --check .
+      +
+         test:
+           runs-on: windows-latest
+           steps:
+
+  - target: .pre-commit-config.yaml
+    mode: create
+    content: |
+      # Commit gate: run `pre-commit install` once (and `pre-commit run --all-files`
+      # for a full sweep). The lint/format versions match the ones CI pins, and all
+      # rule configuration comes from pyproject.toml.
+      repos:
+        - repo: https://github.com/astral-sh/ruff-pre-commit
+          rev: v0.17.4
+          hooks:
+            - id: ruff
+              args: [--fix]
+            - id: ruff-format
+
+        - repo: https://github.com/pre-commit/pre-commit-hooks
+          rev: v4.6.0
+          hooks:
+            - id: check-toml
+            - id: check-yaml
+            - id: end-of-file-fixer
+            - id: trailing-whitespace

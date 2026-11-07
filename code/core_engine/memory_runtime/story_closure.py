@@ -578,9 +578,6 @@ class StoryClosure:
                 rows_committed = False
                 end = min(start + CHUNK_CHARS, len(prose))
                 final = n >= self.plan["chapters"] and end == len(prose)
-                chapters = {
-                    c["number"]: c["text"] for c in self.session.book["chapters"]
-                }
                 sources = closing_sources(
                     self.session.book, n, max(0, start - 600), end
                 )

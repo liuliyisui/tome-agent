@@ -18,7 +18,6 @@ from inf_writer.memory_meaning import (
 )
 from inf_writer.models import ModelReply
 from inf_writer.tiered_memory import apply_delta, empty_memory
-
 from memory_runtime.meaning_organizer import _annotate, _relation, organize
 
 

@@ -8,6 +8,7 @@ Skipped unless Playwright and its Chromium build are installed. Install with:
 The suite never calls the model: it only exercises page load, book creation,
 the cost-estimate dialog, deletion and refresh persistence.
 """
+
 import os
 import tempfile
 import threading
@@ -46,8 +47,15 @@ class BrowserSmokeTests(unittest.TestCase):
         self.folder = tempfile.TemporaryDirectory()
         self.books_patch = patch.object(service, "BOOKS", Path(self.folder.name))
         self.books_patch.start()
-        self.prices_patch = patch.object(official_pricing, "get_table", return_value={
-            "models": official_pricing.SNAPSHOT, "checked_at": "2026-11-07", "status": "verified_snapshot"})
+        self.prices_patch = patch.object(
+            official_pricing,
+            "get_table",
+            return_value={
+                "models": official_pricing.SNAPSHOT,
+                "checked_at": "2026-11-07",
+                "status": "verified_snapshot",
+            },
+        )
         self.prices_patch.start()
         self.key_patch = patch.dict(os.environ, {"DEEPSEEK_API_KEY": "sk-" + "a" * 32})
         self.key_patch.start()
@@ -59,7 +67,8 @@ class BrowserSmokeTests(unittest.TestCase):
         self.page.goto(self.base)
         # init() reads /api/config before the create button is usable.
         self.page.wait_for_function(
-            "document.getElementById('connection-text').textContent.includes('已就绪')")
+            "document.getElementById('connection-text').textContent.includes('已就绪')"
+        )
 
     def tearDown(self):
         self.page.close()
@@ -129,7 +138,8 @@ class BrowserSmokeTests(unittest.TestCase):
 
         page.reload()
         page.wait_for_function(
-            "document.getElementById('connection-text').textContent.includes('已就绪')")
+            "document.getElementById('connection-text').textContent.includes('已就绪')"
+        )
         page = self.open_library()
         page.wait_for_selector(".works-empty")
         self.assertEqual(page.text_content("#book-count").strip(), "0")

@@ -12,7 +12,6 @@ from unittest.mock import patch
 import write_novel as cli
 from inf_writer.domain import ContractError, canonical
 from inf_writer.models import ModelReply
-
 from memory_runtime.continuity import empty
 from memory_runtime.engine import MemoryEngine
 from memory_runtime.event_contract import (

@@ -11,7 +11,6 @@ from unittest.mock import patch
 
 from inf_writer.domain import canonical
 from inf_writer.models import ModelReply
-
 from memory_runtime.story_closure import (
     CHUNK_CHARS,
     StoryClosure,

@@ -8,7 +8,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "memory_runtime/src"))
+from inf_writer.domain import ContractError, canonical
+from inf_writer.models import ModelReply, ModelRequest
+from inf_writer.temporal_agent import SYSTEM
+from inf_writer.tiered_runtime import MEMORY_SYSTEM
 from memory_runtime import pipeline
+from memory_runtime.engine import MemoryEngine
 
 sys.modules["components"] = pipeline
 spec = importlib.util.spec_from_file_location(
@@ -170,13 +175,6 @@ class ContinuousTests(fixtures.ContinuousTests):
         )
         self.assertEqual(result["temporal_processed_through"], 11)
 
-
-from inf_writer.domain import ContractError, canonical
-from inf_writer.models import ModelReply, ModelRequest
-from inf_writer.temporal_agent import SYSTEM
-from inf_writer.tiered_runtime import MEMORY_SYSTEM
-
-from memory_runtime.engine import MemoryEngine
 
 _fixture_complete = fixtures.FixtureGateway.complete
 
@@ -673,7 +671,6 @@ class StructuralRegression(unittest.TestCase):
         import json
 
         from inf_writer.tiered_memory import apply_delta
-
         from memory_runtime.semantics import guard_extraction
 
         parent = ROOT / "runs/continuous_memory_stable_20261021_d"
@@ -735,7 +732,6 @@ class StructuralRegression(unittest.TestCase):
 
         from inf_writer.memory_temporality import annotated
         from inf_writer.tiered_memory import apply_delta, empty_memory
-
         from memory_runtime.semantics import guard_temporal
 
         prose = [

@@ -6,7 +6,6 @@ import unittest
 
 from inf_writer.domain import canonical
 from inf_writer.models import ModelReply
-
 from memory_runtime.projection_grounding import (
     ground,
     qualify_state_view,

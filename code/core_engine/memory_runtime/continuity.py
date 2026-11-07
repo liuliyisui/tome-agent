@@ -160,8 +160,11 @@ def apply(state, updates, prose, chapter, no_change_reason=None):
             previous = result[groups[kind]].get(identifier)
             record["revision"] = (previous or {}).get("revision", 0) + 1
 
+        # Late binding of `row` is intentional: the binding is refreshed later in
+        # this same iteration (attribute normalisation) and the error payload must
+        # carry that value. Default-argument binding would freeze the stale one.
         def fail(message, prior=None):
-            raise ContinuityError(message, row, prior)
+            raise ContinuityError(message, row, prior)  # noqa: B023
 
         if kind == "fact":
             from inf_writer.domain import identity

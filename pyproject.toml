@@ -1,0 +1,101 @@
+# Workspace-root tool configuration.
+#
+# VS Code recipe (see the team guide "VS Code Python代码质量检查全景指南", 方案 A):
+#   Python + Pylance + Ruff, format-on-save, fix-on-save.
+# Rule configuration is declared here instead of in a personal settings.json so
+# that editors, pre-commit and CI all apply the same rules. Plugin/editor
+# settings themselves stay on each developer's machine (no .vscode/ in the repo);
+# see docs/software/CODE_QUALITY_FIXES.md for the recommended local snippet.
+
+[tool.ruff]
+# Keep in sync with requires-python in code/backend/pyproject.toml.
+target-version = "py311"
+line-length = 88
+extend-exclude = [
+    ".venv",
+    ".tmp",
+    "__pycache__",
+    "runs",
+    "code/backend/data",
+    # Documentation holds deliberately "before/after" snippets that are not
+    # meant to be re-formatted (Ruff formats fenced Python blocks in Markdown).
+    "docs",
+]
+
+[tool.ruff.lint]
+# E/W: pycodestyle (PEP 8)
+# F:   Pyflakes (real errors: unused imports, undefined names)
+# I:   isort (import order)
+# B:   flake8-bugbear (likely bugs)
+# C4:  flake8-comprehensions (idiomatic comprehensions)
+# UP:  pyupgrade (modern Python syntax)
+select = ["E", "W", "F", "I", "B", "C4", "UP"]
+# Long lines are left to the formatter; see line-length above.
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests legitimately use bare asserts and fixture-style imports. The "S101"
+# entry is dormant today (bandit rules are not in `select`) but keeps the
+# intent documented for when the security rule set is enabled.
+"tests/**" = ["S101", "F401"]
+"code/**/test_*.py" = ["S101", "F401"]
+# These are runnable scripts (and their script-mode regression suites): they put
+# the source tree on sys.path before importing it, so the import block cannot
+# start the file. Auto-loaded by pytest/unittest packages instead:
+# code/core_engine/memory_runtime/__init__.py.
+"code/core_engine/check_memory.py" = ["E402"]
+"code/core_engine/write_novel.py" = ["E402"]
+"code/core_engine/memory_runtime/test_*.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+# First-party packages living under code/ (resolved through explicit
+# sys.path bootstraps and PYTHONPATH, not through an installed distribution).
+known-first-party = [
+    "inf_writer",
+    "memory_runtime",
+    "inf_backend",
+    "user_runtime",
+    "write_novel",
+    "check_memory",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = false
+
+[tool.pylint.main]
+# Metric source for the code-quality report: Pylint classifies messages as
+# error/fatal (defects), warning/refactor/convention (code smells) and reports
+# McCabe complexity plus duplicate code. Ruff stays the fast linter that runs on
+# save and in CI; the two tools do not replace each other.
+py-version = "3.11"
+# Sequential analysis: the CI/sandbox runners used here cannot fork worker
+# processes with piped stdio, and a stable job count keeps reports reproducible.
+jobs = 1
+persistent = false
+load-plugins = ["pylint.extensions.mccabe"]
+ignore-paths = [
+    "^code/backend/\\.venv/",
+    "^\\.tmp/",
+    "^runs/",
+    "^fixes/",
+]
+
+[tool.pylint.format]
+max-line-length = 88
+
+[tool.pylint.design]
+# Report as too-complex anything above 10 branches/paths (default threshold).
+max-complexity = 10
+
+[tool.pylint."messages control"]
+# Deliberately close to the defaults. Only checks this project decides
+# differently on are disabled, each with the reason it is not a defect here.
+disable = [
+    "missing-module-docstring",   # docstrings are not part of the team standard
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "line-too-long",              # enforced by ruff format; E501 is waived
+    "import-outside-toplevel",    # lazy imports break import cycles by design
+]

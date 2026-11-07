@@ -32,12 +32,12 @@ def parse_planner_json(raw):
         try:
             _, end = json.JSONDecoder().raw_decode(stripped)
         except (ValueError, TypeError):
-            raise original
+            raise original from None
         if stripped[end:].strip() != "}":
-            raise original
+            raise original from None
         parsed = strict_json(stripped[:end])
         if not isinstance(parsed, dict):
-            raise original
+            raise original from None
         return parsed, [
             {
                 "rule": "planner_surplus_closing_brace",

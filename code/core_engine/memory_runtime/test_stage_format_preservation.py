@@ -7,7 +7,6 @@ import unittest
 from inf_writer.agents import JsonAgent
 from inf_writer.domain import ContractError, canonical
 from inf_writer.models import ModelReply
-
 from memory_runtime.completion import continue_prose
 from memory_runtime.test_event_first import ROOT
 

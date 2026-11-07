@@ -10,7 +10,6 @@ from unittest.mock import patch
 import write_novel as cli
 from inf_writer.domain import canonical, digest
 from inf_writer.models import ModelReply
-
 from memory_runtime.evidence_access import context as material_context
 from memory_runtime.narrative_planning import (
     context,

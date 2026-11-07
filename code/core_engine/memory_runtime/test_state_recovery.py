@@ -9,7 +9,6 @@ from pathlib import Path
 import write_novel as cli
 from inf_writer.domain import ContractError, canonical, digest
 from inf_writer.models import ModelReply
-
 from memory_runtime.plan_repair import protect_targets
 from memory_runtime.reference_choices import compile_plan
 from memory_runtime.state_recovery import _packet, directory, verify_recoveries

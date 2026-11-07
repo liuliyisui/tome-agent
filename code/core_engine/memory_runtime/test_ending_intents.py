@@ -12,8 +12,6 @@ from unittest.mock import patch
 import write_novel as cli
 from inf_writer.domain import canonical
 from inf_writer.models import ModelReply
-from user_runtime import run_draft_trial
-
 from memory_runtime.narrative_planning import (
     pending_planning_jobs,
     thread_report,
@@ -23,6 +21,7 @@ from memory_runtime.narrative_repair import queue_ending_intent_review
 from memory_runtime.story_closure import StoryClosure
 from memory_runtime.test_event_first import ROOT
 from memory_runtime.writing import WritingSession, load_resume
+from user_runtime import run_draft_trial
 
 SOURCE = ROOT / "runs/event_first_30000_20261028_full_after_transfer_resume_a"
 

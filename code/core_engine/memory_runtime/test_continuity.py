@@ -9,7 +9,6 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from inf_writer.domain import ContractError, canonical
 from inf_writer.models import ModelReply
-
 from memory_runtime.continuity import apply, context_view, empty, guard
 
 
@@ -287,14 +286,19 @@ class ContinuityTests(unittest.TestCase):
                 "continuity_updates": [row],
             },
         ]
+
+        class Gateway:
+            def __init__(self, reply):
+                self.reply = reply
+
+            def complete(self, request):
+                return ModelReply(canonical(self.reply), 0, 0, 0)
+
         for reply in bad_replies:
-
-            class Gateway:
-                def complete(self, request):
-                    return ModelReply(canonical(reply), 0, 0, 0)
-
             with self.assertRaises(ContractError):
-                guard(state, [row], None, "无关内容\n\n" + bad, 2, [], Gateway(), [])
+                guard(
+                    state, [row], None, "无关内容\n\n" + bad, 2, [], Gateway(reply), []
+                )
 
 
 if __name__ == "__main__":

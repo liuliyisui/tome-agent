@@ -7,7 +7,6 @@ from types import SimpleNamespace
 
 from inf_writer.domain import canonical
 from inf_writer.models import ModelReply
-
 from memory_runtime import test_story_closure as fixtures
 from memory_runtime.story_closure import StoryClosure
 
@@ -295,27 +294,31 @@ class RepairTests(unittest.TestCase):
         self.assertTrue(controller.passed())
 
     def test_bad_repair_format_and_choices_remain_queued_with_feedback(self):
+        class BadRepair(RepairProvider):
+            def __init__(self, mode):
+                super().__init__()
+                self.mode = mode
+
+            def complete(self, request):
+                mode = self.mode
+                reply = super().complete(request)
+                if request.role != "closure_repair":
+                    return reply
+                if mode == "json":
+                    return ModelReply("{broken", 1, 1, 0)
+                value = json.loads(reply.content)
+                row = value["obligations"][0]
+                if mode == "missing":
+                    value["obligations"] = []
+                else:
+                    row["evidence"] = [
+                        {"source_choice": True if mode == "boolean" else 999}
+                    ]
+                return ModelReply(canonical(value), 1, 1, 0)
+
         for mode in ("json", "boolean", "missing", "unknown"):
-
-            class BadRepair(RepairProvider):
-                def complete(self, request):
-                    reply = super().complete(request)
-                    if request.role != "closure_repair":
-                        return reply
-                    if mode == "json":
-                        return ModelReply("{broken", 1, 1, 0)
-                    value = json.loads(reply.content)
-                    row = value["obligations"][0]
-                    if mode == "missing":
-                        value["obligations"] = []
-                    else:
-                        row["evidence"] = [
-                            {"source_choice": True if mode == "boolean" else 999}
-                        ]
-                    return ModelReply(canonical(value), 1, 1, 0)
-
             with self.subTest(mode=mode):
-                provider = BadRepair()
+                provider = BadRepair(mode)
                 controller = self.controller(provider)
                 self.observe(controller)
                 self.assertTrue(controller.repairs.pending())

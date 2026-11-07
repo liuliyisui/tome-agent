@@ -1,11 +1,7 @@
 """Reusable atomic memory pipeline, independent of any test novel/run path."""
 
 import copy
-import sys
-from pathlib import Path
 
-SOURCE = Path(__file__).resolve().parent / "src"
-sys.path.insert(0, str(SOURCE))
 from inf_writer.domain import ContractError
 from inf_writer.tiered_memory import empty_memory, select_context
 from inf_writer.tiered_runtime import TieredMemoryAgent

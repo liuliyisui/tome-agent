@@ -12,7 +12,6 @@ from unittest.mock import patch
 from inf_writer.domain import ContractError, canonical, digest
 from inf_writer.models import ModelReply
 from inf_writer.tiered_memory import select_context
-
 from memory_runtime.engine import MemoryEngine
 from memory_runtime.event_first import project_memory
 from memory_runtime.pipeline import recall_selection
@@ -136,7 +135,9 @@ class ProjectionGroundingTests(unittest.TestCase):
         ):
             with self.subTest(transform=transform):
                 chapters, memory = self.setup_memory()
-                p = Grounded(lambda rows, n: {"decisions": transform(rows)})
+                p = Grounded(
+                    lambda rows, n, transform=transform: {"decisions": transform(rows)}
+                )
                 result = ground(memory, chapters, 1, p, [])
                 self.assertTrue(result.get("projection_omissions"))
                 self.assertTrue(retryable_chapters(result))
@@ -217,7 +218,6 @@ class ProjectionGroundingTests(unittest.TestCase):
 
     def test_delayed_backfill_never_overwrites_later_current_value(self):
         chapters, memory = self.setup_memory()
-        first = chapters[0]["event_commit"]
         s = prepare(empty(), proposal(), 1)["candidate_state"]
         change = {"type": "transition", "fact_id": "location", "to_value": "楼上"}
         second = prepare(s, proposal([beat("up", "甲到了楼上。", [change])], 2), 2)[
@@ -365,9 +365,9 @@ class ProjectionGroundingTests(unittest.TestCase):
         self.assertEqual(latest["source_chapters"], [16])
 
     def test_launcher_exports_grounded_memory_and_next_context_reads_it(self):
-        import write_novel as cli
         from tools.testing.archived_plan_fixture import compile_archived_plan
 
+        import write_novel as cli
         from memory_runtime.writing import WritingSession, load_resume
 
         prose = "甲把来信拿进屋内，登记后放上桌面。"

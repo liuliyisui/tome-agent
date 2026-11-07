@@ -7,7 +7,6 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from inf_writer.domain import ContractError
-
 from memory_runtime.engine import MemoryEngine
 from memory_runtime.narrative_planning import design_units
 from memory_runtime.reference_choices import compile_plan

@@ -532,20 +532,24 @@ def load_longform(book_id):
     except ContractError as exc:
         if str(exc) != "写作运行时版本不一致，不能直接恢复旧检查点":
             raise
-        pointer = strict_json(_longform_pointer(book_id).read_text(encoding="utf-8-sig"))
+        pointer = strict_json(
+            _longform_pointer(book_id).read_text(encoding="utf-8-sig")
+        )
         if not isinstance(pointer, dict) or set(pointer) != {"checkpoint"}:
-            raise ValueError("长文本检查点索引格式不正确")
+            raise ValueError("长文本检查点索引格式不正确") from exc
         root = book_path(book_id).resolve()
         checkpoint = (root / pointer["checkpoint"]).resolve()
         if checkpoint == root or not checkpoint.is_relative_to(root):
-            raise ValueError("长文本检查点路径不安全")
+            raise ValueError("长文本检查点路径不安全") from exc
         record = strict_json(checkpoint.read_text(encoding="utf-8-sig"))
         state = record.get("book")
-        if (record.get("schema") != "inf-writing-checkpoint-v1"
-                or record.get("writing_plan_sha256") != digest(canonical(plan))
-                or not isinstance(state, dict)
-                or record.get("book_sha256") != digest(canonical(state))
-                or not isinstance(state.get("chapters"), list)):
+        if (
+            record.get("schema") != "inf-writing-checkpoint-v1"
+            or record.get("writing_plan_sha256") != digest(canonical(plan))
+            or not isinstance(state, dict)
+            or record.get("book_sha256") != digest(canonical(state))
+            or not isinstance(state.get("chapters"), list)
+        ):
             raise ValueError("旧版存档完整性校验失败") from exc
         return {"metadata": meta, "state": state, "read_only": True}
     return {"metadata": meta, "state": state}

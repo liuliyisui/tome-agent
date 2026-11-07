@@ -849,7 +849,6 @@ class WritingSession:
         public_proposal = None
         last_public = None
         last_compiled = None
-        last_error = None
         last_design = {}
 
         def validate(value, *, preserve_design=False):

@@ -159,7 +159,12 @@ class EstimateTests(unittest.TestCase):
             patch.object(official_pricing, "get_table", return_value=prices),
         ):
             service.create_book(
-                "estimate-book", "预估测试", "一名信使在雪夜抵达驿站。", 1, 800, settings=cfg
+                "estimate-book",
+                "预估测试",
+                "一名信使在雪夜抵达驿站。",
+                1,
+                800,
+                settings=cfg,
             )
             result = generation.estimate("estimate-book")
         self.assertGreaterEqual(result["input_tokens"], 40000)

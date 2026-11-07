@@ -229,7 +229,7 @@ def main():
     except (db.DatabaseUnavailable, ValueError, OSError, KeyError):
         raise SystemExit(
             "数据库操作未完成。请检查数据库、源存档格式、冲突作品及命令参数。"
-        )
+        ) from None
 
 
 if __name__ == "__main__":
