@@ -1,6 +1,6 @@
 # Tome Agent
 
-Tome Agent 是一个面向长篇小说生成的软件创新作业，使用 LangGraph 编排，并合入 F 盘 INF Writer 的 `transfer_and_closure_20261028` 引擎。
+Tome Agent 是一个面向长篇小说生成的软件创新作业，使用 LangGraph 编排。
 
 上游真实写作记录为 18 章、33800 汉字；后续收束修复仅经独立调用验证，未重新从头生成整部作品。仍存在节奏和篇幅控制问题。详见 [LangGraph 迁移说明](docs/software/LANGGRAPH_MIGRATION.md)。
 
