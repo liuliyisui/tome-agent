@@ -178,8 +178,9 @@ def launch(config,output,*,execute=True,confirmed=None,resume=None):
     print(f'正文：{output / "正文.md"}')
     print(f'问题清单：{output / "问题清单.json"}；字数/章节完成不等于质量通过。')
     if result.get('story_closure_enabled'):
-        message=('主线收束检查通过（模型判断，非质量认证）' if result.get('narrative_closure_model_passed')
-            else '故事尚未确认收束，请查看story_closure.json中的待完成问题和检查失败记录')
+        message=('主线与重要线索处置检查通过（模型判断，非质量认证）' if result.get('narrative_closure_model_passed')
+            else '主线已有结果；重要线索处置尚未确认，请查看线索处置.json' if result.get('basic_mainline_model_passed')
+            else '故事尚未确认收束，请查看story_closure.json和线索处置.json中的待完成问题与检查失败记录')
         print(f'结尾状态：{message}；整体完成标记：{result["draft_completed"]}。')
     return result
 

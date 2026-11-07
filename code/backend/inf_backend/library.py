@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from inf_writer.domain import strict_json
 from . import service
+from . import database, pg_library
 
 
 def checked_folder(book_id):
@@ -18,6 +19,8 @@ def checked_folder(book_id):
 
 
 def is_pinned(book_id):
+    if database.enabled():
+        return pg_library.is_pinned(book_id)
     try:
         data = strict_json((checked_folder(book_id) / "shelf.json").read_text(encoding="utf-8"))
         return isinstance(data, dict) and data.get("pinned") is True
@@ -26,6 +29,8 @@ def is_pinned(book_id):
 
 
 def pin_book(book_id, pinned):
+    if database.enabled():
+        return pg_library.pin_book(book_id, pinned)
     if type(pinned) is not bool:
         raise ValueError("置顶状态须为布尔值")
     with service.operation_lock(service.BOOKS):
@@ -42,6 +47,8 @@ def trash_root():
 
 
 def delete_book(book_id):
+    if database.enabled():
+        return pg_library.delete_book(book_id)
     with service.operation_lock(service.BOOKS):
         folder = checked_folder(book_id)
         root = trash_root()
@@ -58,6 +65,8 @@ def delete_book(book_id):
 
 
 def restore_book(token):
+    if database.enabled():
+        return pg_library.restore_book(token)
     if not isinstance(token, str) or not re.fullmatch(r"[a-f0-9]{32}", token):
         raise ValueError("恢复标识无效")
     with service.operation_lock(service.BOOKS):
@@ -75,6 +84,8 @@ def restore_book(token):
 
 
 def list_deleted_books():
+    if database.enabled():
+        return pg_library.list_deleted_books()
     root = trash_root()
     books = []
     for folder in root.iterdir() if root.exists() else []:
@@ -95,6 +106,8 @@ def list_deleted_books():
 
 
 def permanently_delete_book(token, confirmation_title):
+    if database.enabled():
+        return pg_library.permanently_delete_book(token, confirmation_title)
     if not isinstance(token, str) or not re.fullmatch(r"[a-f0-9]{32}", token):
         raise ValueError("删除标识无效")
     with service.operation_lock(service.BOOKS):

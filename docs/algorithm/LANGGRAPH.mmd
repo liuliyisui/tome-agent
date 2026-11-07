@@ -1,0 +1,31 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	event_planner(event_planner)
+	event_writer(event_writer)
+	event_commit(event_commit)
+	legacy_planner(legacy_planner)
+	legacy_writer(legacy_writer)
+	legacy_commit(legacy_commit)
+	memory(memory)
+	reviewer(reviewer)
+	__end__([<p>__end__</p>]):::last
+	__start__ -. &nbsp;event&nbsp; .-> event_planner;
+	__start__ -. &nbsp;legacy&nbsp; .-> legacy_planner;
+	__start__ -. &nbsp;recover&nbsp; .-> memory;
+	event_commit --> memory;
+	event_planner --> event_writer;
+	event_writer -. &nbsp;save&nbsp; .-> event_commit;
+	event_writer -. &nbsp;revise&nbsp; .-> event_planner;
+	legacy_commit --> memory;
+	legacy_planner --> legacy_writer;
+	legacy_writer --> legacy_commit;
+	memory --> reviewer;
+	reviewer --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

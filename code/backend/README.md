@@ -6,5 +6,5 @@ Windows 免安装版：运行 `build-windows.cmd` 构建包含 Python 运行时�
 
 首次打开页面时，若尚未设置 API Key，会弹出 DeepSeek 密钥配置窗口。页面保存到本机 `.env` 后立即生效，无需重启；已有环境变量或文件配置时不重复提示。初始化接口仅接受本机同源 JSON 请求，不回传密钥，也不能覆盖已配置的密钥。保存时只验证格式，实际认证在生成时进行。
 
-运行 `run-web.cmd` 启动本地工作室。`service.generate` 调用稳定版的事件先行长文本流程，需配置 DeepSeek API 密钥。运行产物写入 `data/inf_books/<作品ID>/longform-runs/`，当前检查点由 `longform-current.json` 指向。
+运行 `run-web.cmd` 启动本地工作室。`service.generate` 通过 LangGraph 调用事件先行长文本流程，需配置 DeepSeek API 密钥。运行产物写入 `data/inf_books/<作品ID>/longform-runs/`，当前检查点由 `longform-current.json` 指向。
 

@@ -16,6 +16,7 @@ from . import service
 from .settings import Settings, configure_api_key
 from . import generation
 from . import library
+from . import database
 
 FRONTEND = (Path(sys._MEIPASS) / "frontend" if getattr(sys, "frozen", False)
             else Path(__file__).resolve().parents[2] / "frontend")
@@ -69,6 +70,8 @@ class WebServer(ThreadingHTTPServer):
             for job_id, job in reversed(list(self.jobs.items())):
                 if job["book_id"] == book_id:
                     return {**job, "job_id": job_id}
+        if database.enabled():
+            return database.latest_job(book_id)
         return None
 
     def prepare_generation(self, book_id, data):
@@ -114,10 +117,19 @@ class WebServer(ThreadingHTTPServer):
             self.estimates.pop(data["estimate_id"], None)
             self.jobs[job_id] = {"status": "running", "book_id": book_id, "started_at": started_at,
                                  "count": count, "completed": 0, "current_chapter": estimate["first_chapter"]}
+            if database.enabled():
+                try:
+                    database.job(job_id, self.jobs[job_id])
+                except Exception:
+                    self.jobs.pop(job_id, None)
+                    self.busy.discard(book_id)
+                    raise
 
         def progress(update):
             with self.job_lock:
                 self.jobs[job_id].update(update)
+                if database.enabled():
+                    database.job(job_id, self.jobs[job_id])
 
         def run():
             try:
@@ -131,6 +143,11 @@ class WebServer(ThreadingHTTPServer):
             with self.job_lock:
                 self.jobs[job_id] = {**self.jobs[job_id], **result, "started_at": started_at}
                 self.busy.discard(book_id)
+                if database.enabled():
+                    try:
+                        database.job(job_id, self.jobs[job_id])
+                    except database.DatabaseUnavailable:
+                        logging.error("Unable to persist final job status; recover jobs after database returns")
 
         threading.Thread(target=run, daemon=True).start()
         return {"job_id": job_id}
@@ -217,6 +234,8 @@ class Handler(BaseHTTPRequestHandler):
             elif not post and path.startswith("/api/jobs/"):
                 with self.server.job_lock:
                     job = self.server.jobs.get(path.removeprefix("/api/jobs/"))
+                    if job is None and database.enabled():
+                        job = database.job(path.removeprefix("/api/jobs/"))
                 self.reply(200 if job else 404, job or {"error": "任务不存在；服务可能已重启，请刷新作品"})
             elif path.startswith("/api/books/"):
                 parts = path.strip("/").split("/")
@@ -259,6 +278,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.reply(404, {"error": "页面不存在"})
         except FileNotFoundError:
             self.reply(404, {"error": "作品或文件不存在"})
+        except database.DatabaseUnavailable as exc:
+            self.reply(503, {"error": str(exc)})
         except (ValueError, TypeError) as exc:
             self.reply(400, {"error": str(exc)})
         except Exception:
@@ -270,6 +291,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", type=int, default=8765)
     args = parser.parse_args()
+    if database.enabled():
+        database.initialize()
     server = WebServer(("127.0.0.1", args.port))
     print(f"Tome Agent: http://127.0.0.1:{server.server_port}", flush=True)
     try:

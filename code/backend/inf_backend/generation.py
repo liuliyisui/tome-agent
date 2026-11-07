@@ -32,10 +32,9 @@ def estimate(book_id, count=1, approved_first=False):
     base_input = 6000 + 2 * context_chars
     base_output = target * 2 + 2500
     basis = "按故事上下文、目标篇幅和多阶段调用粗估，无历史用量时误差较大。"
-    usage_path = service.book_path(book_id) / "last-usage.json"
-    if usage_path.exists():
+    usage = service.last_usage(book_id)
+    if usage:
         try:
-            usage = strict_json(usage_path.read_text(encoding="utf-8"))
             samples = max(1, usage.get("chapters_completed", 1))
             incoming, outgoing = usage["input_tokens"], usage["output_tokens"]
             if type(samples) is int and type(incoming) is int and type(outgoing) is int and incoming > 0 and outgoing > 0:

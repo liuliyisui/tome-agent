@@ -10,26 +10,36 @@ import re
 import time
 from memory_runtime.writing import WritingSession
 from memory_runtime.story_closure import StoryClosure
+from memory_runtime.narrative_planning import thread_report
+from memory_runtime.projection_grounding import retryable_chapters
 from inf_writer.domain import ContractError, digest, integer, text
 from inf_writer.memory_temporality import has_current_content
 from inf_writer.models import ModelReply
+from inf_writer.memory_meaning import pending_ids as meaning_pending_ids
 from inf_writer.trial import RecordedProvider, save_new
+from inf_writer.chat_provider import ProviderError
 
 class MeteredGateway:
     def __init__(self,provider):
         self.provider=provider
         self.calls=self.input_tokens=self.output_tokens=0
         self.cost_usd=0.0
+        self.provider_blocked=None
         self.story_review_usage=dict(attempted_calls=0,successful_calls=0,failed_calls=0,
             input_tokens=0,output_tokens=0,cost_usd_estimate_not_bill=0.0,elapsed_seconds=0.0)
     def complete(self,request):
+        if self.provider_blocked:
+            status=self.provider_blocked['http_status']
+            raise ProviderError(f'Provider HTTP {status}; blocked for this invocation; balance or access must change',http_status=status)
         integer(request.max_output_tokens,'max_output_tokens',1)
         self.calls+=1
         is_story_review=request.role=='reviewer' and (request.payload.get('review_mode')=='light_memory' or request.payload.get('issue_consistency_review') is True)
         started=time.monotonic()
         if is_story_review:self.story_review_usage['attempted_calls']+=1
         try:reply=self.provider.complete(copy.deepcopy(request))
-        except BaseException:
+        except BaseException as exc:
+            if isinstance(exc,ProviderError)and exc.http_status in (401,402,403):
+                self.provider_blocked=exc.safe_details()
             if is_story_review:self.story_review_usage['failed_calls']+=1
             raise
         finally:
@@ -62,16 +72,32 @@ def run_draft_trial(output,provider,plan,*,resume_book=None):
     started=time.monotonic();stop=None;interrupted=False
     try:
         session.finish_pending()
+        if plan.get('event_first',True):session.attempt_state_repair()
         closure.initialize()
         for number in range(len(session.book['chapters'])+1,plan['max_chapters']+1):
             written=sum(len(re.findall(r'[\u3400-\u9fff]',ch['text'])) for ch in session.book['chapters'])
             if (number>plan['chapters'] and written>=plan['target_han_chars']
                     and (not closure.enabled or closure.passed())):break
-            remaining=max(1,plan['chapters']-number+1)
-            target=max(1,(plan['target_han_chars']-written+remaining-1)//remaining)
-            if number>plan['chapters'] and written>=plan['target_han_chars']:
-                # Repair a missing ending with a scene, not a one-character length remainder.
-                target=max(500,plan['target_han_chars']//plan['chapters'])
+            if (number>plan['chapters'] and written>=plan['target_han_chars'] and closure.enabled
+                    and closure.state.get('basic_mainline_model_passed')):
+                # Finished prose must not be extended merely to repair planning
+                # metadata or a failed review. Genuine unanswered story content
+                # can still require another chapter after this bounded pass.
+                for _ in range(2):
+                    session.attempt_narrative_repair(final=True)
+                    closure.retry_pending(final=True)
+                    closure.refresh_status()
+                    if closure.passed():break
+                if closure.passed():break
+                from memory_runtime.narrative_repair import queue_ending_intent_review
+                queue_ending_intent_review(session.book)
+                from memory_runtime.narrative_planning import pending_planning_jobs
+                if pending_planning_jobs(session.book)or not thread_report(session.book)['current_review_complete']:
+                    stop='NARRATIVE_METADATA_PENDING';break
+            from memory_runtime.story_budget import chapter_budget
+            budgets=session.book.setdefault('length_budget',dict(schema='inf-length-budget-v2',chapters={}))
+            budget=budgets['chapters'].setdefault(str(number),chapter_budget(plan,session.book['chapters'],number))
+            target=budget['target'];remaining=max(1,plan['chapters']-number+1)
             instruction=(f"连续草稿目标{plan['target_han_chars']}汉字，名义{plan['chapters']}章，现在第{number}章。"
                 f'已写{written}汉字，剩余篇幅{max(0,plan["target_han_chars"]-written)}汉字，须分配给剩余{remaining}章。'
                 f'本章约{target}汉字，用完整场景、对话推进，不用梗概，不重复凑字数。'
@@ -90,7 +116,17 @@ def run_draft_trial(output,provider,plan,*,resume_book=None):
     except Exception as exc:
         stop='MEMORY_PENDING' if session.book['pending'] else 'REVIEW_PENDING' if session.book['review_jobs'] else 'RUNTIME_FAILURE'
         save_new(output/'runtime_failure.json',dict(error_type=type(exc).__name__,stop_reason=stop))
-    if not interrupted:closure.retry_pending(final=True)
+    if not interrupted:
+        finish_steps=(lambda:session.attempt_state_repair(final=True),session.finish_structured_memory,
+            session.finish_memory_organization,session.finish_titles,
+            lambda:session.attempt_narrative_repair(final=True),lambda:closure.retry_pending(final=True))
+        for finish in finish_steps:
+            if meter.provider_blocked:break
+            finish()
+    if meter.provider_blocked:
+        stop='PROVIDER_BALANCE_EXHAUSTED'if meter.provider_blocked['http_status']==402 else 'PROVIDER_ACCESS_BLOCKED'
+    closure.refresh_status()
+    if stop=='NARRATIVE_METADATA_PENDING'and closure.passed():stop=None
     if closure.enabled and not closure.covered():closure.state['status']='UNKNOWN'
     state=session.book;memory=state['memory']
     prose='# '+plan['title']+'\n\n> 待修草稿，不表示质量通过。\n\n'
@@ -101,10 +137,22 @@ def run_draft_trial(output,provider,plan,*,resume_book=None):
         confirmed=sum(len(r.get('issues',[])) for r in state['outcomes']),
         unresolved=sum(len(r.get('unresolved_review_issues',[])) for r in state['outcomes']),
         suggestions=sum(len(r.get('dismissed_review_issues',[])) for r in state['outcomes']))
+    narrative_threads=thread_report(state)
+    save_new(output/'线索处置.json',narrative_threads)
     save_new(output/'问题清单.json',dict(scope='Model-reviewed reports, not independently certified error counts',
+        story_review_status='ENABLED' if plan.get('story_review_enabled',True) else 'DISABLED_NOT_CHECKED',
+        story_review_counts_scope='Review findings only; zero with disabled review does not mean no story issues',
+        narrative_thread_dispositions=narrative_threads,
+        pending_narrative_planning_chapters=narrative_threads['pending_planning_chapters'],
         chapters=pending,story_review_counts=review_counts,
         pending_story_review_chapters=sorted(int(n) for n in state['review_jobs']),
+        pending_state_repair_chapters=sorted(map(int,state.get('state_repair_jobs',{}))),
         pending_closure_repair_jobs=[j['key'] for j in closure.repairs.pending()],
+        structured_memory_pending_chapters=retryable_chapters(memory=state['memory']),
+        memory_meaning_pending_ids=meaning_pending_ids(state['memory']),
+        projection_content_gaps=state['memory'].get('projection_content_gaps',{}),
+        projection_plan_differences=state['memory'].get('projection_plan_differences',{}),
+        projection_recheck_coverage=state['memory'].get('projection_recheck_coverage',{}),
         story_review_failures=state.get('review_failures',[]),
         nonblocking_review_suggestions=[dict(chapter=r['chapter_number'],items=r['dismissed_review_issues'])
             for r in state['outcomes'] if r.get('dismissed_review_issues')]))
@@ -115,6 +163,7 @@ def run_draft_trial(output,provider,plan,*,resume_book=None):
     if plan.get('event_first',True):
         save_new(output/'事件链.json',dict(scope='Canonical events simulated before prose; not a semantic correctness certificate',
             commits=[c['event_commit'] for c in state['chapters']],current_state=state['writing_state'],
+            recovered_from_saved_prose=state.get('state_recovery_commits',[]),
             prepared_not_committed=[dict(chapter=int(n),commit_sha256=p['commit']['sha256']) for n,p in state['prepared_events'].items()]))
     assessment=[]
     for row in state['outcomes']:
@@ -130,6 +179,7 @@ def run_draft_trial(output,provider,plan,*,resume_book=None):
     han=sum(len(re.findall(r'[\u3400-\u9fff]',ch['text'])) for ch in state['chapters'])
     length_met=han>=plan['target_han_chars']
     if stop is None and not length_met:stop='CHAPTER_CAP_BEFORE_LENGTH_TARGET'
+    if stop is None and state.get('prose_output_warnings'):stop='PROSE_OUTPUT_INCOMPLETE'
     if stop is None and closure.enabled and not closure.passed():
         stop='STORY_CLOSURE_UNVERIFIED' if closure.state['status']=='UNKNOWN' else 'STORY_UNRESOLVED'
     memory_processing_complete=memory['processed_through']==len(state['chapters']) and not state['pending']
@@ -137,24 +187,38 @@ def run_draft_trial(output,provider,plan,*,resume_book=None):
     prose_memory_complete=all(verify_prose_coverage(memory,c) for c in state['chapters'] if c.get('prose_policy')=='unchecked')
     memory_complete=memory_processing_complete and prose_memory_complete
     memory_layers_complete=not memory.get('layer_deferred_ids',[])
-    unprojected=[c['number'] for c in state['chapters'] if c.get('event_plan_status') in ('partial','unavailable')]
+    unprojected=[c['number'] for c in state['chapters'] if c.get('event_plan_status') in ('partial','unavailable') and c.get('state_recovery_status')!='reconciled']
     result=dict(scope='USER_WRITING_NOT_COMPARATIVE_EXPERIMENT',chapters=len(state['chapters']),han_chars=han,
         target_chapters=plan['chapters'],target_han_chars=plan['target_han_chars'],length_target_met=length_met,
         draft_completed=not stop and length_met and len(state['chapters'])>=plan['chapters'],stop_reason=stop,
+        provider_failure=copy.deepcopy(meter.provider_blocked),
         generation_completed=length_met and len(state['chapters'])>=plan['chapters'],
         narrative_closure_model_passed=closure.passed(),story_closure_enabled=closure.enabled,
+        basic_mainline_model_passed=closure.state.get('basic_mainline_model_passed',False),
+        narrative_thread_dispositions=narrative_threads,
+        important_threads_accounted_for=narrative_threads['important_threads_accounted_for'],
+        pending_narrative_planning_chapters=narrative_threads['pending_planning_chapters'],
         story_closure_status=closure.state['status'],
         pending_closure_repair_jobs=[j['key'] for j in closure.repairs.pending()],
         closure_repair_attempts=len(closure.state['repair_history']),
-        completion_scope='LENGTH_AND_MODEL_CLOSURE' if closure.enabled else 'LEGACY_LENGTH_ONLY',
+        completion_scope='LENGTH_MODEL_MAINLINE_AND_IMPORTANT_THREAD_DISPOSITIONS' if closure.enabled else 'LEGACY_LENGTH_ONLY',
         checked_draft_chapters=sum(r['status']=='DRAFT_CHECKED' for r in state['outcomes']),pending_draft_chapters=len(pending),
         quality_gate_passed=False,story_and_mechanical_checks_passed=not stop and memory_complete and memory_layers_complete and not pending and length_met and len(state['chapters'])>=plan['chapters'],
         prose_content_checks='disabled' if plan.get('event_first',True) else 'legacy',
         memory_projection_complete=not memory.get('projection_omissions',{}) and not unprojected,
         memory_projection_omissions=memory.get('projection_omissions',{}),
+        memory_meaning_pending_ids=meaning_pending_ids(memory),
+        memory_meaning_processing_complete=not meaning_pending_ids(memory),
+        pending_chapter_titles=sorted(map(int,state.get('chapter_title_jobs',{}))),
+        structured_memory_pending_chapters=retryable_chapters(memory),
+        projection_content_gaps=memory.get('projection_content_gaps',{}),
+        projection_plan_differences=memory.get('projection_plan_differences',{}),
+        projection_recheck_coverage=memory.get('projection_recheck_coverage',{}),
         event_alignment_complete=not memory.get('projection_omissions',{}) and not unprojected,
         unprojected_chapters=unprojected,
         pending_state_repair_chapters=sorted(map(int,state.get('state_repair_jobs',{}))),
+        prose_transport_complete=not state.get('prose_output_warnings'),
+        prose_output_warnings=state.get('prose_output_warnings',[]),
         generation_warning_count=sum(len(r.get('generation_warnings',[])) for r in state['outcomes']),
         memory_processing_complete=memory_processing_complete,prose_memory_complete=prose_memory_complete,
         prose_excerpt_count=sum(i['kind']=='prose_excerpt' for i in memory['items'].values()),
