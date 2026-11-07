@@ -170,7 +170,7 @@ class ProviderStopTests(unittest.TestCase):
             )
             session.chapter_length_target = 3195
             packet = copy.deepcopy(session.book["prepared_events"]["15"])
-            session._realize_stages(packet, "继续第15章", 15, [], {})
+            session._realize_stages(packet, 15, [], {})
             self.assertEqual(packet["stage_realizations"][0], original)
             units = [
                 r.payload["stage_task"]["unit_number"]
