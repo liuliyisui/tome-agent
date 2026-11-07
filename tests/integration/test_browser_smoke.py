@@ -74,7 +74,7 @@ class BrowserSmokeTests(unittest.TestCase):
     def open_library(self):
         page = self.page
         page.click("#my-works")
-        page.wait_for_selector("#works-view:not([hidden])")
+        page.wait_for_selector("#works-view")
         return page
 
     def open_create_dialog(self):
@@ -92,7 +92,7 @@ class BrowserSmokeTests(unittest.TestCase):
     def test_home_and_empty_library(self):
         page = self.page
         self.assertEqual(page.title(), "Tome · 故事工作室")
-        page.wait_for_selector("#welcome:not([hidden])")
+        page.wait_for_selector("#welcome")
 
         page = self.open_library()
         page.wait_for_selector(".works-empty")
@@ -105,7 +105,7 @@ class BrowserSmokeTests(unittest.TestCase):
         self.fill_create_form()
         page.click("#create-submit")
 
-        page.wait_for_selector("#book-workspace:not([hidden])")
+        page.wait_for_selector("#book-workspace")
         self.assertEqual(page.inner_text("#book-title"), TITLE)
         self.assertEqual(page.inner_text("#stat-chapters").strip(), "0 / 1")
         self.assertEqual(page.text_content("#book-count").strip(), "1")
@@ -123,7 +123,7 @@ class BrowserSmokeTests(unittest.TestCase):
         page.wait_for_selector("#delete-dialog[open]")
         self.assertIn(TITLE, page.inner_text("#delete-book-title"))
         page.click("#delete-confirm")
-        page.wait_for_selector("#welcome:not([hidden])")
+        page.wait_for_selector(".works-empty")
         self.assertEqual(page.text_content("#book-count").strip(), "0")
         self.assertEqual(page.text_content("#trash-count").strip(), "1")
 

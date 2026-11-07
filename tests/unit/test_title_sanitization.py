@@ -1,4 +1,5 @@
 """Chapter titles must never echo writing instructions like 续写XXX."""
+
 import unittest
 
 from inf_writer.agents import validate
@@ -30,7 +31,13 @@ class SanitizeTitleTests(unittest.TestCase):
         self.assertEqual(sanitize_title("续写", None), "未命名章节")
 
     def test_keeps_normal_titles_untouched(self):
-        for title in ("暗流涌动", "北境来信", "旧约", "风起云涌的日子", "第100章的约定"):
+        for title in (
+            "暗流涌动",
+            "北境来信",
+            "旧约",
+            "风起云涌的日子",
+            "第100章的约定",
+        ):
             self.assertEqual(sanitize_title(title, 3), title)
 
 
@@ -42,10 +49,17 @@ class ChapterPlanTests(unittest.TestCase):
         self.assertEqual(original["title"], "续写第5章")
 
     def test_planner_validate_sanitizes_current_and_future_titles(self):
-        result = validate("planner", {
-            "number": 2, "title": "续写：夺权", "brief": "宫廷转折",
-            "future_updates": [{"number": 3, "title": "继续写第三章：远行", "brief": "北上"}],
-        })
+        result = validate(
+            "planner",
+            {
+                "number": 2,
+                "title": "续写：夺权",
+                "brief": "宫廷转折",
+                "future_updates": [
+                    {"number": 3, "title": "继续写第三章：远行", "brief": "北上"}
+                ],
+            },
+        )
         self.assertEqual(result["title"], "夺权")
         self.assertEqual(result["future_updates"][0]["title"], "远行")
 

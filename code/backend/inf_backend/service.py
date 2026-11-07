@@ -1,30 +1,43 @@
 """UI services backed by INF's planner/writer/memory/reviewer transaction."""
+
+import base64
+import binascii
 import json
 import os
 import re
 import tempfile
 import time
-from dataclasses import replace
 from collections import Counter
 from contextlib import contextmanager
+from dataclasses import replace
 from pathlib import Path
 from uuid import uuid4
 
 from inf_writer.chat_provider import ChatCompletionProvider
-from inf_writer.domain import Snapshot, canonical, project_id, sanitize_title, strict_json
+from inf_writer.domain import (
+    ContractError,
+    Snapshot,
+    canonical,
+    digest,
+    project_id,
+    sanitize_title,
+    strict_json,
+)
 from inf_writer.models import Budget, ModelGateway
 from inf_writer.storage import FileStore
 from memory_runtime.writing import WritingSession, load_resume
 
-from .settings import BACKEND_ROOT, Settings
 from . import database
+from .settings import BACKEND_ROOT, Settings
 
 DATA = BACKEND_ROOT / "data"
 BOOKS = DATA / "inf_books"
 
 
 def count_units(value):
-    return len(re.findall(r"[\u3400-\u9fff]", value)) + len(re.findall(r"[A-Za-z0-9]+", value))
+    return len(re.findall(r"[\u3400-\u9fff]", value)) + len(
+        re.findall(r"[A-Za-z0-9]+", value)
+    )
 
 
 def new_book_id():
@@ -64,17 +77,21 @@ def _process_alive(pid):
         return False
     if os.name == "nt":
         import ctypes
+
         kernel32 = ctypes.windll.kernel32
         kernel32.OpenProcess.restype = ctypes.c_void_p
         kernel32.OpenProcess.argtypes = (ctypes.c_ulong, ctypes.c_int, ctypes.c_ulong)
         kernel32.CloseHandle.argtypes = (ctypes.c_void_p,)
         # Never use os.kill on Windows: any signal other than Ctrl-C terminates.
-        handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        handle = kernel32.OpenProcess(0x1000, False, pid)
         if not handle:
             return False
         try:
             code = ctypes.c_ulong()
-            return bool(kernel32.GetExitCodeProcess(handle, ctypes.byref(code))) and code.value == 259
+            return (
+                bool(kernel32.GetExitCodeProcess(handle, ctypes.byref(code)))
+                and code.value == 259
+            )
         finally:
             kernel32.CloseHandle(handle)
     try:
@@ -98,7 +115,6 @@ def _stale_lock(lock):
         pid = None
     if pid is not None:
         return not _process_alive(pid)
-    # Empty or malformed: tolerate a writer killed between create and write.
     try:
         return time.time() - lock.stat().st_mtime > 60
     except OSError:
@@ -118,15 +134,16 @@ def operation_lock(folder):
         handle = lock.open("x", encoding="utf-8")
     except FileExistsError:
         if not _stale_lock(lock):
-            raise ValueError("此作品有操作正在进行；确认没有运行任务后才能清理 operation.lock") from None
-        try:
-            lock.unlink()
-        except FileNotFoundError:
-            pass
+            raise ValueError(
+                "此作品有操作正在进行；确认没有运行任务后才能清理 operation.lock"
+            ) from None
+        lock.unlink(missing_ok=True)
         try:
             handle = lock.open("x", encoding="utf-8")
         except FileExistsError:
-            raise ValueError("此作品有操作正在进行；确认没有运行任务后才能清理 operation.lock") from None
+            raise ValueError(
+                "此作品有操作正在进行；确认没有运行任务后才能清理 operation.lock"
+            ) from None
     try:
         with handle:
             handle.write(str(os.getpid()))
@@ -141,8 +158,19 @@ def _metadata(book_id):
         return database.row(book_id)["metadata"]
     path = book_path(book_id) / "metadata.json"
     data = strict_json(path.read_text(encoding="utf-8"))
-    required = {"schema_version", "title", "prompt", "target_chapters", "target_units", "model"}
-    if not isinstance(data, dict) or set(data) != required or data["schema_version"] != 1:
+    required = {
+        "schema_version",
+        "title",
+        "prompt",
+        "target_chapters",
+        "target_units",
+        "model",
+    }
+    if (
+        not isinstance(data, dict)
+        or set(data) != required
+        or data["schema_version"] != 1
+    ):
         raise ValueError("作品元数据格式不受支持")
     return data
 
@@ -151,11 +179,73 @@ def load_book(book_id):
     if database.enabled():
         project_id(book_id)
         record = database.row(book_id)
-        state = record["state"] if record["state_kind"] == "longform" else Snapshot.from_dict(record["state"])
+        state = (
+            record["state"]
+            if record["state_kind"] == "longform"
+            else Snapshot.from_dict(record["state"])
+        )
         return {"metadata": record["metadata"], "state": state}
     if (book_path(book_id) / "longform-current.json").exists():
         return load_longform(book_id)
     return {"metadata": _metadata(book_id), "state": FileStore(BOOKS).load(book_id)}
+
+
+def cover_path(book_id):
+    _metadata(book_id)
+    folder = book_path(book_id)
+    if folder.is_symlink() or getattr(folder, "is_junction", lambda: False)():
+        raise ValueError("作品目录不安全")
+    if folder.exists() and not folder.is_dir():
+        raise ValueError("作品目录不可用")
+    if not folder.exists() and not database.enabled():
+        raise FileNotFoundError("作品目录不存在")
+    path = folder / "cover.image"
+    if path.is_symlink():
+        raise ValueError("封面路径不安全")
+    return path
+
+
+def cover_type(data):
+    if data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if data.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    raise ValueError("请选择 PNG、JPEG 或 WebP 图片")
+
+
+def cover_version(book_id):
+    path = cover_path(book_id)
+    return path.stat().st_mtime_ns if path.is_file() else None
+
+
+def save_cover(book_id, value):
+    if not isinstance(value, str) or len(value) > 2_800_000:
+        raise ValueError("封面图片不能超过 2 MB")
+    try:
+        data = base64.b64decode(value, validate=True)
+    except (ValueError, binascii.Error):
+        raise ValueError("封面图片格式无效") from None
+    if not data or len(data) > 2 * 1024 * 1024:
+        raise ValueError("封面图片不能超过 2 MB")
+    cover_type(data)
+    with operation_lock(BOOKS):
+        path = cover_path(book_id)
+        if database.enabled():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path = cover_path(book_id)
+        fd, temporary = tempfile.mkstemp(prefix=".cover-", dir=path.parent)
+        try:
+            with os.fdopen(fd, "wb") as output:
+                output.write(data)
+                output.flush()
+                os.fsync(output.fileno())
+            os.replace(temporary, path)
+        finally:
+            if os.path.exists(temporary):
+                os.unlink(temporary)
+        return cover_version(book_id)
 
 
 def validate_writing_style(value):
@@ -164,7 +254,9 @@ def validate_writing_style(value):
     result = {}
     for key, limit in (("instructions", 2000), ("reference", 6000)):
         if not isinstance(value[key], str) or len(value[key]) > limit:
-            raise ValueError(f"{'文风要求' if key == 'instructions' else '参考片段'}须为不超过{limit}字的文本")
+            raise ValueError(
+                f"{'文风要求' if key == 'instructions' else '参考片段'}须为不超过{limit}字的文本"
+            )
         result[key] = value[key].strip()
     return result
 
@@ -194,34 +286,59 @@ class StyleGateway:
     Keep style outside the frozen writing plan so editing it does not invalidate
     existing checkpoint plan hashes. Planner/memory requests remain untouched.
     """
+
     def __init__(self, gateway, style):
         self.gateway = gateway
         self.style = validate_writing_style(style)
 
     def complete(self, request):
         if request.role == "writer" and any(self.style.values()):
-            request = replace(request,
-                system=request.system + "\n正文写法遵循 writing_style 中的文风要求。参考片段仅用于学习叙述节奏、句式、对白和描写方式；不将其中的人物、事件或事实写入本故事，不续写或照抄参考片段。保持原有输出格式和故事事实约束。",
-                payload={**request.payload, "writing_style": dict(self.style)})
+            request = replace(
+                request,
+                system=request.system
+                + "\n正文写法遵循 writing_style 中的文风要求。参考片段仅用于学习叙述节奏、句式、对白和描写方式；不将其中的人物、事件或事实写入本故事，不续写或照抄参考片段。保持原有输出格式和故事事实约束。",
+                payload={**request.payload, "writing_style": dict(self.style)},
+            )
         return self.gateway.complete(request)
 
 
-def create_book(book_id, title, prompt, chapters, target_units, settings=None, style=None):
+def create_book(
+    book_id, title, prompt, chapters, target_units, settings=None, style=None
+):
     project_id(book_id)
-    if not isinstance(title, str) or not title.strip() or not isinstance(prompt, str) or not prompt.strip():
+    if (
+        not isinstance(title, str)
+        or not title.strip()
+        or not isinstance(prompt, str)
+        or not prompt.strip()
+    ):
         raise ValueError("作品名称和故事构想不能为空")
     if type(chapters) is not int or not 1 <= chapters <= 100:
         raise ValueError("章节数必须在 1 到 100 之间")
     if type(target_units) is not int or not 500 <= target_units <= 200000:
         raise ValueError("目标篇幅必须在 500 到 200000 之间")
-    style = validate_writing_style(style) if style is not None else {"instructions": "", "reference": ""}
+    style = (
+        validate_writing_style(style)
+        if style is not None
+        else {"instructions": "", "reference": ""}
+    )
     folder = book_path(book_id)
     if folder.exists():
         raise ValueError("作品已存在")
     cfg = settings or Settings.load(require_key=False)
-    state = Snapshot(book_id, prompt.strip(), [f"全书目标{chapters}章", f"目标篇幅约{target_units}字"])
-    metadata = {"schema_version": 1, "title": title.strip(), "prompt": prompt.strip(),
-                "target_chapters": chapters, "target_units": target_units, "model": cfg.public_config()}
+    state = Snapshot(
+        book_id,
+        prompt.strip(),
+        [f"全书目标{chapters}章", f"目标篇幅约{target_units}字"],
+    )
+    metadata = {
+        "schema_version": 1,
+        "title": title.strip(),
+        "prompt": prompt.strip(),
+        "target_chapters": chapters,
+        "target_units": target_units,
+        "model": cfg.public_config(),
+    }
     if database.enabled():
         database.create(book_id, metadata, state.to_dict(), style)
         return load_book(book_id)
@@ -234,16 +351,24 @@ def create_book(book_id, title, prompt, chapters, target_units, settings=None, s
 
 def _gateway(settings):
     provider = ChatCompletionProvider(
-        endpoint=settings.endpoint, model=settings.model, api_key=settings.api_key,
+        endpoint=settings.endpoint,
+        model=settings.model,
+        api_key=settings.api_key,
         input_usd_per_million=settings.input_usd_per_million,
         output_usd_per_million=settings.output_usd_per_million,
-        allow_remote=True, timeout_seconds=settings.timeout,
+        allow_remote=True,
+        timeout_seconds=settings.timeout,
         thinking_enabled=settings.thinking,
     )
-    budget = Budget(max_calls=settings.max_calls, max_cost_usd=settings.max_cost_usd,
-                    max_seconds=max(120.0, settings.timeout * settings.max_calls))
-    reservation = (1_048_576 * settings.input_usd_per_million
-                   + 32768 * settings.output_usd_per_million) / 1_000_000
+    budget = Budget(
+        max_calls=settings.max_calls,
+        max_cost_usd=settings.max_cost_usd,
+        max_seconds=max(120.0, settings.timeout * settings.max_calls),
+    )
+    reservation = (
+        1_048_576 * settings.input_usd_per_million
+        + 32768 * settings.output_usd_per_million
+    ) / 1_000_000
     return ModelGateway(provider, budget, reserve_per_call=reservation), budget
 
 
@@ -309,7 +434,9 @@ def _load_longform_book(book_id, plan):
     return _heal_chapter_titles(load_resume(checkpoint, plan))
 
 
-def generate_longform(book_id, count=1, gateway=None, budget=None, settings=None, progress=None):
+def generate_longform(
+    book_id, count=1, gateway=None, budget=None, settings=None, progress=None
+):
     """Generate chapters with the event-first, three-tier-memory runtime.
 
     This is the backend integration point for the future frontend.  Each call
@@ -335,7 +462,12 @@ def generate_longform(book_id, count=1, gateway=None, budget=None, settings=None
     for _ in range(count):
         number = len(session.book["chapters"]) + 1
         if progress:
-            progress({"completed": len(session.book["chapters"]) - written, "current_chapter": number})
+            progress(
+                {
+                    "completed": len(session.book["chapters"]) - written,
+                    "current_chapter": number,
+                }
+            )
         used = sum(count_units(chapter["text"]) for chapter in session.book["chapters"])
         slots = max(1, meta["target_chapters"] - number + 1)
         target = max(300, (meta["target_units"] - used + slots - 1) // slots)
@@ -349,22 +481,38 @@ def generate_longform(book_id, count=1, gateway=None, budget=None, settings=None
         finally:
             checkpoint = session.latest_checkpoint.resolve()
             relative = checkpoint.relative_to(book_path(book_id).resolve()).as_posix()
-            usage = None if budget is None else {
-                "calls": budget.calls, "input_tokens": budget.input_tokens,
-                "output_tokens": budget.output_tokens, "estimated_cost_upper_usd": budget.cost_upper_usd,
-                "chapters_completed": len(session.book["chapters"]) - written,
-            }
+            usage = (
+                None
+                if budget is None
+                else {
+                    "calls": budget.calls,
+                    "input_tokens": budget.input_tokens,
+                    "output_tokens": budget.output_tokens,
+                    "estimated_cost_upper_usd": budget.cost_upper_usd,
+                    "chapters_completed": len(session.book["chapters"]) - written,
+                }
+            )
             _atomic_json(_longform_pointer(book_id), {"checkpoint": relative})
             if budget is not None:
-                _atomic_json(book_path(book_id) / "last-usage.json", {
-                    "calls": budget.calls, "input_tokens": budget.input_tokens,
-                    "output_tokens": budget.output_tokens, "estimated_cost_upper_usd": budget.cost_upper_usd,
-                    "chapters_completed": len(session.book["chapters"]) - written,
-                })
+                _atomic_json(
+                    book_path(book_id) / "last-usage.json",
+                    {
+                        "calls": budget.calls,
+                        "input_tokens": budget.input_tokens,
+                        "output_tokens": budget.output_tokens,
+                        "estimated_cost_upper_usd": budget.cost_upper_usd,
+                        "chapters_completed": len(session.book["chapters"]) - written,
+                    },
+                )
             if database.enabled():
                 database.save(book_id, session.book, "longform", relative, usage)
         if progress:
-            progress({"completed": len(session.book["chapters"]) - written, "current_chapter": number})
+            progress(
+                {
+                    "completed": len(session.book["chapters"]) - written,
+                    "current_chapter": number,
+                }
+            )
         if outcome["status"] == "NO_DRAFT":
             failure = outcome
             break
@@ -378,7 +526,28 @@ def load_longform(book_id):
     if database.enabled():
         return load_book(book_id)
     meta = _metadata(book_id)
-    state = _load_longform_book(book_id, _longform_plan(meta))
+    plan = _longform_plan(meta)
+    try:
+        state = _load_longform_book(book_id, plan)
+    except ContractError as exc:
+        if str(exc) != "写作运行时版本不一致，不能直接恢复旧检查点":
+            raise
+        pointer = strict_json(_longform_pointer(book_id).read_text(encoding="utf-8-sig"))
+        if not isinstance(pointer, dict) or set(pointer) != {"checkpoint"}:
+            raise ValueError("长文本检查点索引格式不正确")
+        root = book_path(book_id).resolve()
+        checkpoint = (root / pointer["checkpoint"]).resolve()
+        if checkpoint == root or not checkpoint.is_relative_to(root):
+            raise ValueError("长文本检查点路径不安全")
+        record = strict_json(checkpoint.read_text(encoding="utf-8-sig"))
+        state = record.get("book")
+        if (record.get("schema") != "inf-writing-checkpoint-v1"
+                or record.get("writing_plan_sha256") != digest(canonical(plan))
+                or not isinstance(state, dict)
+                or record.get("book_sha256") != digest(canonical(state))
+                or not isinstance(state.get("chapters"), list)):
+            raise ValueError("旧版存档完整性校验失败") from exc
+        return {"metadata": meta, "state": state, "read_only": True}
     return {"metadata": meta, "state": state}
 
 
@@ -391,7 +560,9 @@ def export_markdown(book):
     chapters = state["chapters"] if isinstance(state, dict) else state.chapters
     sections = [f"# {meta['title']}"]
     for chapter in chapters:
-        paragraphs = [line.strip() for line in chapter["text"].splitlines() if line.strip()]
+        paragraphs = [
+            line.strip() for line in chapter["text"].splitlines() if line.strip()
+        ]
         # Full-width spaces keep a two-character indent in plain text and
         # Markdown without triggering Markdown's four-ASCII-space code blocks.
         prose = "\n\n".join("\u3000\u3000" + paragraph for paragraph in paragraphs)
@@ -428,4 +599,7 @@ def book_labels(book_ids):
         except Exception:
             titles[book_id] = f"无法读取的作品（{book_id}）"
     counts = Counter(titles.values())
-    return {key: f"{title}（{key}）" if counts[title] > 1 else title for key, title in titles.items()}
+    return {
+        key: f"{title}（{key}）" if counts[title] > 1 else title
+        for key, title in titles.items()
+    }
