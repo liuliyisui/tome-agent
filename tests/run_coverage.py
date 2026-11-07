@@ -53,18 +53,18 @@ def main():
     run("run", "-a", *common, "tests/run_engine_regression.py")
     combined = snapshot("core-combined", CORE)
     for title, data in (
-        ("单元测试：全部后端与引擎", unit_all),
-        ("单元测试：核心模块", unit_core),
-        ("单元测试 + 引擎回归：核心模块", combined),
+        ("Unit tests: backend and engine", unit_all),
+        ("Unit tests: core modules", unit_core),
+        ("Unit and engine regression tests: core modules", combined),
     ):
         print(
-            f"{title}: 综合 {data['percent_covered']:.2f}%（语句 {data['percent_statements_covered']:.2f}%，分支 {data['percent_branches_covered']:.2f}%）",
+            f"{title}: total {data['percent_covered']:.2f}% (statements {data['percent_statements_covered']:.2f}%, branches {data['percent_branches_covered']:.2f}%)",
             flush=True,
         )
     if unit_core["percent_statements_covered"] < 60:
-        raise SystemExit("核心模块单元测试语句覆盖率低于 60%")
+        raise SystemExit("Core unit test statement coverage is below 60%")
     if combined["percent_covered"] < 60:
-        raise SystemExit("核心模块综合覆盖率低于 60%")
+        raise SystemExit("Core combined coverage is below 60%")
 
 
 if __name__ == "__main__":
