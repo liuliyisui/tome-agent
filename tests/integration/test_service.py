@@ -1,10 +1,14 @@
 import json
+import os
+import subprocess
+import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from inf_backend import service
+from inf_backend import generation, official_pricing, service
 from inf_backend.settings import Settings
 from inf_writer.models import ModelReply, ModelRequest
 
@@ -100,6 +104,67 @@ class ServiceIntegrationTests(unittest.TestCase):
             "# 测试作品\n\n## 第1章 开篇\n\n\u3000\u3000第一段。\n\n\u3000\u3000第二段。\n\n\u3000\u3000第三段。\n\n\u3000\u3000第四段。\n",
         )
         self.assertEqual(state["chapters"][0]["text"], original)
+
+
+class OperationLockTests(unittest.TestCase):
+    def test_lock_left_by_killed_process_is_reclaimed(self):
+        with tempfile.TemporaryDirectory() as folder:
+            lock = Path(folder) / "operation.lock"
+            finished = subprocess.Popen([sys.executable, "-c", "pass"])
+            finished.wait()
+            lock.write_text(str(finished.pid), encoding="utf-8")
+            with service.operation_lock(folder):
+                self.assertTrue(lock.exists())
+            self.assertFalse(lock.exists())
+
+    def test_lock_of_running_process_still_blocks(self):
+        with tempfile.TemporaryDirectory() as folder:
+            lock = Path(folder) / "operation.lock"
+            lock.write_text(str(os.getpid()), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "operation.lock"):
+                with service.operation_lock(folder):
+                    pass
+            self.assertTrue(lock.exists())
+
+    def test_empty_lock_is_reclaimed_after_a_crash(self):
+        with tempfile.TemporaryDirectory() as folder:
+            lock = Path(folder) / "operation.lock"
+            lock.write_text("", encoding="utf-8")
+            old = time.time() - 120
+            os.utime(lock, (old, old))
+            with service.operation_lock(folder):
+                self.assertTrue(lock.exists())
+            self.assertFalse(lock.exists())
+
+    def test_fresh_empty_lock_is_treated_as_active(self):
+        with tempfile.TemporaryDirectory() as folder:
+            lock = Path(folder) / "operation.lock"
+            lock.write_text("", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "operation.lock"):
+                with service.operation_lock(folder):
+                    pass
+
+
+class EstimateTests(unittest.TestCase):
+    def test_first_estimate_covers_all_calls_in_a_chapter(self):
+        cfg = Settings(api_key="FAKE_TEST_KEY")
+        prices = {
+            "models": official_pricing.SNAPSHOT,
+            "checked_at": "2026-11-07",
+            "status": "verified_snapshot",
+        }
+        with (
+            tempfile.TemporaryDirectory() as folder,
+            patch.object(service, "BOOKS", Path(folder)),
+            patch.object(official_pricing, "get_table", return_value=prices),
+        ):
+            service.create_book(
+                "estimate-book", "预估测试", "一名信使在雪夜抵达驿站。", 1, 800, settings=cfg
+            )
+            result = generation.estimate("estimate-book")
+        self.assertGreaterEqual(result["input_tokens"], 40000)
+        self.assertGreaterEqual(result["output_tokens"], 8000)
+        self.assertIn("每章约 10 次", result["basis"])
 
 
 if __name__ == "__main__":

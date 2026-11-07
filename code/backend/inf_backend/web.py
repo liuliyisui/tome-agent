@@ -381,6 +381,10 @@ class Handler(BaseHTTPRequestHandler):
                     )
                 else:
                     self.reply(404, {"error": "接口不存在"})
+            elif not post and path == "/favicon.ico":
+                self.send_response(204)
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.end_headers()
             elif not post and path in (
                 "/",
                 "/app.js",
