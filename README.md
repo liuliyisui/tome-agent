@@ -21,7 +21,7 @@ Tome Agent 是一个面向长篇小说创作的多智能体写作工作室。它
 - 断点恢复：每个阶段保存检查点，失败时保留已经完成的章节和待处理任务。
 - 长度控制：根据总字数、剩余章节和实际进度动态分配章节篇幅。
 - 失败降级：局部规划或记忆处理失败时记录问题，尽量继续保存有效正文。
-- DeepSeek 接入：使用 Python 标准库访问官方 Chat Completions 接口。
+- 多模型接入：支持 DeepSeek、OpenAI，以及提供 Chat Completions 兼容接口的其他服务；在设置中填写模型、接口地址和对应密钥。
 - 本地网页：创建作品、配置文风、确认费用后逐章或批量生成，支持导出排版后的 Markdown。
 - 写作 Skill：在作品页面导入 `SKILL.md`，为每部作品选择写作技能，后续正文生成时自动加载。
 
@@ -59,14 +59,16 @@ tests/                 单元测试与集成测试
 
 ## 快速验证（Windows）
 
-可以先使用文件模式。运行 `setup.cmd` 后，在 `code/backend/.env` 中配置 DeepSeek API 密钥，并将模板中的 `DATABASE_URL` 留空，再启动本地工作室：
+可以先使用文件模式。运行 `setup.cmd` 后，将 `code/backend/.env` 中的 `DATABASE_URL` 留空，再启动本地工作室：
 
 ```powershell
 code\backend\setup.cmd
 code\backend\run-web.cmd
 ```
 
-打开 http://127.0.0.1:8765。文件模式下作品存放于 `code/backend/data/inf_books/`。如需使用 PostgreSQL，请按[数据库说明](docs/software/POSTGRESQL.md)配置 `DATABASE_URL`、初始化数据库，并按需导入旧作品；引擎检查点仍保存在本地文件中。
+打开 http://127.0.0.1:8765，在「设置 → 配置模型服务」中填写所选服务商的 API Key 和模型名称。选择其他兼容服务时，需填写以 `/chat/completions` 结尾的完整 HTTPS 接口地址；模型须支持 Chat Completions、JSON 对象输出和用量返回。文件模式下作品存放于 `code/backend/data/inf_books/`。如需使用 PostgreSQL，请按[数据库说明](docs/software/POSTGRESQL.md)配置 `DATABASE_URL`、初始化数据库，并按需导入旧作品；引擎检查点仍保存在本地文件中。
+
+新作品使用当前模型配置，已有作品继续使用创建时绑定的模型和对应接口；切换服务不会覆盖原 DeepSeek 密钥。更换相同接口的密钥后，该接口下的作品使用新密钥。密钥保存在本机 `.env` 中，不会返回网页。其他服务的价格暂不能自动核验，系统也不能按金额限制这些服务的调用，生成前请到服务商处确认费用和额度；兼容接口和具体模型的能力、上下文长度及计费可能不同。
 
 在作品页面的「写作 Skill」中选择 Markdown 文件即可安装；勾选技能后，下次生成正文时生效，每部作品最多选择 5 个。技能以文本形式提供给写作模型，不执行文件中的脚本、工具调用或文件操作，也不保证兼容其他产品的技能运行机制。安装的技能保存在 `code/backend/data/skills.json`，作品的选择保存在对应作品目录中；技能文本会增加模型输入量，请只导入信任的内容。
 

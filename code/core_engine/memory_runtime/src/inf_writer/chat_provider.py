@@ -48,6 +48,7 @@ class ChatCompletionProvider:
     timeout_seconds: float = 30.0
     max_response_bytes: int = 1_048_576
     thinking_enabled: bool | None = None
+    token_limit_field: str = "max_tokens"
 
     def __post_init__(self):
         url = urlsplit(self.endpoint)
@@ -90,6 +91,8 @@ class ChatCompletionProvider:
             and type(self.thinking_enabled) is not bool
         ):
             raise ContractError("thinking_enabled must be boolean or None")
+        if self.token_limit_field not in ("max_tokens", "max_completion_tokens"):
+            raise ContractError("Unsupported output token limit field")
         if (
             not isinstance(self.api_key, str)
             or not self.api_key
@@ -112,7 +115,7 @@ class ChatCompletionProvider:
                 {"role": "system", "content": request.system},
                 {"role": "user", "content": canonical(request.payload)},
             ],
-            "max_tokens": request.max_output_tokens,
+            self.token_limit_field: request.max_output_tokens,
             "stream": False,
             "response_format": {"type": "json_object"},
         }

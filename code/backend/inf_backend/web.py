@@ -14,7 +14,7 @@ from uuid import uuid4
 from inf_writer.memory_temporality import current_claim, has_current_content
 
 from . import database, generation, library, service
-from .settings import Settings, configure_api_key
+from .settings import Settings, configure_api_key, configure_model
 
 FRONTEND = (
     Path(sys._MEIPASS) / "frontend"
@@ -125,9 +125,7 @@ class WebServer(ThreadingHTTPServer):
         if estimate["signature"] != generation.signature(book_id):
             raise ValueError("作品或文风已更新，请重新查看费用预估后再确认")
         count = estimate["count"]
-        current_price = generation.official_pricing.quote(
-            service._metadata(book_id)["model"]["model"]
-        )
+        current_price = generation.price_for(service._metadata(book_id)["model"])
         if (
             current_price["period"] != estimate["pricing"]["period"]
             or current_price["rates"] != estimate["prices"]
@@ -141,7 +139,7 @@ class WebServer(ThreadingHTTPServer):
             )
         if len(view["state"]["chapters"]) >= book["metadata"]["target_chapters"]:
             raise ValueError("全书章节已完成")
-        settings = Settings.load()
+        settings = Settings.for_book(book["metadata"]["model"])
         with self.job_lock:
             if book_id in self.busy:
                 for job_id, job in self.jobs.items():
@@ -263,7 +261,24 @@ class Handler(BaseHTTPRequestHandler):
                 data = json.loads(self.rfile.read(length))
                 if not isinstance(data, dict):
                     raise ValueError("请求必须是 JSON 对象")
-            if not post and path == "/api/skills":
+            if not post and path == "/api/model-config":
+                cfg = Settings.load(require_key=False)
+                self.reply(
+                    200,
+                    {**cfg.public_config(), "configured": bool(cfg.api_key.strip())},
+                )
+            elif post and path == "/api/model-config":
+                cfg = configure_model(
+                    data.get("provider"),
+                    data.get("model"),
+                    data.get("endpoint"),
+                    data.get("api_key"),
+                )
+                self.reply(
+                    200,
+                    {**cfg.public_config(), "configured": bool(cfg.api_key.strip())},
+                )
+            elif not post and path == "/api/skills":
                 self.reply(200, {"skills": service.list_skills()})
             elif post and path == "/api/skills":
                 self.reply(

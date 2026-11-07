@@ -157,6 +157,7 @@ const app = createApp({
         estimate: "",
       },
       apiKey: "",
+      modelForm: { provider: "deepseek", model: "deepseek-chat", endpoint: "" },
       createForm: {
         title: "",
         prompt: "",
@@ -416,6 +417,7 @@ const app = createApp({
     function openApiConfig() {
       state.apiKey = "";
       state.errors.api = "";
+      state.dialogs.settings = false;
       state.dialogs.api = true;
     }
     function openCreate() {
@@ -428,9 +430,11 @@ const app = createApp({
       state.busy.api = true;
       state.errors.api = "";
       try {
-        const cfg = await api("/api/config", { api_key: state.apiKey.trim() });
+        const form = state.modelForm;
+        const cfg = await api("/api/model-config", { provider: form.provider, model: form.model.trim(), endpoint: form.endpoint.trim(), api_key: state.apiKey.trim() });
         state.configured = cfg.configured;
         state.model = cfg.model;
+        state.modelForm = { provider: cfg.provider, model: cfg.model, endpoint: cfg.endpoint };
         state.apiKey = "";
         state.dialogs.api = false;
         notify("API Key 已保存，可以开始创作。");
@@ -493,6 +497,10 @@ const app = createApp({
         state.view = "book";
         notify();
         await refreshBooks();
+        try {
+          const modelConfig = await api("/api/model-config");
+          if (modelConfig.provider) state.modelForm = { provider: modelConfig.provider, model: modelConfig.model, endpoint: modelConfig.endpoint };
+        } catch { /* Keep defaults when connecting to an older server. */ }
       } catch (e) {
         if (version === navigationVersion) notify(e.message);
       } finally {
@@ -885,6 +893,7 @@ const app = createApp({
       price,
       deletedAt,
       toggleSidebar,
+      openApiConfig,
       showLibrary,
       closeDialog,
       openCreate,

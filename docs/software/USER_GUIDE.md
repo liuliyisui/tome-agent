@@ -14,7 +14,13 @@ code\backend\setup.cmd
 
 运行 `code\backend\run-web.cmd`，打开 http://127.0.0.1:8765。创建作品并配置文风，生成前会显示 token 和费用预估，确认后才调用模型。
 
-## DeepSeek 配置
+## 模型服务配置
+
+在网页「设置 → 配置模型服务」中可选择 DeepSeek、OpenAI 或其他 OpenAI Chat Completions 兼容服务。填写模型名称和对应 API Key；其他服务还需填写以 `/chat/completions` 结尾的完整 HTTPS 接口地址。保存只检查格式，不会测试密钥或模型是否可用。兼容服务须支持 JSON 对象输出和用量返回。
+
+新作品使用当前配置；已有作品继续使用其绑定的服务与模型。同一接口的密钥更新后，其作品使用更新的密钥。非 DeepSeek 模型的价格无法自动核验，生成前请向服务商确认，费用以实际账单为准。
+
+原有 DeepSeek `.env` 配置仍可使用：
 
 打开 `code/backend/.env`，填写：
 
@@ -22,7 +28,7 @@ code\backend\setup.cmd
 DEEPSEEK_API_KEY=你的密钥
 ```
 
-其他可选配置见 `.env.example`。默认模型为 `deepseek-chat`，接口限定为 DeepSeek 官方 `chat/completions` 地址。`.env` 已被 Git 忽略，不能上传或发到群聊。
+其他可选配置见 `.env.example`。默认模型为 `deepseek-chat`。`.env` 已被 Git 忽略，不能上传或发到群聊。
 
 网页已接入事件先行和三层记忆引擎。真实生成需配置密钥；先生成首章并人工确认后，可批量续写。
 

@@ -17,6 +17,58 @@ from inf_writer.storage import FileStore
 
 
 class WebIntegrationTests(unittest.TestCase):
+    def test_model_settings_switch_keeps_old_book_and_never_returns_keys(self):
+        with (
+            tempfile.TemporaryDirectory() as folder,
+            patch.object(settings, "BACKEND_ROOT", Path(folder)),
+            patch.dict(os.environ, {"DEEPSEEK_API_KEY": ""}, clear=True),
+        ):
+            path = Path(folder) / ".env"
+            path.write_text("DEEPSEEK_API_KEY=sk-old-test-key\n", encoding="utf-8")
+            old = self.request(
+                "/api/books",
+                {
+                    "title": "旧作品",
+                    "prompt": "故事",
+                    "chapters": 1,
+                    "target_units": 500,
+                },
+            )
+            old_id = old["state"]["project_id"]
+            result = self.request(
+                "/api/model-config",
+                {
+                    "provider": "openai",
+                    "model": "gpt-4o",
+                    "endpoint": "",
+                    "api_key": "sk-new-test-key",
+                },
+            )
+            self.assertEqual(result["provider"], "openai")
+            self.assertNotIn("sk-new-test-key", json.dumps(result))
+            self.assertNotIn(
+                "sk-old-test-key", json.dumps(self.request("/api/model-config"))
+            )
+            new = self.request(
+                "/api/books",
+                {
+                    "title": "新作品",
+                    "prompt": "故事",
+                    "chapters": 1,
+                    "target_units": 500,
+                },
+            )
+            self.assertEqual(new["metadata"]["model"]["provider"], "openai")
+            self.assertEqual(
+                self.request(f"/api/books/{old_id}")["metadata"]["model"]["provider"],
+                "deepseek",
+            )
+            self.assertIsNone(
+                self.request(
+                    f"/api/books/{new['state']['project_id']}/estimate", {"count": 1}
+                )["prices"]
+            )
+
     def test_create_with_selected_skills(self):
         with patch.object(service, "DATA", Path(self.folder.name) / "skill-data"):
             item = self.request(

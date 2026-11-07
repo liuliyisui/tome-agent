@@ -10,6 +10,26 @@ CALLS_PER_CHAPTER = 10
 CALL_OUTPUT_TOKENS = 600
 
 
+def price_for(config):
+    if config.get("provider", "deepseek") == "deepseek":
+        return official_pricing.quote(config["model"])
+    return {
+        "model": config["model"],
+        "requested_model": config["model"],
+        "period": "unknown",
+        "label": "费用以服务商账单为准",
+        "rates": None,
+        "peak_rates": None,
+        "source": None,
+        "checked_at": None,
+        "status": "unavailable",
+        "currency": None,
+        "time": None,
+        "rule": "此服务暂不提供自动价格估算。",
+        "warning": "无法自动核验此模型的价格，请在服务商处确认费用。",
+    }
+
+
 def signature(book_id, book=None):
     book = book or service.load_book(book_id)
     state = book["state"]
@@ -20,6 +40,7 @@ def signature(book_id, book=None):
                 "metadata": book["metadata"],
                 "chapters": chapters,
                 "style": service.load_writing_style(book_id),
+                "skills": service.load_book_skills(book_id),
             }
         )
     )
@@ -37,12 +58,15 @@ def estimate(book_id, count=1, approved_first=False):
     if meta["model"]["model"] == "offline-demo":
         raise ValueError("离线演示已移除，请创建真实作品")
     style = service.load_writing_style(book_id)
+    skill_ids = set(service.load_book_skills(book_id))
+    skills = [s for s in service.list_skills() if s["id"] in skill_ids]
     used = sum(service.count_units(c["text"]) for c in chapters)
     target = max(300, (meta["target_units"] - used) // max(1, remaining))
     context_chars = (
         len(meta["prompt"])
         + sum(len(c["text"]) for c in chapters[-2:])
         + sum(map(len, style.values()))
+        + sum(len(s["content"]) for s in skills)
     )
     base_input = 6000 + 2 * context_chars
     base_output = target * 2 + 2500
@@ -80,7 +104,7 @@ def estimate(book_id, count=1, approved_first=False):
         sum(base_input * (1 + min(i * 0.06, 0.6)) for i in range(count))
     )
     outgoing = math.ceil(base_output * count)
-    pricing = official_pricing.quote(meta["model"]["model"])
+    pricing = price_for(meta["model"])
     rates, peak = pricing["rates"], pricing["peak_rates"]
     cost = (
         (incoming * rates["input"] + outgoing * rates["output"]) / 1_000_000
@@ -105,6 +129,8 @@ def estimate(book_id, count=1, approved_first=False):
         "prices": rates,
         "pricing": pricing,
         "basis": basis,
-        "note": "按输入未命中缓存估算；缓存优惠可能降低费用。按当前时段报价，长任务跨时段时可能变化。实际用量和费用以服务商账单为准，不按估算值强制截断。",
+        "note": "当前无法计算费用或按金额限制此服务的调用；实际费用以服务商账单为准，请先确认价格和额度。"
+        if not rates
+        else "按输入未命中缓存估算；缓存优惠可能降低费用。按当前时段报价，长任务跨时段时可能变化。实际用量和费用以服务商账单为准，不按估算值强制截断。",
         "signature": signature(book_id, book),
     }

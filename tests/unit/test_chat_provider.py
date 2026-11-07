@@ -111,6 +111,15 @@ class ChatProviderTests(unittest.TestCase):
         self.provider(thinking_enabled=False).complete(self.request())
         self.assertEqual(self.requests[0][2]["thinking"], {"type": "disabled"})
 
+    def test_openai_compatible_token_limit_omits_deepseek_thinking(self):
+        self.provider(
+            token_limit_field="max_completion_tokens", thinking_enabled=None
+        ).complete(self.request())
+        payload = self.requests[0][2]
+        self.assertEqual(payload["max_completion_tokens"], 100)
+        self.assertNotIn("max_tokens", payload)
+        self.assertNotIn("thinking", payload)
+
     def test_insecure_remote_and_embedded_credentials_rejected(self):
         for endpoint in (
             "http://example.invalid/chat/completions",

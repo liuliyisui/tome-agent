@@ -434,6 +434,9 @@ def _gateway(settings):
         allow_remote=True,
         timeout_seconds=settings.timeout,
         thinking_enabled=settings.thinking,
+        token_limit_field="max_completion_tokens"
+        if settings.provider == "openai"
+        else "max_tokens",
     )
     budget = Budget(
         max_calls=settings.max_calls,
@@ -525,7 +528,7 @@ def generate_longform(
     remaining = meta["target_chapters"] - written
     if type(count) is not int or not 1 <= count <= remaining:
         raise ValueError("本次章节数超出剩余范围")
-    cfg = settings or Settings.load()
+    cfg = settings or Settings.for_book(meta["model"])
     if cfg.public_config() != meta["model"]:
         raise ValueError("当前模型配置与创建作品时不一致")
     if gateway is None:

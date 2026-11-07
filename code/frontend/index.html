@@ -205,7 +205,7 @@
                   </button>
                 </div>
                 <small
-                  >{{state.configured?'创作引擎已就绪，开始你的下一个故事。':'配置 DeepSeek API 密钥后，即可开始创作。'}}</small
+                  >{{state.configured?'创作引擎已就绪，开始你的下一个故事。':'配置模型服务后，即可开始创作。'}}</small
                 >
               </div>
             </section>
@@ -538,6 +538,7 @@
             <label><input type="radio" name="theme" value="system" v-model="state.theme" /><span>跟随系统<small>随设备的外观设置自动切换</small></span></label>
           </fieldset>
           <p id="theme-hint" class="form-hint">选择后立即生效，偏好保存在当前浏览器。</p>
+          <button id="open-model-settings" class="outline" type="button" @click="openApiConfig">配置模型服务</button>
         </dialog>
         <dialog
           id="api-key-dialog"
@@ -549,23 +550,35 @@
             <div class="eyebrow">WELCOME TO TOME</div>
             <h2 id="api-key-title">先连接你的创作引擎</h2>
             <p class="muted">
-              首次使用，请配置 DeepSeek API Key。保存后即可开始创作，无需重启。
+              选择服务类型并填写模型信息。新建作品使用当前配置，已有作品继续使用原来的模型服务。
             </p>
-            <label for="api-key-input">DeepSeek API Key</label
+            <label for="model-provider">模型服务</label>
+            <select id="model-provider" v-model="state.modelForm.provider" :disabled="state.busy.api" @change="state.modelForm.model=state.modelForm.provider==='deepseek'?'deepseek-chat':state.modelForm.provider==='openai'?'gpt-4o':''">
+              <option value="deepseek">DeepSeek</option>
+              <option value="openai">OpenAI</option>
+              <option value="compatible">其他 OpenAI 兼容服务（如通义千问、豆包）</option>
+            </select>
+            <label for="model-name">模型名称</label>
+            <input id="model-name" v-model="state.modelForm.model" required maxlength="128" placeholder="例如 deepseek-chat、gpt-4o、qwen-plus" :disabled="state.busy.api" />
+            <template v-if="state.modelForm.provider==='compatible'">
+              <label for="model-endpoint">完整接口地址</label>
+              <input id="model-endpoint" v-model="state.modelForm.endpoint" type="url" required placeholder="https://服务商域名/v1/chat/completions" :disabled="state.busy.api" />
+            </template>
+            <label for="api-key-input">API Key</label
             ><input
               id="api-key-input"
               type="password"
               required
               autocomplete="off"
               spellcheck="false"
-              placeholder="sk-…"
-              maxlength="253"
+              placeholder="填写所选服务商的密钥"
+              maxlength="512"
               v-model="state.apiKey"
               :disabled="state.busy.api"
             />
             <p class="form-hint">
               密钥仅保存在本机后端配置文件中，不会回显到页面。保存只检查格式，实际可用性在生成时由
-              DeepSeek 校验。
+              所选服务商校验。更换服务时请填写该服务的密钥；兼容接口需支持 Chat Completions 和 JSON 输出。
             </p>
             <p id="api-key-error" class="error" role="alert">
               {{state.errors.api}}
@@ -685,7 +698,7 @@
               </label>
             </details>
             <p class="form-hint">
-              创建后可逐章生成。首次使用时可直接在页面配置 DeepSeek API 密钥。
+              创建后可逐章生成。可在设置中配置模型服务。
             </p>
             <p id="form-error" role="alert">{{state.errors.create}}</p>
             <button
@@ -769,11 +782,11 @@
               <p id="estimate-price-rule">{{state.estimate.pricing.rule}}</p>
               <a
                 id="estimate-price-source"
-                :href="state.estimate.pricing.source"
+                v-if="state.estimate.pricing.source" :href="state.estimate.pricing.source"
                 target="_blank"
                 rel="noopener noreferrer"
                 >DeepSeek 官方定价 ↗</a
-              ><small id="estimate-price-date"
+              ><small v-if="state.estimate.pricing.source" id="estimate-price-date"
                 >核验：{{state.estimate.pricing.checked_at}}
                 {{state.estimate.pricing.status==='live'?'· 官方实时同步':'· 已核验缓存价，联网不可用时使用'}}</small
               >

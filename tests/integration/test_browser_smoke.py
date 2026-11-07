@@ -108,6 +108,45 @@ class BrowserSmokeTests(unittest.TestCase):
         self.assertIn("书架还是空的", page.inner_text(".works-empty"))
         self.assertEqual(page.text_content("#book-count").strip(), "0")
 
+    def test_model_configuration_accepts_compatible_service(self):
+        sent = []
+
+        def handle(route):
+            if route.request.method == "POST":
+                sent.append(route.request.post_data_json)
+                route.fulfill(
+                    json={
+                        "configured": True,
+                        "provider": "compatible",
+                        "model": "qwen-plus",
+                        "endpoint": "https://example.com/v1/chat/completions",
+                        "thinking": None,
+                    }
+                )
+            else:
+                route.fulfill(
+                    json={
+                        "configured": True,
+                        "provider": "deepseek",
+                        "model": "deepseek-chat",
+                        "endpoint": "https://api.deepseek.com/chat/completions",
+                        "thinking": False,
+                    }
+                )
+
+        self.page.route("**/api/model-config", handle)
+        self.page.click("#open-settings")
+        self.page.click("#open-model-settings")
+        self.page.select_option("#model-provider", "compatible")
+        self.page.fill("#model-name", "qwen-plus")
+        self.page.fill("#model-endpoint", "https://example.com/v1/chat/completions")
+        self.page.fill("#api-key-input", "fake-model-key")
+        self.page.click("#api-key-save")
+        self.page.wait_for_selector("#api-key-dialog:not([open])", state="attached")
+        self.assertEqual(sent[0]["provider"], "compatible")
+        self.assertEqual(sent[0]["model"], "qwen-plus")
+        self.assertEqual(sent[0]["endpoint"], "https://example.com/v1/chat/completions")
+
     def test_cancel_skill_picker_keeps_create_dialog_and_draft(self):
         self.open_create_dialog()
         self.page.fill('input[name="title"]', "未完成的故事")
