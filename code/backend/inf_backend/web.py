@@ -3,6 +3,7 @@
 import argparse
 import json
 import logging
+import os
 import sys
 import threading
 import time
@@ -78,8 +79,11 @@ def load_view(book_id):
 class WebServer(ThreadingHTTPServer):
     daemon_threads = True
 
-    def __init__(self, address):
+    def __init__(self, address, allowed_hosts=()):
         super().__init__(address, Handler)
+        self.allowed_hosts = {
+            item.strip().lower() for item in allowed_hosts if item.strip()
+        }
         self.jobs = {}
         self.busy = set()
         self.estimates = {}
@@ -297,15 +301,22 @@ class Handler(BaseHTTPRequestHandler):
         self.dispatch(True)
 
     def dispatch(self, post):
-        host = self.headers.get("Host", "")
+        host = self.headers.get("Host", "").strip().lower()
         allowed = {
             f"127.0.0.1:{self.server.server_port}",
             f"localhost:{self.server.server_port}",
+            *self.server.allowed_hosts,
         }
-        if host not in allowed or (
-            post and self.headers.get("Origin", f"http://{host}") != f"http://{host}"
-        ):
-            self.reply(403, {"error": "仅允许本机同源访问"})
+        same_origin = True
+        if post:
+            origin = self.headers.get("Origin")
+            if origin:
+                same_origin = urlsplit(origin).netloc.lower() == host
+        if host not in allowed or not same_origin:
+            self.reply(
+                403,
+                {"error": "仅允许同源访问；对外部署请设置 TOME_ALLOWED_HOSTS"},
+            )
             return
         path = urlsplit(self.path).path
         try:
@@ -531,11 +542,27 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument(
+        "--host",
+        default=os.environ.get("TOME_HOST", "127.0.0.1"),
+        help="监听地址；默认仅本机，部署时可设为 0.0.0.0",
+    )
+    parser.add_argument(
+        "--allowed-hosts",
+        default=os.environ.get("TOME_ALLOWED_HOSTS", ""),
+        help="逗号分隔的额外允许 Host（如 tome.example.com），用于反代或直连部署",
+    )
     args = parser.parse_args()
     if database.enabled():
         database.initialize()
-    server = WebServer(("127.0.0.1", args.port))
-    print(f"Tome Agent: http://127.0.0.1:{server.server_port}", flush=True)
+    allowed_hosts = [
+        item.strip().lower() for item in args.allowed_hosts.split(",") if item.strip()
+    ]
+    server = WebServer((args.host, args.port), allowed_hosts=allowed_hosts)
+    shown = "127.0.0.1" if args.host in ("0.0.0.0", "::") else args.host
+    print(f"Tome Agent: http://{shown}:{server.server_port}", flush=True)
+    if allowed_hosts:
+        print(f"Allowed hosts: {', '.join(allowed_hosts)}", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

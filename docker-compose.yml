@@ -1,0 +1,37 @@
+# 对外部署示例：容器只绑定 127.0.0.1:8765，由 Nginx/Caddy 反代并加 HTTPS + 鉴权。
+# 同目录创建 .env：
+#   DEEPSEEK_API_KEY=sk-xxxx
+#   TOME_ALLOWED_HOSTS=tome.example.com
+services:
+  tome:
+    build: .
+    image: tome-agent:local
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8765:8765"
+    environment:
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:?请先设置 DEEPSEEK_API_KEY}
+      # 浏览器访问所用的域名（不含协议），多个用逗号分隔
+      TOME_ALLOWED_HOSTS: ${TOME_ALLOWED_HOSTS:-}
+      # 可选：使用 PostgreSQL 时填写；留空则用文件模式
+      DATABASE_URL: ${DATABASE_URL:-}
+    volumes:
+      # 作品与检查点必须持久化
+      - ./code/backend/data:/app/code/backend/data
+
+  # 可选：需要 PostgreSQL 时用 profile 启动：
+  #   docker compose --profile postgres up -d
+  # 并把 DATABASE_URL 设为 postgresql://tome:密码@postgres:5432/tome
+  postgres:
+    image: postgres:17
+    profiles: ["postgres"]
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tome
+      POSTGRES_USER: tome
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?使用 PostgreSQL 时请在 .env 设置 POSTGRES_PASSWORD}
+    volumes:
+      - tome_postgres:/var/lib/postgresql/data
+
+volumes:
+  tome_postgres:

@@ -1,0 +1,20 @@
+# /etc/systemd/system/tome-agent.service
+# 说明：后端只监听 127.0.0.1，由 Nginx 反代；允许的域名通过 TOME_ALLOWED_HOSTS 传入。
+[Unit]
+Description=Tome Agent (local novel studio)
+After=network.target
+
+[Service]
+Type=simple
+# 建议用独立普通用户运行，例如：useradd -r -s /usr/sbin/nologin tome
+User=tome
+Group=tome
+WorkingDirectory=/opt/tome-agent
+Environment=PYTHONPATH=/opt/tome-agent/code/core_engine:/opt/tome-agent/code/backend
+Environment=TOME_ALLOWED_HOSTS=tome.example.com
+ExecStart=/opt/tome-agent/code/backend/.venv/bin/python -m inf_backend.web --host 127.0.0.1 --port 8765
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
