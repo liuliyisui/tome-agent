@@ -161,7 +161,7 @@
             </button>
           </header>
           <div class="content">
-            <section class="intro">
+            <section class="intro" v-show="state.view !== 'book'">
               <div>
                 <div class="eyebrow">A SPACE FOR YOUR NEXT CHAPTER</div>
                 <h1>每一个世界，都始于一个念头<span>。</span></h1>
@@ -255,9 +255,6 @@
             >
               <div class="book-heading">
                 <div>
-                  <div class="eyebrow" id="book-kind">
-                    {{state.current.mode==='legacy'?'LEGACY / 旧版存档':'EVENT FIRST / 事件先行 · 三层记忆'}}
-                  </div>
                   <h2 id="book-title">{{meta.title}}</h2>
                 </div>
                 <div class="book-actions">
