@@ -23,6 +23,7 @@ Tome Agent 是一个面向长篇小说创作的多智能体写作工作室。它
 - 失败降级：局部规划或记忆处理失败时记录问题，尽量继续保存有效正文。
 - DeepSeek 接入：使用 Python 标准库访问官方 Chat Completions 接口。
 - 本地网页：创建作品、配置文风、确认费用后逐章或批量生成，支持导出排版后的 Markdown。
+- 写作 Skill：在作品页面导入 `SKILL.md`，为每部作品选择写作技能，后续正文生成时自动加载。
 
 图形前端位于 `code/frontend/`，使用 HTML、CSS、JavaScript，并包含本地 Vue 运行时及交互组件。
 
@@ -64,6 +65,8 @@ code\backend\run-web.cmd
 ```
 
 打开 http://127.0.0.1:8765。文件模式下作品存放于 `code/backend/data/inf_books/`。如需使用 PostgreSQL，请按[数据库说明](docs/software/POSTGRESQL.md)配置 `DATABASE_URL`、初始化数据库，并按需导入旧作品；引擎检查点仍保存在本地文件中。
+
+在作品页面的「写作 Skill」中选择 Markdown 文件即可安装；勾选技能后，下次生成正文时生效，每部作品最多选择 5 个。技能以文本形式提供给写作模型，不执行文件中的脚本、工具调用或文件操作，也不保证兼容其他产品的技能运行机制。安装的技能保存在 `code/backend/data/skills.json`，作品的选择保存在对应作品目录中；技能文本会增加模型输入量，请只导入信任的内容。
 
 运行自动测试：
 

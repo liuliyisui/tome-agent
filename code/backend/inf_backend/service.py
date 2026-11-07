@@ -302,6 +302,64 @@ class StyleGateway:
         return self.gateway.complete(request)
 
 
+def list_skills():
+    path = DATA / "skills.json"
+    return strict_json(path.read_text(encoding="utf-8")) if path.exists() else []
+
+
+def install_skill(name, content):
+    if not isinstance(name, str) or not 1 <= len(name.strip()) <= 80:
+        raise ValueError("技能名称须为 1 到 80 个字符")
+    if not isinstance(content, str) or not 1 <= len(content.strip()) <= 12000:
+        raise ValueError("技能内容须为 1 到 12000 个字符")
+    item = {"id": uuid4().hex, "name": name.strip(), "content": content.strip()}
+    with operation_lock(DATA):
+        skills = list_skills()
+        if len(skills) >= 100:
+            raise ValueError("技能数量已达到上限")
+        _atomic_json(DATA / "skills.json", [*skills, item])
+    return item
+
+
+def load_book_skills(book_id):
+    _metadata(book_id)
+    path = book_path(book_id) / "skills.json"
+    return strict_json(path.read_text(encoding="utf-8")) if path.exists() else []
+
+
+def save_book_skills(book_id, ids):
+    _metadata(book_id)
+    if (
+        not isinstance(ids, list)
+        or len(ids) > 5
+        or any(not isinstance(x, str) for x in ids)
+        or len(set(ids)) != len(ids)
+    ):
+        raise ValueError("最多选择 5 个不同技能")
+    available = {item["id"] for item in list_skills()}
+    if any(x not in available for x in ids):
+        raise ValueError("所选技能不存在")
+    with operation_lock(book_path(book_id)):
+        _atomic_json(book_path(book_id) / "skills.json", ids)
+    return ids
+
+
+class SkillGateway:
+    def __init__(self, gateway, skills):
+        self.gateway = gateway
+        self.skills = skills
+
+    def complete(self, request):
+        if request.role == "writer" and self.skills:
+            request = replace(
+                request,
+                system=request.system
+                + "\n参考 writing_skills 中的写作要求，遵守原有输出格式和故事事实约束。",
+                payload={**request.payload, "writing_skills": self.skills},
+            )
+        return self.gateway.complete(request)
+
+
 def create_book(
     book_id, title, prompt, chapters, target_units, settings=None, style=None
 ):
@@ -456,8 +514,20 @@ def generate_longform(
     if gateway is None:
         gateway, budget = _gateway(replace(cfg, max_calls=cfg.max_calls * count))
     gateway = StyleGateway(gateway, load_writing_style(book_id))
+    selected = set(load_book_skills(book_id))
+    skills = [item for item in list_skills() if item["id"] in selected]
+    if len(skills) != len(selected):
+        raise ValueError("已选择的技能不存在，请重新选择")
+    gateway = SkillGateway(gateway, skills)
     run = book_path(book_id) / "longform-runs" / ("run-" + uuid4().hex)
     session = WritingSession(run, gateway, plan, book=previous)
+    _atomic_json(
+        run / "skills-used.json",
+        [
+            {"id": item["id"], "name": item["name"], "sha256": digest(item["content"])}
+            for item in skills
+        ],
+    )
     failure = None
     for _ in range(count):
         number = len(session.book["chapters"]) + 1
@@ -532,7 +602,9 @@ def load_longform(book_id):
     except ContractError as exc:
         if str(exc) != "写作运行时版本不一致，不能直接恢复旧检查点":
             raise
-        pointer = strict_json(_longform_pointer(book_id).read_text(encoding="utf-8-sig"))
+        pointer = strict_json(
+            _longform_pointer(book_id).read_text(encoding="utf-8-sig")
+        )
         if not isinstance(pointer, dict) or set(pointer) != {"checkpoint"}:
             raise ValueError("长文本检查点索引格式不正确")
         root = book_path(book_id).resolve()
@@ -541,11 +613,13 @@ def load_longform(book_id):
             raise ValueError("长文本检查点路径不安全")
         record = strict_json(checkpoint.read_text(encoding="utf-8-sig"))
         state = record.get("book")
-        if (record.get("schema") != "inf-writing-checkpoint-v1"
-                or record.get("writing_plan_sha256") != digest(canonical(plan))
-                or not isinstance(state, dict)
-                or record.get("book_sha256") != digest(canonical(state))
-                or not isinstance(state.get("chapters"), list)):
+        if (
+            record.get("schema") != "inf-writing-checkpoint-v1"
+            or record.get("writing_plan_sha256") != digest(canonical(plan))
+            or not isinstance(state, dict)
+            or record.get("book_sha256") != digest(canonical(state))
+            or not isinstance(state.get("chapters"), list)
+        ):
             raise ValueError("旧版存档完整性校验失败") from exc
         return {"metadata": meta, "state": state, "read_only": True}
     return {"metadata": meta, "state": state}

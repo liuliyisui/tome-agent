@@ -71,6 +71,7 @@ def load_view(book_id):
         **serialize({**service.load_book(book_id), "id": book_id}),
         "cover_version": service.cover_version(book_id),
         "style": service.load_writing_style(book_id),
+        "skills": service.load_book_skills(book_id),
     }
 
 
@@ -262,7 +263,18 @@ class Handler(BaseHTTPRequestHandler):
                 data = json.loads(self.rfile.read(length))
                 if not isinstance(data, dict):
                     raise ValueError("请求必须是 JSON 对象")
-            if not post and path == "/api/config":
+            if not post and path == "/api/skills":
+                self.reply(200, {"skills": service.list_skills()})
+            elif post and path == "/api/skills":
+                self.reply(
+                    201,
+                    {
+                        "skill": service.install_skill(
+                            data.get("name"), data.get("content")
+                        )
+                    },
+                )
+            elif not post and path == "/api/config":
                 cfg = Settings.load(require_key=False)
                 self.reply(
                     200, {"configured": bool(cfg.api_key.strip()), "model": cfg.model}
@@ -360,6 +372,12 @@ class Handler(BaseHTTPRequestHandler):
                             if v["book_id"] != book_id
                         }
                     self.reply(200, result)
+                elif post and len(parts) == 4 and parts[3] == "skills":
+                    with self.server.job_lock:
+                        if book_id in self.server.busy:
+                            raise ValueError("当前章节正在生成，请完成后选择技能")
+                        selected = service.save_book_skills(book_id, data.get("skills"))
+                    self.reply(200, {"skills": selected})
                 elif post and len(parts) == 4 and parts[3] == "style":
                     with self.server.job_lock:
                         if book_id in self.server.busy:

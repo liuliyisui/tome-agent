@@ -159,6 +159,7 @@ const app = createApp({
         reference: "",
       },
       styles: {},
+      skills: [],
       batches: {},
       factChoices: {},
       jobs: {},
@@ -670,6 +671,31 @@ const app = createApp({
         /* Form keeps draft and displays its own error. */
       }
     }
+    async function installSkill(event) {
+      const input = event.target;
+      const file = input.files?.[0];
+      if (!file) return;
+      try {
+        if (file.size > 48000) throw new Error("技能文件过大");
+        const content = await file.text();
+        const match = content.match(/^---\s*\r?\n[\s\S]*?^name:\s*([^\r\n]+)$/m);
+        const name = (match?.[1] || file.name.replace(/\.md$/i, "")).replace(/^['"]|['"]$/g, "").trim();
+        const result = await api("/api/skills", {name, content});
+        state.skills.push(result.skill);
+        notify("技能已安装，请为作品选择后使用。");
+      } catch (e) { notify(e.message); }
+      finally { input.value = ""; }
+    }
+    async function selectSkills(event) {
+      const key = id.value;
+      if (!key) return;
+      const selected = [...event.currentTarget.querySelectorAll('input[type="checkbox"]:checked')].map(x => x.value);
+      try {
+        const result = await api(`${bookUrl(key)}/skills`, {skills: selected});
+        if (id.value === key) state.current.skills = result.skills;
+        notify("技能选择已保存，从下次生成开始生效。");
+      } catch (e) { notify(e.message); event.target.checked = !event.target.checked; }
+    }
     async function prepareGeneration() {
       if (generationDisabled.value) return;
       const key = id.value;
@@ -788,6 +814,8 @@ const app = createApp({
         state.model = cfg.model;
         if (!cfg.configured) openApiConfig();
         await refreshBooks();
+        try { state.skills = (await api("/api/skills")).skills; }
+        catch (e) { notify(`技能列表加载失败：${e.message}`); }
       } catch (e) {
         state.connectionError = true;
         notify(e.message);
@@ -847,6 +875,8 @@ const app = createApp({
       purgeBook,
       approveFirst,
       submitStyle,
+      installSkill,
+      selectSkills,
       prepareGeneration,
       confirmGeneration,
     };

@@ -355,6 +355,17 @@
                   </div>
                 </form>
               </section>
+              <section class="panel style-panel" aria-labelledby="skills-heading">
+                <div class="panel-heading"><h3 id="skills-heading">写作 Skill</h3></div>
+                <p class="muted">导入 SKILL.md，为当前作品选择最多 5 个技能。技能文本用于指导正文写作，不执行其中的脚本或工具。</p>
+                <label>安装技能文件 <input type="file" accept=".md,text/markdown,text/plain" @change="installSkill" :disabled="running" /></label>
+                <div @change="selectSkills">
+                  <p v-if="!state.skills.length" class="muted">尚未安装技能。</p>
+                  <label v-for="skill in state.skills" :key="skill.id" class="skill-option">
+                    <input type="checkbox" :value="skill.id" :checked="(state.current.skills || []).includes(skill.id)" :disabled="running" /> {{skill.name}}
+                  </label>
+                </div>
+              </section>
               <div class="writing-grid">
                 <section class="manuscript panel">
                   <div class="panel-heading">

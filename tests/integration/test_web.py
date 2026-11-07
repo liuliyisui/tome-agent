@@ -17,6 +17,32 @@ from inf_writer.storage import FileStore
 
 
 class WebIntegrationTests(unittest.TestCase):
+    def test_skill_install_and_selection_survive_reload(self):
+        with patch.object(service, "DATA", Path(self.folder.name) / "skill-data"):
+            item = self.request(
+                "/api/skills", {"name": "悬疑", "content": "逐步揭示线索"}
+            )["skill"]
+            self.assertEqual(self.request("/api/skills")["skills"], [item])
+            book = self.request(
+                "/api/books",
+                {
+                    "title": "测试",
+                    "prompt": "故事",
+                    "chapters": 3,
+                    "target_units": 3000,
+                },
+            )
+            book_id = book["state"]["project_id"]
+            self.assertEqual(
+                self.request(f"/api/books/{book_id}/skills", {"skills": [item["id"]]})[
+                    "skills"
+                ],
+                [item["id"]],
+            )
+            self.assertEqual(
+                self.request(f"/api/books/{book_id}")["skills"], [item["id"]]
+            )
+
     def setUp(self):
         self.folder = tempfile.TemporaryDirectory()
         self.books_patch = patch.object(service, "BOOKS", Path(self.folder.name))
