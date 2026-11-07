@@ -12,7 +12,6 @@ from unittest.mock import patch
 
 from inf_writer.domain import ContractError, canonical, digest
 from inf_writer.models import ModelReply
-
 from memory_runtime.narrative_planning import (
     apply_thread_review,
     context,

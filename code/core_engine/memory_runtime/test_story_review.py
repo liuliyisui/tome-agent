@@ -10,7 +10,6 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from inf_writer.domain import ContractError, canonical
 from inf_writer.models import ModelReply
-
 from memory_runtime.story_review import StoryReviewAgent, adjudicate_issues
 
 
@@ -72,7 +71,6 @@ class Replies:
 class EditorialTests(unittest.TestCase):
     def test_real_u_pending_review_shares_evidence_losslessly_under_same_budget(self):
         from inf_writer.light_memory import prepare_review
-
         from memory_runtime.story_review import (
             REVIEW_PROMPT,
             REVIEW_RULES,
@@ -132,7 +130,10 @@ class EditorialTests(unittest.TestCase):
         self,
     ):
         folder = ROOT / "runs/writing_tiered_30000_20261021_c"
-        read = lambda name: json.loads((folder / name).read_text(encoding="utf-8"))
+
+        def read(name):
+            return json.loads((folder / name).read_text(encoding="utf-8"))
+
         original = json.loads(read("call_006.response.json")["content"])
         ctx = read("call_006.request.json")["payload"]
         decisions = [

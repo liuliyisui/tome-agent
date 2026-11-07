@@ -12,7 +12,6 @@ from unittest.mock import patch
 import write_novel as cli
 from inf_writer.domain import canonical
 from inf_writer.models import ModelReply
-
 from memory_runtime.completion import prose_from_reply
 from memory_runtime.test_event_first import EventLocal, event_config
 from memory_runtime.writing import WritingSession, load_resume

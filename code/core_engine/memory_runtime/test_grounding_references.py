@@ -7,7 +7,6 @@ from unittest.mock import patch
 
 from inf_writer.domain import ContractError, canonical, digest, evidence_segments
 from inf_writer.models import ModelReply
-
 from memory_runtime.engine import MemoryEngine
 from memory_runtime.event_first import project_memory
 from memory_runtime.projection_grounding import _decision, ground, verify_grounding
@@ -86,7 +85,7 @@ class GroundingReferenceTests(unittest.TestCase):
                 c = chapter()
                 memory = project_memory(MemoryEngine.empty(), [c], 1, [])
 
-                def reply(rows, n):
+                def reply(rows, n, bad=bad):
                     rows = source_only(rows)
                     for row in rows:
                         row["support"][0]["evidence_position"] = bad

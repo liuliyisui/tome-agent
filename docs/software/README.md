@@ -8,5 +8,9 @@
 
 设计详情见[系统架构](../algorithm/ARCHITECTURE.md)和[使用说明](USER_GUIDE.md)。
 
+Python 代码质量规范与整改记录见[代码质量整改清单](CODE_QUALITY_FIXES.md)（Ruff + Pylance 方案，含配置文件说明与逐条修改对照）。
+
+整改后的复审意见（含优先级排序的遗留问题）见[代码评审报告](CODE_REVIEW_20261107.md)。
+
 首轮缺陷测试的检查表、执行记录与缺陷清单见[测试检查表](QA_DEFECT_TEST_ROUND1.md)。
 

@@ -8,7 +8,6 @@ from pathlib import Path
 import write_novel
 from inf_writer.domain import ContractError, canonical
 from inf_writer.models import ModelReply
-
 from memory_runtime.pipeline import recall_selection
 from memory_runtime.recall_search import searches, selection, source_windows
 from memory_runtime.test_memory_meaning import fixture

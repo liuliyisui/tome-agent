@@ -14,10 +14,9 @@ from inf_writer.chat_provider import ChatCompletionProvider, ProviderError
 from inf_writer.domain import canonical
 from inf_writer.models import ModelReply, ModelRequest
 from inf_writer.trial import RecordedProvider
-from user_runtime import MeteredGateway, run_draft_trial
-
 from memory_runtime.test_event_first import ROOT
 from memory_runtime.writing import WritingSession, load_resume
+from user_runtime import MeteredGateway, run_draft_trial
 
 
 class ProviderStopTests(unittest.TestCase):
@@ -54,17 +53,19 @@ class ProviderStopTests(unittest.TestCase):
             self.assertNotIn("sensitive", canonical(error))
 
     def test_permanent_refusal_latches_across_writer_and_memory_without_new_calls(self):
+        class Provider:
+            calls = 0
+
+            def __init__(self, status):
+                self.status = status
+
+            def complete(self, r):
+                self.calls += 1
+                raise ProviderError("sanitized", http_status=self.status)
+
         for status in (401, 402, 403):
             with self.subTest(status=status):
-
-                class Provider:
-                    calls = 0
-
-                    def complete(self, r):
-                        self.calls += 1
-                        raise ProviderError("sanitized", http_status=status)
-
-                provider = Provider()
+                provider = Provider(status)
                 gateway = MeteredGateway(provider)
                 for role in ("writer", "memory", "planner"):
                     with self.assertRaises(ProviderError):
@@ -74,19 +75,21 @@ class ProviderStopTests(unittest.TestCase):
                 self.assertEqual(gateway.provider_blocked["http_status"], status)
 
     def test_transient_or_payload_error_does_not_globally_latch(self):
+        class Provider:
+            calls = 0
+
+            def __init__(self, status):
+                self.status = status
+
+            def complete(self, r):
+                self.calls += 1
+                if self.calls == 1:
+                    raise ProviderError("sanitized", http_status=self.status)
+                return ModelReply("正文", 1, 1, 0)
+
         for status in (400, 429, 500, 503):
             with self.subTest(status=status):
-
-                class Provider:
-                    calls = 0
-
-                    def complete(self, r):
-                        self.calls += 1
-                        if self.calls == 1:
-                            raise ProviderError("sanitized", http_status=status)
-                        return ModelReply("正文", 1, 1, 0)
-
-                provider = Provider()
+                provider = Provider(status)
                 gateway = MeteredGateway(provider)
                 with self.assertRaises(ProviderError):
                     gateway.complete(ModelRequest("writer", "test", {}, 10))

@@ -11,7 +11,6 @@ from inf_writer.agents import JsonAgent
 from inf_writer.chat_provider import ChatCompletionProvider
 from inf_writer.domain import canonical, digest
 from inf_writer.models import ModelReply, ModelRequest
-
 from memory_runtime.input_budget import fit, select_qualified_state, size
 
 
@@ -196,7 +195,6 @@ class InputOutputBudgetTests(unittest.TestCase):
 
     def test_dependency_wrapper_never_allows_unknown_or_ambiguous_selector(self):
         from inf_writer.domain import ContractError
-
         from memory_runtime.reference_choices import compile_plan
         from memory_runtime.test_stage_repair import public_plan
 

@@ -16,7 +16,6 @@ import write_novel as cli
 from inf_writer.domain import ContractError, canonical
 from inf_writer.light_memory import LightAgent, validate_light_review
 from inf_writer.models import ModelReply, ModelRequest
-
 from memory_runtime.story_review import StoryReferenceGateway
 from memory_runtime.writing import load_resume
 
@@ -213,6 +212,14 @@ class WritingIntegration(unittest.TestCase):
             "active_facts": [{"memory_id": "m_known", "value": "旧事实"}],
             "hard_references": {"fact_1": "旧事实"},
         }
+
+        class Saved:
+            def __init__(self, body):
+                self.body = body
+
+            def complete(self, request):
+                return ModelReply(canonical(self.body), 1, 1, 0)
+
         for identifier, quote in (("m_unknown", "旧事实"), ("m_known", "不存在的证据")):
             body = {
                 "approved": False,
@@ -227,12 +234,7 @@ class WritingIntegration(unittest.TestCase):
                 ],
                 "suggestions": [],
             }
-
-            class Saved:
-                def complete(self, request):
-                    return ModelReply(canonical(body), 1, 1, 0)
-
-            transport = StoryReferenceGateway(Saved())
+            transport = StoryReferenceGateway(Saved(body))
             request = ModelRequest("reviewer", "", payload, 8192)
             parsed = json.loads(transport.complete(request).content)
             with self.assertRaises(ContractError):

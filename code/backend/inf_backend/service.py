@@ -606,11 +606,11 @@ def load_longform(book_id):
             _longform_pointer(book_id).read_text(encoding="utf-8-sig")
         )
         if not isinstance(pointer, dict) or set(pointer) != {"checkpoint"}:
-            raise ValueError("长文本检查点索引格式不正确")
+            raise ValueError("长文本检查点索引格式不正确") from exc
         root = book_path(book_id).resolve()
         checkpoint = (root / pointer["checkpoint"]).resolve()
         if checkpoint == root or not checkpoint.is_relative_to(root):
-            raise ValueError("长文本检查点路径不安全")
+            raise ValueError("长文本检查点路径不安全") from exc
         record = strict_json(checkpoint.read_text(encoding="utf-8-sig"))
         state = record.get("book")
         if (

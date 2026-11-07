@@ -4,6 +4,7 @@ import copy
 from dataclasses import dataclass
 
 from .domain import ContractError, chapter_plan, fields, strict_json, text
+from .memory_output_contract import MEMORY_PROMPT
 from .models import ModelGateway, ModelRequest
 
 PROMPTS = {
@@ -97,8 +98,6 @@ PROMPTS["memory"] += (
     "跨字段撤回与澄清分别更新原有字段，不改名绕过检查；修复反馈给出完整原候选时保留仍正确部分，"
     "不能为避免冲突删光候选或简单转换动作后覆盖旧值。"
 )
-
-from .memory_output_contract import MEMORY_PROMPT
 
 PROMPTS["memory"] = MEMORY_PROMPT
 

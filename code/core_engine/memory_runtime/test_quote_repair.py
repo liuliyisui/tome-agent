@@ -8,7 +8,6 @@ from unittest.mock import patch
 
 from inf_writer.domain import ContractError, canonical
 from inf_writer.models import ModelReply
-
 from memory_runtime.engine import MemoryEngine
 from memory_runtime.event_first import project_memory
 from memory_runtime.projection_grounding import (

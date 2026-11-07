@@ -72,9 +72,9 @@ def estimate(book_id, count=1, approved_first=False):
         base_input *= CALLS_PER_CHAPTER
         base_output += (CALLS_PER_CHAPTER - 1) * CALL_OUTPUT_TOKENS
         basis = (
-            "无历史用量时按每章约 %d 次模型调用估算：输入随每次调用重复计入，"
-            "输出含规划与记忆等阶段的附加 token。重试次数与章节长度会造成偏差，预估仅供参考。"
-            % CALLS_PER_CHAPTER
+            f"无历史用量时按每章约 {CALLS_PER_CHAPTER} 次模型调用估算："
+            "输入随每次调用重复计入，输出含规划与记忆等阶段的附加 token。"
+            "重试次数与章节长度会造成偏差，预估仅供参考。"
         )
     incoming = math.ceil(
         sum(base_input * (1 + min(i * 0.06, 0.6)) for i in range(count))

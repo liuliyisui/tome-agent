@@ -8,7 +8,6 @@ from inf_writer.agents import JsonAgent, validate
 from inf_writer.domain import ContractError
 from inf_writer.models import ModelReply
 from inf_writer.narrative_context import normalize_planner_metadata, parse_planner_json
-
 from memory_runtime.reference_choices import compile_plan
 from memory_runtime.test_event_first import ROOT
 

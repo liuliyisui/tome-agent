@@ -290,10 +290,10 @@ def _compile_plan(
             )
             try:
                 parsed = strict_json(normalized)
-            except ContractError:
+            except ContractError as invalid:
                 raise ContractError(
                     "Malformed reference selector; use a selector object"
-                )
+                ) from invalid
             if not isinstance(parsed, dict):
                 raise ContractError("Reference selector must be an object")
             return resolve(parsed, current, depth + 1)

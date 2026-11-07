@@ -10,7 +10,6 @@ from types import SimpleNamespace
 import write_novel as cli
 from inf_writer.domain import ContractError, canonical, digest
 from inf_writer.models import ModelReply
-
 from memory_runtime.continuity import empty
 from memory_runtime.length_control import adjust
 from memory_runtime.stage_planning import prepare_stages
@@ -41,13 +40,16 @@ class FoundationTests(unittest.TestCase):
             )
 
             class Replay:
+                def __init__(self, reply):
+                    self.reply = reply
+
                 def complete(self, request):
-                    return ModelReply(**r)
+                    return ModelReply(**self.reply)
 
             draft = q["payload"]["current_draft"]
             book = {"goal": "小说", "constraints": []}
             saved, report = adjust(
-                draft, 1, book, q["payload"]["chapter_number"], Replay(), []
+                draft, 1, book, q["payload"]["chapter_number"], Replay(r), []
             )
             self.assertEqual(saved, draft)
             self.assertEqual(report["adjustment"], "kept_original_incomplete_reply")

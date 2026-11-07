@@ -1,0 +1,471 @@
+Report
+======
+20257 statements analysed.
+
+Statistics by type
+------------------
+
++---------+-------+-----------+-----------+------------+---------+
+|type     |number |old number |difference |%documented |%badname |
++=========+=======+===========+===========+============+=========+
+|module   |136    |NC         |NC         |94.12       |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|class    |241    |NC         |NC         |3.73        |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|method   |936    |NC         |NC         |17.20       |0.32     |
++---------+-------+-----------+-----------+------------+---------+
+|function |498    |NC         |NC         |42.57       |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+
+
+
+External dependencies
+---------------------
+::
+
+    check_memory (memory_runtime.test_regression,memory_runtime.writing)
+    inf_backend 
+      \-database (tests.integration.test_postgresql)
+      \-library (tests.integration.test_library,tests.integration.test_postgresql,tests.integration.vue_ui_preview)
+      \-migrate (tests.integration.test_postgresql)
+      \-official_pricing (tests.integration.test_web,tests.integration.vue_ui_preview,tests.unit.test_official_pricing)
+      \-service (tests.integration.test_library,tests.integration.test_postgresql,tests.integration.test_service,tests.integration.test_web,tests.integration.test_writing_style,tests.integration.vue_ui_preview,tests.unit.test_chapter_titles)
+      \-settings (tests.integration.test_library,tests.integration.test_postgresql,tests.integration.test_service,tests.integration.test_web,tests.integration.test_writing_style,tests.integration.vue_ui_preview)
+      \-web (desktop,tests.integration.test_postgresql,tests.integration.test_web,tests.integration.vue_ui_preview)
+    inf_writer 
+      \-agents (memory_runtime.test_event_first,memory_runtime.test_input_output_budget,memory_runtime.test_interface_memory_repair,memory_runtime.test_planner_boundary,memory_runtime.test_stage_format_preservation,memory_runtime.writing,tests.unit.test_chat_provider,tests.unit.test_core,tests.unit.test_drafting,tests.unit.test_langgraph,tests.unit.test_title_sanitization,tests.unit.test_writer_format)
+      \-chat_provider (check_memory,inf_backend.service,memory_runtime.test_input_output_budget,memory_runtime.test_provider_stop,tests.unit.test_chat_provider,user_runtime,write_novel)
+      \-demo (tests.unit.test_chat_provider,tests.unit.test_writer_format)
+      \-domain (check_memory,inf_backend.generation,inf_backend.library,inf_backend.longform_runtime,inf_backend.migrate,inf_backend.service,memory_runtime.chapter_titles,memory_runtime.closure_repair,memory_runtime.completion,memory_runtime.continuity,memory_runtime.engine,memory_runtime.event_contract,memory_runtime.event_first,memory_runtime.event_references,memory_runtime.evidence_access,memory_runtime.identifiers,memory_runtime.input_budget,memory_runtime.interface_contract,memory_runtime.meaning_organizer,memory_runtime.narrative_planning,memory_runtime.narrative_repair,memory_runtime.numeric_grounding,memory_runtime.pipeline,memory_runtime.plan_repair,memory_runtime.projection_grounding,memory_runtime.prose_memory,memory_runtime.prose_rendering,memory_runtime.recall_search,memory_runtime.reference_choices,memory_runtime.semantics,memory_runtime.stage_planning,memory_runtime.state_recovery,memory_runtime.story_closure,memory_runtime.story_review,memory_runtime.test_closure_repair,memory_runtime.test_completion,memory_runtime.test_continuity,memory_runtime.test_ending_intents,memory_runtime.test_event_first,memory_runtime.test_evidence_access,memory_runtime.test_generation_foundations,memory_runtime.test_grounding_references,memory_runtime.test_input_output_budget,memory_runtime.test_interface_memory_repair,memory_runtime.test_memory_meaning,memory_runtime.test_narrative_accountability,memory_runtime.test_narrative_planning,memory_runtime.test_planner_boundary,memory_runtime.test_projection_grounding,memory_runtime.test_projection_transfer,memory_runtime.test_prose_generation,memory_runtime.test_provider_stop,memory_runtime.test_quote_repair,memory_runtime.test_recall_search,memory_runtime.test_regression,memory_runtime.test_scene_memory_coordination,memory_runtime.test_stage_format_preservation,memory_runtime.test_stage_repair,memory_runtime.test_state_recovery,memory_runtime.test_story_closure,memory_runtime.test_story_review,memory_runtime.test_thread_closure,memory_runtime.test_time_calculation,memory_runtime.test_writing,memory_runtime.time_calculation,memory_runtime.writing,memory_runtime.writing_units,tests.integration.test_web,tests.unit.test_chapter_titles,tests.unit.test_chat_provider,tests.unit.test_core,tests.unit.test_drafting,tests.unit.test_langgraph,tests.unit.test_title_sanitization,tests.unit.test_writer_format,user_runtime,write_novel)
+      \-drafting (tests.unit.test_drafting)
+      \-light_memory (memory_runtime.story_review,memory_runtime.test_story_review,memory_runtime.test_writing)
+      \-memory (tests.unit.test_core)
+      \-memory_meaning (memory_runtime.meaning_organizer,memory_runtime.pipeline,memory_runtime.recall_search,memory_runtime.test_memory_meaning,memory_runtime.writing,user_runtime)
+      \-memory_temporality (inf_backend.longform_runtime,inf_backend.web,memory_runtime.meaning_organizer,memory_runtime.pipeline,memory_runtime.semantics,memory_runtime.test_regression,user_runtime)
+      \-models (inf_backend.longform_runtime,inf_backend.service,memory_runtime.chapter_titles,memory_runtime.completion,memory_runtime.continuity,memory_runtime.length_control,memory_runtime.meaning_organizer,memory_runtime.narrative_repair,memory_runtime.pipeline,memory_runtime.plan_repair,memory_runtime.projection_grounding,memory_runtime.recall_search,memory_runtime.semantics,memory_runtime.state_recovery,memory_runtime.story_closure,memory_runtime.story_review,memory_runtime.test_closure_repair,memory_runtime.test_completion,memory_runtime.test_continuity,memory_runtime.test_ending_intents,memory_runtime.test_event_first,memory_runtime.test_evidence_access,memory_runtime.test_generation_foundations,memory_runtime.test_grounding_references,memory_runtime.test_input_output_budget,memory_runtime.test_interface_memory_repair,memory_runtime.test_memory_meaning,memory_runtime.test_narrative_accountability,memory_runtime.test_narrative_planning,memory_runtime.test_planner_boundary,memory_runtime.test_projection_grounding,memory_runtime.test_projection_transfer,memory_runtime.test_prose_generation,memory_runtime.test_provider_stop,memory_runtime.test_quote_repair,memory_runtime.test_recall_search,memory_runtime.test_regression,memory_runtime.test_stage_format_preservation,memory_runtime.test_stage_repair,memory_runtime.test_state_recovery,memory_runtime.test_story_closure,memory_runtime.test_story_review,memory_runtime.test_thread_closure,memory_runtime.test_time_calculation,memory_runtime.test_writing,memory_runtime.time_calculation,tests.integration.test_service,tests.integration.test_writing_style,tests.unit.test_chapter_titles,tests.unit.test_chat_provider,tests.unit.test_core,tests.unit.test_drafting,tests.unit.test_langgraph,tests.unit.test_writer_format,user_runtime)
+      \-narrative_context (memory_runtime.test_event_first,memory_runtime.test_planner_boundary,memory_runtime.writing)
+      \-runtime (tests.unit.test_chat_provider,tests.unit.test_core,tests.unit.test_langgraph,tests.unit.test_writer_format)
+      \-storage (inf_backend.service,tests.integration.test_web,tests.unit.test_chat_provider,tests.unit.test_core,tests.unit.test_langgraph,tests.unit.test_writer_format)
+      \-temporal_agent (memory_runtime.pipeline,memory_runtime.test_regression)
+      \-temporal_transport (memory_runtime.pipeline,memory_runtime.semantics)
+      \-tiered_memory (memory_runtime.completion,memory_runtime.engine,memory_runtime.event_first,memory_runtime.meaning_organizer,memory_runtime.pipeline,memory_runtime.projection_grounding,memory_runtime.prose_memory,memory_runtime.semantics,memory_runtime.story_closure,memory_runtime.test_memory_meaning,memory_runtime.test_projection_grounding,memory_runtime.test_regression,memory_runtime.writing)
+      \-tiered_runtime (memory_runtime.engine,memory_runtime.pipeline,memory_runtime.test_regression)
+      \-trial (check_memory,inf_backend.longform_runtime,memory_runtime.test_provider_stop,user_runtime,write_novel)
+    langgraph 
+      \-graph (inf_writer.runtime,memory_runtime.graph_runtime)
+    memory_runtime 
+      \-chapter_titles (tests.unit.test_chapter_titles)
+      \-completion (tests.unit.test_chapter_titles,tests.unit.test_title_sanitization)
+      \-continuity (tests.unit.test_chapter_titles)
+      \-engine (check_memory)
+      \-event_first (tests.unit.test_chapter_titles)
+      \-narrative_planning (user_runtime)
+      \-narrative_repair (user_runtime)
+      \-projection_grounding (user_runtime)
+      \-prose_memory (inf_backend.longform_runtime,user_runtime)
+      \-story_budget (user_runtime)
+      \-story_closure (user_runtime)
+      \-test_completion (tests.run_engine_regression)
+      \-test_stage_repair (tests.run_engine_regression)
+      \-test_writing (tests.run_engine_regression,tests.unit.test_chapter_titles,tests.unit.test_langgraph)
+      \-writing (inf_backend.longform_runtime,inf_backend.migrate,inf_backend.service,tests.integration.test_writing_style,tests.unit.test_chapter_titles,tests.unit.test_langgraph,user_runtime,write_novel)
+    psycopg (inf_backend.database,tests.integration.test_postgresql)
+      \-conninfo (tests.integration.test_postgresql)
+      \-rows (inf_backend.database)
+      \-sql (tests.integration.test_postgresql)
+      \-types 
+        \-json (inf_backend.database)
+    user_runtime (memory_runtime.test_ending_intents,memory_runtime.test_provider_stop,write_novel)
+    write_novel (memory_runtime.test_completion,memory_runtime.test_ending_intents,memory_runtime.test_event_first,memory_runtime.test_evidence_access,memory_runtime.test_generation_foundations,memory_runtime.test_input_output_budget,memory_runtime.test_interface_memory_repair,memory_runtime.test_memory_meaning,memory_runtime.test_narrative_planning,memory_runtime.test_projection_grounding,memory_runtime.test_prose_generation,memory_runtime.test_provider_stop,memory_runtime.test_recall_search,memory_runtime.test_stage_repair,memory_runtime.test_state_recovery,memory_runtime.test_writing)
+
+
+
+43582 lines have been analyzed
+
+Raw metrics
+-----------
+
++----------+-------+------+---------+-----------+
+|type      |number |%     |previous |difference |
++==========+=======+======+=========+===========+
+|code      |33086  |75.92 |NC       |NC         |
++----------+-------+------+---------+-----------+
+|docstring |7275   |16.69 |NC       |NC         |
++----------+-------+------+---------+-----------+
+|comment   |262    |0.60  |NC       |NC         |
++----------+-------+------+---------+-----------+
+|empty     |2959   |6.79  |NC       |NC         |
++----------+-------+------+---------+-----------+
+
+
+
+Duplication
+-----------
+
++-------------------------+------+---------+-----------+
+|                         |now   |previous |difference |
++=========================+======+=========+===========+
+|nb duplicated lines      |0     |NC       |NC         |
++-------------------------+------+---------+-----------+
+|percent duplicated lines |0.000 |NC       |NC         |
++-------------------------+------+---------+-----------+
+
+
+
+Messages by category
+--------------------
+
++-----------+-------+---------+-----------+
+|type       |number |previous |difference |
++===========+=======+=========+===========+
+|convention |184    |NC       |NC         |
++-----------+-------+---------+-----------+
+|refactor   |706    |NC       |NC         |
++-----------+-------+---------+-----------+
+|warning    |204    |NC       |NC         |
++-----------+-------+---------+-----------+
+|error      |27     |NC       |NC         |
++-----------+-------+---------+-----------+
+
+
+
+% errors / warnings by module
+-----------------------------
+
++----------------------------------------------+------+--------+---------+-----------+
+|module                                        |error |warning |refactor |convention |
++==============================================+======+========+=========+===========+
+|tests.unit.test_chat_provider                 |51.85 |0.00    |0.00     |4.35       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_event_first               |7.41  |4.41    |1.84     |3.80       |
++----------------------------------------------+------+--------+---------+-----------+
+|tests.integration.test_postgresql             |7.41  |1.47    |0.28     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|user_runtime                                  |7.41  |0.49    |0.85     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_projection_grounding      |3.70  |0.98    |0.42     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.domain                             |3.70  |0.49    |2.27     |1.63       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_interface_memory_repair   |3.70  |0.00    |1.27     |0.54       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_story_closure             |3.70  |0.00    |1.27     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.interface_contract             |3.70  |0.00    |1.13     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.light_memory                       |3.70  |0.00    |0.57     |2.17       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_prose_generation          |3.70  |0.00    |0.28     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.story_closure                  |0.00  |5.39    |1.70     |2.17       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.pipeline                       |0.00  |4.90    |3.97     |1.63       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.writing                        |0.00  |4.90    |3.26     |2.17       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_memory_meaning            |0.00  |4.41    |1.27     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_narrative_planning        |0.00  |4.41    |1.13     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_regression                |0.00  |3.92    |3.12     |4.35       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.graph_runtime                  |0.00  |3.43    |0.00     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_recall_search             |0.00  |2.94    |0.42     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|tests.integration.test_service                |0.00  |2.94    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_generation_foundations    |0.00  |2.45    |1.13     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_backend.web                               |0.00  |2.45    |0.99     |1.09       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_provider_stop             |0.00  |2.45    |0.71     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_closure_repair            |0.00  |2.45    |0.57     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_scene_memory_coordination |0.00  |2.45    |0.00     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.drafting                           |0.00  |1.96    |1.70     |1.09       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.closure_repair                 |0.00  |1.96    |0.57     |0.54       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_evidence_access           |0.00  |1.96    |0.28     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|tests.integration.test_writing_style          |0.00  |1.96    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_quote_repair              |0.00  |1.96    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.meaning_organizer              |0.00  |1.47    |1.98     |3.26       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.tiered_runtime                     |0.00  |1.47    |0.99     |1.09       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_backend.service                           |0.00  |1.47    |0.85     |1.63       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.narrative_repair               |0.00  |1.47    |0.71     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|tests.unit.test_writer_format                 |0.00  |1.47    |0.57     |3.26       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_narrative_accountability  |0.00  |1.47    |0.57     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_backend.migrate                           |0.00  |1.47    |0.42     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.chapter_titles                 |0.00  |1.47    |0.28     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_writing                   |0.00  |0.98    |1.84     |3.26       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.recall_search                  |0.00  |0.98    |0.71     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_continuity                |0.00  |0.98    |0.42     |1.63       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.runtime                            |0.00  |0.98    |0.42     |1.09       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_backend.official_pricing                  |0.00  |0.98    |0.42     |1.09       |
++----------------------------------------------+------+--------+---------+-----------+
+|tests.integration.vue_ui_preview              |0.00  |0.98    |0.28     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_time_calculation          |0.00  |0.98    |0.14     |1.63       |
++----------------------------------------------+------+--------+---------+-----------+
+|tests.integration.test_web                    |0.00  |0.98    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_thread_closure            |0.00  |0.98    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_grounding_references      |0.00  |0.98    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_backend.library                           |0.00  |0.98    |0.00     |0.54       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.narrative_planning             |0.00  |0.49    |2.27     |4.35       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.reference_choices              |0.00  |0.49    |2.27     |2.17       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.projection_grounding           |0.00  |0.49    |1.98     |3.26       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.story_review                   |0.00  |0.49    |1.98     |2.17       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.state_recovery                 |0.00  |0.49    |1.56     |2.17       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.continuity                     |0.00  |0.49    |1.42     |2.17       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_stage_repair              |0.00  |0.49    |0.99     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|write_novel                                   |0.00  |0.49    |0.85     |4.89       |
++----------------------------------------------+------+--------+---------+-----------+
+|check_memory                                  |0.00  |0.49    |0.57     |2.17       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_state_recovery            |0.00  |0.49    |0.57     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_completion                |0.00  |0.49    |0.57     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_backend.longform_runtime                  |0.00  |0.49    |0.57     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|verify_windows                                |0.00  |0.49    |0.42     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|tests.unit.test_langgraph                     |0.00  |0.49    |0.42     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_input_output_budget       |0.00  |0.49    |0.42     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.length_control                 |0.00  |0.49    |0.42     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_backend.database                          |0.00  |0.49    |0.42     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.repair_pilot                       |0.00  |0.49    |0.28     |0.54       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_projection_transfer       |0.00  |0.49    |0.28     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_planner_boundary          |0.00  |0.49    |0.28     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.narrative_context                  |0.00  |0.49    |0.00     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|tests.unit.__init__                           |0.00  |0.00    |12.75    |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.event_first                    |0.00  |0.00    |3.40     |2.17       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.semantics                      |0.00  |0.00    |1.27     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.tiered_memory                      |0.00  |0.00    |1.27     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.temporal_agent                     |0.00  |0.00    |1.27     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.agents                             |0.00  |0.00    |1.13     |3.80       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.semantic_review                    |0.00  |0.00    |1.13     |0.54       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.trial                              |0.00  |0.00    |0.99     |1.09       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.judgment_review                    |0.00  |0.00    |0.99     |0.54       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.chat_provider                      |0.00  |0.00    |0.85     |1.63       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.plan_repair                    |0.00  |0.00    |0.85     |1.09       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.review_transport                   |0.00  |0.00    |0.85     |1.09       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.completion                     |0.00  |0.00    |0.85     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.time_calculation               |0.00  |0.00    |0.71     |0.54       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.memory_submission                  |0.00  |0.00    |0.71     |0.54       |
++----------------------------------------------+------+--------+---------+-----------+
+|tests.unit.test_core                          |0.00  |0.00    |0.57     |2.72       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.event_contract                 |0.00  |0.00    |0.57     |1.09       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.locator_review                     |0.00  |0.00    |0.57     |0.54       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_stage_format_preservation |0.00  |0.00    |0.57     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.memory_temporality                 |0.00  |0.00    |0.57     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.memory                             |0.00  |0.00    |0.57     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.claim_updates                      |0.00  |0.00    |0.57     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|tests.unit.test_drafting                      |0.00  |0.00    |0.42     |2.17       |
++----------------------------------------------+------+--------+---------+-----------+
+|desktop                                       |0.00  |0.00    |0.42     |0.54       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.input_budget                   |0.00  |0.00    |0.42     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.models                             |0.00  |0.00    |0.42     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.memory_output_contract             |0.00  |0.00    |0.42     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.memory_meaning                     |0.00  |0.00    |0.42     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.engine                         |0.00  |0.00    |0.28     |3.26       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_story_review              |0.00  |0.00    |0.28     |2.17       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.review_repair                      |0.00  |0.00    |0.28     |1.09       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.review_contract                    |0.00  |0.00    |0.28     |0.54       |
++----------------------------------------------+------+--------+---------+-----------+
+|tests.unit.test_chapter_titles                |0.00  |0.00    |0.28     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.evidence_access                |0.00  |0.00    |0.28     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_backend.settings                          |0.00  |0.00    |0.28     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_backend.generation                        |0.00  |0.00    |0.14     |2.17       |
++----------------------------------------------+------+--------+---------+-----------+
+|package_project                               |0.00  |0.00    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.test_ending_intents            |0.00  |0.00    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.story_budget                   |0.00  |0.00    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.stage_planning                 |0.00  |0.00    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|memory_runtime.event_references               |0.00  |0.00    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.temporal_transport                 |0.00  |0.00    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.review_state                       |0.00  |0.00    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.ports                              |0.00  |0.00    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.demo                               |0.00  |0.00    |0.14     |0.00       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.review_policy                      |0.00  |0.00    |0.00     |1.09       |
++----------------------------------------------+------+--------+---------+-----------+
+|package_windows                               |0.00  |0.00    |0.00     |0.54       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_writer.memory_action_contract             |0.00  |0.00    |0.00     |0.54       |
++----------------------------------------------+------+--------+---------+-----------+
+|inf_backend.pg_library                        |0.00  |0.00    |0.00     |0.54       |
++----------------------------------------------+------+--------+---------+-----------+
+
+
+
+Messages
+--------
+
++-------------------------------+------------+
+|message id                     |occurrences |
++===============================+============+
+|too-few-public-methods         |151         |
++-------------------------------+------------+
+|too-complex                    |104         |
++-------------------------------+------------+
+|unidiomatic-typecheck          |103         |
++-------------------------------+------------+
+|too-many-locals                |102         |
++-------------------------------+------------+
+|too-many-branches              |72          |
++-------------------------------+------------+
+|wrong-import-position          |63          |
++-------------------------------+------------+
+|duplicate-code                 |63          |
++-------------------------------+------------+
+|too-many-statements            |54          |
++-------------------------------+------------+
+|unused-argument                |51          |
++-------------------------------+------------+
+|protected-access               |45          |
++-------------------------------+------------+
+|broad-exception-caught         |40          |
++-------------------------------+------------+
+|too-many-arguments             |30          |
++-------------------------------+------------+
+|cyclic-import                  |27          |
++-------------------------------+------------+
+|too-many-nested-blocks         |20          |
++-------------------------------+------------+
+|no-member                      |19          |
++-------------------------------+------------+
+|too-many-positional-arguments  |18          |
++-------------------------------+------------+
+|unused-variable                |17          |
++-------------------------------+------------+
+|cell-var-from-loop             |17          |
++-------------------------------+------------+
+|consider-using-with            |15          |
++-------------------------------+------------+
+|use-dict-literal               |13          |
++-------------------------------+------------+
+|raise-missing-from             |13          |
++-------------------------------+------------+
+|too-many-boolean-expressions   |10          |
++-------------------------------+------------+
+|inconsistent-return-statements |9           |
++-------------------------------+------------+
+|too-many-public-methods        |8           |
++-------------------------------+------------+
+|too-many-instance-attributes   |8           |
++-------------------------------+------------+
+|arguments-renamed              |8           |
++-------------------------------+------------+
+|too-many-lines                 |7           |
++-------------------------------+------------+
+|invalid-name                   |7           |
++-------------------------------+------------+
+|import-error                   |6           |
++-------------------------------+------------+
+|attribute-defined-outside-init |5           |
++-------------------------------+------------+
+|redefined-outer-name           |3           |
++-------------------------------+------------+
+|expression-not-assigned        |3           |
++-------------------------------+------------+
+|too-many-return-statements     |2           |
++-------------------------------+------------+
+|no-self-argument               |2           |
++-------------------------------+------------+
+|use-maxsplit-arg               |1           |
++-------------------------------+------------+
+|unnecessary-lambda-assignment  |1           |
++-------------------------------+------------+
+|ungrouped-imports              |1           |
++-------------------------------+------------+
+|subprocess-run-check           |1           |
++-------------------------------+------------+
+|global-statement               |1           |
++-------------------------------+------------+
+|consider-using-dict-items      |1           |
++-------------------------------+------------+
+
+
+
+
+-----------------------------------
+Your code has been rated at 9.39/10
+
