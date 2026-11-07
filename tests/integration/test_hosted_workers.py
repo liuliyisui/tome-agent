@@ -60,3 +60,5 @@ class HostedWorkerTests(unittest.TestCase):
                 self.assertNotIn("a" * 32, pool.workers)
             finally:
                 pool.close()
+            with self.assertRaises(WorkerUnavailable):
+                pool.get("d" * 32)

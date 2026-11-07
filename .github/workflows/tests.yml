@@ -66,6 +66,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: python -m pip install -r code/backend/requirements.txt -r tests/requirements.txt
+      - run: python -m playwright install --with-deps chromium
       - run: python -m pytest -p no:cacheprovider -q tests/unit/test_accounts.py tests/integration/test_hosted.py tests/integration/test_hosted_workers.py
         env:
           DATABASE_URL: ''

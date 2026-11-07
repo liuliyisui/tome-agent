@@ -573,7 +573,9 @@ def main():
         if database.enabled():
             database.initialize()
         allowed_hosts = [
-            item.strip().lower() for item in args.allowed_hosts.split(",") if item.strip()
+            item.strip().lower()
+            for item in args.allowed_hosts.split(",")
+            if item.strip()
         ]
         server = WebServer((args.host, args.port), allowed_hosts=allowed_hosts)
     except Exception as exc:

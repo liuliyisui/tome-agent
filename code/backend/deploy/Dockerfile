@@ -1,5 +1,5 @@
 # Tome Agent — Linux 部署镜像
-# 构建：docker build -t tome-agent .
+# 构建：docker build -f code/backend/deploy/Dockerfile -t tome-agent .
 # 运行前请设置 DEEPSEEK_API_KEY 与 TOME_ALLOWED_HOSTS（见 docs/software/DEPLOY.md）
 FROM python:3.11-slim
 

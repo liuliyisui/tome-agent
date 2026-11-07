@@ -20,6 +20,7 @@ LOGIN_PAGE = """<!doctype html><html lang="zh-CN"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tome 登录</title><body><main><h1>Tome 故事工作室</h1>
 <p>使用账号密码登录，模型 API Key 在登录后单独配置。</p>
+<p>用户名为 3～32 位英文字母、数字或下划线；密码为 15～128 位。</p>
 <form id="account"><label>用户名 <input name="username" autocomplete="username" required></label>
 <label>密码 <input name="password" type="password" minlength="15" maxlength="128"
 autocomplete="current-password" required></label>
@@ -38,9 +39,12 @@ document.querySelector('#account').addEventListener('submit', async event => {
   } catch (_) { document.querySelector('#message').textContent = '连接失败，请稍后重试'; }
 });</script></main></body></html>"""
 
-LOGOUT_SCRIPT = b"""const b=document.createElement('button');b.textContent='\xe9\x80\x80\xe5\x87\xba\xe7\x99\xbb\xe5\xbd\x95';
+LOGOUT_SCRIPT = """const b=document.createElement('button');b.type='button';b.textContent='退出登录';
 b.addEventListener('click',async()=>{await fetch('/_account/logout',{method:'POST'});location.assign('/');});
-document.body.prepend(b);"""
+const place=()=>{const target=document.querySelector('dialog[open]')||document.body;
+  if(b.parentNode!==target)target.prepend(b);};
+new MutationObserver(place).observe(document.documentElement,{subtree:true,childList:true,
+  attributes:true,attributeFilter:['open']});place();""".encode()
 
 
 class HostedServer(ThreadingHTTPServer):
@@ -258,8 +262,11 @@ def main():
     args = parser.parse_args()
     origin = os.environ["TOME_PUBLIC_ORIGIN"]
     home = os.environ["TOME_DATA_HOME"]
+    worker_limit = int(os.environ.get("TOME_WORKER_LIMIT", "3"))
+    if not 1 <= worker_limit <= 8:
+        raise ValueError("TOME_WORKER_LIMIT 必须在 1 到 8 之间")
     configure_logging(Path(home) / "logs", "hosted.log")
-    server = HostedServer(("127.0.0.1", args.port), origin, home)
+    server = HostedServer(("127.0.0.1", args.port), origin, home, worker_limit)
     logger.info("Hosted server started")
     try:
         server.serve_forever()

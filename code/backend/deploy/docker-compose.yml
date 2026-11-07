@@ -4,7 +4,9 @@
 #   TOME_ALLOWED_HOSTS=tome.example.com
 services:
   tome:
-    build: .
+    build:
+      context: ../../..
+      dockerfile: code/backend/deploy/Dockerfile
     image: tome-agent:local
     restart: unless-stopped
     ports:
@@ -17,7 +19,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:-}
     volumes:
       # 作品与检查点必须持久化
-      - ./code/backend/data:/app/code/backend/data
+      - ../../../code/backend/data:/app/code/backend/data
 
   # 可选：需要 PostgreSQL 时用 profile 启动：
   #   docker compose --profile postgres up -d

@@ -8,6 +8,11 @@ import unittest
 
 from inf_backend.hosted import HostedServer
 
+try:
+    from playwright.sync_api import sync_playwright
+except ImportError:
+    sync_playwright = None
+
 
 class HostedTests(unittest.TestCase):
     def setUp(self):
@@ -141,3 +146,22 @@ class HostedTests(unittest.TestCase):
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
         self.assertEqual(self.request(f"/api/books/{book_id}", cookie=cookie)[0], 200)
+
+    @unittest.skipUnless(sync_playwright, "Install playwright for browser tests")
+    def test_browser_can_register_open_studio_and_log_out(self):
+        # Chromium treats localhost as secure; production requires HTTPS.
+        self.server.host = f"127.0.0.1:{self.server.server_port}"
+        self.server.origin = f"http://{self.server.host}"
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            try:
+                page = browser.new_page()
+                page.goto(self.server.origin)
+                page.locator('input[name="username"]').fill("browser_writer")
+                page.locator('input[name="password"]').fill("a strong password")
+                page.get_by_role("button", name="注册").click()
+                page.wait_for_selector("#my-works")
+                page.get_by_role("button", name="退出登录").click()
+                page.wait_for_selector('input[name="username"]')
+            finally:
+                browser.close()

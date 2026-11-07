@@ -7,6 +7,7 @@ import queue
 import re
 import subprocess
 import sys
+import sysconfig
 import threading
 import time
 from pathlib import Path
@@ -26,12 +27,15 @@ class WorkerPool:
         self.workers = {}
         self.used = {}
         self.inflight = {}
+        self.closed = False
         self.lock = threading.Lock()
 
     def get(self, user_id):
         if not isinstance(user_id, str) or not re.fullmatch(r"[0-9a-f]{32}", user_id):
             raise ValueError("无效用户")
         with self.lock:
+            if self.closed:
+                raise WorkerUnavailable("用户服务已关闭")
             for key, (process, _) in list(self.workers.items()):
                 if process.poll() is not None:
                     self.workers.pop(key)
@@ -67,14 +71,19 @@ class WorkerPool:
             }
             env["HOME"] = str(home)
             code = Path(__file__).resolve().parents[2]
-            env["PYTHONPATH"] = os.pathsep.join(
-                (str(code / "backend"), str(code / "core_engine"))
-            )
+            paths = [str(code / "backend"), str(code / "core_engine")]
+            executable = sys.executable
+            if os.name == "nt":
+                # Windows venv launchers can spawn a second interpreter that
+                # outlives the launcher when it is terminated.
+                executable = sys._base_executable
+                paths.append(sysconfig.get_paths()["purelib"])
+            env["PYTHONPATH"] = os.pathsep.join(paths)
             env["PYTHONUNBUFFERED"] = "1"
             env["TOME_DATA_HOME"] = str(home)
             env["DATABASE_URL"] = ""
             process = subprocess.Popen(
-                [sys.executable, "-m", "inf_backend.web", "--port", "0"],
+                [executable, "-m", "inf_backend.web", "--port", "0"],
                 env=env,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL,
@@ -135,6 +144,7 @@ class WorkerPool:
 
     def close(self):
         with self.lock:
+            self.closed = True
             for process, _ in self.workers.values():
                 if process.poll() is None:
                     process.terminate()

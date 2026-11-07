@@ -1,5 +1,7 @@
 # 部署到服务器（对外提供网址）
 
+> 本文保留的是**单用户旧部署方案**，不能隔离不同用户的作品或模型密钥。多人服务器请使用 [Linux 多用户部署说明](LINUX_HOSTED.md)。部署示例文件现位于 `code/backend/deploy/`。
+
 本项目原本面向本机单用户，现已支持对外部署：后端可用 `--host` / `TOME_ALLOWED_HOSTS` 放行域名，前端无需改动。
 
 > ⚠️ 该应用**没有账号体系**。暴露到公网前必须：
@@ -30,14 +32,14 @@ TOME_ALLOWED_HOSTS=tome.example.com
 EOF
 
 # 构建并启动（容器只监听 127.0.0.1:8765）
-sudo docker compose up -d --build
+sudo docker compose --env-file .env -f code/backend/deploy/docker-compose.yml up -d --build
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8765/   # 期望 200
 ```
 
-配置 Nginx（使用仓库里的 `deploy/nginx.conf`）：
+配置 Nginx（使用仓库里的 `code/backend/deploy/nginx.conf`）：
 
 ```bash
-sudo cp deploy/nginx.conf /etc/nginx/sites-available/tome
+sudo cp code/backend/deploy/nginx.conf /etc/nginx/sites-available/tome
 sudo ln -sf /etc/nginx/sites-available/tome /etc/nginx/sites-enabled/tome
 sudo htpasswd -c /etc/nginx/.htpasswd 你的用户名      # 设置访问密码
 sudo certbot --nginx -d tome.example.com              # 申请 HTTPS 证书
@@ -46,7 +48,7 @@ sudo nginx -t && sudo systemctl reload nginx
 
 现在访问 `https://tome.example.com` 即可（会先弹出 Basic Auth 登录框）。
 
-> 需要 PostgreSQL 时：`docker compose --profile postgres up -d`，并在 `.env` 里设置
+> 需要 PostgreSQL 时：`docker compose --env-file .env -f code/backend/deploy/docker-compose.yml --profile postgres up -d`，并在 `.env` 里设置
 > `POSTGRES_PASSWORD=...` 与 `DATABASE_URL=postgresql://tome:同一个密码@postgres:5432/tome`。
 
 ## 三、方案 B：systemd + Nginx（不用 Docker）
@@ -66,10 +68,10 @@ sudo -u tome cp code/backend/.env.example code/backend/.env
 sudo -u tome sed -i 's/^DEEPSEEK_API_KEY=.*/DEEPSEEK_API_KEY=sk-你的key/' code/backend/.env
 ```
 
-安装服务（修改 `deploy/tome-agent.service` 里的域名后复制）：
+安装服务（修改 `code/backend/deploy/tome-agent.service` 里的域名后复制）：
 
 ```bash
-sudo cp deploy/tome-agent.service /etc/systemd/system/tome-agent.service
+sudo cp code/backend/deploy/tome-agent.service /etc/systemd/system/tome-agent.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now tome-agent
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8765/   # 期望 200
@@ -92,7 +94,7 @@ cloudflared tunnel --url http://127.0.0.1:8765
 # systemd 部署：编辑 Environment=TOME_ALLOWED_HOSTS=xxxx-yyyy.trycloudflare.com
 sudo systemctl edit --full tome-agent && sudo systemctl restart tome-agent
 # Docker 部署：把 .env 的 TOME_ALLOWED_HOSTS 改成该域名后
-docker compose up -d
+docker compose --env-file .env -f code/backend/deploy/docker-compose.yml up -d
 ```
 
 > 快速隧道的域名每次重启都会变，适合临时演示；长期使用请配置命名隧道或直接用域名。
