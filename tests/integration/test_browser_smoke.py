@@ -16,7 +16,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from inf_backend import official_pricing, service
+from inf_backend import official_pricing, service, settings
 from inf_backend.web import WebServer
 
 try:
@@ -47,6 +47,14 @@ class BrowserSmokeTests(unittest.TestCase):
         self.folder = tempfile.TemporaryDirectory()
         self.books_patch = patch.object(service, "BOOKS", Path(self.folder.name))
         self.books_patch.start()
+        self.data_patch = patch.object(
+            service, "DATA", Path(self.folder.name) / "test-data"
+        )
+        self.data_patch.start()
+        self.settings_patch = patch.object(
+            settings, "BACKEND_ROOT", Path(self.folder.name)
+        )
+        self.settings_patch.start()
         self.prices_patch = patch.object(
             official_pricing,
             "get_table",
@@ -57,7 +65,14 @@ class BrowserSmokeTests(unittest.TestCase):
             },
         )
         self.prices_patch.start()
-        self.key_patch = patch.dict(os.environ, {"DEEPSEEK_API_KEY": "sk-" + "a" * 32})
+        self.key_patch = patch.dict(
+            os.environ,
+            {
+                "DEEPSEEK_API_KEY": "sk-" + "a" * 32,
+                "DATABASE_URL": "",
+                "TOME_PROVIDER": "",
+            },
+        )
         self.key_patch.start()
         self.server = WebServer(("127.0.0.1", 0))
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
@@ -77,6 +92,8 @@ class BrowserSmokeTests(unittest.TestCase):
         self.thread.join()
         self.key_patch.stop()
         self.books_patch.stop()
+        self.data_patch.stop()
+        self.settings_patch.stop()
         self.prices_patch.stop()
         self.folder.cleanup()
 
@@ -197,3 +214,35 @@ class BrowserSmokeTests(unittest.TestCase):
         page = self.open_library()
         page.wait_for_selector(".works-empty")
         self.assertEqual(page.text_content("#book-count").strip(), "0")
+
+    def test_create_generate_save_and_reload_offline(self):
+        """Scenario: a writer creates a book and recovers the generated chapter."""
+        from memory_runtime.test_completion import Faults
+
+        model = Faults()
+        with (
+            patch.object(service, "DATA", Path(self.folder.name) / "test-data"),
+            patch.object(service, "_gateway", return_value=(model, None)),
+        ):
+            self.open_create_dialog()
+            self.fill_create_form()
+            self.page.click("#create-submit")
+            self.page.wait_for_selector("#book-workspace")
+            self.page.click("#generate")
+            self.page.wait_for_selector("#estimate-dialog[open]")
+            self.page.click("#estimate-continue")
+            self.page.wait_for_function(
+                "() => document.querySelector('#stat-chapters')?.textContent.includes('1 / 1')",
+                timeout=30000,
+            )
+            self.assertIn("甲", self.page.inner_text("#chapter-body"))
+            self.assertTrue(any(request.role == "writer" for request in model.requests))
+            book_id = self.page.locator("#export").get_attribute("href").split("/")[3]
+            self.page.wait_for_load_state("networkidle")
+            self.page.reload()
+            self.page.wait_for_selector("#my-works")
+            self.page.click("#my-works")
+            self.page.locator(f'[data-book="{book_id}"]').first.click()
+            self.page.wait_for_selector("#book-workspace")
+            self.assertIn("甲", self.page.inner_text("#chapter-body"))
+            self.page.wait_for_load_state("networkidle")

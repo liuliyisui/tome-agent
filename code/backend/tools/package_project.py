@@ -4,7 +4,7 @@ from hashlib import sha256
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
-project = Path(__file__).resolve().parents[2]
+project = Path(__file__).resolve().parents[3]
 destination = project.parent / "tome-agent-inf.zip"
 allowed = {"README.md", "docs", "code", "tests", ".github"}
 files = []

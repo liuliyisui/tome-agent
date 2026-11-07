@@ -5,7 +5,7 @@ from hashlib import sha256
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
-project = Path(__file__).resolve().parents[2]
+project = Path(__file__).resolve().parents[3]
 dist = project / "code" / "backend" / "data" / "dist"
 bundle = dist / "TomeAgent"
 if not (bundle / "TomeAgent.exe").is_file():
