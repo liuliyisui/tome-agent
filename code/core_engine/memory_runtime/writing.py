@@ -82,8 +82,9 @@ def _verify_resume_envelope(record, plan):
 
 
 def _verify_resume_memory_coverage(book):
-    from .narrative_planning import verify_ledger
     from inf_writer.memory_meaning import verify_meanings
+
+    from .narrative_planning import verify_ledger
 
     verify_ledger(book)
     verify_meanings(book["memory"], book["chapters"])
@@ -118,9 +119,7 @@ def _verify_resume_event_history(book, done):
     for chapter in chapters:
         expected = _verify_resume_chapter(book, chapter, done, expected)
     if digest(canonical(book["writing_state"])) != expected:
-        raise ContractError(
-            "Current world state differs from committed event outcomes"
-        )
+        raise ContractError("Current world state differs from committed event outcomes")
     _verify_prepared_resume_events(book, chapters, expected)
 
 
@@ -167,21 +166,15 @@ def _verify_resume_projection(book, chapter, done, commit):
     if chapter["number"] > done:
         return
     if (
-        book["memory"]
-        .get("canonical_commits", {})
-        .get(str(chapter["number"]))
+        book["memory"].get("canonical_commits", {}).get(str(chapter["number"]))
         != commit["sha256"]
     ):
-        raise ContractError(
-            "Memory projection does not match committed event source"
-        )
+        raise ContractError("Memory projection does not match committed event source")
     if chapter.get("prose_policy") == "unchecked":
         from .prose_memory import verify_prose_coverage
 
         if not verify_prose_coverage(book["memory"], chapter):
-            raise ContractError(
-                "Saved prose memory coverage is missing or damaged"
-            )
+            raise ContractError("Saved prose memory coverage is missing or damaged")
 
 
 def _verify_resume_recoveries(book, chapter, expected):

@@ -17,7 +17,9 @@ def main():
     from memory_runtime.writing import runtime_hashes
 
     current = runtime_hashes()
-    pointer = json.loads((folder / "longform-current.json").read_text(encoding="utf-8-sig"))
+    pointer = json.loads(
+        (folder / "longform-current.json").read_text(encoding="utf-8-sig")
+    )
     checkpoint = folder / pointer["checkpoint"]
     if not checkpoint.exists():
         print("MISSING", checkpoint)
