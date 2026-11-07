@@ -275,6 +275,11 @@ class WebIntegrationTests(unittest.TestCase):
         self.assertEqual(completed["job"]["status"], "completed")
         self.assertEqual(completed["job"]["completed"], 1)
 
+    def test_favicon_request_is_answered_without_error(self):
+        with self.client.open(self.base + "/favicon.ico", timeout=5) as response:
+            self.assertEqual(response.status, 204)
+            self.assertEqual(response.read(), b"")
+
     def test_reject_cross_origin_and_path_escape(self):
         with self.assertRaises(HTTPError) as error:
             self.request("/api/books", {}, {"Origin": "https://example.com"})

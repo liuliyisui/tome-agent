@@ -270,6 +270,10 @@ class Handler(BaseHTTPRequestHandler):
                     self.reply(200, body, "text/markdown; charset=utf-8", attachment=True)
                 else:
                     self.reply(404, {"error": "接口不存在"})
+            elif not post and path == "/favicon.ico":
+                self.send_response(204)
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.end_headers()
             elif not post and path in ("/", "/app.js", "/style.css", "/vue.runtime.global.prod.js", "/vue-components.js"):
                 name = "index.html" if path == "/" else path[1:]
                 mime = "text/css" if name.endswith(".css") else "text/javascript" if name.endswith(".js") else "text/html"

@@ -3,6 +3,7 @@ import json
 import os
 import re
 import tempfile
+import time
 from dataclasses import replace
 from collections import Counter
 from contextlib import contextmanager
@@ -58,6 +59,52 @@ def _atomic_json(path, value):
             os.unlink(name)
 
 
+def _process_alive(pid):
+    if pid <= 0:
+        return False
+    if os.name == "nt":
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        kernel32.OpenProcess.restype = ctypes.c_void_p
+        kernel32.OpenProcess.argtypes = (ctypes.c_ulong, ctypes.c_int, ctypes.c_ulong)
+        kernel32.CloseHandle.argtypes = (ctypes.c_void_p,)
+        # Never use os.kill on Windows: any signal other than Ctrl-C terminates.
+        handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return False
+        try:
+            code = ctypes.c_ulong()
+            return bool(kernel32.GetExitCodeProcess(handle, ctypes.byref(code))) and code.value == 259
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _stale_lock(lock):
+    """A lock left by a killed process is recoverable; a live owner is not."""
+    try:
+        raw = lock.read_text(encoding="utf-8").strip()
+    except OSError:
+        return False
+    try:
+        pid = int(raw)
+    except ValueError:
+        pid = None
+    if pid is not None:
+        return not _process_alive(pid)
+    # Empty or malformed: tolerate a writer killed between create and write.
+    try:
+        return time.time() - lock.stat().st_mtime > 60
+    except OSError:
+        return False
+
+
 @contextmanager
 def operation_lock(folder):
     folder = Path(folder)
@@ -70,7 +117,16 @@ def operation_lock(folder):
     try:
         handle = lock.open("x", encoding="utf-8")
     except FileExistsError:
-        raise ValueError("此作品有操作正在进行；确认没有运行任务后才能清理 operation.lock") from None
+        if not _stale_lock(lock):
+            raise ValueError("此作品有操作正在进行；确认没有运行任务后才能清理 operation.lock") from None
+        try:
+            lock.unlink()
+        except FileNotFoundError:
+            pass
+        try:
+            handle = lock.open("x", encoding="utf-8")
+        except FileExistsError:
+            raise ValueError("此作品有操作正在进行；确认没有运行任务后才能清理 operation.lock") from None
     try:
         with handle:
             handle.write(str(os.getpid()))

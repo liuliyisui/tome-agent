@@ -24,6 +24,14 @@ class StageRevisionRequested(Exception):
     """Writer requests replanning before any chapter prose is committed."""
 
 
+def record_future_plan(book,proposal,max_chapters):
+    """Keep the saved outline inside the book's configured chapter cap."""
+    for future in proposal.get('future_updates',[]):
+        number=future.get('number')
+        if type(number) is int and number<=max_chapters:
+            book['plan'][str(number)]=copy.deepcopy(future)
+
+
 def runtime_hashes():
     from check_memory import source_hashes,sha,ROOT
     from importlib.metadata import version
@@ -752,7 +760,7 @@ class WritingSession:
         del self.book['prepared_events'][key]
         self.book['plan'][key]={k:proposal[k] for k in ('number','title','brief')}
         self.book['plan'][key]['title']=title
-        for future in proposal['future_updates']:self.book['plan'][str(future['number'])]=copy.deepcopy(future)
+        record_future_plan(self.book,proposal,self.plan['max_chapters'])
         row.update(status='DRAFT_UNCHECKED',memory_update_status='PENDING',writing_invariants='EVENT_DATA_COMMITTED_PROSE_UNCHECKED',
             event_commit_sha256=prepared['commit']['sha256'],
             story_review_status='PENDING' if self.plan.get('story_review_enabled',True) else 'DISABLED')
@@ -818,7 +826,7 @@ class WritingSession:
         self.book['writing_state']=writing_state
         self.book['plan'][str(number)]={k:proposal[k] for k in ('number','title','brief')}
         self.book['plan'][str(number)]['title']=title
-        for future in proposal['future_updates']:self.book['plan'][str(future['number'])]=copy.deepcopy(future)
+        record_future_plan(self.book,proposal,self.plan['max_chapters'])
         row.update(status='DRAFT_UNCHECKED',memory_update_status='PENDING',stop_reason=None,
             writing_invariants='VALIDATED_DECLARATIONS',story_review_status='PENDING' if self.plan.get('story_review_enabled',True) else 'DISABLED')
         self.book['outcomes'].append(row)
