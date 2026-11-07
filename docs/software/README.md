@@ -8,3 +8,5 @@
 
 设计详情见[系统架构](../algorithm/ARCHITECTURE.md)和[使用说明](USER_GUIDE.md)。
 
+首轮缺陷测试的检查表、执行记录与缺陷清单见[测试检查表](QA_DEFECT_TEST_ROUND1.md)。
+
