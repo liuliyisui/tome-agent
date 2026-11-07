@@ -2,7 +2,6 @@
 
 import argparse
 import json
-import logging
 import os
 import sys
 import threading
@@ -15,7 +14,8 @@ from uuid import uuid4
 from inf_writer.memory_temporality import current_claim, has_current_content
 
 from . import database, generation, library, service
-from .settings import Settings, configure_api_key, configure_model
+from .logging_setup import configure_logging, log_failure, logger
+from .settings import BACKEND_ROOT, Settings, configure_api_key, configure_model
 
 FRONTEND = (
     Path(sys._MEIPASS) / "frontend"
@@ -176,13 +176,16 @@ class WebServer(ThreadingHTTPServer):
                     database.job(job_id, self.jobs[job_id])
 
         def run():
+            logger.info("Generation started: job=%s", job_id)
             try:
                 options = {"settings": settings, "count": count}
                 with service.operation_lock(service.book_path(book_id)):
                     service.generate(book_id, progress=progress, **options)
                 progress({"completed": count})
                 result = {"status": "completed", "book_id": book_id}
+                logger.info("Generation completed: job=%s", job_id)
             except Exception as exc:
+                log_failure("Generation", exc, job_id)
                 result = {"status": "failed", "book_id": book_id, "error": str(exc)}
             with self.job_lock:
                 self.jobs[job_id] = {
@@ -195,7 +198,7 @@ class WebServer(ThreadingHTTPServer):
                     try:
                         database.job(job_id, self.jobs[job_id])
                     except database.DatabaseUnavailable:
-                        logging.error(
+                        logger.error(
                             "Unable to persist final job status; recover jobs after database returns"
                         )
 
@@ -237,6 +240,7 @@ class WebServer(ThreadingHTTPServer):
                     database.job(job_id, self.jobs[job_id])
 
         def run():
+            logger.info("Regeneration started: job=%s", job_id)
             try:
                 with service.operation_lock(service.book_path(book_id)):
                     service.generate(
@@ -244,7 +248,9 @@ class WebServer(ThreadingHTTPServer):
                     )
                 progress({"completed": 1})
                 result = {"status": "completed", "book_id": book_id}
+                logger.info("Regeneration completed: job=%s", job_id)
             except Exception as exc:
+                log_failure("Regeneration", exc, job_id)
                 result = {"status": "failed", "book_id": book_id, "error": str(exc)}
             with self.job_lock:
                 self.jobs[job_id] = {
@@ -257,7 +263,7 @@ class WebServer(ThreadingHTTPServer):
                     try:
                         database.job(job_id, self.jobs[job_id])
                     except database.DatabaseUnavailable:
-                        logging.error(
+                        logger.error(
                             "Unable to persist final job status; recover jobs after database returns"
                         )
 
@@ -266,6 +272,11 @@ class WebServer(ThreadingHTTPServer):
 
 
 class Handler(BaseHTTPRequestHandler):
+    def log_request(self, code="-", size="-"):
+        # Do not include URLs, query strings, headers, or request bodies.
+        if isinstance(code, int):
+            logger.info("HTTP response: status=%d", code)
+
     def reply(
         self,
         status,
@@ -422,6 +433,9 @@ class Handler(BaseHTTPRequestHandler):
                 with self.server.job_lock:
                     book_id = library.restore_book(data.get("restore_token"))
                 self.reply(200, load_view(book_id))
+            elif not post and path == "/api/_internal/worker-status":
+                with self.server.job_lock:
+                    self.reply(200, {"busy": bool(self.server.busy)})
             elif not post and path.startswith("/api/jobs/"):
                 with self.server.job_lock:
                     job = self.server.jobs.get(path.removeprefix("/api/jobs/"))
@@ -531,11 +545,12 @@ class Handler(BaseHTTPRequestHandler):
         except FileNotFoundError:
             self.reply(404, {"error": "作品或文件不存在"})
         except database.DatabaseUnavailable as exc:
+            log_failure("Database request", exc)
             self.reply(503, {"error": str(exc)})
         except (ValueError, TypeError) as exc:
             self.reply(400, {"error": str(exc)})
-        except Exception:
-            logging.exception("Web request failed")
+        except Exception as exc:
+            log_failure("Web request", exc)
             self.reply(500, {"error": "操作失败，请检查本地服务日志"})
 
 
@@ -553,12 +568,18 @@ def main():
         help="逗号分隔的额外允许 Host（如 tome.example.com），用于反代或直连部署",
     )
     args = parser.parse_args()
-    if database.enabled():
-        database.initialize()
-    allowed_hosts = [
-        item.strip().lower() for item in args.allowed_hosts.split(",") if item.strip()
-    ]
-    server = WebServer((args.host, args.port), allowed_hosts=allowed_hosts)
+    configure_logging(BACKEND_ROOT / "data" / "logs")
+    try:
+        if database.enabled():
+            database.initialize()
+        allowed_hosts = [
+            item.strip().lower() for item in args.allowed_hosts.split(",") if item.strip()
+        ]
+        server = WebServer((args.host, args.port), allowed_hosts=allowed_hosts)
+    except Exception as exc:
+        log_failure("Web startup", exc)
+        raise
+    logger.info("Web server started")
     shown = "127.0.0.1" if args.host in ("0.0.0.0", "::") else args.host
     print(f"Tome Agent: http://{shown}:{server.server_port}", flush=True)
     if allowed_hosts:
@@ -569,6 +590,7 @@ def main():
         pass
     finally:
         server.server_close()
+        logger.info("Web server stopped")
 
 
 if __name__ == "__main__":

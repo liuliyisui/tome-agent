@@ -2,7 +2,6 @@
 
 import argparse
 import json
-import logging
 import os
 import sys
 import threading
@@ -116,11 +115,10 @@ def main():
     home = (args.data_dir or data_home()).resolve()
     home.mkdir(parents=True, exist_ok=True)
     os.environ["TOME_DATA_HOME"] = str(home)
-    logging.basicConfig(
-        filename=home / "desktop.log",
-        level=logging.WARNING,
-        format="%(asctime)s %(levelname)s %(message)s",
-    )
+    from inf_backend.logging_setup import configure_logging, log_failure, logger
+
+    configure_logging(home, "desktop.log")
+    logger.info("Desktop starting")
     # Windowed builds have no standard streams. Keep HTTP/request and engine
     # diagnostics in the local log, rather than failing on print()/stderr.write().
     if sys.stdout is None:
@@ -162,8 +160,8 @@ def main():
             launcher_window(server, url, home)
     except KeyboardInterrupt:
         pass
-    except Exception:
-        logging.exception("Desktop startup failed")
+    except Exception as exc:
+        log_failure("Desktop startup", exc)
         if not args.headless:
             import ctypes
 

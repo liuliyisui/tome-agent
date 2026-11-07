@@ -17,6 +17,19 @@ from inf_writer.storage import FileStore
 
 
 class WebIntegrationTests(unittest.TestCase):
+    def test_unexpected_request_error_is_logged_without_sensitive_details(self):
+        with (
+            patch.object(
+                service, "list_books", side_effect=RuntimeError("secret text")
+            ),
+            self.assertLogs("tome", level="ERROR") as captured,
+            self.assertRaises(HTTPError) as response,
+        ):
+            self.request("/api/books?token=secret")
+        self.assertEqual(response.exception.code, 500)
+        self.assertIn("type=RuntimeError", " ".join(captured.output))
+        self.assertNotIn("secret", " ".join(captured.output))
+
     def test_model_settings_switch_keeps_old_book_and_never_returns_keys(self):
         with (
             tempfile.TemporaryDirectory() as folder,
