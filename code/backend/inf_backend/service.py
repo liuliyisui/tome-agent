@@ -1,5 +1,7 @@
 """UI services backed by INF's planner/writer/memory/reviewer transaction."""
 
+import base64
+import binascii
 import json
 import os
 import re
@@ -12,8 +14,10 @@ from uuid import uuid4
 
 from inf_writer.chat_provider import ChatCompletionProvider
 from inf_writer.domain import (
+    ContractError,
     Snapshot,
     canonical,
+    digest,
     project_id,
     sanitize_title,
     strict_json,
@@ -126,6 +130,57 @@ def load_book(book_id):
     if (book_path(book_id) / "longform-current.json").exists():
         return load_longform(book_id)
     return {"metadata": _metadata(book_id), "state": FileStore(BOOKS).load(book_id)}
+
+
+def cover_path(book_id):
+    _metadata(book_id)
+    folder = book_path(book_id)
+    if not folder.is_dir() or folder.is_symlink():
+        raise ValueError("作品目录不可用")
+    path = folder / "cover.image"
+    if path.is_symlink():
+        raise ValueError("封面路径不安全")
+    return path
+
+
+def cover_type(data):
+    if data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if data.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    raise ValueError("请选择 PNG、JPEG 或 WebP 图片")
+
+
+def cover_version(book_id):
+    path = cover_path(book_id)
+    return path.stat().st_mtime_ns if path.is_file() else None
+
+
+def save_cover(book_id, value):
+    if not isinstance(value, str) or len(value) > 2_800_000:
+        raise ValueError("封面图片不能超过 2 MB")
+    try:
+        data = base64.b64decode(value, validate=True)
+    except (ValueError, binascii.Error):
+        raise ValueError("封面图片格式无效") from None
+    if not data or len(data) > 2 * 1024 * 1024:
+        raise ValueError("封面图片不能超过 2 MB")
+    cover_type(data)
+    with operation_lock(BOOKS):
+        path = cover_path(book_id)
+        fd, temporary = tempfile.mkstemp(prefix=".cover-", dir=path.parent)
+        try:
+            with os.fdopen(fd, "wb") as output:
+                output.write(data)
+                output.flush()
+                os.fsync(output.fileno())
+            os.replace(temporary, path)
+        finally:
+            if os.path.exists(temporary):
+                os.unlink(temporary)
+        return cover_version(book_id)
 
 
 def validate_writing_style(value):
@@ -406,7 +461,28 @@ def load_longform(book_id):
     if database.enabled():
         return load_book(book_id)
     meta = _metadata(book_id)
-    state = _load_longform_book(book_id, _longform_plan(meta))
+    plan = _longform_plan(meta)
+    try:
+        state = _load_longform_book(book_id, plan)
+    except ContractError as exc:
+        if str(exc) != "写作运行时版本不一致，不能直接恢复旧检查点":
+            raise
+        pointer = strict_json(_longform_pointer(book_id).read_text(encoding="utf-8-sig"))
+        if not isinstance(pointer, dict) or set(pointer) != {"checkpoint"}:
+            raise ValueError("长文本检查点索引格式不正确")
+        root = book_path(book_id).resolve()
+        checkpoint = (root / pointer["checkpoint"]).resolve()
+        if checkpoint == root or not checkpoint.is_relative_to(root):
+            raise ValueError("长文本检查点路径不安全")
+        record = strict_json(checkpoint.read_text(encoding="utf-8-sig"))
+        state = record.get("book")
+        if (record.get("schema") != "inf-writing-checkpoint-v1"
+                or record.get("writing_plan_sha256") != digest(canonical(plan))
+                or not isinstance(state, dict)
+                or record.get("book_sha256") != digest(canonical(state))
+                or not isinstance(state.get("chapters"), list)):
+            raise ValueError("旧版存档完整性校验失败") from exc
+        return {"metadata": meta, "state": state, "read_only": True}
     return {"metadata": meta, "state": state}
 
 

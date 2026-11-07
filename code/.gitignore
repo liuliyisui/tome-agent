@@ -6,3 +6,4 @@ backend/.postgres/
 backend/data/*
 !backend/data/.gitkeep
 **/*.egg-info/
+frontend/node_modules/

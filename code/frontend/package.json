@@ -1,0 +1,12 @@
+{
+  "name": "tome-studio-ui",
+  "private": true,
+  "scripts": {
+    "build": "node build-vue.cjs",
+    "check": "node build-vue.cjs --check",
+    "test": "node --test ../../tests/integration/vue_model.test.cjs"
+  },
+  "devDependencies": {
+    "@vue/compiler-dom": "3.5.44"
+  }
+}

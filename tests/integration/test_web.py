@@ -108,7 +108,7 @@ class WebIntegrationTests(unittest.TestCase):
         html = self.request("/")
         self.assertIn('src="/vue.runtime.global.prod.js"', html)
         self.assertIn('src="/vue-components.js"', html)
-        self.assertIn("createTomeLibrary", self.request("/vue-components.js"))
+        self.assertIn("TomeRender", self.request("/vue-components.js"))
         with self.client.open(
             self.base + "/vue.runtime.global.prod.js", timeout=5
         ) as response:

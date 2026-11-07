@@ -74,7 +74,7 @@ def verify(executable):
             assert request(base, "/api/config")["configured"] is False
             assert "api-key-dialog" in request(base, "/")
             assert "openApiConfig" in request(base, "/app.js")
-            assert "createTomeLibrary" in request(base, "/vue-components.js")
+            assert "TomeRender" in request(base, "/vue-components.js")
             assert "Vue" in request(base, "/vue.runtime.global.prod.js")
             assert "--green" in request(base, "/style.css")
             key = "sk-" + "PACKAGED_TEST_ONLY_" * 2

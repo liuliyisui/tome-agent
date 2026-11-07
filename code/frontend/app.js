@@ -1,474 +1,867 @@
-const $ = (id) => document.getElementById(id);
-let activeView = 'home';
-let sidebarPreference = false;
-try { sidebarPreference = localStorage.getItem('tome-sidebar-collapsed') === 'true'; } catch {}
-function setSidebarCollapsed(collapsed) {
-  collapsed = activeView === 'home' || collapsed;
-  document.body.classList.toggle('sidebar-collapsed', collapsed);
-  $('workspace-sidebar').inert = collapsed;
-  $('workspace-sidebar').setAttribute('aria-hidden', String(collapsed));
-  $('sidebar-toggle').setAttribute('aria-expanded', String(!collapsed));
-  $('sidebar-toggle').setAttribute('aria-label', collapsed ? '展开侧栏' : '收起侧栏');
-  $('sidebar-toggle').title = collapsed ? '展开侧栏' : '收起侧栏';
-}
-setSidebarCollapsed(true);
-$('sidebar-toggle').onclick = () => {
-  const collapsed = !document.body.classList.contains('sidebar-collapsed');
-  sidebarPreference = collapsed;
-  setSidebarCollapsed(collapsed);
-  try { localStorage.setItem('tome-sidebar-collapsed', String(collapsed)); } catch {}
-};
-$('workspace-home').onclick = event => {
-  if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-  setSidebarCollapsed(true);
-  // Keep the link's normal navigation: reload at home with the sidebar hidden.
-};
-function setView(view) {
-  activeView = view;
-  document.body.classList.toggle('home-view', view === 'home');
-  $('sidebar-toggle').hidden = view === 'home';
-  $('welcome').hidden = view !== 'home';
-  $('works-view').hidden = view !== 'library';
-  $('book-workspace').hidden = view !== 'book';
-  setSidebarCollapsed(view === 'home' || sidebarPreference);
-}
-$('my-works').onclick = async () => {
-  navigationVersion++;
-  current = null;
-  libraryView.selectedId = null;
-  setView('library');
-  $('breadcrumb-title').textContent = '我的作品';
-  notice();
-  window.scrollTo({top:0,left:0});
-  try { await refreshBooks(); } catch(e) { notice(e.message); }
-};
-if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-let books = [], current = null, selectedChapter = 0;
-let navigationVersion = 0;
-let apiConfigured = false;
-function openApiConfig() {
-  $('api-key-error').textContent = '';
-  $('api-key-input').value = '';
-  if (!$('api-key-dialog').open) $('api-key-dialog').showModal();
-}
-function updateConnection(cfg) {
-  apiConfigured = cfg.configured;
-  $('connection-text').textContent = cfg.configured ? `${cfg.model} 已就绪` : '请先配置 API Key';
-  $('connection-dot').classList.toggle('ready', cfg.configured);
-  $('welcome-create').innerHTML = cfg.configured ? '创建新的作品 <span>↗</span>' : '配置 API Key <span>↗</span>';
-}
-$('api-key-later').onclick = () => { $('api-key-input').value = ''; $('api-key-dialog').close(); };
-$('api-key-dialog').oncancel = () => { $('api-key-input').value = ''; };
-$('api-key-form').onsubmit = async event => {
-  event.preventDefault();
-  $('api-key-save').disabled = true;
-  $('api-key-error').textContent = '';
-  try {
-    const cfg = await api('/api/config', {api_key:$('api-key-input').value.trim()});
-    $('api-key-input').value = '';
-    updateConnection(cfg);
-    $('api-key-dialog').close();
-    notice('API Key 已保存，可以开始创作。');
-  } catch(e) { $('api-key-error').textContent = e.message; }
-  finally { $('api-key-save').disabled = false; }
-};
-const jobs = new Map();
-const pollingJobs = new Set();
-const jobErrors = new Map();
-const styleDrafts = new Map();
-const batchChoices = new Map();
-let pendingEstimate = null;
-let preparing = false;
-let pendingDelete = null;
-let pendingPurge = null;
-let purging = false;
-const factSelections = new Map();
-const libraryView = createTomeLibrary({
-  select:id => selectBook(id),
-  pin:async book => {
-    await api(`/api/books/${encodeURIComponent(book.id)}/pin`, {pinned:!book.pinned});
-    await refreshBooks();
-  },
-  remove:book => {
-    pendingDelete = book;
-    $('delete-book-title').textContent = `《${book.metadata?.title || book.id}》`;
-    $('delete-error').textContent = '';
-    $('delete-dialog').showModal();
-  },
-  restore:async book => {
-    $('trash-message').textContent = '正在恢复…';
-    try {
-      const result = await api('/api/books/restore', {restore_token:book.restore_token});
-      await refreshBooks();
-      $('trash-message').textContent = `《${result.metadata.title}》已恢复到书架。`;
-    } catch(e) { $('trash-message').textContent = e.message; }
-  },
-  purge:book => {
-    pendingPurge = book;
-    $('purge-book-title').textContent = `《${book.title}》`;
-    $('purge-title-input').value = '';
-    $('purge-confirm').disabled = true;
-    $('purge-error').textContent = '';
-    $('purge-dialog').showModal();
-  },
-  error:error => notice(error.message)
-});
-const esc = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* Vue controls rendering, forms and events. Native dialog lifecycle is a directive. */
+const {
+  createApp,
+  reactive,
+  computed,
+  ref,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  h,
+} = Vue;
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 async function api(path, data) {
-  const response = await fetch(path, data === undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  const response = await fetch(
+    path,
+    data === undefined
+      ? {}
+      : {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        },
+  );
   const result = await response.json();
   if (!response.ok) {
-    const error = new Error(result.error || '操作失败');
+    const error = new Error(result.error || "操作失败");
     error.status = response.status;
     throw error;
   }
   return result;
 }
-function notice(message = '') {
-  $('notice').textContent = message;
-  $('notice').hidden = !message;
-  if (message) $('notice').scrollIntoView({behavior:'smooth',block:'center'});
-}
-function openCreate() { if (!apiConfigured) { openApiConfig(); return; } $('form-error').textContent = ''; $('create-dialog').showModal(); }
-$('new-book').onclick = $('welcome-create').onclick = openCreate;
-$('works-create').onclick = openCreate;
-$('close-dialog').onclick = () => $('create-dialog').close();
-function showHome() {
-  navigationVersion++;
-  current = null;
-  selectedChapter = 0;
-  setView('home');
-  $('breadcrumb-title').textContent = '首页';
-  notice();
-  libraryView.selectedId = null;
-  window.scrollTo({top:0,left:0});
-}
-async function refreshBooks() {
-  books = (await api('/api/books')).books;
-  $('book-count').textContent = books.length;
-  libraryView.books = books;
-  libraryView.selectedId = current?.state.project_id || null;
-  await refreshTrash();
-}
-document.addEventListener('click', event => {
-  if (!event.target.closest('.book-menu')) document.querySelectorAll('.book-menu[open]').forEach(menu => menu.open = false);
-});
-$('delete-cancel').onclick = () => { $('delete-dialog').close(); pendingDelete = null; };
-$('delete-dialog').oncancel = () => { pendingDelete = null; };
-$('delete-confirm').onclick = async () => {
-  if (!pendingDelete) return;
-  const book = pendingDelete;
-  $('delete-confirm').disabled = true;
-  try {
-    await api(`/api/books/${encodeURIComponent(book.id)}/delete`, {confirmed:true});
-    styleDrafts.delete(book.id); batchChoices.delete(book.id); factSelections.delete(book.id); jobErrors.delete(book.id);
-    if (current?.state.project_id === book.id) {
-      showHome(); localStorage.removeItem('tome-selected-book');
-    }
-    $('delete-dialog').close(); pendingDelete = null;
-    await refreshBooks();
-    if (!current) { const next = books.find(item => !item.error); if (next) await selectBook(next.id); }
-  } catch(e) { $('delete-error').textContent = e.message; }
-  finally { $('delete-confirm').disabled = false; }
-};
-async function refreshTrash() {
-  const removed = (await api('/api/books/trash')).books;
-  $('trash-count').textContent = removed.length;
-  libraryView.trash = removed;
-}
-$('purge-title-input').oninput = () => {
-  $('purge-confirm').disabled = !pendingPurge || $('purge-title-input').value !== pendingPurge.title;
-};
-$('purge-cancel').onclick = () => { $('purge-dialog').close(); pendingPurge = null; };
-$('purge-dialog').oncancel = event => { if (purging) event.preventDefault(); else pendingPurge = null; };
-$('purge-confirm').onclick = async () => {
-  if (!pendingPurge || $('purge-title-input').value !== pendingPurge.title) return;
-  const book = pendingPurge;
-  purging = true;
-  $('purge-confirm').disabled = true; $('purge-cancel').disabled = true; $('purge-title-input').disabled = true;
-  try {
-    await api('/api/books/trash/purge',{restore_token:book.restore_token,confirmation_title:$('purge-title-input').value,confirmed:true});
-    $('purge-dialog').close(); pendingPurge = null;
-    await refreshTrash();
-    $('trash-message').textContent = `《${book.title}》已彻底删除，无法恢复。`;
-  } catch(e) { $('purge-error').textContent = e.message; }
-  finally {
-    purging = false;
-    $('purge-cancel').disabled = false; $('purge-title-input').disabled = false;
-    $('purge-confirm').disabled = !pendingPurge || $('purge-title-input').value !== pendingPurge.title;
-  }
-};
-$('trash-open').onclick = async () => {
-  $('trash-message').textContent = '';
-  try { await refreshTrash(); $('trash-dialog').showModal(); }
-  catch(e) { notice(e.message); }
-};
-$('trash-close').onclick = () => $('trash-dialog').close();
-async function selectBook(id, latest = false) {
-  const version = ++navigationVersion;
-  const book = await api(`/api/books/${encodeURIComponent(id)}`);
-  if (version !== navigationVersion) return;
-  selectedChapter = latest ? Math.max(0, book.state.chapters.length - 1) : (current?.state.project_id === id ? selectedChapter : 0);
-  current = book;
-  renderStyle();
-  renderBatch();
-  if (book.job?.status === 'running') {
-    jobs.set(id, book.job.job_id);
-    jobErrors.delete(id);
-    startPolling(id, book.job.job_id);
-  } else {
-    jobs.delete(id);
-    if (book.job?.status === 'failed') jobErrors.set(id, book.job.error);
-    else jobErrors.delete(id);
-  }
-  notice();
-  renderBook();
-  await refreshBooks();
-}
-function renderBook() {
-  if (!current) return;
-  const {metadata:meta,state} = current;
-  setView('book');
-  $('breadcrumb-title').textContent = meta.title;
-  $('book-kind').textContent = current.mode === 'legacy' ? 'LEGACY / 旧版存档' : 'EVENT FIRST / 事件先行 · 三层记忆';
-  $('book-title').textContent = meta.title;
-  $('book-prompt').textContent = meta.prompt;
-  $('stat-chapters').textContent = `${state.chapters.length} / ${meta.target_chapters}`;
-  const units = state.chapters.reduce((n,c) => n + (c.text.match(/[\u3400-\u9fff]|[A-Za-z0-9]+/g) || []).length, 0);
-  $('stat-units').textContent = units.toLocaleString();
-  const facts = Object.values(state.facts).filter(f => f.status === 'active');
-  $('stat-facts').textContent = facts.length;
-  $('stat-progress').textContent = Math.round(state.chapters.length / meta.target_chapters * 100) + '%';
-  $('revision').textContent = `存档版本 ${state.revision}`;
-  $('export').href = `/api/books/${encodeURIComponent(state.project_id)}/export`;
-  $('generation-description').textContent = current.mode === 'legacy' ? '旧版正文可阅读和导出。请新建作品使用新版引擎，保留旧存档。' : `使用 ${meta.model.model}，先规划事件，再生成正文并维护三层记忆。每次生成一章，可能需要数分钟；已保存正文仍需人工检查。`;
-  renderFacts(facts);
-  $('chapter-tabs').innerHTML = state.chapters.map((c,i) => `<button data-chapter="${i}" class="${i === selectedChapter ? 'active' : ''}" aria-pressed="${i === selectedChapter}">第 ${c.number} 章</button>`).join('');
-  document.querySelectorAll('[data-chapter]').forEach(button => button.onclick = () => { selectedChapter = Number(button.dataset.chapter); renderBook(); });
-  const chapter = state.chapters[selectedChapter];
-  const paragraphs = chapter ? chapter.text.split(/\r\n|[\n\r\u2028\u2029]/).map(p => p.trim()).filter(Boolean) : [];
-  $('chapter-body').innerHTML = chapter ? `<h3>第${chapter.number}章 · ${esc(chapter.title)}</h3>${paragraphs.map(p => `<p class="prose-paragraph">${esc(p)}</p>`).join('')}` : '<div class="chapter-empty"><span>✧</span><h3>故事，正待落笔。</h3><p>点击「生成下一章」，让你的构想变成正文。</p></div>';
-  renderGeneration();
-}
-function concise(value, limit = 18) {
-  const text = String(value ?? '').replace(/\s+/g,' ').replace(/^[“”「」『』"'\s]+/g,'').trim();
+const bookUrl = (id) => `/api/books/${encodeURIComponent(id)}`;
+const titleOf = (book) =>
+  book?.metadata?.title || book?.title || book?.id || "";
+const concise = (value, limit = 18) => {
+  const text = String(value ?? "")
+    .replace(/\s+/g, " ")
+    .replace(/^[“”「」『』"'\s]+/g, "")
+    .trim();
   const first = text.split(/[。！？；\n]/)[0] || text;
-  return Array.from(first).length > limit ? Array.from(first).slice(0,limit).join('') + '…' : first;
-}
-function renderFacts(facts) {
-  const groups = new Map();
-  const valueOf = fact => typeof fact.value === 'object' ? JSON.stringify(fact.value) : String(fact.value ?? '');
-  facts.forEach(fact => {
-    const excerpt = fact.kind === 'prose_excerpt' || String(fact.subject).startsWith('prose:');
-    const number = fact.source?.chapter_number;
-    const chapter = current.state.chapters.find(ch => ch.number === number);
-    const key = excerpt ? `chapter:${number}` : `subject:${fact.subject}`;
-    const label = excerpt ? `第${number}章 · ${concise(chapter?.title || valueOf(fact),12)}` : concise(fact.subject,12);
-    if (!groups.has(key)) groups.set(key,{key,label,facts:[],number:excerpt ? Number(number) || 0 : null});
-    groups.get(key).facts.push(fact);
-  });
-  const items = [...groups.values()].sort((a,b) => a.number !== null && b.number !== null ? b.number-a.number : a.number === null ? b.number === null ? a.label.localeCompare(b.label,'zh-CN') : -1 : 1);
-  const preferred = factSelections.get(current.state.project_id) || `chapter:${selectedChapter+1}`;
-  $('fact-topic').innerHTML = items.length ? items.map(group => `<option value="${esc(group.key)}">${esc(group.label)}（${group.facts.length}）</option>`).join('') : '<option value="">暂无事实主题</option>';
-  $('fact-topic').disabled = !items.length;
-  $('fact-topic').value = groups.has(preferred) ? preferred : items[0]?.key || '';
-  $('fact-topic-summary').textContent = items.length ? `${items.length} 个主题 · ${facts.length} 条记忆，选择标题查看。` : '生成章节后，将自动整理事实主题。';
-  function showGroup() {
-    const group = groups.get($('fact-topic').value);
-    if (!group) { $('facts').innerHTML = '<p class="empty-facts">暂时没有可查看的事实记忆。</p>'; return; }
-    factSelections.set(current.state.project_id,group.key);
-    const tiers = {working:'工作记忆',recent:'近期记忆',long:'长期记忆'};
-    $('facts').innerHTML = group.facts.map(fact => {
-      const value = valueOf(fact), quote = fact.source?.quote || '';
-      const excerpt = fact.kind === 'prose_excerpt' || String(fact.subject).startsWith('prose:');
-      const title = excerpt ? concise(value,20) : `${concise(fact.subject,10)} · ${concise(value,14)}`;
-      return `<div class="fact">${excerpt ? '' : `<h4>${esc(title)}</h4>`}<p>${esc(value)}</p><small>第 ${esc(fact.source?.chapter_number || '—')} 章 · 版本 ${esc(fact.revision)}${fact.tier ? ' · ' + esc(tiers[fact.tier] || fact.tier) : ''}</small>${quote && quote !== value ? `<details class="fact-source"><summary>查看正文依据</summary><blockquote>${esc(quote)}</blockquote></details>` : ''}</div>`;
-    }).join('');
-  }
-  $('fact-topic').onchange = showGroup;
-  showGroup();
-}
-function renderGeneration() {
-  if (!current) return;
-  const running = jobs.has(current.state.project_id);
-  const complete = current.state.chapters.length >= current.metadata.target_chapters;
-  const legacy = current.mode === 'legacy';
-  $('generate').disabled = running || complete || legacy || preparing;
-  $('approve-first').disabled = running || !current.state.chapters.length || complete;
-  $('generation-count').disabled = running || !batchChoices.get(current.state.project_id)?.approved || complete;
-  $('style-save').disabled = running;
-  $('style-instructions').disabled = running;
-  $('style-reference').disabled = running;
-  const chosen = Number($('generation-count').value) || 1;
-  $('generate').textContent = running ? '◌ 正在创作…' : preparing ? '正在估算…' : legacy ? '旧版存档 · 仅供阅读' : complete ? '✓ 全书章节已完成' : chosen > 1 ? `预估并生成 ${chosen} 章` : '预估并生成下一章';
-  const error = jobErrors.get(current.state.project_id);
-  $('job-status').classList.toggle('error', Boolean(error));
-  const progress = current.job?.count ? `本批次已完成 ${current.job.completed || 0} / ${current.job.count} 章，正在生成第 ${current.job.current_chapter} 章。` : '已提交，正在生成。';
-  $('job-status').textContent = running ? error || `${progress}可刷新页面，完成后自动显示正文。` : error ? `生成停止：${error}。已保存章节仍可阅读和导出。` : complete ? '所有目标章节已存档，可导出作品。' : current.job?.status === 'completed' ? `✓ 本批次 ${current.job.count || 1} 章已生成并存档。` : '';
-}
-function renderBatch() {
-  const remaining = Math.max(0, current.metadata.target_chapters - current.state.chapters.length);
-  const choice = batchChoices.get(current.state.project_id) || {approved:false,count:1};
-  $('approve-first').checked = choice.approved;
-  $('generation-count').max = Math.max(1,remaining);
-  $('generation-count').value = Math.max(1,Math.min(choice.count,remaining));
-  $('batch-hint').textContent = !current.state.chapters.length ? '先生成第一章，阅读确认后再自动续写。' : `剩余 ${remaining} 章。确认首章后自动填入剩余章节数，可修改；提交前会显示用量和费用预估。`;
-}
-$('approve-first').onchange = () => {
-  batchChoices.set(current.state.project_id, {approved:$('approve-first').checked,count:$('approve-first').checked ? Math.max(1,current.metadata.target_chapters-current.state.chapters.length) : 1});
-  renderBatch(); renderGeneration();
+  return Array.from(first).length > limit
+    ? Array.from(first).slice(0, limit).join("") + "…"
+    : first;
 };
-$('generation-count').oninput = () => {
-  batchChoices.set(current.state.project_id, {approved:$('approve-first').checked,count:Number($('generation-count').value)});
-  renderGeneration();
+const valueOf = (fact) =>
+  typeof fact.value === "object"
+    ? JSON.stringify(fact.value)
+    : String(fact.value ?? "");
+const ChapterReader = {
+  name: "ChapterReader",
+  props: ["chapter"],
+  setup(props) {
+    return () =>
+      props.chapter
+        ? [
+            h("h3", `第${props.chapter.number}章 · ${props.chapter.title}`),
+            ...props.chapter.text
+              .split(/\r\n|[\n\r\u2028\u2029]/)
+              .map((p) => p.trim())
+              .filter(Boolean)
+              .map((text, key) =>
+                h("p", { key, class: "prose-paragraph" }, text),
+              ),
+          ]
+        : h("div", { class: "chapter-empty" }, [
+            h("span", "✧"),
+            h("h3", "故事，正待落笔。"),
+            h("p", "点击「生成下一章」，让你的构想变成正文。"),
+          ]);
+  },
 };
-function renderStyle() {
-  const id = current.state.project_id;
-  const style = styleDrafts.get(id) || current.style || {instructions:'',reference:''};
-  $('style-instructions').value = style.instructions;
-  $('style-reference').value = style.reference;
-  $('style-status').classList.remove('error');
-  $('style-status').textContent = styleDrafts.has(id) ? '有未保存的修改；生成下一章时会先自动保存。' : style.instructions || style.reference ? '已保存 · 从下一章生效。' : '尚未设置，使用默认文风。';
-}
-function editStyle() {
-  if (!current) return;
-  styleDrafts.set(current.state.project_id, {instructions:$('style-instructions').value, reference:$('style-reference').value});
-  $('style-status').classList.remove('error');
-  $('style-status').textContent = '有未保存的修改；生成下一章时会先自动保存。';
-}
-$('style-instructions').oninput = $('style-reference').oninput = editStyle;
-async function saveStyle(id) {
-  const style = styleDrafts.get(id) || current.style || {instructions:'',reference:''};
-  $('style-save').disabled = true;
-  $('style-instructions').disabled = true;
-  $('style-reference').disabled = true;
-  $('style-status').textContent = '正在保存…';
-  try {
-    const result = await api(`/api/books/${encodeURIComponent(id)}/style`, style);
-    styleDrafts.delete(id);
-    if (current?.state.project_id === id) {
-      current.style = result.style;
-      renderStyle();
-      if (!result.style.instructions && !result.style.reference) {
-        $('style-status').textContent = '已保存 · 使用默认文风。';
+const FactMemory = {
+  name: "FactMemory",
+  props: ["fact"],
+  setup(props) {
+    return () => {
+      const f = props.fact,
+        value = valueOf(f),
+        quote = f.source?.quote || "",
+        excerpt =
+          f.kind === "prose_excerpt" || String(f.subject).startsWith("prose:"),
+        tiers = { working: "工作记忆", recent: "近期记忆", long: "长期记忆" };
+      return h("div", { class: "fact" }, [
+        excerpt
+          ? null
+          : h("h4", `${concise(f.subject, 10)} · ${concise(value, 14)}`),
+        h("p", value),
+        h(
+          "small",
+          `第 ${f.source?.chapter_number || "—"} 章 · 版本 ${f.revision}${f.tier ? " · " + (tiers[f.tier] || f.tier) : ""}`,
+        ),
+        quote && quote !== value
+          ? h("details", { class: "fact-source" }, [
+              h("summary", "查看正文依据"),
+              h("blockquote", quote),
+            ])
+          : null,
+      ]);
+    };
+  },
+};
+
+const app = createApp({
+  name: "TomeStudio",
+  components: { ChapterReader, FactMemory },
+  render: window.TomeRender,
+  setup() {
+    let sidebarCollapsed = false;
+    try {
+      sidebarCollapsed =
+        localStorage.getItem("tome-sidebar-collapsed") === "true";
+    } catch {}
+    const state = reactive({
+      view: "home",
+      sidebarCollapsed,
+      books: [],
+      trash: [],
+      current: null,
+      chapterIndex: 0,
+      configured: false,
+      model: "",
+      connectionError: false,
+      notice: "",
+      menuId: null,
+      dialogs: {
+        api: false,
+        create: false,
+        trash: false,
+        delete: false,
+        purge: false,
+        estimate: false,
+      },
+      busy: {
+        api: false,
+        create: false,
+        style: false,
+        cover: false,
+        estimate: false,
+        start: false,
+        delete: false,
+        purge: false,
+      },
+      pending: new Set(),
+      errors: {
+        api: "",
+        create: "",
+        style: "",
+        delete: "",
+        purge: "",
+        estimate: "",
+      },
+      apiKey: "",
+      createForm: {
+        title: "",
+        prompt: "",
+        chapters: 10,
+        target_units: 10000,
+        instructions: "",
+        reference: "",
+      },
+      styles: {},
+      batches: {},
+      factChoices: {},
+      jobs: {},
+      jobErrors: {},
+      estimate: null,
+      estimateTitle: "",
+      deleteBook: null,
+      purgeBook: null,
+      purgeTitle: "",
+      trashMessage: "",
+    });
+    let navigationVersion = 0,
+      libraryVersion = 0,
+      disposed = false;
+    const timers = new Map(),
+      polling = new Set(),
+      noticePanel = ref(null);
+    const id = computed(() => state.current?.state.project_id),
+      meta = computed(() => state.current?.metadata),
+      chapters = computed(() => state.current?.state.chapters || []),
+      chapter = computed(() => chapters.value[state.chapterIndex]);
+    const remaining = computed(() =>
+        Math.max(0, (meta.value?.target_chapters || 0) - chapters.value.length),
+      ),
+      running = computed(() => Boolean(state.jobs[id.value])),
+      complete = computed(
+        () => Boolean(state.current) && remaining.value === 0,
+      );
+    const style = computed(
+        () => state.styles[id.value] || { instructions: "", reference: "" },
+      ),
+      batch = computed(
+        () => state.batches[id.value] || { approved: false, count: 1 },
+      );
+    const styleDirty = computed(
+      () =>
+        Boolean(state.current) &&
+        JSON.stringify(style.value) !==
+          JSON.stringify({
+            instructions: state.current.style?.instructions || "",
+            reference: state.current.style?.reference || "",
+          }),
+    );
+    const styleStatus = computed(
+      () =>
+        state.errors.style ||
+        (state.busy.style
+          ? "正在保存…"
+          : styleDirty.value
+            ? "有未保存的修改；生成下一章时会先自动保存。"
+            : style.value.instructions || style.value.reference
+              ? "已保存 · 从下一章生效。"
+              : "尚未设置，使用默认文风。"),
+    );
+    const facts = computed(() =>
+      Object.values(state.current?.state.facts || {}).filter(
+        (f) => f.status === "active",
+      ),
+    );
+    const factGroups = computed(() => {
+      const groups = new Map();
+      for (const fact of facts.value) {
+        const excerpt =
+            fact.kind === "prose_excerpt" ||
+            String(fact.subject).startsWith("prose:"),
+          number = fact.source?.chapter_number,
+          sourceChapter = chapters.value.find((c) => c.number === number),
+          key = excerpt ? `chapter:${number}` : `subject:${fact.subject}`,
+          label = excerpt
+            ? `第${number}章 · ${concise(sourceChapter?.title || valueOf(fact), 12)}`
+            : concise(fact.subject, 12);
+        if (!groups.has(key))
+          groups.set(key, {
+            key,
+            label,
+            facts: [],
+            number: excerpt ? Number(number) || 0 : null,
+          });
+        groups.get(key).facts.push(fact);
+      }
+      return [...groups.values()].sort((a, b) =>
+        a.number !== null && b.number !== null
+          ? b.number - a.number
+          : a.number === null
+            ? b.number === null
+              ? a.label.localeCompare(b.label, "zh-CN")
+              : -1
+            : 1,
+      );
+    });
+    const factTopic = computed({
+      get() {
+        const choice =
+          state.factChoices[id.value] ||
+          `chapter:${chapter.value?.number || 1}`;
+        return factGroups.value.some((g) => g.key === choice)
+          ? choice
+          : factGroups.value[0]?.key || "";
+      },
+      set(value) {
+        state.factChoices[id.value] = value;
+      },
+    });
+    const selectedFacts = computed(
+      () =>
+        factGroups.value.find((g) => g.key === factTopic.value)?.facts || [],
+    );
+    const units = computed(() =>
+      chapters.value.reduce(
+        (sum, c) =>
+          sum + (c.text.match(/[\u3400-\u9fff]|[A-Za-z0-9]+/g) || []).length,
+        0,
+      ),
+    );
+    const generationDisabled = computed(
+      () =>
+        !state.current ||
+        running.value ||
+        complete.value ||
+        state.current.mode === "legacy" ||
+        state.busy.estimate ||
+        state.busy.start ||
+        state.busy.style,
+    );
+    const generateLabel = computed(() =>
+      running.value
+        ? "◌ 正在创作…"
+        : state.busy.estimate
+          ? "正在估算…"
+          : state.current?.mode === "legacy"
+            ? "旧版存档 · 仅供阅读"
+            : complete.value
+              ? "✓ 全书章节已完成"
+              : Number(batch.value.count) > 1
+                ? `预估并生成 ${batch.value.count} 章`
+                : "预估并生成下一章",
+    );
+    const jobStatus = computed(() => {
+      const job = state.current?.job,
+        error = state.jobErrors[id.value];
+      if (running.value)
+        return (
+          error ||
+          `${job?.count ? `本批次已完成 ${job.completed || 0} / ${job.count} 章，正在生成第 ${job.current_chapter} 章。` : "已提交，正在生成。"}可刷新页面，完成后自动显示正文。`
+        );
+      return error
+        ? `生成停止：${error}。已保存章节仍可阅读和导出。`
+        : complete.value
+          ? "所有目标章节已存档，可导出作品。"
+          : job?.status === "completed"
+            ? `✓ 本批次 ${job.count || 1} 章已生成并存档。`
+            : "";
+    });
+    const connectionText = computed(() =>
+        state.connectionError
+          ? "连接失败"
+          : state.configured
+            ? `${state.model} 已就绪`
+            : "请先配置 API Key",
+      ),
+      breadcrumb = computed(() =>
+        state.view === "home"
+          ? "首页"
+          : state.view === "library"
+            ? "我的作品"
+            : meta.value?.title || "作品",
+      ),
+      sidebarHidden = computed(
+        () => state.view === "home" || state.sidebarCollapsed,
+      );
+    const fmt = (value) => Number(value || 0).toLocaleString(),
+      cost = (value) =>
+        value === null || value === undefined
+          ? "该模型暂无法自动匹配官方价格"
+          : `≈ ¥ ${Number(value).toFixed(4)}`,
+      price = (value) =>
+        value === null || value === undefined
+          ? "未匹配"
+          : `¥ ${value} / 百万 token`,
+      deletedAt = (value) => {
+        const date = new Date(value);
+        return Number.isNaN(date.getTime())
+          ? "删除时间未记录"
+          : date.toLocaleString("zh-CN", {
+              timeZone: "Asia/Shanghai",
+              hour12: false,
+            });
+      };
+    const notify = (message) => {
+      state.notice = message || "";
+    };
+    watch(
+      () => state.notice,
+      (message) => {
+        if (message)
+          noticePanel.value?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+      },
+      { flush: "post" },
+    );
+    function toggleSidebar() {
+      state.sidebarCollapsed = !state.sidebarCollapsed;
+      try {
+        localStorage.setItem(
+          "tome-sidebar-collapsed",
+          String(state.sidebarCollapsed),
+        );
+      } catch {}
+    }
+    function showLibrary() {
+      navigationVersion++;
+      state.current = null;
+      state.view = "library";
+      state.menuId = null;
+      notify();
+      window.scrollTo({ top: 0, left: 0 });
+      refreshBooks().catch((e) => notify(e.message));
+    }
+    function closeDialog(name) {
+      if (state.busy[name] || (name === "estimate" && state.busy.start)) return;
+      state.dialogs[name] = false;
+      if (name === "api") state.apiKey = "";
+      if (name === "estimate") state.estimate = null;
+      if (name === "delete") state.deleteBook = null;
+      if (name === "purge") {
+        state.purgeBook = null;
+        state.purgeTitle = "";
       }
     }
-  } catch(e) {
-    $('style-status').classList.add('error');
-    $('style-status').textContent = `保存失败：${e.message}`;
-    throw e;
-  } finally { renderGeneration(); }
-}
-$('style-form').onsubmit = async event => {
-  event.preventDefault();
-  try { await saveStyle(current.state.project_id); }
-  catch(e) { /* The form retains the draft and displays the error beside Save. */ }
-};
-$('create-form').onsubmit = async event => {
-  event.preventDefault();
-  const form = new FormData(event.target);
-  $('create-submit').disabled = true;
-  $('form-error').textContent = '';
-  try {
-    const book = await api('/api/books', {title:form.get('title'),prompt:form.get('prompt'),chapters:Number(form.get('chapters')),target_units:Number(form.get('target_units')),style:{instructions:form.get('style_instructions'),reference:form.get('style_reference')}});
-    $('create-dialog').close(); event.target.reset();
-    await selectBook(book.state.project_id);
-  } catch(e) { $('form-error').textContent = e.message; }
-  finally { $('create-submit').disabled = false; }
-};
-$('generate').onclick = async () => {
-  const id = current.state.project_id;
-  preparing = true; renderGeneration(); notice();
-  try {
-    if (styleDrafts.has(id)) await saveStyle(id);
-    const estimate = await api(`/api/books/${encodeURIComponent(id)}/estimate`, {count:Number($('generation-count').value),approved_first:$('approve-first').checked});
-    pendingEstimate = estimate;
-    showEstimate(estimate);
-    $('estimate-error').textContent = '';
-    $('estimate-continue').disabled = false;
-    $('estimate-dialog').showModal();
-  } catch(e) { notice(e.message); }
-  finally { preparing = false; renderGeneration(); }
-};
-function showEstimate(estimate) {
-  $('estimate-scope').textContent = `《${current.metadata.title}》· 第 ${estimate.first_chapter} 至 ${estimate.last_chapter} 章，共 ${estimate.count} 章`;
-  $('estimate-input').textContent = estimate.input_tokens.toLocaleString();
-  $('estimate-output').textContent = estimate.output_tokens.toLocaleString();
-  $('estimate-total').textContent = '≈ ' + estimate.total_tokens.toLocaleString();
-  $('estimate-basis').textContent = estimate.basis;
-  $('estimate-cost').textContent = estimate.estimated_cost_cny === null ? '该模型暂无法自动匹配官方价格' : `≈ ¥ ${estimate.estimated_cost_cny.toFixed(4)}`;
-  $('estimate-input-price').textContent = estimate.prices ? `¥ ${estimate.prices.input} / 百万 token` : '未匹配';
-  $('estimate-output-price').textContent = estimate.prices ? `¥ ${estimate.prices.output} / 百万 token` : '未匹配';
-  $('estimate-period').textContent = `${estimate.pricing.label} · ${estimate.pricing.model}`;
-  $('estimate-price-rule').textContent = estimate.pricing.rule;
-  $('estimate-price-source').href = estimate.pricing.source;
-  $('estimate-price-date').textContent = `核验：${estimate.pricing.checked_at} ${estimate.pricing.status === 'live' ? '· 官方实时同步' : '· 已核验缓存价，联网不可用时使用'}`;
-  $('estimate-price-warning').textContent = estimate.pricing.warning;
-  $('estimate-price-warning').hidden = !estimate.pricing.warning;
-  $('estimate-peak-cost').textContent = estimate.peak_cost_cny !== null && estimate.pricing.period === 'off_peak' ? `若按高峰价计：约 ¥ ${estimate.peak_cost_cny.toFixed(4)}` : '';
-  $('estimate-note').textContent = estimate.note;
-}
-$('estimate-close').onclick = $('estimate-cancel').onclick = () => { $('estimate-dialog').close(); pendingEstimate = null; };
-$('estimate-dialog').oncancel = () => { pendingEstimate = null; };
-$('estimate-continue').onclick = async () => {
-  if (!pendingEstimate) return;
-  const estimate = pendingEstimate, id = estimate.book_id;
-  $('estimate-continue').disabled = true;
-  try {
-    const {job_id} = await api(`/api/books/${encodeURIComponent(id)}/generate`, {estimate_id:estimate.estimate_id,confirmed:true});
-    jobs.set(id,job_id); jobErrors.delete(id);
-    current.job = {count:estimate.count,completed:0,current_chapter:estimate.first_chapter};
-    $('estimate-dialog').close(); pendingEstimate = null;
-    renderGeneration(); startPolling(id,job_id);
-  } catch(e) { $('estimate-error').textContent = e.message; }
-  finally { $('estimate-continue').disabled = false; }
-};
-function startPolling(id, jobId) {
-  if (pollingJobs.has(jobId)) return;
-  pollingJobs.add(jobId);
-  pollJob(id, jobId);
-}
-async function pollJob(id, jobId) {
-  try {
-    const job = await api(`/api/jobs/${jobId}`);
-    if (current?.state.project_id === id) current.job = job;
-    jobErrors.delete(id);
-    if (job.status === 'running') {
-      if (current?.state.project_id === id && current.state.chapters.length < (job.current_chapter || 1) - 1) await selectBook(id,true);
-      renderGeneration(); setTimeout(() => pollJob(id,jobId), 1500); return;
+    function openApiConfig() {
+      state.apiKey = "";
+      state.errors.api = "";
+      state.dialogs.api = true;
     }
-    pollingJobs.delete(jobId);
-    jobs.delete(id);
-    if (current?.state.project_id === id) await selectBook(id, true);
-    else await refreshBooks();
-    if (job.status === 'failed') notice(job.error);
-  } catch(e) {
-    if (e.status === 404) {
-      pollingJobs.delete(jobId);
-      jobs.delete(id);
-      try { if (current?.state.project_id === id) await selectBook(id,true); }
-      catch(refreshError) { notice(refreshError.message); }
-      notice('任务状态已失效，已重新读取作品存档。请确认正文后再提交。');
-      return;
+    function openCreate() {
+      if (!state.configured) return openApiConfig();
+      state.errors.create = "";
+      state.dialogs.create = true;
     }
-    if (pollingJobs.has(jobId)) {
-      jobErrors.set(id, '状态连接暂时中断，正在重连；请勿重复提交。');
-      renderGeneration();
-      setTimeout(() => pollJob(id,jobId), 3000);
+    async function configure() {
+      if (state.busy.api) return;
+      state.busy.api = true;
+      state.errors.api = "";
+      try {
+        const cfg = await api("/api/config", { api_key: state.apiKey.trim() });
+        state.configured = cfg.configured;
+        state.model = cfg.model;
+        state.apiKey = "";
+        state.dialogs.api = false;
+        notify("API Key 已保存，可以开始创作。");
+      } catch (e) {
+        state.errors.api = e.message;
+      } finally {
+        state.busy.api = false;
+      }
     }
-  }
-}
-async function init() {
-  setView('home');
-  try {
-    localStorage.removeItem('tome-selected-book');
-    $('breadcrumb-title').textContent = '首页';
-    localStorage.removeItem('tome-last-deleted');
-    const cfg = await api('/api/config');
-    updateConnection(cfg);
-    if (!cfg.configured) openApiConfig();
-    await refreshBooks();
-  } catch(e) { $('connection-text').textContent = '连接失败'; notice(e.message); }
-  finally { window.scrollTo({top:0,left:0}); }
-}
-init();
+    async function refreshBooks() {
+      const version = ++libraryVersion;
+      const [books, trash] = await Promise.all([
+        api("/api/books"),
+        api("/api/books/trash"),
+      ]);
+      if (disposed || version !== libraryVersion) return;
+      state.books = books.books;
+      state.trash = trash.books;
+    }
+    function acceptBook(book, latest = false) {
+      const same = id.value === book.state.project_id;
+      state.chapterIndex = latest
+        ? Math.max(0, book.state.chapters.length - 1)
+        : same
+          ? Math.min(
+              state.chapterIndex,
+              Math.max(0, book.state.chapters.length - 1),
+            )
+          : 0;
+      state.current = book;
+      const key = book.state.project_id;
+      state.styles[key] ??= {
+        instructions: book.style?.instructions || "",
+        reference: book.style?.reference || "",
+      };
+      state.batches[key] ??= { approved: false, count: 1 };
+      state.batches[key].count = Math.max(
+        1,
+        Math.min(Number(state.batches[key].count) || 1, remaining.value),
+      );
+      state.errors.style = "";
+      if (book.job?.status === "running") {
+        state.jobs[key] = book.job.job_id;
+        startPolling(key, book.job.job_id);
+      } else {
+        delete state.jobs[key];
+        if (book.job?.status === "failed")
+          state.jobErrors[key] = book.job.error;
+        else delete state.jobErrors[key];
+      }
+    }
+    async function selectBook(key) {
+      const version = ++navigationVersion;
+      state.pending.add(key);
+      state.menuId = null;
+      try {
+        const book = await api(bookUrl(key));
+        if (disposed || version !== navigationVersion) return;
+        acceptBook(book);
+        state.view = "book";
+        notify();
+        await refreshBooks();
+      } catch (e) {
+        if (version === navigationVersion) notify(e.message);
+      } finally {
+        state.pending.delete(key);
+      }
+    }
+    async function refreshCurrent(key, latest = false) {
+      const book = await api(bookUrl(key));
+      if (!disposed && id.value === key && state.view === "book")
+        acceptBook(book, latest);
+    }
+    async function createBook() {
+      if (state.busy.create) return;
+      state.busy.create = true;
+      state.errors.create = "";
+      try {
+        const f = state.createForm,
+          book = await api("/api/books", {
+            title: f.title,
+            prompt: f.prompt,
+            chapters: Number(f.chapters),
+            target_units: Number(f.target_units),
+            style: { instructions: f.instructions, reference: f.reference },
+          });
+        state.dialogs.create = false;
+        state.createForm = {
+          title: "",
+          prompt: "",
+          chapters: 10,
+          target_units: 10000,
+          instructions: "",
+          reference: "",
+        };
+        await selectBook(book.state.project_id);
+      } catch (e) {
+        state.errors.create = e.message;
+      } finally {
+        state.busy.create = false;
+      }
+    }
+    async function pinBook(book) {
+      if (state.pending.has(book.id)) return;
+      state.pending.add(book.id);
+      state.menuId = null;
+      try {
+        await api(`${bookUrl(book.id)}/pin`, { pinned: !book.pinned });
+        await refreshBooks();
+      } catch (e) {
+        notify(e.message);
+      } finally {
+        state.pending.delete(book.id);
+      }
+    }
+    function requestDelete(book) {
+      state.deleteBook = book;
+      state.errors.delete = "";
+      state.menuId = null;
+      state.dialogs.delete = true;
+    }
+    async function deleteBook() {
+      if (!state.deleteBook || state.busy.delete) return;
+      state.busy.delete = true;
+      const key = state.deleteBook.id;
+      try {
+        await api(`${bookUrl(key)}/delete`, { confirmed: true });
+        delete state.styles[key];
+        delete state.batches[key];
+        delete state.factChoices[key];
+        delete state.jobErrors[key];
+        state.dialogs.delete = false;
+        state.deleteBook = null;
+        if (id.value === key) {
+          navigationVersion++;
+          state.current = null;
+          state.view = "library";
+        }
+        await refreshBooks();
+      } catch (e) {
+        state.errors.delete = e.message;
+      } finally {
+        state.busy.delete = false;
+      }
+    }
+    async function openTrash() {
+      state.trashMessage = "";
+      try {
+        await refreshBooks();
+        state.dialogs.trash = true;
+      } catch (e) {
+        notify(e.message);
+      }
+    }
+    async function restoreBook(book) {
+      const key = book.restore_token;
+      if (state.pending.has(key)) return;
+      state.pending.add(key);
+      state.trashMessage = "正在恢复…";
+      try {
+        const result = await api("/api/books/restore", { restore_token: key });
+        await refreshBooks();
+        state.trashMessage = `《${result.metadata.title}》已恢复到书架。`;
+      } catch (e) {
+        state.trashMessage = e.message;
+      } finally {
+        state.pending.delete(key);
+      }
+    }
+    function requestPurge(book) {
+      state.purgeBook = book;
+      state.purgeTitle = "";
+      state.errors.purge = "";
+      state.dialogs.purge = true;
+    }
+    async function purgeBook() {
+      const book = state.purgeBook;
+      if (!book || state.busy.purge || state.purgeTitle !== book.title) return;
+      state.busy.purge = true;
+      try {
+        await api("/api/books/trash/purge", {
+          restore_token: book.restore_token,
+          confirmation_title: state.purgeTitle,
+          confirmed: true,
+        });
+        state.dialogs.purge = false;
+        state.purgeBook = null;
+        state.purgeTitle = "";
+        await refreshBooks();
+        state.trashMessage = `《${book.title}》已彻底删除，无法恢复。`;
+      } catch (e) {
+        state.errors.purge = e.message;
+      } finally {
+        state.busy.purge = false;
+      }
+    }
+    function approveFirst() {
+      batch.value.count = batch.value.approved
+        ? Math.max(1, remaining.value)
+        : 1;
+    }
+    function turnChapter(direction) {
+      const next = state.chapterIndex + direction;
+      if (next < 0 || next >= chapters.value.length) return;
+      state.chapterIndex = next;
+      requestAnimationFrame(() => {
+        document.getElementById("chapter-body")?.scrollIntoView({ block: "start" });
+      });
+    }
+
+    async function uploadCover(event) {
+      const input = event.target;
+      const file = input.files?.[0];
+      const key = id.value;
+      if (!file || !key) return;
+      if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+        notify('请选择不超过 2 MB 的 PNG、JPEG 或 WebP 图片。');
+        input.value = '';
+        return;
+      }
+      state.busy.cover = true;
+      try {
+        const encoded = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result).split(',')[1]);
+          reader.onerror = () => reject(new Error('无法读取图片。'));
+          reader.readAsDataURL(file);
+        });
+        const result = await api(`${bookUrl(key)}/cover`, { image: encoded });
+        if (id.value === key) state.current.cover_version = result.cover_version;
+        await refreshBooks();
+        notify('封面已保存。');
+      } catch (error) {
+        notify(error.message);
+      } finally {
+        input.value = '';
+        state.busy.cover = false;
+      }
+    }
+
+    async function saveStyle(key = id.value) {
+      if (!key || state.busy.style) return;
+      state.busy.style = true;
+      state.errors.style = "";
+      const submitted = { ...state.styles[key] };
+      try {
+        const result = await api(`${bookUrl(key)}/style`, submitted);
+        if (id.value === key) state.current.style = result.style;
+      } catch (e) {
+        state.errors.style = `保存失败：${e.message}`;
+        throw e;
+      } finally {
+        state.busy.style = false;
+      }
+    }
+    async function submitStyle() {
+      try {
+        await saveStyle();
+      } catch {
+        /* Form keeps draft and displays its own error. */
+      }
+    }
+    async function prepareGeneration() {
+      if (generationDisabled.value) return;
+      const key = id.value;
+      state.busy.estimate = true;
+      notify();
+      try {
+        if (styleDirty.value) await saveStyle(key);
+        if (id.value !== key) return;
+        const result = await api(`${bookUrl(key)}/estimate`, {
+          count: Number(batch.value.count),
+          approved_first: batch.value.approved,
+        });
+        if (id.value !== key) return;
+        state.estimate = result;
+        state.estimateTitle = meta.value.title;
+        state.errors.estimate = "";
+        state.dialogs.estimate = true;
+      } catch (e) {
+        notify(e.message);
+      } finally {
+        state.busy.estimate = false;
+      }
+    }
+    async function confirmGeneration() {
+      const estimate = state.estimate;
+      if (!estimate || state.busy.start) return;
+      state.busy.start = true;
+      state.errors.estimate = "";
+      try {
+        const { job_id } = await api(`${bookUrl(estimate.book_id)}/generate`, {
+          estimate_id: estimate.estimate_id,
+          confirmed: true,
+        });
+        state.jobs[estimate.book_id] = job_id;
+        delete state.jobErrors[estimate.book_id];
+        if (id.value === estimate.book_id)
+          state.current.job = {
+            count: estimate.count,
+            completed: 0,
+            current_chapter: estimate.first_chapter,
+          };
+        state.dialogs.estimate = false;
+        state.estimate = null;
+        startPolling(estimate.book_id, job_id);
+      } catch (e) {
+        state.errors.estimate = e.message;
+      } finally {
+        state.busy.start = false;
+      }
+    }
+    function schedule(key, jobId, delay) {
+      if (!disposed)
+        timers.set(
+          jobId,
+          setTimeout(() => pollJob(key, jobId), delay),
+        );
+    }
+    function startPolling(key, jobId) {
+      if (!jobId || polling.has(jobId)) return;
+      polling.add(jobId);
+      pollJob(key, jobId);
+    }
+    async function pollJob(key, jobId) {
+      if (disposed) return;
+      try {
+        const job = await api(`/api/jobs/${encodeURIComponent(jobId)}`);
+        if (disposed || state.jobs[key] !== jobId) return;
+        if (id.value === key) state.current.job = job;
+        delete state.jobErrors[key];
+        if (job.status === "running") {
+          if (
+            id.value === key &&
+            chapters.value.length < (job.current_chapter || 1) - 1
+          )
+            await refreshCurrent(key, true);
+          schedule(key, jobId, 1500);
+          return;
+        }
+        polling.delete(jobId);
+        timers.delete(jobId);
+        delete state.jobs[key];
+        if (id.value === key) await refreshCurrent(key, true);
+        else await refreshBooks();
+        if (job.status === "failed") {
+          state.jobErrors[key] = job.error;
+          notify(job.error);
+        }
+      } catch (e) {
+        if (disposed) return;
+        if (e.status === 404) {
+          polling.delete(jobId);
+          delete state.jobs[key];
+          timers.delete(jobId);
+          try {
+            if (id.value === key) await refreshCurrent(key);
+          } catch (error) {
+            notify(error.message);
+          }
+          notify("任务状态已失效，已重新读取作品存档。请确认正文后再提交。");
+          return;
+        }
+        if (polling.has(jobId)) {
+          state.jobErrors[key] = "状态连接暂时中断，正在重连；请勿重复提交。";
+          schedule(key, jobId, 3000);
+        }
+      }
+    }
+    onMounted(async () => {
+      try {
+        localStorage.removeItem("tome-selected-book");
+        localStorage.removeItem("tome-last-deleted");
+      } catch {}
+      try {
+        const cfg = await api("/api/config");
+        state.configured = cfg.configured;
+        state.model = cfg.model;
+        if (!cfg.configured) openApiConfig();
+        await refreshBooks();
+      } catch (e) {
+        state.connectionError = true;
+        notify(e.message);
+      } finally {
+        window.scrollTo({ top: 0, left: 0 });
+      }
+    });
+    onBeforeUnmount(() => {
+      disposed = true;
+      timers.forEach((timer) => clearTimeout(timer));
+    });
+    return {
+      state,
+      id,
+      meta,
+      chapters,
+      chapter,
+      remaining,
+      running,
+      complete,
+      style,
+      batch,
+      styleStatus,
+      facts,
+      factGroups,
+      factTopic,
+      selectedFacts,
+      units,
+      generationDisabled,
+      generateLabel,
+      jobStatus,
+      connectionText,
+      breadcrumb,
+      sidebarHidden,
+      noticePanel,
+      titleOf,
+      bookUrl,
+      uploadCover,
+      turnChapter,
+      fmt,
+      cost,
+      price,
+      deletedAt,
+      toggleSidebar,
+      showLibrary,
+      closeDialog,
+      openCreate,
+      configure,
+      createBook,
+      selectBook,
+      pinBook,
+      requestDelete,
+      deleteBook,
+      openTrash,
+      restoreBook,
+      requestPurge,
+      purgeBook,
+      approveFirst,
+      submitStyle,
+      prepareGeneration,
+      confirmGeneration,
+    };
+  },
+});
+app.directive("dialog", {
+  mounted(el, binding) {
+    if (binding.value) el.showModal();
+  },
+  updated(el, binding) {
+    if (binding.value && !el.open) el.showModal();
+    else if (!binding.value && el.open) el.close();
+  },
+  beforeUnmount(el) {
+    if (el.open) el.close();
+  },
+});
+app.mount("#tome-app");
