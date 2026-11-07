@@ -69,10 +69,7 @@ def runtime_hashes():
     }
 
 
-def load_resume(path, plan):
-    from check_memory import read
-
-    record = read(path)
+def _verify_resume_envelope(record, plan):
     if record.get("schema") != "inf-writing-checkpoint-v1":
         raise ContractError("仅可恢复新写作入口的完整检查点；旧小说需显式迁移")
     if record.get("runtime_sha256") != runtime_hashes():
@@ -82,11 +79,13 @@ def load_resume(path, plan):
     book = record["book"]
     if record.get("book_sha256") != digest(canonical(book)):
         raise ContractError("写作检查点内容校验失败")
-    from .narrative_planning import verify_ledger
 
-    verify_ledger(book)
+
+def _verify_resume_memory_coverage(book):
+    from .narrative_planning import verify_ledger
     from inf_writer.memory_meaning import verify_meanings
 
+    verify_ledger(book)
     verify_meanings(book["memory"], book["chapters"])
     done = book["memory"]["processed_through"]
     chapters = book["chapters"]
@@ -105,91 +104,125 @@ def load_resume(path, plan):
     for fragment in book.get("prose_fragments", {}).values():
         if digest(fragment["text"]) != fragment["sha256"]:
             raise ContractError("Saved prose fragment hash mismatch")
-    if plan.get("event_first", True):
-        from .state_recovery import verify_recoveries
+    return done
 
-        verify_recoveries(book)
-        from .projection_grounding import verify_grounding
 
-        verify_grounding(book["memory"], chapters)
-        expected = digest(canonical(empty_writing_state()))
-        for chapter in chapters:
-            from .narrative_planning import verify_design
+def _verify_resume_event_history(book, done):
+    from .projection_grounding import verify_grounding
+    from .state_recovery import verify_recoveries
 
-            verify_design(chapter)
-            commit = verify_events(chapter.get("event_commit"))
-            from .prose_rendering import saved_text
+    chapters = book["chapters"]
+    verify_recoveries(book)
+    verify_grounding(book["memory"], chapters)
+    expected = digest(canonical(empty_writing_state()))
+    for chapter in chapters:
+        expected = _verify_resume_chapter(book, chapter, done, expected)
+    if digest(canonical(book["writing_state"])) != expected:
+        raise ContractError(
+            "Current world state differs from committed event outcomes"
+        )
+    _verify_prepared_resume_events(book, chapters, expected)
 
-            if (
-                digest(chapter["text"]) != chapter["sha256"]
-                or saved_text(chapter) != chapter["text"]
-            ):
-                raise ContractError("Saved prose data integrity failure")
-            if "event_stage_sources" in chapter:
-                chunks = chapter["event_stage_sources"]
-                parts = commit.get("stage_transactions", [])
-                if "\n\n".join(c["text"] for c in chunks) != chapter["text"]:
-                    raise ContractError("Saved event stages differ from chapter prose")
-                from .writing_units import verify_chunks
 
-                stages = [
-                    r["stage"]
-                    for r in commit.get("stage_reports", [])
-                    if r["status"] == "PREPARED"
-                ]
-                verify_chunks(
-                    chunks, parts, stages or list(range(len(parts))), complete=True
-                )
-            if (
-                commit["chapter"] != chapter["number"]
-                or commit["base_state_sha256"] != expected
-            ):
-                raise ContractError("Canonical event history has a state-chain gap")
-            expected = commit["state_sha256"]
-            if (
-                chapter["number"] <= done
-                and book["memory"]
-                .get("canonical_commits", {})
-                .get(str(chapter["number"]))
-                != commit["sha256"]
-            ):
-                raise ContractError(
-                    "Memory projection does not match committed event source"
-                )
-            if chapter["number"] <= done and chapter.get("prose_policy") == "unchecked":
-                from .prose_memory import verify_prose_coverage
+def _verify_resume_chapter(book, chapter, done, expected):
+    from .narrative_planning import verify_design
+    from .prose_rendering import saved_text
 
-                if not verify_prose_coverage(book["memory"], chapter):
-                    raise ContractError(
-                        "Saved prose memory coverage is missing or damaged"
-                    )
-            for recovered in book.get("state_recovery_commits", []):
-                if recovered["after_chapter"] != chapter["number"]:
-                    continue
-                transaction = verify_events(recovered["commit"])
-                if transaction["base_state_sha256"] != expected:
-                    raise ContractError("Recovered state history has a chain gap")
-                expected = transaction["state_sha256"]
-        if digest(canonical(book["writing_state"])) != expected:
+    verify_design(chapter)
+    commit = verify_events(chapter.get("event_commit"))
+    if (
+        digest(chapter["text"]) != chapter["sha256"]
+        or saved_text(chapter) != chapter["text"]
+    ):
+        raise ContractError("Saved prose data integrity failure")
+    _verify_resume_event_stages(chapter, commit)
+    if (
+        commit["chapter"] != chapter["number"]
+        or commit["base_state_sha256"] != expected
+    ):
+        raise ContractError("Canonical event history has a state-chain gap")
+    expected = commit["state_sha256"]
+    _verify_resume_projection(book, chapter, done, commit)
+    return _verify_resume_recoveries(book, chapter, expected)
+
+
+def _verify_resume_event_stages(chapter, commit):
+    if "event_stage_sources" not in chapter:
+        return
+    chunks = chapter["event_stage_sources"]
+    parts = commit.get("stage_transactions", [])
+    if "\n\n".join(c["text"] for c in chunks) != chapter["text"]:
+        raise ContractError("Saved event stages differ from chapter prose")
+    from .writing_units import verify_chunks
+
+    stages = [
+        report["stage"]
+        for report in commit.get("stage_reports", [])
+        if report["status"] == "PREPARED"
+    ]
+    verify_chunks(chunks, parts, stages or list(range(len(parts))), complete=True)
+
+
+def _verify_resume_projection(book, chapter, done, commit):
+    if chapter["number"] > done:
+        return
+    if (
+        book["memory"]
+        .get("canonical_commits", {})
+        .get(str(chapter["number"]))
+        != commit["sha256"]
+    ):
+        raise ContractError(
+            "Memory projection does not match committed event source"
+        )
+    if chapter.get("prose_policy") == "unchecked":
+        from .prose_memory import verify_prose_coverage
+
+        if not verify_prose_coverage(book["memory"], chapter):
             raise ContractError(
-                "Current world state differs from committed event outcomes"
+                "Saved prose memory coverage is missing or damaged"
             )
-        for key, prepared in book.get("prepared_events", {}).items():
-            commit = verify_events(prepared["commit"])
-            if (
-                key != str(len(chapters) + 1)
-                or commit["chapter"] != len(chapters) + 1
-                or commit["base_state_sha256"] != expected
-            ):
-                raise ContractError(
-                    "Prepared event transaction has an invalid chapter or base state"
-                )
-            if (
-                digest(canonical(prepared["candidate_state"])) != commit["state_sha256"]
-                or digest(canonical(prepared["proposal"])) != commit["proposal_sha256"]
-            ):
-                raise ContractError("Prepared event proposal/state integrity failure")
-            verify_stage_realizations(prepared)
+
+
+def _verify_resume_recoveries(book, chapter, expected):
+    for recovered in book.get("state_recovery_commits", []):
+        if recovered["after_chapter"] != chapter["number"]:
+            continue
+        transaction = verify_events(recovered["commit"])
+        if transaction["base_state_sha256"] != expected:
+            raise ContractError("Recovered state history has a chain gap")
+        expected = transaction["state_sha256"]
+    return expected
+
+
+def _verify_prepared_resume_events(book, chapters, expected):
+    for key, prepared in book.get("prepared_events", {}).items():
+        commit = verify_events(prepared["commit"])
+        if (
+            key != str(len(chapters) + 1)
+            or commit["chapter"] != len(chapters) + 1
+            or commit["base_state_sha256"] != expected
+        ):
+            raise ContractError(
+                "Prepared event transaction has an invalid chapter or base state"
+            )
+        if (
+            digest(canonical(prepared["candidate_state"])) != commit["state_sha256"]
+            or digest(canonical(prepared["proposal"])) != commit["proposal_sha256"]
+        ):
+            raise ContractError("Prepared event proposal/state integrity failure")
+        verify_stage_realizations(prepared)
+
+
+def load_resume(path, plan):
+    from check_memory import read
+
+    record = read(path)
+    _verify_resume_envelope(record, plan)
+    book = record["book"]
+    done = _verify_resume_memory_coverage(book)
+    if plan.get("event_first", True):
+        _verify_resume_event_history(book, done)
     return copy.deepcopy(book)
 
 

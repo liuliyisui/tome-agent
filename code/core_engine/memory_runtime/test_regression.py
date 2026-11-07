@@ -981,6 +981,7 @@ class StructuralRegression(unittest.TestCase):
         import tempfile
 
         import check_memory
+        from inf_writer.domain import ContractError
 
         with tempfile.TemporaryDirectory() as directory:
             target = Path(directory) / "checkpoint.json"
@@ -989,6 +990,22 @@ class StructuralRegression(unittest.TestCase):
                 check_memory.save_new(target, {"committed": 8})
             self.assertEqual(check_memory.read(target), {"committed": 7})
             self.assertFalse(list(Path(directory).glob(".memory-pending-*")))
+
+    def test_exception_details_keep_contract_errors_and_sanitize_runtime_errors(self):
+        import check_memory
+        from inf_writer.domain import ContractError
+
+        self.assertEqual(
+            check_memory._exception_details(ContractError("invalid input")),
+            {"error_type": "ContractError", "error": "invalid input"},
+        )
+        self.assertEqual(
+            check_memory._exception_details(RuntimeError("private detail")),
+            {
+                "error_type": "RuntimeError",
+                "error": "Sanitized runtime failure",
+            },
+        )
 
     def test_new_uncertainty_discovered_by_repair_is_reviewed_without_resetting_budget(
         self,

@@ -26,6 +26,15 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def _exception_details(exc):
+    return {
+        "error_type": type(exc).__name__,
+        "error": str(exc)
+        if isinstance(exc, ContractError)
+        else "Sanitized runtime failure",
+    }
+
+
 def save_new(path, value):
     """Atomic create, no overwrite: a checkpoint is complete or absent."""
     path = Path(path)
@@ -93,10 +102,7 @@ def execute(
                     "memory": memory,
                     "input_sha256": input_hash,
                     "runtime_sha256": source_hashes(),
-                    "error_type": type(exc).__name__,
-                    "error": str(exc)
-                    if isinstance(exc, ContractError)
-                    else "Sanitized runtime failure",
+                    **_exception_details(exc),
                 },
             )
             raise
@@ -232,7 +238,7 @@ def main():
         )
         result["status"] = "COMPLETE"
     except Exception as exc:
-        result = {"status": "FAILED_OR_PENDING", "error_type": type(exc).__name__}
+        result = {"status": "FAILED_OR_PENDING", **_exception_details(exc)}
         if (args.output / "pending.json").exists():
             result["done_through"] = read(args.output / "pending.json")["done_through"]
     replies = [read(p) for p in args.output.glob("call_*.response.json")]
