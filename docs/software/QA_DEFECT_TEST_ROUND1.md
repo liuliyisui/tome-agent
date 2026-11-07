@@ -20,7 +20,7 @@
 | 存储 | 本地文件存储（`DATABASE_URL` 为空） |
 | 测试数据目录 | 独立 `TOME_DATA_HOME`，与默认数据目录隔离 |
 | 服务端口 | 8877（默认 8765 被其他实例占用） |
-| 自动化基线 | 单元/集成测试 129 项通过，7 项跳过（未装 Playwright 时浏览器用例自动跳过） |
+| 自动化基线 | 单元/集成测试 138 项通过，7 项跳过（未装 Playwright 时浏览器用例自动跳过） |
 
 ## 2. 检查表
 
@@ -142,12 +142,25 @@ python -m unittest tests.integration.test_browser_smoke -v
 
 ## 3. 缺陷清单
 
-| 编号 | 级别 | 标题 | 阻断演示 | 可复现 | Issue |
-| --- | --- | --- | --- | --- | --- |
-| OBS-4 | 高 | 进程异常退出后残留 `operation.lock`，作品无法继续生成 | 是 | 是 | [#14](https://github.com/liuliyisui/tome-agent/issues/14) |
-| OBS-1 | 中 | 首次生成前的费用预估显著低估实际 token 与费用 | 否 | 是 | [#15](https://github.com/liuliyisui/tome-agent/issues/15) |
-| OBS-2 | 低 | 目标章节数小于大纲条目数 | 否 | 是 | [#16](https://github.com/liuliyisui/tome-agent/issues/16) |
-| OBS-3 | 低 | 缺少 `favicon.ico` 导致控制台 404 | 否 | 是 | [#17](https://github.com/liuliyisui/tome-agent/issues/17) |
+| 编号 | 级别 | 标题 | 阻断演示 | 可复现 | Issue | 状态 |
+| --- | --- | --- | --- | --- | --- | --- |
+| OBS-4 | 高 | 进程异常退出后残留 `operation.lock`，作品无法继续生成 | 是 | 是 | [#14](https://github.com/liuliyisui/tome-agent/issues/14) | 已修复并复测 |
+| OBS-1 | 中 | 首次生成前的费用预估显著低估实际 token 与费用 | 否 | 是 | [#15](https://github.com/liuliyisui/tome-agent/issues/15) | 已修复并复测 |
+| OBS-2 | 低 | 目标章节数小于大纲条目数 | 否 | 是 | [#16](https://github.com/liuliyisui/tome-agent/issues/16) | 已修复并复测 |
+| OBS-3 | 低 | 缺少 `favicon.ico` 导致控制台 404 | 否 | 是 | [#17](https://github.com/liuliyisui/tome-agent/issues/17) | 已修复并复测 |
+
+修复提交：`d8d75a0`（分支 `qa/defect-test-round1`）。复测环境与首轮一致：Windows 11 / Python 3.12.10，独立数据目录与端口，真实 DeepSeek 链路。
+
+### 3.1 修复内容与复测结果
+
+| 编号 | 修复 | 复测结果 |
+| --- | --- | --- |
+| OBS-4 | `operation.lock` 写入 PID；获取锁时若属主进程已不存在则回收，存活进程的锁仍然拦截；空锁文件超过 60 秒按崩溃残留回收 | 在 1 章作品目录写入已退出进程的 PID（33984）后提交生成：锁被自动回收，任务 `completed`，第 1 章正常落盘；存活进程持有锁时仍返回「有操作正在进行」 |
+| OBS-1 | 无历史用量时按每章约 10 次调用估算输入，并为规划、记忆等阶段计入附加输出；有历史用量时沿用实际均值 | 同一 1 章 / 800 字作品：预估 60620 / 9500 tokens，约 ¥0.099；实际 11 次调用、81363 / 14641 tokens，约 ¥0.14。偏差由约 4.1 倍降到约 1.4 倍，可支撑 ¥1 预算判断 |
+| OBS-2 | 保存大纲时只记录不超过 `max_chapters` 的后续章节 | 1 章作品生成后，`book.plan` 仅含第 1 章，章节数仍为 1 |
+| OBS-3 | `GET /favicon.ico` 返回 204，不再输出 404 | 实测返回 204，无响应体 |
+
+自动化回归：新增 9 项测试（锁回收 4 项、首次预估 1 项、大纲边界 3 项、favicon 1 项），完整套件 138 项通过、7 项跳过。
 
 ### OBS-4（高）进程异常退出后残留 `operation.lock`，作品无法继续生成
 
@@ -207,12 +220,13 @@ python -m unittest tests.integration.test_browser_smoke -v
 | 连续两章（2×500 字） | 8 + 8 次调用 | 两章均 `completed`，410 / 409 字 |
 | 崩溃恢复 | 1 个检查点后强杀 | 锁残留，需人工清理后才可继续 |
 | 预算耗尽（`INF_MAX_CALLS=1`） | 1 次调用 / 5784 输入 / 547 输出 | `failed`，错误明确，现场自动清理 |
+| 修复复测（#14–#17） | 11 次调用 / 81363 输入 / 14641 输出 | 四项均复测通过 |
 
-本次真实调用合计约 ¥0.36（按 off_peak 单价复算，实际账单以服务商为准）。
+首轮真实调用合计约 ¥0.36，修复复测新增约 ¥0.14，合计约 ¥0.50（按 off_peak 单价复算，实际账单以服务商为准）。
 
 ## 5. 未覆盖与后续
 
 - 浏览器端交互已由 `tests/integration/test_browser_smoke.py` 覆盖基础路径（首页、创建、预估弹窗、删除、刷新持久化）；正文阅读、批量续写、废案箱恢复等界面路径尚未纳入自动化。
 - PostgreSQL 存储路径本次未在本机执行（本机无 Docker/psql），CI 的 `postgresql` job 已对 PG 17/18 运行集成测试。
 - 长篇多章（Issue #6 的约 1 万字）不在本轮范围。
-- 建议修复顺序：OBS-4（阻断演示）→ OBS-1（预算误判）→ OBS-2 → OBS-3。
+- 四个缺陷均已修复并复测（`d8d75a0`），对应 Issue #14–#17 可随分支合入后关闭。
