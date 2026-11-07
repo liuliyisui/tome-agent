@@ -25,6 +25,7 @@ class WorkerPool:
         self.root.mkdir(parents=True, exist_ok=True)
         self.limit = limit
         self.workers = {}
+        self.readers = {}
         self.used = {}
         self.inflight = {}
         self.closed = False
@@ -38,6 +39,7 @@ class WorkerPool:
                 raise WorkerUnavailable("用户服务已关闭")
             for key, (process, _) in list(self.workers.items()):
                 if process.poll() is not None:
+                    self.readers.pop(key).join(timeout=10)
                     self.workers.pop(key)
                     self.used.pop(key, None)
                     self.inflight.pop(key, None)
@@ -94,11 +96,15 @@ class WorkerPool:
             lines = queue.Queue()
 
             def read_output():
-                for line in process.stdout:
-                    if line.startswith("Tome Agent: http://127.0.0.1:"):
-                        lines.put(line.strip())
+                try:
+                    for line in process.stdout:
+                        if line.startswith("Tome Agent: http://127.0.0.1:"):
+                            lines.put(line.strip())
+                finally:
+                    process.stdout.close()
 
-            threading.Thread(target=read_output, daemon=True).start()
+            reader = threading.Thread(target=read_output, daemon=True)
+            reader.start()
             try:
                 line = lines.get(timeout=20)
                 match = re.fullmatch(r"Tome Agent: http://127\.0\.0\.1:(\d+)", line)
@@ -106,10 +112,13 @@ class WorkerPool:
                     raise WorkerUnavailable("用户服务启动失败")
                 port = int(match.group(1))
             except (queue.Empty, WorkerUnavailable):
-                process.terminate()
+                if process.poll() is None:
+                    process.terminate()
                 process.wait(timeout=10)
+                reader.join(timeout=10)
                 raise WorkerUnavailable("用户服务启动失败，请稍后重试") from None
             self.workers[user_id] = (process, port)
+            self.readers[user_id] = reader
             self.used[user_id] = time.monotonic()
             self.inflight[user_id] = 1
             return port
@@ -137,6 +146,7 @@ class WorkerPool:
                 conn.close()
             process.terminate()
             process.wait(timeout=10)
+            self.readers.pop(key).join(timeout=10)
             self.workers.pop(key)
             self.used.pop(key)
             self.inflight.pop(key)
@@ -145,10 +155,12 @@ class WorkerPool:
     def close(self):
         with self.lock:
             self.closed = True
-            for process, _ in self.workers.values():
+            for key, (process, _) in self.workers.items():
                 if process.poll() is None:
                     process.terminate()
                     process.wait(timeout=10)
+                self.readers[key].join(timeout=10)
             self.workers.clear()
+            self.readers.clear()
             self.used.clear()
             self.inflight.clear()

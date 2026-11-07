@@ -16,6 +16,8 @@ class HostedWorkerTests(unittest.TestCase):
             try:
                 first = pool.get("a" * 32)
                 second = pool.get("b" * 32)
+                first_process = pool.workers["a" * 32][0]
+                second_process = pool.workers["b" * 32][0]
                 self.assertNotEqual(first, second)
                 self.assertEqual(pool.get("a" * 32), first)
                 with self.assertRaises(WorkerUnavailable):
@@ -58,7 +60,9 @@ class HostedWorkerTests(unittest.TestCase):
                 third = pool.get("c" * 32)
                 self.assertNotEqual(third, second)
                 self.assertNotIn("a" * 32, pool.workers)
+                self.assertTrue(first_process.stdout.closed)
             finally:
                 pool.close()
+            self.assertTrue(second_process.stdout.closed)
             with self.assertRaises(WorkerUnavailable):
                 pool.get("d" * 32)
