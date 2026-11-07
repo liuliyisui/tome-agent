@@ -395,6 +395,7 @@
                     <button type="button" class="chapter-step" :disabled="state.chapterIndex === 0" @click="turnChapter(-1)">← 上一章</button>
                     <span class="chapter-position">{{state.chapterIndex + 1}} / {{chapters.length}}</span>
                     <button type="button" class="chapter-step" :disabled="state.chapterIndex >= chapters.length - 1" @click="turnChapter(1)">下一章 →</button>
+                    <button type="button" class="chapter-step" :disabled="running || state.current.mode==='legacy' || !chapters.length" @click="regenerateChapter">↻ 重新生成本章</button>
                   </nav>
                 </section>
                 <aside class="writing-aside">

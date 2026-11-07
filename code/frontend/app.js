@@ -144,6 +144,7 @@ const app = createApp({
         cover: false,
         estimate: false,
         start: false,
+        regenerate: false,
         delete: false,
         purge: false,
       },
@@ -779,6 +780,39 @@ const app = createApp({
         state.busy.start = false;
       }
     }
+    async function regenerateChapter() {
+      const key = id.value;
+      if (!key || running.value) return;
+      const number = state.chapterIndex + 1;
+      const total = chapters.value.length;
+      const message =
+        number < total
+          ? `重新生成第 ${number} 章会删除第 ${number} 章及之后共 ${total - number + 1} 章，并重新生成第 ${number} 章。确定继续？`
+          : `重新生成第 ${number} 章（最后一章）？`;
+      if (!window.confirm(message)) return;
+      state.busy.regenerate = true;
+      notify();
+      try {
+        const { job_id } = await api(
+          `${bookUrl(key)}/chapters/${number}/regenerate`,
+          { confirmed: true },
+        );
+        state.jobs[key] = job_id;
+        delete state.jobErrors[key];
+        if (id.value === key)
+          state.current.job = {
+            count: 1,
+            completed: 0,
+            current_chapter: number,
+          };
+        startPolling(key, job_id);
+        notify("已开始重新生成，请稍候。");
+      } catch (e) {
+        notify(e.message);
+      } finally {
+        state.busy.regenerate = false;
+      }
+    }
     function schedule(key, jobId, delay) {
       if (!disposed)
         timers.set(
@@ -913,6 +947,7 @@ const app = createApp({
       selectSkills,
       prepareGeneration,
       confirmGeneration,
+      regenerateChapter,
     };
   },
 });

@@ -5,6 +5,7 @@ import binascii
 import json
 import os
 import re
+import shutil
 import tempfile
 import time
 from collections import Counter
@@ -25,7 +26,7 @@ from inf_writer.domain import (
 )
 from inf_writer.models import Budget, ModelGateway
 from inf_writer.storage import FileStore
-from memory_runtime.writing import WritingSession, load_resume
+from memory_runtime.writing import WritingSession, load_resume, runtime_hashes
 
 from . import database
 from .settings import BACKEND_ROOT, Settings
@@ -510,6 +511,80 @@ def _load_longform_book(book_id, plan):
     if checkpoint == root or not checkpoint.is_relative_to(root):
         raise ValueError("长文本检查点路径不安全")
     return _heal_chapter_titles(load_resume(checkpoint, plan))
+
+
+def _checkpoint_paths(book_id):
+    runs = book_path(book_id) / "longform-runs"
+    if not runs.exists():
+        return []
+    return sorted(
+        runs.glob("run-*/checkpoint_*.json"),
+        key=lambda path: (path.stat().st_mtime, path.name),
+    )
+
+
+def find_chapter_boundary(book_id, chapters):
+    """Newest clean checkpoint that holds exactly ``chapters`` committed chapters."""
+    candidates = []
+    for path in _checkpoint_paths(book_id):
+        try:
+            record = strict_json(path.read_text(encoding="utf-8-sig"))
+        except (ValueError, OSError):
+            continue
+        book = record.get("book")
+        if not isinstance(book, dict):
+            continue
+        if len(book.get("chapters", [])) != chapters:
+            continue
+        reason = record.get("reason")
+        if chapters == 0:
+            if reason == "EMPTY_START":
+                candidates.append(path)
+        elif reason == "MEMORY_COMMITTED":
+            candidates.append(path)
+    return candidates[-1] if candidates else None
+
+
+def rewind_for_regeneration(book_id, number, confirmed=False):
+    """Point the book at the checkpoint before ``number`` so it can be rewritten.
+
+    Later chapters are intentionally dropped: regenerating chapter ``number``
+    invalidates the event/memory chain of every chapter after it, so the old
+    state is kept only as orphaned checkpoints, never mixed back in.
+    """
+    meta = _metadata(book_id)
+    plan = _longform_plan(meta)
+    book = _load_longform_book(book_id, plan)
+    if book is None:
+        raise ValueError("作品还没有可续写的检查点")
+    current = len(book["chapters"])
+    if type(number) is not int or not 1 <= number <= current:
+        raise ValueError("章节号超出范围")
+    dropped = current - number + 1
+    if number < current and not confirmed:
+        raise ValueError(
+            f"重新生成第{number}章会丢弃第{number}章及之后共{dropped}章，请先确认"
+        )
+    boundary = find_chapter_boundary(book_id, number - 1)
+    if boundary is None:
+        raise ValueError("找不到该章之前的存档检查点")
+    record = strict_json(boundary.read_text(encoding="utf-8-sig"))
+    hashes = runtime_hashes()
+    if record.get("runtime_sha256") != hashes:
+        backup = boundary.with_name(boundary.name + ".prehash.bak")
+        if not backup.exists():
+            shutil.copy2(boundary, backup)
+        record["runtime_sha256"] = hashes
+        _atomic_json(boundary, record)
+    pointer = _longform_pointer(book_id)
+    if pointer.exists():
+        backup = pointer.with_name(pointer.name + ".pre-regenerate.bak")
+        if not backup.exists():
+            backup.write_text(pointer.read_text(encoding="utf-8-sig"), encoding="utf-8")
+    root = book_path(book_id).resolve()
+    relative = boundary.resolve().relative_to(root).as_posix()
+    _atomic_json(pointer, {"checkpoint": relative})
+    return {"number": number, "chapters": current, "dropped": dropped}
 
 
 def generate_longform(

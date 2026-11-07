@@ -198,6 +198,68 @@ class WebServer(ThreadingHTTPServer):
         threading.Thread(target=run, daemon=True).start()
         return {"job_id": job_id}
 
+    def start_regeneration(self, book_id, number, confirmed):
+        with self.job_lock:
+            if book_id in self.busy:
+                raise ValueError("当前作品正在生成，请等任务结束后再重新生成")
+        info = service.rewind_for_regeneration(book_id, number, confirmed)
+        settings = Settings.load()
+        with self.job_lock:
+            if book_id in self.busy:
+                raise ValueError("当前作品正在生成，请等任务结束后再重新生成")
+            job_id = uuid4().hex
+            self.busy.add(book_id)
+            started_at = time.time()
+            self.jobs[job_id] = {
+                "status": "running",
+                "book_id": book_id,
+                "started_at": started_at,
+                "count": 1,
+                "completed": 0,
+                "current_chapter": number,
+            }
+            if database.enabled():
+                try:
+                    database.job(job_id, self.jobs[job_id])
+                except Exception:
+                    self.jobs.pop(job_id, None)
+                    self.busy.discard(book_id)
+                    raise
+
+        def progress(update):
+            with self.job_lock:
+                self.jobs[job_id].update(update)
+                if database.enabled():
+                    database.job(job_id, self.jobs[job_id])
+
+        def run():
+            try:
+                with service.operation_lock(service.book_path(book_id)):
+                    service.generate(
+                        book_id, count=1, progress=progress, settings=settings
+                    )
+                progress({"completed": 1})
+                result = {"status": "completed", "book_id": book_id}
+            except Exception as exc:
+                result = {"status": "failed", "book_id": book_id, "error": str(exc)}
+            with self.job_lock:
+                self.jobs[job_id] = {
+                    **self.jobs[job_id],
+                    **result,
+                    "started_at": started_at,
+                }
+                self.busy.discard(book_id)
+                if database.enabled():
+                    try:
+                        database.job(job_id, self.jobs[job_id])
+                    except database.DatabaseUnavailable:
+                        logging.error(
+                            "Unable to persist final job status; recover jobs after database returns"
+                        )
+
+        threading.Thread(target=run, daemon=True).start()
+        return {"job_id": job_id, **info}
+
 
 class Handler(BaseHTTPRequestHandler):
     def reply(
@@ -400,6 +462,22 @@ class Handler(BaseHTTPRequestHandler):
                             raise ValueError("当前章节正在生成，请在完成后保存文风设定")
                         style = service.save_writing_style(book_id, data)
                     self.reply(200, {"style": style})
+                elif (
+                    post
+                    and len(parts) == 6
+                    and parts[3] == "chapters"
+                    and parts[5] == "regenerate"
+                ):
+                    try:
+                        number = int(parts[4])
+                    except ValueError:
+                        raise ValueError("章节号无效") from None
+                    self.reply(
+                        202,
+                        self.server.start_regeneration(
+                            book_id, number, data.get("confirmed") is True
+                        ),
+                    )
                 elif not post and len(parts) == 3:
                     self.reply(
                         200,
