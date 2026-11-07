@@ -106,12 +106,17 @@ const app = createApp({
   render: window.TomeRender,
   setup() {
     let sidebarCollapsed = false;
+    let theme = "system";
     try {
       sidebarCollapsed =
         localStorage.getItem("tome-sidebar-collapsed") === "true";
+      const savedTheme = localStorage.getItem("tome-theme");
+      if (["light", "dark", "system"].includes(savedTheme)) theme = savedTheme;
     } catch {}
+    const systemTheme = window.matchMedia?.("(prefers-color-scheme: dark)");
     const state = reactive({
       view: "home",
+      theme,
       sidebarCollapsed,
       books: [],
       trash: [],
@@ -123,6 +128,7 @@ const app = createApp({
       notice: "",
       menuId: null,
       dialogs: {
+        settings: false,
         api: false,
         create: false,
         trash: false,
@@ -173,6 +179,20 @@ const app = createApp({
       purgeTitle: "",
       trashMessage: "",
     });
+    function applyTheme() {
+      const dark = state.theme === "dark" ||
+        (state.theme === "system" && systemTheme?.matches);
+      document.documentElement.dataset.theme = dark ? "dark" : "light";
+    }
+    watch(() => state.theme, () => {
+      applyTheme();
+      try {
+        localStorage.setItem("tome-theme", state.theme);
+      } catch {}
+    }, { immediate: true, flush: "sync" });
+    systemTheme?.addEventListener("change", applyTheme);
+    onBeforeUnmount(() => systemTheme?.removeEventListener("change", applyTheme));
+
     let navigationVersion = 0,
       libraryVersion = 0,
       disposed = false;

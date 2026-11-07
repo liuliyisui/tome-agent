@@ -8,7 +8,7 @@ const frontend = path.resolve(__dirname, "../../code/frontend");
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const flush = () => new Promise((resolve) => setImmediate(resolve));
 
-async function fixture({ configured = true } = {}) {
+async function fixture({ configured = true, theme = null, darkSystem = false, blockStorage = false } = {}) {
   const calls = [],
     timers = [],
     mounted = [],
@@ -35,11 +35,23 @@ async function fixture({ configured = true } = {}) {
     gate = null,
     jobStatus = "running";
   const response = (data) => ({ ok: true, json: async () => clone(data) });
+  const storage = new Map(theme === null ? [] : [["tome-theme", theme]]);
+  const root = { dataset: {} };
+  const themeListeners = new Set();
+  const media = {
+    matches: darkSystem,
+    addEventListener: (name, listener) => themeListeners.add(listener),
+    removeEventListener: (name, listener) => themeListeners.delete(listener),
+  };
   const context = vm.createContext({
     console,
-    window: { TomeRender: () => {} },
+    window: { TomeRender: () => {}, matchMedia: () => media },
     history: {},
-    localStorage: { getItem: () => null, setItem() {}, removeItem() {} },
+    localStorage: {
+      getItem(key) { if (blockStorage) throw new Error("Storage unavailable"); return storage.get(key) ?? null; },
+      setItem(key, value) { if (blockStorage) throw new Error("Storage unavailable"); storage.set(key, value); },
+      removeItem(key) { storage.delete(key); },
+    },
     setTimeout: (callback) => {
       timers.push(callback);
       return timers.length;
@@ -58,6 +70,7 @@ async function fixture({ configured = true } = {}) {
           })),
         });
       if (url === "/api/books/trash") return response({ books: [] });
+      if (url === "/api/skills") return response({ skills: [] });
       if (url === "/api/jobs/job-1")
         return response({
           status: jobStatus,
@@ -89,6 +102,7 @@ async function fixture({ configured = true } = {}) {
     fs.readFileSync(path.join(frontend, "vue.runtime.global.prod.js"), "utf8"),
     context,
   );
+  context.document = { documentElement: root };
   context.Vue = {
     ...context.Vue,
     onMounted: (callback) => mounted.push(callback),
@@ -111,6 +125,13 @@ async function fixture({ configured = true } = {}) {
     timers,
     books,
     response,
+    root,
+    storage,
+    themeListeners,
+    changeSystemTheme(dark) {
+      media.matches = dark;
+      themeListeners.forEach((listener) => listener());
+    },
     delayBook(id) {
       let resolve;
       const promise = new Promise((r) => {
@@ -197,4 +218,51 @@ test("purge guard rejects wrong title before any request", async () => {
   f.model.closeDialog("purge");
   assert.equal(f.model.state.purgeTitle, "");
   f.dispose();
+});
+
+
+test("system theme follows device appearance and removes its listener on disposal", async () => {
+  const f = await fixture({ darkSystem: true });
+  assert.equal(f.model.state.theme, "system");
+  assert.equal(f.root.dataset.theme, "dark");
+  f.changeSystemTheme(false);
+  assert.equal(f.root.dataset.theme, "light");
+  f.changeSystemTheme(true);
+  assert.equal(f.root.dataset.theme, "dark");
+  assert.equal(f.themeListeners.size, 1);
+  f.dispose();
+  assert.equal(f.themeListeners.size, 0);
+});
+
+test("explicit themes override system appearance and survive a reload", async () => {
+  const f = await fixture({ darkSystem: true });
+  f.model.state.theme = "light";
+  assert.equal(f.root.dataset.theme, "light");
+  assert.equal(f.storage.get("tome-theme"), "light");
+  f.changeSystemTheme(true);
+  assert.equal(f.root.dataset.theme, "light");
+  f.model.state.theme = "dark";
+  f.changeSystemTheme(false);
+  assert.equal(f.root.dataset.theme, "dark");
+  const reload = await fixture({ theme: f.storage.get("tome-theme"), darkSystem: false });
+  assert.equal(reload.model.state.theme, "dark");
+  assert.equal(reload.root.dataset.theme, "dark");
+  reload.model.state.theme = "system";
+  assert.equal(reload.root.dataset.theme, "light");
+  reload.changeSystemTheme(true);
+  assert.equal(reload.root.dataset.theme, "dark");
+  f.dispose();
+  reload.dispose();
+});
+
+test("invalid or blocked theme storage falls back to system without breaking startup", async () => {
+  for (const options of [{ theme: "obsolete" }, { blockStorage: true }]) {
+    const f = await fixture({ ...options, darkSystem: true });
+    assert.equal(f.model.state.theme, "system");
+    assert.equal(f.root.dataset.theme, "dark");
+    assert.equal(f.model.state.connectionError, false);
+    f.model.state.theme = "light";
+    assert.equal(f.root.dataset.theme, "light");
+    f.dispose();
+  }
 });
