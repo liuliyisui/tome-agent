@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from inf_backend import generation, service, settings
+from memory_runtime.writing import WritingSession
 
 
 class ModelSettingsTests(unittest.TestCase):
@@ -55,6 +56,36 @@ class ModelSettingsTests(unittest.TestCase):
         self.assertIsNone(
             generation.price_for({**old, "model": "deepseek-chat"})["rates"]
         )
+
+    def test_existing_checkpoint_remains_resumable_after_switch(self):
+        (self.root / ".env").write_text(
+            "DEEPSEEK_API_KEY=sk-old-test-key\n", encoding="utf-8"
+        )
+        with patch.object(service, "BOOKS", self.root / "books"):
+            book = service.create_book(
+                "old-book", "旧作", "故事", 2, 1000, settings=settings.Settings.load()
+            )
+            plan = service._longform_plan(book["metadata"])
+            session = WritingSession(
+                service.book_path("old-book") / "longform-runs" / "initial",
+                object(),
+                plan,
+            )
+            service._atomic_json(
+                service._longform_pointer("old-book"),
+                {
+                    "checkpoint": session.latest_checkpoint.relative_to(
+                        service.book_path("old-book")
+                    ).as_posix()
+                },
+            )
+            settings.configure_model("openai", "gpt-4o", "", "sk-new-test-key")
+            recovered = service._load_longform_book("old-book", plan)
+            self.assertEqual(recovered["chapters"], [])
+            self.assertEqual(
+                settings.Settings.for_book(book["metadata"]["model"]).api_key,
+                "sk-old-test-key",
+            )
 
     def test_invalid_config_does_not_modify_existing_file(self):
         path = self.root / ".env"
