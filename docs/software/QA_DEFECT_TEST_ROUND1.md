@@ -121,12 +121,12 @@
 
 ## 3. 缺陷清单
 
-| 编号 | 级别 | 标题 | 阻断演示 | 可复现 |
-| --- | --- | --- | --- | --- |
-| OBS-4 | 高 | 进程异常退出后残留 `operation.lock`，作品无法继续生成 | 是 | 是 |
-| OBS-1 | 中 | 首次生成前的费用预估显著低估实际 token 与费用 | 否 | 是 |
-| OBS-2 | 低 | 目标章节数小于大纲条目数 | 否 | 是 |
-| OBS-3 | 低 | 缺少 `favicon.ico` 导致控制台 404 | 否 | 是 |
+| 编号 | 级别 | 标题 | 阻断演示 | 可复现 | Issue |
+| --- | --- | --- | --- | --- | --- |
+| OBS-4 | 高 | 进程异常退出后残留 `operation.lock`，作品无法继续生成 | 是 | 是 | [#14](https://github.com/liuliyisui/tome-agent/issues/14) |
+| OBS-1 | 中 | 首次生成前的费用预估显著低估实际 token 与费用 | 否 | 是 | [#15](https://github.com/liuliyisui/tome-agent/issues/15) |
+| OBS-2 | 低 | 目标章节数小于大纲条目数 | 否 | 是 | [#16](https://github.com/liuliyisui/tome-agent/issues/16) |
+| OBS-3 | 低 | 缺少 `favicon.ico` 导致控制台 404 | 否 | 是 | [#17](https://github.com/liuliyisui/tome-agent/issues/17) |
 
 ### OBS-4（高）进程异常退出后残留 `operation.lock`，作品无法继续生成
 
