@@ -1,6 +1,6 @@
 # 目录调整说明
 
-为保持项目根目录结构，共享检查规则现位于 `code/backend/pyproject.toml`，预提交配置位于 `.github/pre-commit-config.yaml`，历史整改包位于 `docs/quality/fixes/`。下方有关根目录配置位置及历史整改结果的叙述是原始记录，不表示当前文件仍位于根目录；历史补丁包针对旧目录布局，请勿直接运行写入操作来配置当前项目。
+为保持项目根目录结构，共享检查规则现位于 `code/backend/pyproject.toml`，预提交配置位于 `.github/pre-commit-config.yaml`，历史整改包位于 `docs/software/quality/fixes/`。下方有关根目录配置位置及历史整改结果的叙述是原始记录，不表示当前文件仍位于根目录；历史补丁包针对旧目录布局，请勿直接运行写入操作来配置当前项目。
 
 从仓库根目录检查：
 
@@ -11,7 +11,7 @@ pre-commit install --config .github/pre-commit-config.yaml
 pre-commit run --config .github/pre-commit-config.yaml --all-files
 ```
 
-编辑器的 Ruff 扩展也需要显式指向 `code/backend/pyproject.toml`。原根目录配置保存在 `docs/quality/legacy-root-pyproject.toml`，供对照历史报告。
+编辑器的 Ruff 扩展也需要显式指向 `code/backend/pyproject.toml`。原根目录配置保存在 `docs/software/quality/legacy-root-pyproject.toml`，供对照历史报告。
 
 ---
 

@@ -1,4 +1,4 @@
-"""Regression tests for the five refactors in ``docs/quality/quality_report.md``.
+"""Regression tests for the five refactors in ``docs/software/quality/QUALITY_REPORT.md``.
 
 Four of these tests fail on the pre-refactor baseline (commit ``e4d23ce``) and
 pass after the refactor; the fifth pins behaviour the refactor had to preserve.
