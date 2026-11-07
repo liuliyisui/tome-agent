@@ -136,12 +136,13 @@ class RepairTests(unittest.TestCase):
         self.assertFalse(controller.repairs.pending())
         self.assertTrue(controller.passed())
 
-    def test_repair_cannot_hide_new_core_question(self):
+    def test_repair_keeps_side_thread_without_rejecting_mainline_ending(self):
         provider = RepairProvider(); provider.metadata_bad = True; provider.add_question = True
         controller = self.controller(provider); self.observe(controller)
         self.assertFalse(controller.repairs.pending())
         self.assertEqual(controller.state['obligations'][-1]['status'], 'pending')
-        self.assertFalse(controller.passed())
+        self.assertFalse(controller.state['obligations'][-1]['blocking'])
+        self.assertTrue(controller.passed())
 
     def test_final_retry_is_bounded_and_remaining_jobs_prevent_pass(self):
         provider = RepairProvider(); provider.repair_bad = True

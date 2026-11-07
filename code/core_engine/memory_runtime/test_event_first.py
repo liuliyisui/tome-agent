@@ -31,6 +31,12 @@ class EventLocal(Local):
     def __init__(self,fail=None,writer=None):super().__init__(fail=fail);self.writer=writer
     def complete(self,request):
         p=request.payload
+        if request.role=='memory'and 'memory_records'in p:
+            self.requests.append(copy.deepcopy(request))
+            rows=[dict(memory_choice=r['memory_choice'],units=[dict(part_choices=[part['part_choice']for part in r['parts']],
+                claim_type='unclassified',epistemic_status='not_assessed',perspective_owner=None)],reason='离线接口样例，不作语义认证')
+                for r in p['memory_records']if r['memory_choice']in p['annotation_required_choices']]
+            return ModelReply(canonical(dict(annotations=rows,relations=[])),1,1,0)
         if request.role=='planner':
             self.requests.append(copy.deepcopy(request));self.number=p['chapter_number']
             n=self.number

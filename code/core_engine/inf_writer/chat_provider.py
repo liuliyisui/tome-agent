@@ -15,6 +15,14 @@ from .models import ModelReply, ModelRequest
 
 class ProviderError(ContractError):
     """Sanitized failure; no response body, credential or request dump."""
+    def __init__(self,message,*,http_status=None):
+        super().__init__(message)
+        self.http_status=http_status if type(http_status)is int and 100<=http_status<=599 else None
+
+    def safe_details(self):
+        if self.http_status is None:return {}
+        return dict(http_status=self.http_status,failure_category={401:'authentication_failed',
+            402:'insufficient_balance',403:'access_denied'}.get(self.http_status,'http_error'))
 
 
 @dataclass(frozen=True)
@@ -86,7 +94,7 @@ class ChatCompletionProvider:
             })
             response = connection.getresponse()
             if response.status != 200:
-                raise ProviderError(f"Provider HTTP {response.status}; no retry or redirect")
+                raise ProviderError(f"Provider HTTP {response.status}; no retry or redirect",http_status=response.status)
             raw = response.read(self.max_response_bytes + 1)
             if len(raw) > self.max_response_bytes:
                 raise ProviderError("Provider response exceeded configured byte cap")

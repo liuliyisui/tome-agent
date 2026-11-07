@@ -9,9 +9,17 @@ MAX_JOBS_PER_REQUEST = 4
 class ClosureRepair:
     def __init__(self, controller):
         self.owner = controller
-        self.state = controller.state
-        self.jobs = self.state.setdefault('repair_jobs', {})
-        self.history = self.state.setdefault('repair_history', [])
+        self.state.setdefault('repair_jobs', {})
+        self.state.setdefault('repair_history', [])
+
+    @property
+    def state(self):return self.owner.state
+
+    @property
+    def jobs(self):return self.state.setdefault('repair_jobs', {})
+
+    @property
+    def history(self):return self.state.setdefault('repair_history', [])
 
     def pending(self):
         return [job for job in self.jobs.values() if job['status'] == 'PENDING']
@@ -76,7 +84,7 @@ class ClosureRepair:
             failed_items=copy.deepcopy(batch),
             obligations=obligation_view([r for r in owner.state['obligations'] if r['id'] in targets]),
             # Read-only peer state gives context, not permission to modify peers.
-            accepted_obligations=obligation_view([r for r in owner.state['obligations'] if r['id'] not in targets]),
+            accepted_obligations=obligation_view([r for r in owner.state['obligations'] if r['id'] not in targets and r.get('blocking',True)]),
             evidence_sources=sources,
             repair_review_fields=bool(metadata),
             source_policy='Current chapter last 8000 characters, verified historical quotes, and up to 8000 characters of failed spans. Other prose remains stored; do not infer missing evidence.',
@@ -99,7 +107,10 @@ class ClosureRepair:
                 '"review_fields":[{"job_key":"待修review键","new_obligations":[],"ending_closed":false}]}。'
                 'obligations仅包含待修义务，各一次；证据只用提供的source_choice，resolved必须有证据。'
                 'review_fields只包含待修review任务，各一次；新增仅列必须交代的核心问题。'
-                'ending_closed依据最新已保存正文判断，不能凭计划或旧章节结论宣布结局完成。', payload)
+                '主线有终局即可，开放式结局可以完结；不因支线、精确时刻、人物余生未交代而拒绝。'
+                '须回应初始核心问题；立案、移交或行政结项不自动证明目标完成，不能把关键答案推到卷外就称开放结局。'
+                '验收中的或不可变成且。新增线索不升级为强制完结条件。'
+                'ending_closed表示基础主线已终结，包含开放结局；依据最新已保存正文判断，不能凭计划或旧章节结论宣布结局完成。', payload)
             issues = []
             repaired = owner.validate_rows(value, sources, issues, target_ids=targets)
             bad = {r.get('id') for r in issues}
@@ -127,12 +138,14 @@ class ClosureRepair:
                 row = rows[0]
                 try:
                     owner.add_obligations(row.get('new_obligations'))
-                    if type(row.get('ending_closed')) is not bool:
+                    from .story_closure import ending_flag
+                    flag=ending_flag(row)
+                    if type(flag) is not bool:
                         raise ContractError('Repair ending flag must be boolean')
                     # An old review cannot certify a later chapter's ending.
                     for check in owner.state['checks']:
                         if job['key'] in check.get('repair_keys', []):
-                            check['ending_closed'] = row['ending_closed'] if job['chapter'] == latest['number'] else False
+                            check['ending_closed'] = flag if job['chapter'] == latest['number'] else False
                     job.update(status='DONE', resolution='TARGETED_REPAIR')
                     record['repaired'].append(job['key'])
                 except ContractError as exc:

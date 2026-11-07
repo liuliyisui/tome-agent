@@ -10,7 +10,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from inf_writer.chat_provider import ChatCompletionProvider
-from inf_writer.domain import Snapshot, canonical, project_id, strict_json
+from inf_writer.domain import Snapshot, canonical, project_id, sanitize_title, strict_json
 from inf_writer.models import Budget, ModelGateway
 from inf_writer.storage import FileStore
 from memory_runtime.writing import WritingSession, load_resume
@@ -184,6 +184,20 @@ def _longform_pointer(book_id):
     return book_path(book_id) / "longform-current.json"
 
 
+def _heal_chapter_titles(book):
+    """Normalize titles saved before instruction-echo sanitization existed.
+
+    Chapter and plan titles carry no integrity digest, so they can be
+    rewritten safely; prepared (not yet written) event proposals are left
+    untouched because their digests are already committed.
+    """
+    for chapter in book.get("chapters", []):
+        chapter["title"] = sanitize_title(chapter["title"], chapter.get("number"))
+    for entry in book.get("plan", {}).values():
+        entry["title"] = sanitize_title(entry["title"], entry.get("number"))
+    return book
+
+
 def _load_longform_book(book_id, plan):
     pointer = _longform_pointer(book_id)
     if not pointer.exists():
@@ -195,7 +209,7 @@ def _load_longform_book(book_id, plan):
     root = book_path(book_id).resolve()
     if checkpoint == root or not checkpoint.is_relative_to(root):
         raise ValueError("长文本检查点路径不安全")
-    return load_resume(checkpoint, plan)
+    return _heal_chapter_titles(load_resume(checkpoint, plan))
 
 
 def generate_longform(book_id, count=1, gateway=None, budget=None, settings=None, progress=None):

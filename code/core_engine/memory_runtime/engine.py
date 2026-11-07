@@ -30,7 +30,19 @@ class MemoryEngine:
         if 'event_commit' in prefix[-1]:
             from .event_first import project_memory
             candidate=project_memory(memory,prefix,number,trace)
+            if prefix[-1].get('prose_policy')=='unchecked':
+                from .projection_grounding import ground,retryable_chapters
+                candidate=ground(candidate,prefix,number,self.gateway,trace)
+                older=[n for n in retryable_chapters(candidate) if n<number]
+                if older:
+                    candidate=ground(candidate,prefix,older[0],self.gateway,trace)
+            from .meaning_organizer import organize
+            trace_start=len(trace)
+            candidate=organize(candidate,prefix,number,self.gateway,trace)
             candidate,layer_report=self.layers.run(candidate,prefix,number,prefix[-1]['title'],trace)
+            organization_intake=[move for entry in trace[trace_start:]if entry.get('role')=='memory_meaning_intake'for move in entry['moves']]
+            layer_report['intake_moves']=organization_intake+layer_report.get('intake_moves',[])
+            layer_report['moves']=organization_intake+layer_report.get('moves',[])
             return candidate,dict(chapter=number,layers=layer_report,selection_ids=[],withheld_mutations=0,
                 temporal_omitted_ids=[],temporal_coverage='Canonical events own state changes; memory only chooses storage tiers',
                 extraction_transforms=[],canonical_projection=True)
@@ -54,6 +66,38 @@ class MemoryEngine:
 
     def recall(self,memory,question,trace,label='query'):
         return recall_probe(memory,question,self.gateway,trace,label)
+
+    def repair_structured_memory(self,memory,chapters,trace,*,max_chapters=2):
+        """One final bounded catch-up, including the last chapter's failures."""
+        from .projection_grounding import ground,retryable_chapters,pending_chapters
+        from inf_writer.domain import digest,canonical
+        candidate=copy.deepcopy(memory)
+        retryable=retryable_chapters(candidate)
+        # Rotate final negative rechecks: a permanently absent chapter must not
+        # consume every bounded pass and starve later chapters indefinitely.
+        negatives=[n for n in pending_chapters(candidate) if n not in retryable]
+        negatives.sort(key=lambda n:(candidate.get('projection_grounding',{}).get(str(n),{}).get('reconsideration_passes',0),n))
+        order=retryable+negatives
+        if not order:return candidate
+        reviewed=[];attempted=[]
+        for number in order[:max_chapters]:
+            positions={i for i,r in enumerate(chapters[number-1]['event_commit']['memory_projection'],1)
+                if r['ref']in candidate['projection_omissions'][str(number)]}
+            start=len(trace);attempted.append(number)
+            candidate=ground(candidate,chapters,number,self.gateway,trace,reconsider_absent=True)
+            seen={i for entry in trace[start:]if entry.get('role')=='prose_memory_grounding'
+                for i in entry.get('reviewed_positions',[])}
+            if positions<=seen:reviewed.append(number)
+        candidate['projection_recheck_coverage']=dict(queued_chapters=order,attempted_chapters=attempted,
+            reviewed_chapters=reviewed,unreviewed_chapters=[n for n in order if n not in reviewed],
+            scope='One bounded pass over queued chapters; coverage does not certify every plan outcome')
+        if candidate!=memory:
+            from .meaning_organizer import organize
+            candidate=organize(candidate,chapters,len(chapters),self.gateway,trace)
+            scope=':structured-repair:'+digest(canonical(memory))[:20]
+            candidate,_=self.layers.run(candidate,chapters,len(chapters),
+                chapters[-1]['title'],trace,transaction_scope=scope)
+        return candidate
 
     @staticmethod
     def empty():return empty_memory()

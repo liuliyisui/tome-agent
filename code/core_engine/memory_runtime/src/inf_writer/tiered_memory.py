@@ -169,6 +169,8 @@ def apply_delta(memory, result, chapters, transaction_id):
                     continue
                 row['sources'] = sources
                 row['tier'] = 'working'
+                from .memory_meaning import content_key
+                row['meaning_previous_version']=dict(content_sha256=content_key(old),reason=operation['reason'])
                 reset_after_update(row)
             elif action == 'reconcile':
                 row = reconcile(old,operation,candidate,chapters)
@@ -202,6 +204,10 @@ def wire_item(item, include_historical=False):
     result={k: copy.deepcopy(item[k]) for k in
             ('id', 'subject', 'attribute', 'claim', 'kind', 'status', 'tier', 'revision')}
     result['temporality']=time_view(item,include_historical)
+    from .memory_meaning import meaning_view,valid_annotation
+    if valid_annotation(item) or item['kind']=='prose_excerpt':result['meaning']=meaning_view(item)
+    if item['kind']=='task' and result.get('meaning',{}).get('task_state')in ('completed','cancelled'):
+        result['status']=result['meaning']['task_state']
     if 'provenance_scope' in item:result['provenance_scope']=item['provenance_scope']
     if not include_historical or result['temporality']['time_scope']!='historical':
         result['claim']=current_claim(item)
@@ -255,6 +261,7 @@ def legacy_projection(selection):
                  revision=r['revision'], status='active', memory_id=r['id'],
                  kind=r['kind'], memory_status=r['status'], tier=r['tier'],
                  temporal_scope=r.get('temporality',{}).get('time_scope','current'),
+                 **({'meaning':copy.deepcopy(r['meaning'])}if 'meaning'in r else {}),
                  **({'provenance_scope':r['provenance_scope']} if 'provenance_scope' in r else {}))
             for r in selection['items'] if r['status'] not in ('superseded', 'cancelled')
             and r.get('temporality',{}).get('time_scope')!='historical']
@@ -277,6 +284,8 @@ def select_history_context(memory, *, query='', max_bytes=12000):
             tier=item['tier'],time_scope='historical_only',original_claim=item['claim'],
             historical_parts=old,
             use_rule='Earlier statements/knowledge only; do not use as current state or negate later valid changes')
+        from .memory_meaning import meaning_view,valid_annotation
+        if valid_annotation(item):row['meaning']=meaning_view(item,historical=True)
         score=sum(term in canonical(row).lower() for term in terms)
         if score or not terms:ranked.append((score,identifier,row))
     snapshots=set()
@@ -293,6 +302,8 @@ def select_history_context(memory, *, query='', max_bytes=12000):
             original_claim=old['claim'],old_status=old['status'],archived_reason=entry['reason'],
             source_chapters=sorted({s['chapter_number'] for s in old.get('sources',[])}),
             use_rule='Archived prior version, not current state; consult current record for latest value')
+        from .memory_meaning import meaning_view,valid_annotation
+        if valid_annotation(old):row['meaning']=meaning_view(old,historical=True)
         score=sum(term in canonical(row).lower() for term in terms)
         if score or not terms:ranked.append((score,old['id']+'@'+str(old['revision']),row))
     selected=[];omitted=[]

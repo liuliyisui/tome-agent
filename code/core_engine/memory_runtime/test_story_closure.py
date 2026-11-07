@@ -95,9 +95,9 @@ class ClosureTests(unittest.TestCase):
                 self.assertFalse(result['draft_completed'])
                 self.assertEqual(result['stop_reason'], 'STORY_CLOSURE_UNVERIFIED')
 
-    def test_new_central_question_prevents_false_ending(self):
+    def test_new_side_thread_does_not_prevent_mainline_ending(self):
         result = self.run_book(ClosureLocal('new'))
-        self.assertFalse(result['draft_completed'])
+        self.assertTrue(result['draft_completed'])
 
     def test_event_first_keeps_general_review_off_but_checks_ending(self):
         from memory_runtime.test_event_first import EventLocal
@@ -146,7 +146,7 @@ class ClosureTests(unittest.TestCase):
         StoryClosure(session).initialize()
         self.assertEqual(sum(r.role == 'closure_planner' for r in session.gateway.requests), 1)
 
-    def test_missing_earlier_review_cannot_be_hidden_by_passing_ending(self):
+    def test_early_sources_are_saved_without_requiring_early_closure_calls(self):
         class Session:
             plan = dict(goal='完成记录', constraints=[], chapters=2, closure_enabled=True)
             gateway = ClosureLocal('outage')
@@ -155,11 +155,12 @@ class ClosureTests(unittest.TestCase):
         session = Session(); controller = StoryClosure(session); controller.initialize()
         session.book['chapters'].append(dict(number=1, text='甲开始记录。'))
         controller.observe(session.book['chapters'][-1])
+        self.assertFalse(any(r.role=='closure_reviewer' for r in session.gateway.requests))
         session.gateway.mode = 'resolved'
         session.book['chapters'].append(dict(number=2, text='甲完成记录。'))
         controller.observe(session.book['chapters'][-1])
-        self.assertEqual(controller.state['status'], 'UNKNOWN')
-        self.assertFalse(controller.passed())
+        self.assertEqual(controller.state['status'], 'MODEL_PASSED')
+        self.assertTrue(controller.passed())
 
     def controller(self, provider=None):
         obligations = [dict(id=f'O{i}', question=f'问题{i}', acceptance='正文交代',

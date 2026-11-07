@@ -56,10 +56,36 @@ def identity(subject, attribute):
         raise ContractError("Use a stable snake_case attribute; values do not belong in the name")
     return canonical([subject,attribute])
 
+_TITLE_WRAP=re.compile(r'^[\s《「『【“”"\']+|[》」』】”"\'…！!～\s]+$')
+_TITLE_CHAPTER_NUM=r'(?:[0-9〇零一二两三四五六七八九十百千万]+[章节卷回]|[0-9〇零一二两三四五六七八九十百千万]+(?=\s*$))'
+_TITLE_ECHO=re.compile(
+    r'^(?:请|麻烦|帮我?|接着|继续|再|往下|下一步)?\s*'
+    r'(?:续写|續寫|接着写|继续写|接着创作|继续创作|续章)\s*'
+    r'(?:第?\s*(?:'+_TITLE_CHAPTER_NUM+r'))?'
+    r'\s*[:：,，、.。;；!！?？\-—–~～\s]*'
+)
+
+def sanitize_title(value,number=None):
+    """Normalize planner/fallback titles by stripping instruction echoes.
+
+    The planner sometimes echoes the writing instruction into the chapter
+    title ("续写", "续写第3章：", "请续写："). Those prefixes carry no story
+    meaning; an entirely echoed title falls back to a plain chapter label.
+    """
+    title=_TITLE_WRAP.sub('',value.strip())
+    while True:
+        stripped=_TITLE_ECHO.sub('',title,count=1)
+        if stripped==title:break
+        title=_TITLE_WRAP.sub('',stripped)
+    if not title:title=f'第{number}章' if number is not None else '未命名章节'
+    return title
+
 def chapter_plan(value):
     fields(value,("number","title","brief")); integer(value["number"],"chapter number",1)
     text(value["title"],"title"); text(value["brief"],"brief")
-    return copy.deepcopy(value)
+    cleaned=copy.deepcopy(value)
+    cleaned["title"]=sanitize_title(value["title"],value["number"])
+    return cleaned
 
 
 def evidence_segments(draft):

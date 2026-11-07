@@ -167,7 +167,8 @@ LAYER_SYSTEM=(
 
 class LayerAgent:
     def __init__(self,gateway):self.gateway=gateway
-    def run(self,memory,chapters,number,focus,trace):
+    @staticmethod
+    def intake(memory,chapters,transaction_id):
         # Intake must fit before selecting a bounded model request. A long new
         # chapter can otherwise make mandatory working records impossible to
         # select, so the very scheduler that could demote them never runs.
@@ -177,13 +178,17 @@ class LayerAgent:
             wire=wire_item(row)
             if len(canonical(working+[wire]).encode('utf-8'))<=16000:working.append(wire)
             else:overflow.append(dict(op='demote',id=row['id'],expected_revision=row['revision'],reason='工作输入超预算，暂存近期，保留完整内容与来源供剧情调度'))
-        staged=apply_delta(memory,dict(changes=overflow),chapters,f'layer-intake-{number}') if overflow else memory
-        result,report=self._schedule(staged,chapters,number,focus,trace)
+        staged=apply_delta(memory,dict(changes=overflow),chapters,transaction_id) if overflow else copy.deepcopy(memory)
+        return staged,overflow
+
+    def run(self,memory,chapters,number,focus,trace,*,transaction_scope=''):
+        staged,overflow=self.intake(memory,chapters,f'layer-intake-{number}{transaction_scope}')
+        result,report=self._schedule(staged,chapters,number,focus,trace,transaction_scope=transaction_scope)
         report['intake_moves']=overflow
         report['moves']=overflow+report['moves']
         return result,report
 
-    def _schedule(self,memory,chapters,number,focus,trace):
+    def _schedule(self,memory,chapters,number,focus,trace,*,transaction_scope=''):
         pending=[i for i in memory.get('layer_deferred_ids',[]) if i in memory['items'] and has_current_content(memory['items'][i])]
         forced=[wire_item(r) for r in memory['items'].values() if r['tier']=='working' and has_current_content(r)]
         forced_ids={r['id'] for r in forced};required=[]
@@ -284,7 +289,7 @@ class LayerAgent:
                     operations.append(dict(op=operation,id=decision['id'],expected_revision=old['revision'],reason=reason))
                 delta=dict(changes=operations)
                 if not operations:delta['no_change_reason']='Model explicitly kept every selected item in its current tier'
-                result=apply_delta(memory,delta,chapters,f'chapter-layers-{number}')
+                result=apply_delta(memory,delta,chapters,f'chapter-layers-{number}{transaction_scope}')
                 deferred_ids={bindings[alias] for alias in deferred}
                 result['layer_deferred_ids']=sorted((set(pending)|deferred_ids)-(set(bindings.values())-deferred_ids))
                 working=[wire_item(row) for row in result['items'].values()
@@ -305,10 +310,15 @@ class LayerAgent:
 
 RECALL_SYSTEM=(
     '只根据提供的记忆回答问题，不依据常识猜测小说事实。输出JSON且只允许answer字符串、memory_ids数组这两个顶层字段。'
-    'memory_ids只能选本次qNNN或hNNN引用，给出实际支持回答的记录。'
+    'memory_ids只能选本次qNNN、hNNN或sNNN引用，给出实际支持回答的记录。'
     'current_memory表示当前可用信息，historical_memory明确表示历史说法或旧版本。'
+    'meaning进一步区分含义单元：reported_unverified只是人物说法，hypothesis只是猜测；'
+    '按perspective_owner归属认识，按validity与task_state判断是否有效或完成。冲突未解决时明确不确定，不靠最新一条或所在层级判真。'
     '历史未找到而后来找到时应说明变化，不把旧判断复活。身份归属和人物已故状态要准确。'
+    'recorded_through_chapter和source_chapters表示证据顺序。回答最终/当前状态时先核对较晚来源，'
+    '旧章的暂定结论、待办、岗位限制不能与后来的明确变更并列当作同时有效；较晚章节也不自动推翻无关历史事实。'
     'source_evidence是已入库记录附带的原始证据，可以补充摘要遗漏的动作；证据是当时的记录，不自动代表现在。'
+    'source_context_windows是同库保存的连续原话上下文，可确认行动过程。后来的禁止、暂停或处分不能否定此前已经发生的行动；未检索到也不等于从未发生。'
     '允许把明确指向同一具名人物或同一亲属关系的事实关联起来；没有相反证据，不凭空拆成不同人物。'
     '没有足够依据时写未知；有冲突则明确冲突。不要编造正文、来源或字段。'
 )
@@ -374,20 +384,27 @@ def parse_recall_answer(content,bindings):
 
 
 def recall_probe(memory,query,gateway,trace,label):
-    current=recall_selection(memory,query,max_bytes=36000)
+    from .recall_search import selection as search_selection
+    current=search_selection(memory,query,gateway,trace,label,recall_selection,max_bytes=36000)
     history=select_history_context(memory,query=query,max_bytes=12000)
     bindings={};current_rows=[];old_rows=[]
     for n,row in enumerate(current['items'],1):
         alias=f'q{n:03d}';bindings[alias]=dict(memory_id=row['id'],view='current',tier=row['tier'])
         current_rows.append(dict(id=alias,subject=row['subject'],attribute=row['attribute'],claim=row['claim'],
                                  kind=row['kind'],status=row['status'],tier=row['tier'],
+                                 source_chapters=row.get('source_chapters',[]),
+                                 recorded_through_chapter=row.get('recorded_through_chapter'),
+                                 meaning=row.get('meaning'),
                                  **({'provenance_scope':row['provenance_scope']} if 'provenance_scope' in row else {})))
     for n,row in enumerate(history['items'],1):
         alias=f'h{n:03d}';bindings[alias]=dict(memory_id=row['memory_id'],view='historical',tier=memory['items'][row['memory_id']]['tier'])
         old_rows.append(dict(row,id=alias))
     evidence=source_evidence_view(memory,current['selected_ids'],bindings,query)
+    from .recall_search import source_windows
+    windows=source_windows(memory,current,bindings)
     payload=dict(question=query,current_memory=current_rows,historical_memory=old_rows,source_evidence=evidence['items'],
                  scope='Memory and its stored bound quotes only; no original chapter loaded, expected answer or future chapter supplied')
+    if windows:payload['source_context_windows']=windows
     repair_budget=[1]
     def request_answer(system,body,role):
         reply=gateway.complete(ModelRequest('reviewer',system,body,4096))
@@ -421,7 +438,7 @@ def recall_probe(memory,query,gateway,trace,label):
         historical_omitted_ids=history['omitted_ids'],semantic_correctness='PENDING_MANUAL_REVIEW')
 
 
-def recall_selection(memory,query,max_bytes=36000):
+def recall_selection(memory,query,max_bytes=36000,*,focus='balanced'):
     """Query-specific thin view, with one-hop subject expansion across tiers.
 
     Unlike the generation context, a recall query need not force every working
@@ -435,14 +452,72 @@ def recall_selection(memory,query,max_bytes=36000):
         if not has_current_content(item):continue
         row={k:item[k] for k in ('id','subject','attribute','kind','status','tier','revision')}
         row['claim']=current_claim(item);row['time_scope']=time_view(item)['time_scope']
+        from inf_writer.memory_meaning import meaning_view,valid_annotation
+        if valid_annotation(item)or item['kind']=='prose_excerpt':row['meaning']=meaning_view(item)
+        if item['kind']=='task'and row.get('meaning',{}).get('task_state')in ('completed','cancelled'):
+            row['status']=row['meaning']['task_state']
+        row['source_chapters']=sorted({s['chapter_number'] for s in item.get('sources',[])})
+        row['recorded_through_chapter']=max(row['source_chapters'],default=0)
         if 'provenance_scope' in item:row['provenance_scope']=item['provenance_scope']
         hay=canonical(row).lower();score=sum(term in hay for term in terms)
+        if focus!='balanced':
+            from .recall_search import literal_score
+            score=literal_score(row,item,query)
         rows.append((score,identifier,row))
+    if focus!='balanced':
+        def rank(value):
+            score,identifier,row=value
+            action_boost=4 if focus=='action_history'and row['kind']in ('event','prose_excerpt')else 0
+            age=row['recorded_through_chapter']if focus=='earliest'else -row['recorded_through_chapter']
+            return (-(score+action_boost),age,identifier)
+        selected=[];proofs=set()
+        if focus=='earliest':
+            # A prediction in chapter one can match "willing" more literally
+            # than the person's actual first response in chapter three.
+            # Reserve witnesses across the first few relevant chapters rather
+            # than confusing maximum word overlap with chronological coverage.
+            early_chapters=sorted({r[2]['recorded_through_chapter']for r in rows if r[0]>0})[:4]
+            witness_budget=max_bytes//(2*max(1,len(early_chapters)))
+            for chapter in early_chapters:
+                group=[r for r in rows if r[0]>0 and r[2]['recorded_through_chapter']==chapter]
+                def first_source(value):
+                    item=memory['items'][value[1]]
+                    position=min((s['evidence_id']for s in item.get('sources',[])),default='')
+                    return (position,-value[0],0 if value[2]['kind']=='event'else 1,value[1])
+                for score,identifier,row in sorted(group,key=first_source):
+                    if len(canonical(row).encode('utf-8'))<=witness_budget and len(canonical(selected+[row]).encode('utf-8'))<=max_bytes//2:
+                        selected.append(row);proofs.update((s['chapter_number'],s['evidence_id'])for s in memory['items'][identifier].get('sources',[]))
+                        break
+        kept={r['id']for r in selected}
+        for score,identifier,row in sorted(rows,key=rank):
+            if not score or identifier in kept:continue
+            sources={(s['chapter_number'],s['evidence_id'])for s in memory['items'][identifier].get('sources',[])}
+            if sources and sources<=proofs:continue
+            if len(canonical(selected+[row]).encode('utf-8'))<=max_bytes:
+                selected.append(row);proofs.update(sources);kept.add(identifier)
+        kept={r['id']for r in selected}
+        return dict(items=selected,selected_ids=[r['id']for r in selected],omitted_ids=sorted(set(memory['items'])-kept),
+            bytes=len(canonical(selected).encode('utf-8')),retrieval='literal evidence search: '+focus)
     related={row['subject'] for _,_,row in rows if row['subject'] in query}
     related.update(row['subject'] for score,_,row in sorted(rows,key=lambda r:(-r[0],r[1]))[:5] if score>0)
-    ranked=sorted(rows,key=lambda r:(-(r[0]+8*(r[2]['subject'] in related)),r[1]))
+    ranked=sorted(rows,key=lambda r:(-(r[0]+8*(r[2]['subject'] in related)),
+                                   -r[2]['recorded_through_chapter'],r[1]))
     selected=[];omitted=[]
+    # Reserve evidence from the latest relevant observations. Long earlier
+    # paragraphs must not crowd the final state out of a bounded answer view.
+    relevant=[r for r in rows if r[0]>0 or r[2]['subject'] in related]
+    newest=max((r[2]['recorded_through_chapter'] for r in relevant),default=0)
+    reserved=sorted((r for r in relevant if r[2]['recorded_through_chapter']==newest),
+                    key=lambda r:({'state':0,'knowledge':1,'task':2,'event':3}.get(r[2]['kind'],4),-r[0],r[1]))
+    reserved_subjects=set()
+    for score,identifier,row in reserved:
+        if len(selected)>=4:break
+        if row['subject'] in reserved_subjects:continue
+        if len(canonical(selected+[row]).encode('utf-8'))<=max_bytes//3:
+            selected.append(row);reserved_subjects.add(row['subject'])
+    selected_ids={r['id'] for r in selected}
     for score,identifier,row in ranked:
+        if identifier in selected_ids:continue
         if score==0 and row['subject'] not in related:
             omitted.append(identifier);continue
         if len(canonical(selected+[row]).encode('utf-8'))<=max_bytes:selected.append(row)

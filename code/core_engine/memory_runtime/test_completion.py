@@ -24,7 +24,7 @@ class Faults(EventLocal):
             if n%3==1:return ModelReply('{"title":"只有标题"}',1,1,0)
             if n%3==2:return ModelReply('这不是JSON。',1,1,0)
             # Valid public fields, nonexistent existing-record selection.
-            change=dict(operation='change_fact_value',fact_ref=dict(record_choice=999999),new_value='门内')
+            change=dict(operation='change_fact_value',fact_ref=dict(record_choice=999999,record_subject='甲',record_property_name='location'),new_value='门内')
             value=dict(number=n,title='追索',brief='继续调查',future_updates=[],scenes=[dict(purpose='查找',participants=['甲'],beats=[dict(statement='甲推开门。',assertion_scope='performed_action',requires=[],changes=[change])])])
             return ModelReply(canonical(value),1,1,0)
         if request.role=='writer':
@@ -82,7 +82,7 @@ class CompletionTests(unittest.TestCase):
                     p=request.payload;n=p['chapter_number'];self.number=n;self.requests.append(copy.deepcopy(request))
                     if n==2:return ModelReply('{"title":"不完整规划"}',1,1,0)
                     value='门外' if n==1 else '门内'
-                    change=dict(operation='establish_fact',subject='甲',property_name='location',value=value,fact_class='current_state') if n==1 else dict(operation='change_fact_value',fact_ref=dict(record_choice=p['reference_choices'].index('fact_record:n0001r0001')+1),new_value=value)
+                    change=dict(operation='establish_fact',subject='甲',property_name='location',value=value,fact_class='current_state') if n==1 else dict(operation='change_fact_value',fact_ref=dict(record_subject='甲',record_property_name='location'),new_value=value)
                     raw=dict(number=n,title='来信',brief='调查',future_updates=[],scenes=[dict(purpose='调查',participants=['甲'],beats=[dict(statement='甲在'+value+'。',assertion_scope='performed_action',requires=[],changes=[change])])])
                     return ModelReply(canonical(raw),1,1,0)
                 if request.role=='writer' and 'frozen_events' in request.payload:

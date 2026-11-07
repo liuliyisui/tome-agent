@@ -38,7 +38,13 @@ class Local:
         if self.fail=='adjudication' and p.get('issue_consistency_review'):raise RuntimeError('offline consistency outage')
         if self.fail=='layers2' and p.get('completed_chapter')==2:raise RuntimeError('offline layer outage')
         if self.fail=='interrupt' and 'memory_contract' in p:raise KeyboardInterrupt()
-        if request.role=='planner':
+        if p.get('task')=='repair_narrative_accountability':
+            required=set(p['required_thread_ids'])
+            rows=[dict(topic=r['topic'],question=r['question'],acceptance=r['acceptance'],
+                importance=r['importance'],action='advance',reason='离线夹具按已保存正文补登记',next_step=r['next_step'])
+                for r in p['known_threads']if r['thread_id']in required]
+            value=dict(threads=rows,thread_review_note='离线夹具明确检查，无新增待回应事项')
+        elif request.role=='planner':
             self.number=p['chapter_number'];value=dict(number=self.number,title='甲的记录',brief='甲的记录接续',future_updates=[])
         elif request.role=='writer':value=dict(text=f'甲的第{self.number}次记录已经完成。',continuity_updates=[],no_continuity_change_reason='仅一般记录动作，无日期、物证、签收或逐页核对变化')
         elif 'memory_contract' in p:

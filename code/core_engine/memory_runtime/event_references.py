@@ -73,9 +73,8 @@ def plan_record(row,event_id,source_commit,previous=None):
 
 def catalogue(book):
     result=dict(memory={},plans={});rows=[]
-    for chapter in book['chapters']:
-        commit=chapter.get('event_commit')
-        if not commit:continue
+    from .state_recovery import transactions
+    for number,commit in transactions(book):
         events={b['id']:b['event_id'] for s in commit['scenes'] for b in s['beats']}
         for row in commit['memory_projection']:
             if row['kind']=='task' and row.get('status')=='planned':
@@ -88,7 +87,7 @@ def catalogue(book):
                 record=row['canonical_record'];ref=dict(type=record['type'],id=record['id'],revision=record['revision'],scope=record.get('kind','record'))
             else:
                 ref=dict(type='occurrence',id=events[row['beat_id']],revision=1,scope='event_occurrence')
-            rows.append((chapter['number'],row,dict(ref,source_commit=commit['sha256'])))
+            rows.append((number,row,dict(ref,source_commit=commit['sha256'])))
     for mid,item in book['memory']['items'].items():
         source_chapters={s['chapter_number'] for s in item['sources']}
         for number,row,ref in reversed(rows):

@@ -139,7 +139,7 @@ class InterfaceAndMemoryRepair(unittest.TestCase):
                 self.requests.append(copy.deepcopy(request));self.number=request.payload['chapter_number']
                 p=request.payload;n=self.number
                 self.assert_contract(p)
-                changes=[dict(operation='establish_fact',subject='信',property_name='位置',value='门口',fact_class='current_state')] if n==1 else [dict(operation='change_fact_value',fact_ref=dict(record_choice=p['reference_choices'].index('fact_record:n0001r0001')+1),new_value='屋内')]
+                changes=[dict(operation='establish_fact',subject='信',property_name='位置',value='门口',fact_class='current_state')] if n==1 else [dict(operation='change_fact_value',fact_ref=dict(record_subject='信',record_property_name='位置'),new_value='屋内')]
                 return ModelReply(canonical(dict(number=n,title='来信',brief='移动',future_updates=[],scenes=[dict(purpose='记事',participants=['甲'],beats=[dict(statement='甲把信放好。',assertion_scope='performed_action',requires=[],changes=changes)])])),1,1,0)
             def assert_contract(self,p):
                 assert 'reference_selection_contract' in p
@@ -420,7 +420,7 @@ class InterfaceAndMemoryRepair(unittest.TestCase):
                     assert 'memory_bank_revision' in p and 'checkpoint_revision' not in p
                     for row in p['retrieved_memory']:assert 'memory_kind' in row and 'memory_revision' in row and 'revision' not in row
                     choice=p['reference_choices'].index('fact_record:n0001r0001')+1 if n>1 else None
-                    change=dict(operation='establish_fact',subject='信',property_name='位置',value=target,fact_class='current_state') if n==1 else dict(operation='change_fact_value',fact_ref=dict(record_choice=choice),new_value=target)
+                    change=dict(operation='establish_fact',subject='信',property_name='位置',value=target,fact_class='current_state') if n==1 else dict(operation='change_fact_value',fact_ref=dict(record_subject='信',record_property_name='位置'),new_value=target)
                     action=dict(statement='甲将信放在'+target+'。',assertion_scope='performed_action',requires=[] if n==1 else [dict(record_choice=choice)],changes=[change])
                     value=proposal([action],n)
                     value['scenes'][0].pop('id')

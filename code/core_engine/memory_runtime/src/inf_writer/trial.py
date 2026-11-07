@@ -69,7 +69,9 @@ class RecordedProvider:
             reply = self.provider.complete(request)
         except Exception as exc:
             # Do not serialize arbitrary exception messages or provider repr/secrets.
-            save_new(prefix.with_suffix(".error.json"), {"type": type(exc).__name__, "usage_unknown": True})
+            from .chat_provider import ProviderError
+            details=exc.safe_details()if isinstance(exc,ProviderError)else {}
+            save_new(prefix.with_suffix(".error.json"), {"type": type(exc).__name__, "usage_unknown": True,**details})
             raise
         save_new(prefix.with_suffix(".response.json"), asdict(reply))
         return reply

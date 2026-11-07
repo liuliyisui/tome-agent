@@ -5,7 +5,7 @@ from .domain import ContractError, chapter_plan, fields, strict_json, text
 from .models import ModelGateway, ModelRequest
 
 PROMPTS={
- "planner":"你是INF规划智能体。根据总纲、约束和已有状态，只规划下一章；future_updates只能局部修改尚未写作的后续章节。输出JSON：number,title,brief,future_updates（每项number,title,brief）。不要把计划当已发生事实。",
+ "planner":"你是INF规划智能体。根据总纲、约束和已有状态，只规划下一章；future_updates只能局部修改尚未写作的后续章节。输出JSON：number,title,brief,future_updates（每项number,title,brief）。title是简洁的故事内章节名，不以续写等指令词开头。不要把计划当已发生事实。",
  "writer":"你是INF写作智能体。依照本章计划、总纲约束和当前记忆创作正文。只输出JSON对象，例如{\"text\":\"正文\"}，不要额外添加type、标题字段、解释或代码围栏。人物变化要有事件依据；不能自行修改正式记忆。",
  "memory":"你是INF记忆维护智能体。只根据当前正文和既有记忆提出必要的store/update/retire。只输出JSON对象，顶层只含changes及可选no_change_reason，不添加type、changed、解释或代码围栏。changes是数组，空数组时必须另给no_change_reason说明为何没有新增或变化事实。每项action,subject,attribute,value,expected_revision,reason，以及evidence_id或quote二选一。若输入提供evidence_segments，优先选其中一个evidence_id；程序会取回原文，禁止自己合并或改写引文。attribute必须是稳定英文snake_case，例如eye_color、location、occupation、known_information；不得用中文、属性值或整句当字段名，已有属性沿用原名。以subject + attribute查找active_facts中的已有记录：不存在才store且expected_revision为null；已有同名属性发生变化必须update，expected_revision抄该条的revision，不能store。已有事实未变不重复写。同一主体同一属性每章只提交一个最终变化，不能先store再update。退役用retire且value为null，同样匹配已有revision。程序自动归档旧值，不自行修改旧记录。新属性示例：{\"changes\":[{\"action\":\"store\",\"subject\":\"甲\",\"attribute\":\"location\",\"value\":\"门外\",\"expected_revision\":null,\"evidence_id\":\"e0001\",\"reason\":\"正文明确位置\"}]}。若甲.location已有revision=2，变化示例：{\"changes\":[{\"action\":\"update\",\"subject\":\"甲\",\"attribute\":\"location\",\"value\":\"屋内\",\"expected_revision\":2,\"evidence_id\":\"e0002\",\"reason\":\"正文写明移动\"}]}。示例不是本章事实，必须使用输入真实主体、版本、值与证据编号。不提到不等于丢失；人物猜测、计划或假设不等于世界真值，可记为该人物的suspected_information而不是指控对象的确定属性。不能为了避免格式错误就删除需要保留的全部事实。",
  "reviewer":"你是INF审核智能体。区分硬矛盾与可调整小纲建议。人物说出的猜测不自动等于叙述者确认的事实；小纲未列出的动作、对话、合理反应或信息释放快慢不能单独当硬矛盾。若提供hard_references，输出JSON：approved布尔、issues硬问题数组、suggestions字符串数组、memory_check对象(status为sufficient/missing/uncertain，reason说明复核了哪些事实)。每条硬问题必须给kind(fact_conflict/world_rule/causality/unsupported_memory/memory_omission)、description、draft_quote(逐字正文片段)、basis_ref(输入hard_references里的键)、basis_quote(该参考中的逐字引文)。不得用尚未写作的计划当已经发生的事实。只有具体证据支持的硬问题或记忆遗漏才阻止审核通过，节奏/小纲分歧放suggestions。独立检查记忆提案是否遗漏重要新事实，空changes不代表记忆充分。存在未检查章节时明确其为草稿上下文，不假称已验证。旧接口未提供hard_references时仍可输出approved和字符串issues。"
@@ -96,10 +96,10 @@ PROMPTS['memory'] = MEMORY_PROMPT
 
 def validate(role,result,review_policy_version=0):
     if role=="planner":
-        fields(result,("number","title","brief","future_updates"),("time_calculations","scenes"))
-        chapter_plan({k:result[k] for k in ("number","title","brief")})
+        fields(result,("number","title","brief","future_updates"),("time_calculations","scenes","narrative_plan"))
+        result={**result,**chapter_plan({k:result[k] for k in ("number","title","brief")})}
         if not isinstance(result["future_updates"],list): raise ContractError("future_updates must be list")
-        for item in result["future_updates"]: chapter_plan(item)
+        result["future_updates"]=[chapter_plan(item) for item in result["future_updates"]]
     elif role=="writer":
         if isinstance(result,dict) and set(result)=={'event_revision_request'}:
             text(result['event_revision_request'],'Event revision request')
@@ -161,6 +161,25 @@ class JsonAgent:
             payload=event_role_context(payload,self.role)
         if self.role=='writer' and payload.get('prose_content_checks')=='disabled':
             prompt='你是小说写作者，按所给章节方案、人物和上下文展开完整场景。只输出JSON text正文，正文不要讨论审核或代码。数值沿用quantity_policy及quantity_sources，保留来源的近似程度；优先使用quantity token让程序原样展开。缺乏精确依据时沿用模糊表述，不自行补成精确数字。event token可用于引用方案原句，不是需要你检查和计数的任务。需要修改方案时可输出event_revision_request。'
+        if self.role=='writer' and 'stage_task' in payload:
+            prompt=('你是小说阶段增量写作者。只展开stage_task内的当前事件，输出JSON对象new_stage_text字符串。'
+                'previous_prose_tail是已保存的只读前情，不要复制、压缩或改写它；不重写整章，不提前完成后续阶段。'
+                '遵守本单元target_han_chars，使用场景、动作和对话；沿用所给数值来源和近似程度。')
+        if self.role=='planner' and 'narrative_design_contract' in payload:
+            prompt+='按narrative_design_contract补充可选narrative_plan：同一场景连续写，重要线索持续安排，章节带来变化，风险选择在后果前呈现。'
+            prompt+='安排查证行动前先读narrative_continuity.evidence_access：按人物实际可接触的载体核对观察条件，不把抄录当原件。'
+        if self.role=='writer':
+            prompt+='遵守stage_task.scene_continuity及narrative_continuity：沿用已写动作状态，避免重复开场、收场和仪式动作。'
+            prompt+=('依据narrative_continuity.evidence_access中的原文与载体限制展开观察。'
+                '若方案依赖现有载体无法提供的观察、混淆不同物件，先只返回event_revision_request说明材料及缺失条件，交规划修改；'
+                '不要一边承认缺条件一边仍写三种笔迹代表三个人，也不能补造取得经历。'
+                '若方案本来就安排人物发现自己的误判，可以写出识破与改正，不必修订。')
+            prompt+=('把事件写成人物在具体处境中的行动，而不只是逐项说明程序。'
+                '人物可以猜测、误解、隐瞒、撒谎、恐惧和对抗；把说法归于人物，不能无依据变成叙述者确认的事实。'
+                '既有警告、许可、承诺应影响其选择和申辩，不为推进剧情忘掉它们。'
+                '同类手续和观点已经写过就略写，复现须带来信息、关系或后果的变化；'
+                '动作意象随处境变化，不用反复按口袋、开合搭扣等动作填充篇幅。'
+                '在当前事件范围内交代具体利害和人的反应，不擅自补造凶手、证据或额外冲突。')
         if type(self.review_policy_version) is not int or self.review_policy_version not in (0,1,2,3,4,5):
             raise ContractError('Review policy version must be 0, 1, 2, 3, 4, or 5')
         if payload.get('review_policy_version') in (2,3,4,5) and self.review_policy_version!=payload['review_policy_version']:
@@ -206,6 +225,7 @@ class JsonAgent:
                 '新增确认事实是否都考虑了', '已有状态/认识是否变化或失效',
                 '撤回旧怀疑时是否还需增加澄清事实', '未变子项保持原来源，猜测和未实施计划不作已确认事实',
                 '一个完整JSON，无多余括号或正文']
+        protected_stage_prose=None
         for attempt in range(self.max_format_retries+1):
             entry={"role":self.role,"attempt":attempt+1}; trace.append(entry)
             outgoing=copy.deepcopy(payload)
@@ -228,11 +248,20 @@ class JsonAgent:
             parsed=None
             try:
                 if reply.finish_reason=='length':raise ContractError('Model output reached its token allowance; retain partial reply and repair with a larger allowance')
-                parsed=strict_json(reply.content)
+                if lean and self.role=='planner':
+                    from .narrative_context import parse_planner_json
+                    parsed,parse_notes=parse_planner_json(reply.content)
+                    if parse_notes:entry.setdefault('normalizations',[]).extend(parse_notes)
+                else:parsed=strict_json(reply.content)
+                if self.role=='writer' and 'stage_task' in payload and isinstance(parsed,dict) and 'new_stage_text' in parsed:
+                    if isinstance(parsed['new_stage_text'],str) and parsed['new_stage_text'].strip() and protected_stage_prose is None:
+                        protected_stage_prose=parsed['new_stage_text']
+                    fields(parsed,('new_stage_text',),('type',))
+                    parsed={'text':parsed['new_stage_text'],**({'type':parsed['type']}if 'type'in parsed else {})}
                 if lean and self.role=='planner':
                     from .narrative_context import normalize_planner_metadata
                     parsed,notes=normalize_planner_metadata(parsed)
-                    if notes:entry['normalizations']=notes
+                    if notes:entry.setdefault('normalizations',[]).extend(notes)
                 if self.role=='reviewer' and self.review_policy_version==5:
                     from .judgment_review import compile_judgments
                     parsed=compile_judgments(parsed,payload)
@@ -260,6 +289,9 @@ class JsonAgent:
                 if self.role in ("writer","memory") and "type" in parsed:
                     entry["normalizations"]=[{"rule":self.role+("_json_object_type" if parsed['type']=='json_object' else '_wrapper_metadata'),"field":"type","value":parsed["type"]}]
                 if validator is not None: result=validator(result)
+                if (self.role=='writer' and 'stage_task'in payload and protected_stage_prose is not None
+                        and isinstance(result,dict) and result.get('text')!=protected_stage_prose):
+                    raise ContractError('Format-only repair changed stage prose; preserve the first complete draft')
                 if self.role=='reviewer' and self.review_policy_version in (2,3,4,5):
                     from .review_state import support_summary
                     entry['support_summary']=support_summary(result)

@@ -25,6 +25,9 @@ CONTRACT=(
     'requires各项及所有_ref字段都用这些选择器，引用列表同样如此；null仍可用于无来源的直接观察。'
     '引用须符合schema指定的记录类别，对应索引见reference_choices_by_kind；没有物件时先register_evidence_object，用record_position引用，不能用事实记录代替物件。'
     '选择位置不会证明事件已发生，程序仍检查定义顺序、类型及版本。'
+    '修改已有事实的fact_ref必须用身份选择器{record_subject:人物或对象原名,record_property_name:目录中的property_name或attribute_label}，可直接复制记录的update_selector；'
+    '程序按主体与属性共同定位，不必数record_choice。必须唯一匹配；找不到则建立该主体的新属性，不借用别人的属性。'
+    '若同时填record_choice与上述身份字段，三者必须一致；岗位变化必须选岗位属性，不能写入抄件递交。'
 )
 
 
@@ -35,6 +38,11 @@ def formal_operation_catalogue():
         for field in ('required','optional'):
             if field in schema:schema[field]=[v for v in schema[field] if v not in ('record_id','operation_id')]
     schemas['record_observation'].setdefault('reference_contract',{})['observed_object_ref']=dict(allowed_record_kinds=FIELD_KINDS['observed_object_ref'])
+    for schema in schemas.values():
+        for field in schema['required']+schema.get('optional',[]):
+            if field in FIELD_KINDS:
+                schema.setdefault('reference_contract',{})[field]=dict(allowed_record_kinds=FIELD_KINDS[field],
+                    instruction='只选这些类别；计划修订用revise_intention，实际新状态用establish_fact，不把意图编号填进fact_ref。')
     return schemas
 
 
@@ -74,41 +82,49 @@ def validate_formal_input(proposal):
         raise error
 
 
-def compile_plan(proposal,choices,chapter):
+def compile_plan(proposal,choices,chapter,*,reference_records=(),id_namespace='',require_target_identity=False):
     validate_formal_input(proposal)
-    return _compile_plan(proposal,choices,chapter)
+    return _compile_plan(proposal,choices,chapter,reference_records=reference_records,id_namespace=id_namespace,require_target_identity=require_target_identity)
 
 
-def compile_independent_stages(proposal,choices,chapter):
+def compile_independent_stages(proposal,choices,chapter,*,reference_records=(),require_target_identity=False):
     """Keep allocated IDs stable while quarantining scenes with bad selectors."""
     validate_formal_input(proposal);errors=[]
-    result=_compile_plan(proposal,choices,chapter,stage_errors=errors)
+    result=_compile_plan(proposal,choices,chapter,stage_errors=errors,reference_records=reference_records,require_target_identity=require_target_identity)
     invalid={r['stage'] for r in errors}
     result['scenes']=[s for i,s in enumerate(result['scenes']) if i not in invalid]
     return result,errors
 
 
-def _compile_plan(proposal,choices,chapter,*,stage_errors=None):
+def _compile_plan(proposal,choices,chapter,*,stage_errors=None,reference_records=(),id_namespace='',require_target_identity=False):
     result=copy.deepcopy(proposal);actions={};records={};record_number=0
+    directory={r.get('reference_id'):r for r in reference_records}
     scenes=result.get('scenes',[])
     if not isinstance(scenes,list):return result
     for si,scene in enumerate(scenes,1):
         if not isinstance(scene,dict):continue
-        scene.setdefault('id',f's{si:04d}')
+        scene.setdefault('id',id_namespace+f's{si:04d}')
         for bi,action in enumerate(scene.get('beats',[]) if isinstance(scene.get('beats'),list) else [],1):
             if not isinstance(action,dict):continue
-            number=len(actions)+1;action.setdefault('id',f'a{number:04d}')
+            number=len(actions)+1;action.setdefault('id',id_namespace+f'a{number:04d}')
             actions[number]='chapter_action:'+action['id'] if isinstance(action['id'],str) else None
             for ci,row in enumerate(action.get('changes',[]) if isinstance(action.get('changes'),list) else [],1):
                 if not isinstance(row,dict) or not isinstance(row.get('operation'),str) or row['operation'] not in RECORD_KINDS:continue
-                record_number+=1;row.setdefault('record_id',f'n{chapter:04d}r{record_number:04d}')
+                record_number+=1;row.setdefault('record_id',id_namespace+f'n{chapter:04d}r{record_number:04d}')
                 kind='pending_intention' if action.get('assertion_scope')=='proposed_action' or row.get('fact_class')=='planned_intention' else RECORD_KINDS[row['operation']]
-                if isinstance(row['record_id'],str):records[(si,bi,ci)]=kind+':'+row['record_id']
+                if isinstance(row['record_id'],str):
+                    ref=kind+':'+row['record_id'];records[(si,bi,ci)]=ref
+                    directory[ref]=dict(subject=row.get('subject'),property_name=row.get('property_name'),record_kind=kind)
     def resolve(value,current,depth=0):
         if depth>8:raise ContractError('Reference selector wrapper nesting exceeds limit')
         # Every reference is bound against the closed directory or local slots.
         if value is None:return value
         if isinstance(value,str) and value.strip().startswith('{'):
+            stripped=value.strip()
+            if stripped.endswith('}') and stripped[1:-1].strip() in choices:
+                # Cosmetic braces around an exact supplied identifier add no
+                # authority. Unknown identifiers still cannot bind.
+                return resolve(stripped[1:-1].strip(),current,depth+1)
             normalized=re.sub(r'([{,]\s*)(record_choice|action_position|record_position|current_action)\s*:',r'\1"\2":',value.strip())
             try:parsed=strict_json(normalized)
             except ContractError:raise ContractError('Malformed reference selector; use a selector object')
@@ -117,6 +133,25 @@ def _compile_plan(proposal,choices,chapter,*,stage_errors=None):
         if isinstance(value,str):
             if value in choices:return choices[choices.index(value)]
             raise ContractError('Choose a directory entry or local position; free-text reference IDs are disabled')
+        if isinstance(value,dict) and ('record_kind' in value or 'record_subject' in value or 'record_property_name' in value):
+            selectors={k:v for k,v in value.items() if k not in ('record_kind','record_subject','record_property_name')}
+            if not selectors and 'record_subject' in value and 'record_property_name' in value:
+                matches=[ref for ref,row in directory.items() if row.get('subject')==value['record_subject']
+                    and value['record_property_name'] in (row.get('property_name'),row.get('attribute_label'))
+                    and ('record_kind' not in value or row.get('record_kind',ref.split(':',1)[0])==value['record_kind'])]
+                if len(matches)!=1:raise ContractError('Subject/property reference must uniquely match an existing record')
+                return matches[0]
+            if len(selectors)!=1:raise ContractError('Reference metadata requires one selector')
+            bound=resolve(selectors,current,depth+1)
+            if bound is None:raise ContractError('Reference metadata cannot describe null')
+            if 'record_kind' in value and value['record_kind']!=bound.split(':',1)[0]:
+                raise ContractError('Read-only reference kind differs from selected record')
+            if 'record_subject' in value and value['record_subject']!=directory.get(bound,{}).get('subject'):
+                raise ContractError('Read-only reference subject differs from selected record')
+            if 'record_property_name' in value and value['record_property_name'] not in (
+                    directory.get(bound,{}).get('property_name'),directory.get(bound,{}).get('attribute_label')):
+                raise ContractError('Read-only reference property differs from selected record')
+            return bound
         if not isinstance(value,dict) or len(value)!=1:raise ContractError('Reference must select exactly one directory entry or local position')
         key,index=next(iter(value.items()));bound=None
         if key in ('ref','reference_id','id'):return resolve(index,current,depth+1)
@@ -129,16 +164,34 @@ def _compile_plan(proposal,choices,chapter,*,stage_errors=None):
             error.repair_details=dict(submitted_selector=value,record_choice_count=len(choices),action_position_count=len(actions),instruction='选择输入目录中真实存在的项；不得补造编号。');raise error
         return bound
     def field_reference(value,current,field):
+        if require_target_identity and field=='fact_ref' and not (
+                isinstance(value,dict) and isinstance(value.get('record_subject'),str)
+                and isinstance(value.get('record_property_name'),str)):
+            raise ContractError('Fact updates require record_subject and record_property_name; use the subject/property identity selector')
         bound=resolve(value,current);kinds=FIELD_KINDS.get(field)
         missing_object=field=='observed_object_ref' and bound is None
         wrong_kind=bool(kinds and bound is not None and bound.split(':',1)[0] not in kinds)
         if missing_object or wrong_kind:
             error=ContractError('Reference must select the record kind allowed by this field')
+            selected_kind=bound.split(':',1)[0] if bound else None
+            guidance=('选中了意图，不是当前事实。修改原安排用revise_intention/intention_ref；'
+                '正文达成新的实际状态另用establish_fact/current_state，保留同一主体，不能换到另一人的事实。'
+                if selected_kind=='pending_intention' and field=='fact_ref' else
+                '物件引用只能选证据载体；没有候选则登记正文支持的真实载体。' if 'evidence_object' in kinds else
+                '按字段允许类别选择同一目标记录，不能只为类型通过而改到其他主体。')
             error.repair_details=dict(field=field,submitted_selector=value,allowed_record_kinds=kinds,
+                selected_reference=bound,selected_record=copy.deepcopy(directory.get(bound)),
                 allowed_choice_indices=[i for i,v in enumerate(choices,1) if v.split(':',1)[0] in kinds],
-                repair_guidance='若需要物件但没有候选，先register_evidence_object登记真实载体，再用record_position选择；事实记录不是物件。');raise error
+                repair_guidance=guidance);raise error
         return bound
     def located(value,current,path,field=None):
+        # requires is a polymorphic existence dependency, not an operation's
+        # typed reference field. Models sometimes wrap its selector in a
+        # known *_ref label. Preserve the selected identity and its real kind;
+        # do not reinterpret that label as an invented selector key.
+        if field is None and isinstance(value,dict)and len(value)==1:
+            wrapper=next(iter(value))
+            if wrapper in REFERENCE_FIELDS:value=value[wrapper]
         try:return field_reference(value,current,field) if field else resolve(value,current)
         except ContractError as error:
             details=copy.deepcopy(getattr(error,'repair_details',{}))
@@ -158,6 +211,12 @@ def _compile_plan(proposal,choices,chapter,*,stage_errors=None):
                     converted=[]
                     for ri,value in enumerate(action['requires']):
                         path=prefix+f'.requires[{ri}]'
+                        if isinstance(value,dict)and len(value)==1:
+                            ref,revision=next(iter(value.items()))
+                            if ref in choices:
+                                if type(revision)is not int or revision<1:
+                                    raise ContractError('Dependency record revision must be a positive integer')
+                                value=dict(reference_id=ref,record_revision=revision)
                         versioned=isinstance(value,dict) and set(value)=={'reference_id','record_revision'}
                         if versioned:
                             value=copy.deepcopy(value);value['reference_id']=located(value['reference_id'],current,path)

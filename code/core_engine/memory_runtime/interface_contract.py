@@ -32,6 +32,7 @@ MEMORY_KINDS=dict(state='state_summary',event='event_summary',knowledge='knowled
 def public_memory_rows(rows):
     result=copy.deepcopy(rows)
     for row in result:
+        row.setdefault('meaning',dict(assessed=False,epistemic_status='not_assessed',usable_as_current_fact=False))
         row['memory_kind']=MEMORY_KINDS.get(row.pop('kind'), 'legacy_memory')
         row['memory_revision']=row.pop('revision')
         row.pop('status',None)
