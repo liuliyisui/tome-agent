@@ -69,10 +69,77 @@ def runtime_hashes():
     }
 
 
+def _compatible_runtime(saved, current):
+    """Accept only reviewed predecessor runtimes, while checking all other files."""
+    if saved == current:
+        return True
+    if not isinstance(saved, dict) or set(saved) != set(current):
+        return False
+    if saved.get("orchestration") != current["orchestration"]:
+        return False
+    memory = saved.get("memory_runtime")
+    entries = saved.get("entrypoints")
+    if not isinstance(memory, dict) or not isinstance(entries, dict):
+        return False
+    if set(memory) != set(current["memory_runtime"]) or set(entries) != set(
+        current["entrypoints"]
+    ):
+        return False
+    if any(
+        value != current["memory_runtime"][name]
+        for name, value in memory.items()
+        if name not in {"writing.py", "test_regression.py"}
+    ) or any(
+        value != current["entrypoints"][name]
+        for name, value in entries.items()
+        if name != "check_memory.py"
+    ):
+        return False
+    # Each pair is the LF and CRLF digest of a reviewed Git revision.
+    previous = (
+        (
+            (
+                "0c2766414351d40a678edcc9b5e3af881ca0e6d85a21fcc87fcebb0ee0b91d19",
+                "5a7908ae8111e04ab5036d06b380599cf0e9cfe2724458c9efd2798ca481753d",
+            ),
+            (
+                "951ce0598085e687988ab30fee10d14c5cf8e734009e3a17e0eff7dbd3ea21f0",
+                "52d52d11e64e0a53f2e16f23c698d0994c2591deabc416f4a1365b66f97940db",
+            ),
+            (
+                "f68f288c068dbc4c432ce18407fe565ef65f8aa1b3fe53824377e1172f3fe6da",
+                "d0f8ee07b8e5e1160daa81c6cb4d2046f16e70454bf9bf76349d49f212fc0d04",
+            ),
+        ),
+        (
+            (
+                "2176393d3b0be40a9f2c9f7a852bf115ed19a08450933ebb73d96a86aed574ed",
+                "c9816f23d1e96ecb033ef92d9caed870ac59253dbe61eaef6dda2378198816db",
+                "dc1352ee81f6d7b71942a9ad5178f0a65e2d8108a8b657c05d35f190d86df28e",
+                "2d80bd6b4cdf4d9cce3cdf2103c4ac79fac99c92560b06aac66e03ece8b4cd98",
+            ),
+            (
+                "87b5a3b46326d949cd47e54d89d76ebdbf1ea90ea31390a75c727523a68fd7a1",
+                "ab3a8456d22277e5605bd136e26ea3aafab001a8ebfe562badbba55e83b7cf10",
+            ),
+            (
+                "a8cc33a3b15635d5ce1cfb6e7a2a9eae338eda4e3223342c55b4f4ad43d679af",
+                "f14e8d8f7c4ed0a449465d6bbbfc79d3e502d84d5d042ae70bb9265f7cf726ac",
+            ),
+        ),
+    )
+    return any(
+        memory["writing.py"] in writing
+        and memory["test_regression.py"] in regression
+        and entries["check_memory.py"] in check
+        for writing, regression, check in previous
+    )
+
+
 def _verify_resume_envelope(record, plan):
     if record.get("schema") != "inf-writing-checkpoint-v1":
         raise ContractError("仅可恢复新写作入口的完整检查点；旧小说需显式迁移")
-    if record.get("runtime_sha256") != runtime_hashes():
+    if not _compatible_runtime(record.get("runtime_sha256"), runtime_hashes()):
         raise ContractError("写作运行时版本不一致，不能直接恢复旧检查点")
     if record.get("writing_plan_sha256") != digest(canonical(plan)):
         raise ContractError("恢复时小说配置必须与原运行一致")

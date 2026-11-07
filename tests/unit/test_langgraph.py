@@ -191,6 +191,36 @@ class LangGraphTests(unittest.TestCase):
         with self.assertRaises(ContractError):
             load_resume(path, session.plan)
 
+    def test_reviewed_old_runtime_resumes_and_unknown_changes_are_rejected(self):
+        session = self.session(EventProvider())
+        session.write_next("继续")
+        path = session.latest_checkpoint
+        saved = json.loads(path.read_text(encoding="utf-8"))
+        runtime = saved["runtime_sha256"]
+        runtime["memory_runtime"]["writing.py"] = (
+            "0c2766414351d40a678edcc9b5e3af881ca0e6d85a21fcc87fcebb0ee0b91d19"
+        )
+        runtime["memory_runtime"]["test_regression.py"] = (
+            "951ce0598085e687988ab30fee10d14c5cf8e734009e3a17e0eff7dbd3ea21f0"
+        )
+        runtime["entrypoints"]["check_memory.py"] = (
+            "f68f288c068dbc4c432ce18407fe565ef65f8aa1b3fe53824377e1172f3fe6da"
+        )
+        path.write_text(json.dumps(saved, ensure_ascii=False), encoding="utf-8")
+        book = load_resume(path, session.plan)
+        resumed = self.session(EventProvider(), name="old-resumed", book=book)
+        self.assertIsNone(resumed.write_next("继续")["stop_reason"])
+        self.assertEqual(len(resumed.book["chapters"]), 2)
+        tampered = copy.deepcopy(saved)
+        tampered["book"]["chapters"][0]["text"] = "被修改的内容"
+        path.write_text(json.dumps(tampered, ensure_ascii=False), encoding="utf-8")
+        with self.assertRaises(ContractError):
+            load_resume(path, session.plan)
+        runtime["memory_runtime"]["writing.py"] = "unknown"
+        path.write_text(json.dumps(saved, ensure_ascii=False), encoding="utf-8")
+        with self.assertRaises(ContractError):
+            load_resume(path, session.plan)
+
     def test_strict_review_branch_never_commits_rejected_candidate(self):
         class Strict:
             def __init__(self):
