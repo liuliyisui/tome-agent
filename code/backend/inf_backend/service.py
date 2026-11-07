@@ -135,8 +135,12 @@ def load_book(book_id):
 def cover_path(book_id):
     _metadata(book_id)
     folder = book_path(book_id)
-    if not folder.is_dir() or folder.is_symlink():
+    if folder.is_symlink() or getattr(folder, "is_junction", lambda: False)():
+        raise ValueError("作品目录不安全")
+    if folder.exists() and not folder.is_dir():
         raise ValueError("作品目录不可用")
+    if not folder.exists() and not database.enabled():
+        raise FileNotFoundError("作品目录不存在")
     path = folder / "cover.image"
     if path.is_symlink():
         raise ValueError("封面路径不安全")
@@ -170,6 +174,9 @@ def save_cover(book_id, value):
     cover_type(data)
     with operation_lock(BOOKS):
         path = cover_path(book_id)
+        if database.enabled():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path = cover_path(book_id)
         fd, temporary = tempfile.mkstemp(prefix=".cover-", dir=path.parent)
         try:
             with os.fdopen(fd, "wb") as output:
