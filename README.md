@@ -46,13 +46,37 @@ Python 依赖版本见 [`code/backend/requirements.txt`](code/backend/requiremen
 ## 目录
 
 ```text
-.github/               GitHub 工作流和 Issue 模板
-code/backend/          DeepSeek 配置、应用服务、启动脚本和本地作品数据
-code/core_engine/      LangGraph 长文本编排、三层记忆、检查点和发布清单
-code/frontend/         本地网页工作室
-docs/                  需求、设计、管理和使用文档
-tests/                 单元测试与集成测试
+.github/                         GitHub 工作流和问题模板
+code/
+├── backend/                     后端服务
+├── frontend/                    前端工作室
+└── core_engine/                 核心写作与记忆引擎
+docs/
+├── requirements/
+│   ├── problem_definition.md    问题定义
+│   ├── functional_spec.md       功能需求规格
+│   ├── nonfunctional_spec.md    非功能需求规格
+│   └── user_stories.md          用户故事与验收标准
+├── algorithm/
+│   └── research.md              算法与技术调研
+├── software/
+│   ├── prototype/               原型设计
+│   ├── architecture.md          系统架构
+│   ├── code_quality.md          代码质量
+│   ├── code_review.md           代码评审
+│   └── deployment.md            系统部署
+├── mgmt/
+│   ├── communication_mgmt_plan.md  沟通管理计划
+│   └── risk_mgmt_plan.md        风险管理计划
+└── retrospection/               复盘总结
+tests/
+├── unit/                        单元测试
+├── integration/                 集成测试
+└── tome_agent_demo_user_test.md 用户测试方案
+README.md                        项目说明
 ```
+
+上表列出课程要求的主要目录和文件；各目录下还保留项目的代码、测试和历史文档。
 
 
 代码质量检查配置位于 `code/backend/pyproject.toml`。从项目根目录运行 `ruff check --config code/backend/pyproject.toml --no-cache .`；预提交钩子配置及用法见[代码质量说明](docs/software/CODE_QUALITY_FIXES.md)。

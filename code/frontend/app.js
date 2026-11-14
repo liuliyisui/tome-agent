@@ -327,7 +327,7 @@ const app = createApp({
       if (running.value)
         return (
           error ||
-          `${job?.count ? `本批次已完成 ${job.completed || 0} / ${job.count} 章，正在生成第 ${job.current_chapter} 章。` : "已提交，正在生成。"}可刷新页面，完成后自动显示正文。`
+          `${job?.count ? `本批次已完成 ${job.completed || 0} / ${job.count} 章，正在生成第 ${job.current_chapter} 章。` : "已提交，正在生成。"}${typeof job?.live_units === "number" ? `本章已完成片段约 ${fmt(job.live_completed_units)} 字。${job.live_output_number ? `第 ${job.live_output_number} 次输出：` : ""}${job.live_unit_number ? `第 ${job.live_unit_number}${job.live_unit_total ? ` / ${job.live_unit_total}` : ""} 段` : "当前片段"}${typeof job.live_draft_units === "number" ? `草稿约 ${fmt(job.live_draft_units)} 字，正在调整，调整内容已接收约 ${fmt(job.live_units)} 字` : `已接收约 ${fmt(job.live_units)} 字，${job.live_phase === "writing" ? "正在生成" : "正在整理"}`}；正文尚未存档，可能调整。` : "正在准备正文。"}可刷新页面，完成后自动显示正文。`
         );
       return error
         ? `生成停止：${error}。已保存章节仍可阅读和导出。`

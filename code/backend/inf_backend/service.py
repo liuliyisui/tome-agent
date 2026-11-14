@@ -606,8 +606,26 @@ def generate_longform(
     cfg = settings or Settings.for_book(meta["model"])
     if cfg.public_config() != meta["model"]:
         raise ValueError("当前模型配置与创建作品时不一致")
+    stream_provider = None
     if gateway is None:
         gateway, budget = _gateway(replace(cfg, max_calls=cfg.max_calls * count))
+        if (
+            progress
+            and cfg.provider in ("deepseek", "openai")
+            and isinstance(gateway, ModelGateway)
+            and isinstance(gateway.provider, ChatCompletionProvider)
+        ):
+            from .streaming import ProseProgressProvider, describe_prose_request
+
+            stream_provider = ProseProgressProvider(
+                gateway.provider,
+                progress,
+                count_units,
+                lambda request: describe_prose_request(
+                    session.book, request, count_units
+                ),
+            )
+            gateway.provider = stream_provider
     gateway = StyleGateway(gateway, load_writing_style(book_id))
     selected = set(load_book_skills(book_id))
     skills = [item for item in list_skills() if item["id"] in selected]
@@ -625,12 +643,16 @@ def generate_longform(
     )
     failure = None
     for _ in range(count):
+        if stream_provider:
+            stream_provider.reset_chapter()
         number = len(session.book["chapters"]) + 1
         if progress:
             progress(
                 {
                     "completed": len(session.book["chapters"]) - written,
                     "current_chapter": number,
+                    "live_units": None,
+                    "live_phase": "planning",
                 }
             )
         used = sum(count_units(chapter["text"]) for chapter in session.book["chapters"])

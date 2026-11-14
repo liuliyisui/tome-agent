@@ -115,6 +115,22 @@ class BrowserSmokeTests(unittest.TestCase):
         page.fill('input[name="chapters"]', "1")
         page.fill('input[name="target_units"]', "500")
 
+    def test_create_style_displays_recommendations_and_live_limits(self):
+        self.open_create_dialog()
+        self.page.locator("#create-dialog .create-style summary").first.click()
+        instructions = self.page.locator('textarea[name="style_instructions"]')
+        reference = self.page.locator('textarea[name="style_reference"]')
+        instruction_hint = instructions.locator("..").locator("small")
+        reference_hint = reference.locator("..").locator("small")
+        self.assertIn("50～300", instruction_hint.inner_text())
+        self.assertIn("1,000～3,000", reference_hint.inner_text())
+        instructions.fill("短句" * 1001)
+        reference.fill("参考" * 3001)
+        self.assertEqual(len(instructions.input_value()), 2000)
+        self.assertEqual(len(reference.input_value()), 6000)
+        self.assertIn("2000 / 2,000", instruction_hint.inner_text())
+        self.assertIn("6000 / 6,000", reference_hint.inner_text())
+
     def test_home_and_empty_library(self):
         page = self.page
         self.assertEqual(page.title(), "Tome · 故事工作室")
