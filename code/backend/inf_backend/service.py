@@ -5,7 +5,6 @@ import binascii
 import json
 import os
 import re
-import shutil
 import tempfile
 import time
 from collections import Counter
@@ -14,7 +13,7 @@ from dataclasses import replace
 from pathlib import Path
 from uuid import uuid4
 
-from memory_runtime.writing import WritingSession, load_resume, runtime_hashes
+from memory_runtime.writing import WritingSession, load_resume
 from tome_writer.chat_provider import ChatCompletionProvider
 from tome_writer.domain import (
     ContractError,
@@ -523,72 +522,88 @@ def _checkpoint_paths(book_id):
     )
 
 
-def find_chapter_boundary(book_id, chapters):
-    """Newest clean checkpoint that holds exactly ``chapters`` committed chapters."""
-    candidates = []
-    for path in _checkpoint_paths(book_id):
-        try:
-            record = strict_json(path.read_text(encoding="utf-8-sig"))
-        except (ValueError, OSError):
-            continue
-        book = record.get("book")
-        if not isinstance(book, dict):
-            continue
-        if len(book.get("chapters", [])) != chapters:
-            continue
-        reason = record.get("reason")
-        if chapters == 0:
-            if reason == "EMPTY_START":
-                candidates.append(path)
-        elif reason == "MEMORY_COMMITTED":
-            candidates.append(path)
-    return candidates[-1] if candidates else None
+def validate_author_feedback(value):
+    if not isinstance(value, str) or not 1 <= len(value.strip()) <= 2000:
+        raise ValueError("请填写 1 到 2000 字的作者意见")
+    return value.strip()
 
 
-def rewind_for_regeneration(book_id, number, confirmed=False):
-    """Point the book at the checkpoint before ``number`` so it can be rewritten.
-
-    Later chapters are intentionally dropped: regenerating chapter ``number``
-    invalidates the event/memory chain of every chapter after it, so the old
-    state is kept only as orphaned checkpoints, never mixed back in.
-    """
-    meta = _metadata(book_id)
-    plan = _longform_plan(meta)
-    book = _load_longform_book(book_id, plan)
-    if book is None:
-        raise ValueError("作品还没有可续写的检查点")
-    current = len(book["chapters"])
+def regeneration_scope(chapters, number, confirmed):
+    current = len(chapters)
     if type(number) is not int or not 1 <= number <= current:
         raise ValueError("章节号超出范围")
     dropped = current - number + 1
-    if number < current and not confirmed:
-        raise ValueError(
-            f"重新生成第{number}章会丢弃第{number}章及之后共{dropped}章，请先确认"
-        )
-    boundary = find_chapter_boundary(book_id, number - 1)
-    if boundary is None:
-        raise ValueError("找不到该章之前的存档检查点")
-    record = strict_json(boundary.read_text(encoding="utf-8-sig"))
-    hashes = runtime_hashes()
-    if record.get("runtime_sha256") != hashes:
-        backup = boundary.with_name(boundary.name + ".prehash.bak")
-        if not backup.exists():
-            shutil.copy2(boundary, backup)
-        record["runtime_sha256"] = hashes
-        _atomic_json(boundary, record)
-    pointer = _longform_pointer(book_id)
-    if pointer.exists():
-        backup = pointer.with_name(pointer.name + ".pre-regenerate.bak")
-        if not backup.exists():
-            backup.write_text(pointer.read_text(encoding="utf-8-sig"), encoding="utf-8")
-    root = book_path(book_id).resolve()
-    relative = boundary.resolve().relative_to(root).as_posix()
-    _atomic_json(pointer, {"checkpoint": relative})
+    if confirmed is not True:
+        raise ValueError(f"重新生成第{number}章会替换该章及之后共{dropped}章，请先确认")
     return {"number": number, "chapters": current, "dropped": dropped}
 
 
+def _regeneration_boundary(book_id, plan, prefix):
+    def chapter_hashes(chapters):
+        return [
+            (chapter["sha256"], chapter.get("event_commit", {}).get("sha256"))
+            for chapter in chapters
+        ]
+
+    expected = chapter_hashes(prefix)
+    reasons = (
+        ("MEMORY_COMMITTED", "DRAFT_SAVED_MEMORY_PENDING")
+        if prefix
+        else ("EMPTY_START",)
+    )
+    root = book_path(book_id).resolve()
+    for path in reversed(_checkpoint_paths(book_id)):
+        try:
+            if not path.resolve().is_relative_to(root):
+                continue
+            record = strict_json(path.read_text(encoding="utf-8-sig"))
+            if record["reason"] not in reasons:
+                continue
+            saved = record["book"]["chapters"]
+            if chapter_hashes(saved) == expected:
+                return load_resume(path, plan)
+        except (KeyError, TypeError, ValueError, OSError, ContractError):
+            continue
+    raise ValueError("找不到与本作品前文章节一致的可恢复检查点")
+
+
+class RegenerationGateway:
+    """Apply one chapter's revision to planning and every prose pass."""
+
+    def __init__(self, gateway, feedback, chapter):
+        self.gateway = gateway
+        draft = chapter["text"]
+        self.revision = {
+            "author_feedback": feedback,
+            "previous_title": chapter["title"],
+            "previous_draft": draft
+            if len(draft) <= 8000
+            else (draft[:4000] + "\n[原稿中段省略]\n" + draft[-4000:]),
+        }
+
+    def complete(self, request):
+        if request.role in ("planner", "writer"):
+            request = replace(
+                request,
+                system=request.system
+                + "\n按 chapter_revision.author_feedback 修改当前章节。原稿仅供对照，未重写的前文章节是连续性依据。"
+                "在遵守已确定的事实、事件和输出格式的前提下，作者本次意见优先于常驻文风和技能。",
+                payload={**request.payload, "chapter_revision": self.revision},
+            )
+        return self.gateway.complete(request)
+
+
 def generate_longform(
-    book_id, count=1, gateway=None, budget=None, settings=None, progress=None
+    book_id,
+    count=1,
+    gateway=None,
+    budget=None,
+    settings=None,
+    progress=None,
+    *,
+    regenerate_number=None,
+    confirmed=False,
+    author_feedback="",
 ):
     """Generate chapters with the event-first, three-tier-memory runtime.
 
@@ -599,6 +614,17 @@ def generate_longform(
     meta = _metadata(book_id)
     plan = _longform_plan(meta)
     previous = _load_longform_book(book_id, plan)
+    original_chapter = None
+    if regenerate_number is not None:
+        author_feedback = validate_author_feedback(author_feedback)
+        chapters = previous["chapters"] if previous else []
+        regeneration_scope(chapters, regenerate_number, confirmed)
+        if count != 1:
+            raise ValueError("每次只能重新生成一章")
+        original_chapter = chapters[regenerate_number - 1]
+        previous = _regeneration_boundary(
+            book_id, plan, chapters[: regenerate_number - 1]
+        )
     written = len(previous["chapters"]) if previous else 0
     remaining = meta["target_chapters"] - written
     if type(count) is not int or not 1 <= count <= remaining:
@@ -632,6 +658,8 @@ def generate_longform(
     if len(skills) != len(selected):
         raise ValueError("已选择的技能不存在，请重新选择")
     gateway = SkillGateway(gateway, skills)
+    if original_chapter is not None:
+        gateway = RegenerationGateway(gateway, author_feedback, original_chapter)
     run = book_path(book_id) / "longform-runs" / ("run-" + uuid4().hex)
     session = WritingSession(run, gateway, plan, book=previous)
     _atomic_json(
@@ -666,33 +694,8 @@ def generate_longform(
         try:
             outcome = session.write_next(instruction)
         finally:
-            checkpoint = session.latest_checkpoint.resolve()
-            relative = checkpoint.relative_to(book_path(book_id).resolve()).as_posix()
-            usage = (
-                None
-                if budget is None
-                else {
-                    "calls": budget.calls,
-                    "input_tokens": budget.input_tokens,
-                    "output_tokens": budget.output_tokens,
-                    "estimated_cost_upper_usd": budget.cost_upper_usd,
-                    "chapters_completed": len(session.book["chapters"]) - written,
-                }
-            )
-            _atomic_json(_longform_pointer(book_id), {"checkpoint": relative})
-            if budget is not None:
-                _atomic_json(
-                    book_path(book_id) / "last-usage.json",
-                    {
-                        "calls": budget.calls,
-                        "input_tokens": budget.input_tokens,
-                        "output_tokens": budget.output_tokens,
-                        "estimated_cost_upper_usd": budget.cost_upper_usd,
-                        "chapters_completed": len(session.book["chapters"]) - written,
-                    },
-                )
-            if database.enabled():
-                database.save(book_id, session.book, "longform", relative, usage)
+            if original_chapter is None or len(session.book["chapters"]) > written:
+                _save_generation_checkpoint(book_id, session, written, budget)
         if progress:
             progress(
                 {
@@ -707,6 +710,36 @@ def generate_longform(
         detail = json.dumps(failure.get("errors", []), ensure_ascii=False)
         raise RuntimeError(f"第{failure['chapter_number']}章未生成正文：{detail}")
     return {"metadata": meta, "state": session.book}
+
+
+def _save_generation_checkpoint(book_id, session, written, budget):
+    checkpoint = session.latest_checkpoint.resolve()
+    relative = checkpoint.relative_to(book_path(book_id).resolve()).as_posix()
+    usage = (
+        None
+        if budget is None
+        else {
+            "calls": budget.calls,
+            "input_tokens": budget.input_tokens,
+            "output_tokens": budget.output_tokens,
+            "estimated_cost_upper_usd": budget.cost_upper_usd,
+            "chapters_completed": len(session.book["chapters"]) - written,
+        }
+    )
+    _atomic_json(_longform_pointer(book_id), {"checkpoint": relative})
+    if budget is not None:
+        _atomic_json(
+            book_path(book_id) / "last-usage.json",
+            {
+                "calls": budget.calls,
+                "input_tokens": budget.input_tokens,
+                "output_tokens": budget.output_tokens,
+                "estimated_cost_upper_usd": budget.cost_upper_usd,
+                "chapters_completed": len(session.book["chapters"]) - written,
+            },
+        )
+    if database.enabled():
+        database.save(book_id, session.book, "longform", relative, usage)
 
 
 def load_longform(book_id):

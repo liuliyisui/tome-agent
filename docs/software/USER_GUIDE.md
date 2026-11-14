@@ -16,7 +16,7 @@ code\backend\setup.cmd
 
 ## 模型服务配置
 
-在网页「设置 → 配置模型服务」中可选择 DeepSeek、OpenAI 或其他 OpenAI Chat Completions 兼容服务。填写模型名称和对应 API Key；其他服务还需填写以 `/chat/completions` 结尾的完整 HTTPS 接口地址。保存只检查格式，不会测试密钥或模型是否可用。兼容服务须支持 JSON 对象输出和用量返回。
+在网页「设置 → 配置模型服务」中可选择 DeepSeek、OpenAI 或其他 OpenAI Chat Completions 兼容服务。填写模型名称和对应 API Key；选择「自定义」时，填写服务商提供的 HTTPS Base URL（如 https://api.example.com/v1），系统会补上 /chat/completions。也可以直接填写完整接口地址。保存只检查格式，不会测试密钥或模型是否可用。兼容服务须支持 JSON 对象输出和用量返回。
 
 新作品使用当前配置；已有作品继续使用其绑定的服务与模型。同一接口的密钥更新后，其作品使用更新的密钥。非 DeepSeek 模型的价格无法自动核验，生成前请向服务商确认，费用以实际账单为准。
 

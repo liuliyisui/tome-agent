@@ -135,6 +135,7 @@ const app = createApp({
         delete: false,
         purge: false,
         estimate: false,
+        regenerate: false,
       },
       busy: {
         api: false,
@@ -156,7 +157,9 @@ const app = createApp({
         delete: "",
         purge: "",
         estimate: "",
+        regenerate: "",
       },
+      regeneration: null,
       apiKey: "",
       modelForm: { provider: "deepseek", model: "deepseek-chat", endpoint: "" },
       createForm: {
@@ -409,6 +412,7 @@ const app = createApp({
       state.dialogs[name] = false;
       if (name === "api") state.apiKey = "";
       if (name === "estimate") state.estimate = null;
+      if (name === "regenerate") state.regeneration = null;
       if (name === "delete") state.deleteBook = null;
       if (name === "purge") {
         state.purgeBook = null;
@@ -435,7 +439,11 @@ const app = createApp({
         const cfg = await api("/api/model-config", { provider: form.provider, model: form.model.trim(), endpoint: form.endpoint.trim(), api_key: state.apiKey.trim() });
         state.configured = cfg.configured;
         state.model = cfg.model;
-        state.modelForm = { provider: cfg.provider, model: cfg.model, endpoint: cfg.endpoint };
+        state.modelForm = {
+          provider: cfg.provider,
+          model: cfg.model,
+          endpoint: cfg.provider === "compatible" ? cfg.endpoint : "",
+        };
         state.apiKey = "";
         state.dialogs.api = false;
         notify("API Key 已保存，可以开始创作。");
@@ -467,6 +475,8 @@ const app = createApp({
           : 0;
       state.current = book;
       const key = book.state.project_id;
+      const summary = state.books.find((item) => item.id === key);
+      if (summary) summary.chapters = book.state.chapters.length;
       state.styles[key] ??= {
         instructions: book.style?.instructions || "",
         reference: book.style?.reference || "",
@@ -498,10 +508,6 @@ const app = createApp({
         state.view = "book";
         notify();
         await refreshBooks();
-        try {
-          const modelConfig = await api("/api/model-config");
-          if (modelConfig.provider) state.modelForm = { provider: modelConfig.provider, model: modelConfig.model, endpoint: modelConfig.endpoint };
-        } catch { /* Keep defaults when connecting to an older server. */ }
       } catch (e) {
         if (version === navigationVersion) notify(e.message);
       } finally {
@@ -780,23 +786,37 @@ const app = createApp({
         state.busy.start = false;
       }
     }
-    async function regenerateChapter() {
+    function openRegeneration() {
       const key = id.value;
-      if (!key || running.value) return;
-      const number = state.chapterIndex + 1;
-      const total = chapters.value.length;
-      const message =
-        number < total
-          ? `重新生成第 ${number} 章会删除第 ${number} 章及之后共 ${total - number + 1} 章，并重新生成第 ${number} 章。确定继续？`
-          : `重新生成第 ${number} 章（最后一章）？`;
-      if (!window.confirm(message)) return;
+      const chapter = chapters.value[state.chapterIndex];
+      if (!key || !chapter || running.value || state.busy.regenerate) return;
+      state.errors.regenerate = "";
+      state.regeneration = {
+        key,
+        number: chapter.number,
+        later: chapters.value.length - chapter.number,
+        feedback: "",
+      };
+      state.dialogs.regenerate = true;
+    }
+    async function regenerateChapter() {
+      const draft = state.regeneration;
+      if (!draft || draft.key !== id.value || running.value || state.busy.regenerate) return;
+      const { key, number } = draft;
+      const feedback = draft.feedback.trim();
+      if (!feedback) {
+        state.errors.regenerate = "请填写希望调整的内容。";
+        return;
+      }
       state.busy.regenerate = true;
-      notify();
+      state.errors.regenerate = "";
       try {
         const { job_id } = await api(
           `${bookUrl(key)}/chapters/${number}/regenerate`,
-          { confirmed: true },
+          { confirmed: true, author_feedback: feedback },
         );
+        state.dialogs.regenerate = false;
+        state.regeneration = null;
         state.jobs[key] = job_id;
         delete state.jobErrors[key];
         if (id.value === key)
@@ -808,7 +828,7 @@ const app = createApp({
         startPolling(key, job_id);
         notify("已开始重新生成，请稍候。");
       } catch (e) {
-        notify(e.message);
+        state.errors.regenerate = e.message;
       } finally {
         state.busy.regenerate = false;
       }
@@ -879,6 +899,16 @@ const app = createApp({
         const cfg = await api("/api/config");
         state.configured = cfg.configured;
         state.model = cfg.model;
+        try {
+          const modelConfig = await api("/api/model-config");
+          if (modelConfig.provider) {
+            state.modelForm = {
+              provider: modelConfig.provider,
+              model: modelConfig.model,
+              endpoint: modelConfig.provider === "compatible" ? modelConfig.endpoint : "",
+            };
+          }
+        } catch { /* Keep defaults when connecting to an older server. */ }
         if (!cfg.configured) openApiConfig();
         await refreshBooks();
         try { state.skills = (await api("/api/skills")).skills; }
@@ -947,6 +977,7 @@ const app = createApp({
       selectSkills,
       prepareGeneration,
       confirmGeneration,
+      openRegeneration,
       regenerateChapter,
     };
   },

@@ -289,16 +289,32 @@ const _hoisted_174 = {
   class: "muted"
 }
 const _hoisted_175 = ["onCancel"]
-const _hoisted_176 = { id: "purge-book-title" }
-const _hoisted_177 = ["onUpdate:modelValue", "disabled"]
+const _hoisted_176 = ["onSubmit"]
+const _hoisted_177 = { id: "regenerate-title" }
 const _hoisted_178 = {
+  key: 0,
+  class: "muted"
+}
+const _hoisted_179 = ["onUpdate:modelValue", "disabled"]
+const _hoisted_180 = {
+  key: 1,
+  class: "error",
+  role: "alert"
+}
+const _hoisted_181 = { class: "confirm-actions" }
+const _hoisted_182 = ["disabled", "onClick"]
+const _hoisted_183 = ["disabled"]
+const _hoisted_184 = ["onCancel"]
+const _hoisted_185 = { id: "purge-book-title" }
+const _hoisted_186 = ["onUpdate:modelValue", "disabled"]
+const _hoisted_187 = {
   id: "purge-error",
   class: "error",
   role: "alert"
 }
-const _hoisted_179 = { class: "confirm-actions" }
-const _hoisted_180 = ["disabled", "onClick"]
-const _hoisted_181 = ["disabled", "onClick"]
+const _hoisted_188 = { class: "confirm-actions" }
+const _hoisted_189 = ["disabled", "onClick"]
+const _hoisted_190 = ["disabled", "onClick"]
 
 return function render(_ctx, _cache) {
   const _component_chapter_reader = _resolveComponent("chapter-reader")
@@ -790,7 +806,7 @@ return function render(_ctx, _cache) {
                           type: "button",
                           class: "chapter-step",
                           disabled: _ctx.running || _ctx.state.current.mode==='legacy' || !_ctx.chapters.length,
-                          onClick: _ctx.regenerateChapter
+                          onClick: _ctx.openRegeneration
                         }, "↻ 重新生成本章", 8 /* PROPS */, _hoisted_83)
                       ]))
                     : _createCommentVNode("v-if", true)
@@ -985,10 +1001,10 @@ return function render(_ctx, _cache) {
         id: "api-key-form",
         onSubmit: _withModifiers(_ctx.configure, ["prevent"])
       }, [
-        _cache[51] || (_cache[51] = _createElementVNode("div", { class: "eyebrow" }, "WELCOME TO TOME", -1 /* CACHED */)),
-        _cache[52] || (_cache[52] = _createElementVNode("h2", { id: "api-key-title" }, "先连接你的创作引擎", -1 /* CACHED */)),
-        _cache[53] || (_cache[53] = _createElementVNode("p", { class: "muted" }, " 选择服务类型并填写模型信息。新建作品使用当前配置，已有作品继续使用原来的模型服务。 ", -1 /* CACHED */)),
-        _cache[54] || (_cache[54] = _createElementVNode("label", { for: "model-provider" }, "模型服务", -1 /* CACHED */)),
+        _cache[52] || (_cache[52] = _createElementVNode("div", { class: "eyebrow" }, "WELCOME TO TOME", -1 /* CACHED */)),
+        _cache[53] || (_cache[53] = _createElementVNode("h2", { id: "api-key-title" }, "先连接你的创作引擎", -1 /* CACHED */)),
+        _cache[54] || (_cache[54] = _createElementVNode("p", { class: "muted" }, " 选择服务类型并填写模型信息。新建作品使用当前配置，已有作品继续使用原来的模型服务。 ", -1 /* CACHED */)),
+        _cache[55] || (_cache[55] = _createElementVNode("label", { for: "model-provider" }, "供应商", -1 /* CACHED */)),
         _withDirectives(_createElementVNode("select", {
           id: "model-provider",
           "onUpdate:modelValue": $event => ((_ctx.state.modelForm.provider) = $event),
@@ -997,34 +1013,29 @@ return function render(_ctx, _cache) {
         }, [...(_cache[49] || (_cache[49] = [
           _createElementVNode("option", { value: "deepseek" }, "DeepSeek", -1 /* CACHED */),
           _createElementVNode("option", { value: "openai" }, "OpenAI", -1 /* CACHED */),
-          _createElementVNode("option", { value: "compatible" }, "其他 OpenAI 兼容服务（如通义千问、豆包）", -1 /* CACHED */)
+          _createElementVNode("option", { value: "compatible" }, "自定义（OpenAI 兼容）", -1 /* CACHED */)
         ]))], 40 /* PROPS, NEED_HYDRATION */, _hoisted_112), [
           [_vModelSelect, _ctx.state.modelForm.provider]
         ]),
-        _cache[55] || (_cache[55] = _createElementVNode("label", { for: "model-name" }, "模型名称", -1 /* CACHED */)),
-        _withDirectives(_createElementVNode("input", {
-          id: "model-name",
-          "onUpdate:modelValue": $event => ((_ctx.state.modelForm.model) = $event),
-          required: "",
-          maxlength: "128",
-          placeholder: "例如 deepseek-chat、gpt-4o、qwen-plus",
-          disabled: _ctx.state.busy.api
-        }, null, 8 /* PROPS */, _hoisted_113), [
-          [_vModelText, _ctx.state.modelForm.model]
-        ]),
         (_ctx.state.modelForm.provider==='compatible')
           ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
-              _cache[50] || (_cache[50] = _createElementVNode("label", { for: "model-endpoint" }, "完整接口地址", -1 /* CACHED */)),
+              _cache[50] || (_cache[50] = _createElementVNode("label", { for: "model-endpoint" }, "Base URL", -1 /* CACHED */)),
               _withDirectives(_createElementVNode("input", {
                 id: "model-endpoint",
                 "onUpdate:modelValue": $event => ((_ctx.state.modelForm.endpoint) = $event),
                 type: "url",
                 required: "",
-                placeholder: "https://服务商域名/v1/chat/completions",
+                maxlength: "2048",
+                placeholder: "https://api.example.com/v1",
+                "aria-describedby": "model-endpoint-hint",
                 disabled: _ctx.state.busy.api
-              }, null, 8 /* PROPS */, _hoisted_114), [
+              }, null, 8 /* PROPS */, _hoisted_113), [
                 [_vModelText, _ctx.state.modelForm.endpoint]
-              ])
+              ]),
+              _cache[51] || (_cache[51] = _createElementVNode("p", {
+                id: "model-endpoint-hint",
+                class: "form-hint"
+              }, "填写服务商提供的 HTTPS 基础地址，也可以粘贴完整的 /chat/completions 地址。", -1 /* CACHED */))
             ], 64 /* STABLE_FRAGMENT */))
           : _createCommentVNode("v-if", true),
         _cache[56] || (_cache[56] = _createElementVNode("label", { for: "api-key-input" }, "API Key", -1 /* CACHED */)),
@@ -1038,10 +1049,21 @@ return function render(_ctx, _cache) {
           maxlength: "512",
           "onUpdate:modelValue": $event => ((_ctx.state.apiKey) = $event),
           disabled: _ctx.state.busy.api
-        }, null, 8 /* PROPS */, _hoisted_115), [
+        }, null, 8 /* PROPS */, _hoisted_114), [
           [_vModelText, _ctx.state.apiKey]
         ]),
-        _cache[57] || (_cache[57] = _createElementVNode("p", { class: "form-hint" }, " 密钥仅保存在本机后端配置文件中，不会回显到页面。保存只检查格式，实际可用性在生成时由 所选服务商校验。更换服务时请填写该服务的密钥；兼容接口需支持 Chat Completions 和 JSON 输出。 ", -1 /* CACHED */)),
+        _cache[57] || (_cache[57] = _createElementVNode("label", { for: "model-name" }, "模型名称", -1 /* CACHED */)),
+        _withDirectives(_createElementVNode("input", {
+          id: "model-name",
+          "onUpdate:modelValue": $event => ((_ctx.state.modelForm.model) = $event),
+          required: "",
+          maxlength: "128",
+          placeholder: "填写服务商提供的模型 ID",
+          disabled: _ctx.state.busy.api
+        }, null, 8 /* PROPS */, _hoisted_115), [
+          [_vModelText, _ctx.state.modelForm.model]
+        ]),
+        _cache[58] || (_cache[58] = _createElementVNode("p", { class: "form-hint" }, " 密钥仅保存在本机后端配置文件中，不会回显到页面。保存只检查格式，实际可用性在生成时由 所选服务商校验。更换服务时请填写该服务的密钥；兼容接口需支持 Chat Completions 和 JSON 输出。 ", -1 /* CACHED */)),
         _createElementVNode("p", _hoisted_116, _toDisplayString(_ctx.state.errors.api), 1 /* TEXT */),
         _createElementVNode("div", _hoisted_117, [
           _createElementVNode("button", {
@@ -1079,14 +1101,14 @@ return function render(_ctx, _cache) {
         id: "create-form",
         onSubmit: _withModifiers(_ctx.createBook, ["prevent"])
       }, [
-        _cache[68] || (_cache[68] = _createElementVNode("div", { class: "dialog-heading" }, [
+        _cache[69] || (_cache[69] = _createElementVNode("div", { class: "dialog-heading" }, [
           _createElementVNode("div", null, [
             _createElementVNode("div", { class: "eyebrow" }, "A NEW BEGINNING"),
             _createElementVNode("h2", { id: "create-dialog-title" }, "让一个新世界诞生。")
           ])
         ], -1 /* CACHED */)),
         _createElementVNode("label", null, [
-          _cache[58] || (_cache[58] = _createTextVNode("作品名称", -1 /* CACHED */)),
+          _cache[59] || (_cache[59] = _createTextVNode("作品名称", -1 /* CACHED */)),
           _withDirectives(_createElementVNode("input", {
             name: "title",
             required: "",
@@ -1099,7 +1121,7 @@ return function render(_ctx, _cache) {
           ])
         ]),
         _createElementVNode("label", null, [
-          _cache[59] || (_cache[59] = _createTextVNode("故事构想", -1 /* CACHED */)),
+          _cache[60] || (_cache[60] = _createTextVNode("故事构想", -1 /* CACHED */)),
           _withDirectives(_createElementVNode("textarea", {
             name: "prompt",
             required: "",
@@ -1114,7 +1136,7 @@ return function render(_ctx, _cache) {
         ]),
         _createElementVNode("div", _hoisted_125, [
           _createElementVNode("label", null, [
-            _cache[60] || (_cache[60] = _createTextVNode("目标章节", -1 /* CACHED */)),
+            _cache[61] || (_cache[61] = _createTextVNode("目标章节", -1 /* CACHED */)),
             _withDirectives(_createElementVNode("input", {
               name: "chapters",
               type: "number",
@@ -1133,7 +1155,7 @@ return function render(_ctx, _cache) {
             ])
           ]),
           _createElementVNode("label", null, [
-            _cache[61] || (_cache[61] = _createTextVNode("目标总字数", -1 /* CACHED */)),
+            _cache[62] || (_cache[62] = _createTextVNode("目标总字数", -1 /* CACHED */)),
             _withDirectives(_createElementVNode("input", {
               name: "target_units",
               type: "number",
@@ -1153,9 +1175,9 @@ return function render(_ctx, _cache) {
           ])
         ]),
         _createElementVNode("details", _hoisted_128, [
-          _cache[64] || (_cache[64] = _createElementVNode("summary", null, "文风设定（可选）", -1 /* CACHED */)),
+          _cache[65] || (_cache[65] = _createElementVNode("summary", null, "文风设定（可选）", -1 /* CACHED */)),
           _createElementVNode("label", null, [
-            _cache[62] || (_cache[62] = _createTextVNode("文风要求", -1 /* CACHED */)),
+            _cache[63] || (_cache[63] = _createTextVNode("文风要求", -1 /* CACHED */)),
             _withDirectives(_createElementVNode("textarea", {
               name: "style_instructions",
               rows: "3",
@@ -1169,7 +1191,7 @@ return function render(_ctx, _cache) {
             _createElementVNode("small", null, "建议 50～300 字，可描述叙述视角、语言节奏和希望避免的写法。已输入 " + _toDisplayString(_ctx.state.createForm.instructions.length) + " / 2,000 字符。", 1 /* TEXT */)
           ]),
           _createElementVNode("label", null, [
-            _cache[63] || (_cache[63] = _createTextVNode("参考片段", -1 /* CACHED */)),
+            _cache[64] || (_cache[64] = _createTextVNode("参考片段", -1 /* CACHED */)),
             _withDirectives(_createElementVNode("textarea", {
               name: "style_reference",
               rows: "4",
@@ -1184,10 +1206,10 @@ return function render(_ctx, _cache) {
           ])
         ]),
         _createElementVNode("details", _hoisted_131, [
-          _cache[66] || (_cache[66] = _createElementVNode("summary", null, "写作 Skill（可选）", -1 /* CACHED */)),
-          _cache[67] || (_cache[67] = _createElementVNode("p", { class: "form-hint" }, "导入技能文件并选择最多 5 个，创建后可随时调整。仅使用文本指导，不执行脚本。", -1 /* CACHED */)),
+          _cache[67] || (_cache[67] = _createElementVNode("summary", null, "写作 Skill（可选）", -1 /* CACHED */)),
+          _cache[68] || (_cache[68] = _createElementVNode("p", { class: "form-hint" }, "导入技能文件并选择最多 5 个，创建后可随时调整。仅使用文本指导，不执行脚本。", -1 /* CACHED */)),
           _createElementVNode("label", null, [
-            _cache[65] || (_cache[65] = _createTextVNode("安装技能文件 ", -1 /* CACHED */)),
+            _cache[66] || (_cache[66] = _createTextVNode("安装技能文件 ", -1 /* CACHED */)),
             _createElementVNode("input", {
               type: "file",
               accept: ".md,text/markdown,text/plain",
@@ -1216,7 +1238,7 @@ return function render(_ctx, _cache) {
             ]))
           }), 128 /* KEYED_FRAGMENT */))
         ]),
-        _cache[69] || (_cache[69] = _createElementVNode("p", { class: "form-hint" }, " 创建后可逐章生成。可在设置中配置模型服务。 ", -1 /* CACHED */)),
+        _cache[70] || (_cache[70] = _createElementVNode("p", { class: "form-hint" }, " 创建后可逐章生成。可在设置中配置模型服务。 ", -1 /* CACHED */)),
         _createElementVNode("p", _hoisted_135, _toDisplayString(_ctx.state.errors.create), 1 /* TEXT */),
         _createElementVNode("button", {
           id: "create-submit",
@@ -1234,7 +1256,7 @@ return function render(_ctx, _cache) {
       onCancel: _withModifiers($event => (_ctx.closeDialog('estimate')), ["prevent"])
     }, [
       _createElementVNode("div", _hoisted_138, [
-        _cache[70] || (_cache[70] = _createElementVNode("div", null, [
+        _cache[71] || (_cache[71] = _createElementVNode("div", null, [
           _createElementVNode("div", { class: "eyebrow" }, "BEFORE YOU WRITE"),
           _createElementVNode("h2", { id: "estimate-title" }, "确认本次生成")
         ], -1 /* CACHED */)),
@@ -1252,15 +1274,15 @@ return function render(_ctx, _cache) {
             _createElementVNode("p", _hoisted_140, " 《" + _toDisplayString(_ctx.state.estimateTitle) + "》· 第 " + _toDisplayString(_ctx.state.estimate.first_chapter) + " 至 " + _toDisplayString(_ctx.state.estimate.last_chapter) + " 章，共 " + _toDisplayString(_ctx.state.estimate.count) + " 章 ", 1 /* TEXT */),
             _createElementVNode("div", _hoisted_141, [
               _createElementVNode("div", null, [
-                _cache[71] || (_cache[71] = _createElementVNode("span", null, "预计输入 token", -1 /* CACHED */)),
+                _cache[72] || (_cache[72] = _createElementVNode("span", null, "预计输入 token", -1 /* CACHED */)),
                 _createElementVNode("strong", _hoisted_142, _toDisplayString(_ctx.fmt(_ctx.state.estimate.input_tokens)), 1 /* TEXT */)
               ]),
               _createElementVNode("div", null, [
-                _cache[72] || (_cache[72] = _createElementVNode("span", null, "预计输出 token", -1 /* CACHED */)),
+                _cache[73] || (_cache[73] = _createElementVNode("span", null, "预计输出 token", -1 /* CACHED */)),
                 _createElementVNode("strong", _hoisted_143, _toDisplayString(_ctx.fmt(_ctx.state.estimate.output_tokens)), 1 /* TEXT */)
               ]),
               _createElementVNode("div", null, [
-                _cache[73] || (_cache[73] = _createElementVNode("span", null, "预计 token 合计", -1 /* CACHED */)),
+                _cache[74] || (_cache[74] = _createElementVNode("span", null, "预计 token 合计", -1 /* CACHED */)),
                 _createElementVNode("strong", _hoisted_144, "≈ " + _toDisplayString(_ctx.fmt(_ctx.state.estimate.total_tokens)), 1 /* TEXT */)
               ])
             ]),
@@ -1269,11 +1291,11 @@ return function render(_ctx, _cache) {
               _createElementVNode("strong", _hoisted_147, _toDisplayString(_ctx.state.estimate.pricing.label) + " · " + _toDisplayString(_ctx.state.estimate.pricing.model), 1 /* TEXT */),
               _createElementVNode("dl", null, [
                 _createElementVNode("div", null, [
-                  _cache[74] || (_cache[74] = _createElementVNode("dt", null, "输入单价（未命中缓存）", -1 /* CACHED */)),
+                  _cache[75] || (_cache[75] = _createElementVNode("dt", null, "输入单价（未命中缓存）", -1 /* CACHED */)),
                   _createElementVNode("dd", _hoisted_148, _toDisplayString(_ctx.price(_ctx.state.estimate.prices?.input)), 1 /* TEXT */)
                 ]),
                 _createElementVNode("div", null, [
-                  _cache[75] || (_cache[75] = _createElementVNode("dt", null, "输出单价", -1 /* CACHED */)),
+                  _cache[76] || (_cache[76] = _createElementVNode("dt", null, "输出单价", -1 /* CACHED */)),
                   _createElementVNode("dd", _hoisted_149, _toDisplayString(_ctx.price(_ctx.state.estimate.prices?.output)), 1 /* TEXT */)
                 ])
               ]),
@@ -1298,7 +1320,7 @@ return function render(_ctx, _cache) {
               ])
             ]),
             _createElementVNode("p", _hoisted_153, [
-              _cache[76] || (_cache[76] = _createTextVNode(" 预计费用 ", -1 /* CACHED */)),
+              _cache[77] || (_cache[77] = _createTextVNode(" 预计费用 ", -1 /* CACHED */)),
               _createElementVNode("strong", _hoisted_154, _toDisplayString(_ctx.cost(_ctx.state.estimate.estimated_cost_cny)), 1 /* TEXT */)
             ]),
             _withDirectives(_createElementVNode("p", {
@@ -1335,10 +1357,10 @@ return function render(_ctx, _cache) {
       "aria-labelledby": "delete-title",
       onCancel: _withModifiers($event => (_ctx.closeDialog('delete')), ["prevent"])
     }, [
-      _cache[77] || (_cache[77] = _createElementVNode("div", { class: "eyebrow" }, "MANAGE YOUR LIBRARY", -1 /* CACHED */)),
-      _cache[78] || (_cache[78] = _createElementVNode("h2", { id: "delete-title" }, "删除这部作品？", -1 /* CACHED */)),
+      _cache[78] || (_cache[78] = _createElementVNode("div", { class: "eyebrow" }, "MANAGE YOUR LIBRARY", -1 /* CACHED */)),
+      _cache[79] || (_cache[79] = _createElementVNode("h2", { id: "delete-title" }, "删除这部作品？", -1 /* CACHED */)),
       _createElementVNode("p", _hoisted_161, "《" + _toDisplayString(_ctx.titleOf(_ctx.state.deleteBook)) + "》", 1 /* TEXT */),
-      _cache[79] || (_cache[79] = _createElementVNode("p", { class: "muted" }, " 作品会移出书架，正文和存档保存在废案箱。删除后可从书架底部的「废案箱」恢复；正在生成的作品需先等待任务结束。 ", -1 /* CACHED */)),
+      _cache[80] || (_cache[80] = _createElementVNode("p", { class: "muted" }, " 作品会移出书架，正文和存档保存在废案箱。删除后可从书架底部的「废案箱」恢复；正在生成的作品需先等待任务结束。 ", -1 /* CACHED */)),
       _createElementVNode("p", _hoisted_162, _toDisplayString(_ctx.state.errors.delete), 1 /* TEXT */),
       _createElementVNode("div", _hoisted_163, [
         _createElementVNode("button", {
@@ -1365,7 +1387,7 @@ return function render(_ctx, _cache) {
       onCancel: _withModifiers($event => (_ctx.closeDialog('trash')), ["prevent"])
     }, [
       _createElementVNode("div", _hoisted_167, [
-        _cache[80] || (_cache[80] = _createElementVNode("div", null, [
+        _cache[81] || (_cache[81] = _createElementVNode("div", null, [
           _createElementVNode("div", { class: "eyebrow" }, "STORIES CAN BEGIN AGAIN"),
           _createElementVNode("h2", { id: "trash-title" }, "废案箱")
         ], -1 /* CACHED */)),
@@ -1377,7 +1399,7 @@ return function render(_ctx, _cache) {
           onClick: $event => (_ctx.closeDialog('trash'))
         }, " × ", 8 /* PROPS */, _hoisted_168)
       ]),
-      _cache[82] || (_cache[82] = _createElementVNode("p", { class: "muted" }, " 暂时放下的故事，也可以重新开始。作品正文、文风和存档都保留在这里。 ", -1 /* CACHED */)),
+      _cache[83] || (_cache[83] = _createElementVNode("p", { class: "muted" }, " 暂时放下的故事，也可以重新开始。作品正文、文风和存档都保留在这里。 ", -1 /* CACHED */)),
       _createElementVNode("div", _hoisted_169, [
         (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.state.trash, (book) => {
           return (_openBlock(), _createElementBlock("div", {
@@ -1407,7 +1429,7 @@ return function render(_ctx, _cache) {
           ]))
         }), 128 /* KEYED_FRAGMENT */)),
         (!_ctx.state.trash.length)
-          ? (_openBlock(), _createElementBlock("div", _hoisted_173, [...(_cache[81] || (_cache[81] = [
+          ? (_openBlock(), _createElementBlock("div", _hoisted_173, [...(_cache[82] || (_cache[82] = [
               _createElementVNode("span", { "aria-hidden": "true" }, "◇", -1 /* CACHED */),
               _createElementVNode("h3", null, "废案箱还是空的", -1 /* CACHED */),
               _createElementVNode("p", null, "从书架删除的作品会保存在这里，可随时恢复。", -1 /* CACHED */)
@@ -1419,15 +1441,63 @@ return function render(_ctx, _cache) {
       [_directive_dialog, _ctx.state.dialogs.trash]
     ]),
     _withDirectives((_openBlock(), _createElementBlock("dialog", {
+      id: "regenerate-dialog",
+      "aria-labelledby": "regenerate-title",
+      onCancel: _withModifiers($event => (_ctx.closeDialog('regenerate')), ["prevent"])
+    }, [
+      (_ctx.state.regeneration)
+        ? (_openBlock(), _createElementBlock("form", {
+            key: 0,
+            onSubmit: _withModifiers(_ctx.regenerateChapter, ["prevent"])
+          }, [
+            _createElementVNode("h2", _hoisted_177, "重新生成第 " + _toDisplayString(_ctx.state.regeneration.number) + " 章", 1 /* TEXT */),
+            (_ctx.state.regeneration.later)
+              ? (_openBlock(), _createElementBlock("p", _hoisted_178, " 新稿保存后会替换本章，后续 " + _toDisplayString(_ctx.state.regeneration.later) + " 章需要重新续写。 ", 1 /* TEXT */))
+              : _createCommentVNode("v-if", true),
+            _cache[84] || (_cache[84] = _createElementVNode("label", { for: "regenerate-feedback" }, "作者意见（必填）", -1 /* CACHED */)),
+            _withDirectives(_createElementVNode("textarea", {
+              id: "regenerate-feedback",
+              "onUpdate:modelValue": $event => ((_ctx.state.regeneration.feedback) = $event),
+              rows: "4",
+              required: "",
+              maxlength: "2000",
+              placeholder: "例如：保留结尾的线索，减少背景解释，用两人的对话推进冲突。",
+              disabled: _ctx.state.busy.regenerate
+            }, null, 8 /* PROPS */, _hoisted_179), [
+              [_vModelText, _ctx.state.regeneration.feedback]
+            ]),
+            (_ctx.state.errors.regenerate)
+              ? (_openBlock(), _createElementBlock("p", _hoisted_180, _toDisplayString(_ctx.state.errors.regenerate), 1 /* TEXT */))
+              : _createCommentVNode("v-if", true),
+            _createElementVNode("div", _hoisted_181, [
+              _createElementVNode("button", {
+                class: "outline",
+                type: "button",
+                disabled: _ctx.state.busy.regenerate,
+                onClick: $event => (_ctx.closeDialog('regenerate'))
+              }, "取消", 8 /* PROPS */, _hoisted_182),
+              _createElementVNode("button", {
+                id: "regenerate-submit",
+                class: "primary",
+                type: "submit",
+                disabled: _ctx.state.busy.regenerate || _ctx.running || !_ctx.state.regeneration.feedback.trim()
+              }, _toDisplayString(_ctx.state.busy.regenerate ? '正在提交…' : '按意见重新生成'), 9 /* TEXT, PROPS */, _hoisted_183)
+            ])
+          ], 40 /* PROPS, NEED_HYDRATION */, _hoisted_176))
+        : _createCommentVNode("v-if", true)
+    ], 40 /* PROPS, NEED_HYDRATION */, _hoisted_175)), [
+      [_directive_dialog, _ctx.state.dialogs.regenerate]
+    ]),
+    _withDirectives((_openBlock(), _createElementBlock("dialog", {
       id: "purge-dialog",
       "aria-labelledby": "purge-title",
       onCancel: _withModifiers($event => (_ctx.closeDialog('purge')), ["prevent"])
     }, [
-      _cache[83] || (_cache[83] = _createElementVNode("div", { class: "eyebrow" }, "PERMANENT DELETION", -1 /* CACHED */)),
-      _cache[84] || (_cache[84] = _createElementVNode("h2", { id: "purge-title" }, "彻底删除这部作品？", -1 /* CACHED */)),
-      _createElementVNode("p", _hoisted_176, "《" + _toDisplayString(_ctx.titleOf(_ctx.state.purgeBook)) + "》", 1 /* TEXT */),
-      _cache[85] || (_cache[85] = _createElementVNode("p", { class: "purge-warning" }, " 将永久删除全部正文、文风设定和存档，无法恢复。 ", -1 /* CACHED */)),
-      _cache[86] || (_cache[86] = _createElementVNode("label", { for: "purge-title-input" }, "输入完整作品名称以确认", -1 /* CACHED */)),
+      _cache[85] || (_cache[85] = _createElementVNode("div", { class: "eyebrow" }, "PERMANENT DELETION", -1 /* CACHED */)),
+      _cache[86] || (_cache[86] = _createElementVNode("h2", { id: "purge-title" }, "彻底删除这部作品？", -1 /* CACHED */)),
+      _createElementVNode("p", _hoisted_185, "《" + _toDisplayString(_ctx.titleOf(_ctx.state.purgeBook)) + "》", 1 /* TEXT */),
+      _cache[87] || (_cache[87] = _createElementVNode("p", { class: "purge-warning" }, " 将永久删除全部正文、文风设定和存档，无法恢复。 ", -1 /* CACHED */)),
+      _cache[88] || (_cache[88] = _createElementVNode("label", { for: "purge-title-input" }, "输入完整作品名称以确认", -1 /* CACHED */)),
       _withDirectives(_createElementVNode("input", {
         id: "purge-title-input",
         type: "text",
@@ -1435,27 +1505,27 @@ return function render(_ctx, _cache) {
         placeholder: "请输入上方作品名称",
         "onUpdate:modelValue": $event => ((_ctx.state.purgeTitle) = $event),
         disabled: _ctx.state.busy.purge
-      }, null, 8 /* PROPS */, _hoisted_177), [
+      }, null, 8 /* PROPS */, _hoisted_186), [
         [_vModelText, _ctx.state.purgeTitle]
       ]),
-      _createElementVNode("p", _hoisted_178, _toDisplayString(_ctx.state.errors.purge), 1 /* TEXT */),
-      _createElementVNode("div", _hoisted_179, [
+      _createElementVNode("p", _hoisted_187, _toDisplayString(_ctx.state.errors.purge), 1 /* TEXT */),
+      _createElementVNode("div", _hoisted_188, [
         _createElementVNode("button", {
           id: "purge-cancel",
           class: "outline",
           type: "button",
           disabled: _ctx.state.busy.purge,
           onClick: $event => (_ctx.closeDialog('purge'))
-        }, " 取消彻底删除", 8 /* PROPS */, _hoisted_180),
+        }, " 取消彻底删除", 8 /* PROPS */, _hoisted_189),
         _createElementVNode("button", {
           id: "purge-confirm",
           class: "primary danger-button",
           type: "button",
           disabled: _ctx.state.busy.purge||!_ctx.state.purgeBook||_ctx.state.purgeTitle!==_ctx.state.purgeBook.title,
           onClick: _ctx.purgeBook
-        }, " 确认彻底删除 ", 8 /* PROPS */, _hoisted_181)
+        }, " 确认彻底删除 ", 8 /* PROPS */, _hoisted_190)
       ])
-    ], 40 /* PROPS, NEED_HYDRATION */, _hoisted_175)), [
+    ], 40 /* PROPS, NEED_HYDRATION */, _hoisted_184)), [
       [_directive_dialog, _ctx.state.dialogs.purge]
     ])
   ], 42 /* CLASS, PROPS, NEED_HYDRATION */, _hoisted_1))

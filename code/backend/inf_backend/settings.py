@@ -23,7 +23,7 @@ def _key_name(endpoint):
     )
 
 
-def _validate_endpoint(endpoint):
+def _validate_endpoint(endpoint, *, allow_base_url=False):
     if (
         not isinstance(endpoint, str)
         or len(endpoint) > 2048
@@ -38,21 +38,34 @@ def _validate_endpoint(endpoint):
     if (
         url.scheme != "https"
         or not url.hostname
-        or url.username
-        or url.password
+        or url.username is not None
+        or url.password is not None
         or url.query
         or url.fragment
-        or not url.path.endswith("/chat/completions")
         or port not in (None, 443)
         or url.hostname.lower() == "localhost"
     ):
-        raise ValueError("接口须为 HTTPS 地址并以 /chat/completions 结尾")
+        raise ValueError(
+            "请填写有效的 HTTPS 模型地址，地址中不能包含账号、密码、查询参数或片段"
+        )
     try:
         ipaddress.ip_address(url.hostname)
     except ValueError:
         pass
     else:
         raise ValueError("模型接口请使用服务商域名")
+    suffix = "/chat/completions"
+    path = url.path
+    if allow_base_url:
+        if "?" in endpoint or "#" in endpoint or "\\" in endpoint:
+            raise ValueError("Base URL 不能包含查询参数、片段或反斜杠")
+        endpoint = endpoint.rstrip("/")
+        path = path.rstrip("/")
+        if not path.endswith(suffix):
+            endpoint += suffix
+            path += suffix
+    if len(endpoint) > 2048 or not path.endswith(suffix):
+        raise ValueError("接口须为 HTTPS 地址并以 /chat/completions 结尾")
     return endpoint
 
 
@@ -67,7 +80,7 @@ def configure_model(provider, model, endpoint, api_key):
         endpoint = "https://api.deepseek.com/chat/completions"
     elif provider == "openai":
         endpoint = "https://api.openai.com/v1/chat/completions"
-    endpoint = _validate_endpoint(endpoint)
+    endpoint = _validate_endpoint(endpoint, allow_base_url=provider == "compatible")
     if not isinstance(api_key, str) or not re.fullmatch(
         r"[A-Za-z0-9._~+\-/=]{1,512}", api_key
     ):
