@@ -47,8 +47,8 @@ class AccountStore:
 
     @staticmethod
     def _password(password, salt):
-        if not isinstance(password, str) or not 15 <= len(password) <= 128:
-            raise ValueError("密码长度须为 15 至 128 位")
+        if not isinstance(password, str) or not 8 <= len(password) <= 128:
+            raise ValueError("密码长度须为 8 至 128 位")
         return hashlib.scrypt(
             password.encode("utf-8"),
             salt=salt,

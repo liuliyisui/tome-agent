@@ -157,8 +157,24 @@ class HostedTests(unittest.TestCase):
             try:
                 page = browser.new_page()
                 page.goto(self.server.origin)
+                self.assertEqual(page.title(), "登录 · Tome 故事工作室")
+                self.assertEqual(
+                    page.locator('input[name="password"]').get_attribute("minlength"),
+                    "8",
+                )
+                self.assertNotEqual(
+                    page.locator(".panel").evaluate(
+                        "e => getComputedStyle(e).backgroundColor"
+                    ),
+                    "rgba(0, 0, 0, 0)",
+                )
+                page.get_by_role("button", name="显示密码").click()
+                self.assertEqual(
+                    page.locator('input[name="password"]').get_attribute("type"), "text"
+                )
+                page.get_by_role("button", name="隐藏密码").click()
                 page.locator('input[name="username"]').fill("browser_writer")
-                page.locator('input[name="password"]').fill("a strong password")
+                page.locator('input[name="password"]').fill("eight888")
                 page.get_by_role("button", name="注册").click()
                 page.wait_for_selector("#my-works")
                 page.get_by_role("button", name="退出登录").click()

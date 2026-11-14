@@ -42,6 +42,16 @@ class AccountTests(unittest.TestCase):
         expired = self.store.create_session(user_id, lifetime=-1)
         self.assertIsNone(self.store.resolve_session(expired))
 
+    def test_password_length_boundaries_and_existing_long_password(self):
+        for password in ("a" * 7, "a" * 129):
+            with self.subTest(length=len(password)), self.assertRaises(ValueError):
+                self.store.register("too_short_or_long", password)
+        for index, password in enumerate(("a" * 8, "b" * 15, "c" * 128)):
+            username = f"writer_{index}"
+            with self.subTest(length=len(password)):
+                user_id = self.store.register(username, password)
+                self.assertEqual(self.store.authenticate(username, password), user_id)
+
     def test_invalid_inputs_are_rejected(self):
         for username, password in (("ab", "long enough password"), ("name", "short")):
             with self.subTest(username=username), self.assertRaises(ValueError):
