@@ -485,6 +485,26 @@ def _heal_chapter_titles(book):
     return book
 
 
+def _load_compatible_checkpoint(path, plan):
+    """Accept a changed runtime only if every current checkpoint validation passes."""
+    try:
+        return load_resume(path, plan)
+    except ContractError as original:
+        if str(original) != "写作运行时版本不一致，不能直接恢复旧检查点":
+            raise
+        try:
+            return load_resume(path, plan, allow_runtime_mismatch=True)
+        except (
+            ContractError,
+            KeyError,
+            TypeError,
+            ValueError,
+            AttributeError,
+            IndexError,
+        ):
+            raise original from None
+
+
 def _load_longform_book(book_id, plan):
     if database.enabled():
         record = database.row(book_id)
@@ -498,7 +518,7 @@ def _load_longform_book(book_id, plan):
         checkpoint = (book_path(book_id) / relative).resolve()
         if not checkpoint.is_relative_to(book_path(book_id).resolve()):
             raise ValueError("检查点路径不安全")
-        return load_resume(checkpoint, plan)
+        return _load_compatible_checkpoint(checkpoint, plan)
     pointer = _longform_pointer(book_id)
     if not pointer.exists():
         return None
@@ -509,7 +529,7 @@ def _load_longform_book(book_id, plan):
     root = book_path(book_id).resolve()
     if checkpoint == root or not checkpoint.is_relative_to(root):
         raise ValueError("长文本检查点路径不安全")
-    return _heal_chapter_titles(load_resume(checkpoint, plan))
+    return _heal_chapter_titles(_load_compatible_checkpoint(checkpoint, plan))
 
 
 def _checkpoint_paths(book_id):
@@ -561,7 +581,7 @@ def _regeneration_boundary(book_id, plan, prefix):
                 continue
             saved = record["book"]["chapters"]
             if chapter_hashes(saved) == expected:
-                return load_resume(path, plan)
+                return _load_compatible_checkpoint(path, plan)
         except (KeyError, TypeError, ValueError, OSError, ContractError):
             continue
     raise ValueError("找不到与本作品前文章节一致的可恢复检查点")

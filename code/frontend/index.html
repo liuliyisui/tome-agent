@@ -49,7 +49,7 @@
                 :disabled="state.pending.has(book.id)"
                 @click="selectBook(book.id)"
               >
-                <span class="mini-book"></span
+                <span class="mini-book" aria-hidden="true"><img v-if="book.cover_version" :src="`${bookUrl(book.id)}/cover?v=${book.cover_version}`" alt="" /></span
                 ><span
                   ><strong>{{titleOf(book)}}</strong
                   ><small
