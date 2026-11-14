@@ -205,15 +205,18 @@ class WebServer(ThreadingHTTPServer):
         threading.Thread(target=run, daemon=True).start()
         return {"job_id": job_id}
 
-    def start_regeneration(self, book_id, number, confirmed):
+    def start_regeneration(self, book_id, number, confirmed, author_feedback):
+        author_feedback = service.validate_author_feedback(author_feedback)
         with self.job_lock:
             if book_id in self.busy:
                 raise ValueError("当前作品正在生成，请等任务结束后再重新生成")
-        info = service.rewind_for_regeneration(book_id, number, confirmed)
-        settings = Settings.load()
-        with self.job_lock:
-            if book_id in self.busy:
-                raise ValueError("当前作品正在生成，请等任务结束后再重新生成")
+            book = serialize({**service.load_book(book_id), "id": book_id})
+            if book["mode"] == "legacy":
+                raise ValueError("旧版章节存档仅供阅读和导出，请新建作品")
+            info = service.regeneration_scope(
+                book["state"]["chapters"], number, confirmed
+            )
+            settings = Settings.for_book(book["metadata"]["model"])
             job_id = uuid4().hex
             self.busy.add(book_id)
             started_at = time.time()
@@ -244,7 +247,13 @@ class WebServer(ThreadingHTTPServer):
             try:
                 with service.operation_lock(service.book_path(book_id)):
                     service.generate(
-                        book_id, count=1, progress=progress, settings=settings
+                        book_id,
+                        count=1,
+                        progress=progress,
+                        settings=settings,
+                        regenerate_number=number,
+                        confirmed=confirmed,
+                        author_feedback=author_feedback,
                     )
                 progress({"completed": 1})
                 result = {"status": "completed", "book_id": book_id}
@@ -503,7 +512,10 @@ class Handler(BaseHTTPRequestHandler):
                     self.reply(
                         202,
                         self.server.start_regeneration(
-                            book_id, number, data.get("confirmed") is True
+                            book_id,
+                            number,
+                            data.get("confirmed") is True,
+                            data.get("author_feedback"),
                         ),
                     )
                 elif not post and len(parts) == 3:
