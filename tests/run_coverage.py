@@ -18,9 +18,9 @@ CORE = ",".join(
         "memory_runtime/memory_processing/pipeline.py",
         "memory_runtime/events/continuity.py",
         "memory_runtime/writing_flow/graph_runtime.py",
-        "tome_writer/domain.py",
-        "tome_writer/agents.py",
-        "tome_writer/tiered_memory.py",
+        "tome_writer/foundation/domain.py",
+        "tome_writer/writing_flow/agents.py",
+        "tome_writer/memory_system/tiered_memory.py",
     )
 )
 
