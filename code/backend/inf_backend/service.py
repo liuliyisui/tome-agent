@@ -2,6 +2,7 @@
 
 import base64
 import binascii
+import copy
 import json
 import os
 import re
@@ -485,6 +486,40 @@ def _heal_chapter_titles(book):
     return book
 
 
+def _load_compatible_checkpoint(path, plan):
+    """Accept a changed runtime only if every current checkpoint validation passes."""
+    try:
+        return load_resume(path, plan)
+    except ContractError as original:
+        if str(original) != "写作运行时版本不一致，不能直接恢复旧检查点":
+            raise
+        try:
+            from memory_runtime import writing
+
+            record = strict_json(Path(path).read_text(encoding="utf-8-sig"))
+            if (
+                record.get("schema") != "inf-writing-checkpoint-v1"
+                or not isinstance(record.get("runtime_sha256"), dict)
+                or record.get("writing_plan_sha256") != digest(canonical(plan))
+                or record.get("book_sha256") != digest(canonical(record["book"]))
+            ):
+                raise ContractError("检查点结构或完整性校验失败")
+            book = record["book"]
+            done = writing._verify_resume_memory_coverage(book)
+            if plan.get("event_first", True):
+                writing._verify_resume_event_history(book, done)
+            return copy.deepcopy(book)
+        except (
+            ContractError,
+            KeyError,
+            TypeError,
+            ValueError,
+            AttributeError,
+            IndexError,
+        ):
+            raise original from None
+
+
 def _load_longform_book(book_id, plan):
     if database.enabled():
         record = database.row(book_id)
@@ -498,7 +533,7 @@ def _load_longform_book(book_id, plan):
         checkpoint = (book_path(book_id) / relative).resolve()
         if not checkpoint.is_relative_to(book_path(book_id).resolve()):
             raise ValueError("检查点路径不安全")
-        return load_resume(checkpoint, plan)
+        return _load_compatible_checkpoint(checkpoint, plan)
     pointer = _longform_pointer(book_id)
     if not pointer.exists():
         return None
@@ -509,7 +544,7 @@ def _load_longform_book(book_id, plan):
     root = book_path(book_id).resolve()
     if checkpoint == root or not checkpoint.is_relative_to(root):
         raise ValueError("长文本检查点路径不安全")
-    return _heal_chapter_titles(load_resume(checkpoint, plan))
+    return _heal_chapter_titles(_load_compatible_checkpoint(checkpoint, plan))
 
 
 def _checkpoint_paths(book_id):
@@ -561,7 +596,7 @@ def _regeneration_boundary(book_id, plan, prefix):
                 continue
             saved = record["book"]["chapters"]
             if chapter_hashes(saved) == expected:
-                return load_resume(path, plan)
+                return _load_compatible_checkpoint(path, plan)
         except (KeyError, TypeError, ValueError, OSError, ContractError):
             continue
     raise ValueError("找不到与本作品前文章节一致的可恢复检查点")

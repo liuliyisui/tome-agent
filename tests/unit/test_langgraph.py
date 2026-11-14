@@ -217,6 +217,34 @@ class LangGraphTests(unittest.TestCase):
         with self.assertRaises(ContractError):
             load_resume(path, session.plan)
 
+    def test_backend_recovers_changed_runtime_only_after_full_validation(self):
+        from inf_backend.service import _load_compatible_checkpoint
+
+        session = self.session(EventProvider())
+        session.write_next("继续")
+        path = session.latest_checkpoint
+        saved = json.loads(path.read_text(encoding="utf-8"))
+        saved["runtime_sha256"]["memory_runtime"]["writing.py"] = "new-runtime"
+        path.write_text(json.dumps(saved, ensure_ascii=False), encoding="utf-8")
+        unchanged = path.read_bytes()
+        restored = _load_compatible_checkpoint(path, session.plan)
+        self.assertEqual(path.read_bytes(), unchanged)
+        resumed = self.session(EventProvider(), name="dynamic-resume", book=restored)
+        self.assertIsNone(resumed.write_next("继续")["stop_reason"])
+        self.assertEqual(len(resumed.book["chapters"]), 2)
+        saved["book"]["chapters"][0]["text"] = "损坏的正文"
+        path.write_text(json.dumps(saved, ensure_ascii=False), encoding="utf-8")
+        with self.assertRaises(ContractError):
+            _load_compatible_checkpoint(path, session.plan)
+        from tome_writer.domain import digest
+
+        saved["book"]["chapters"][0]["text"] = restored["chapters"][0]["text"]
+        saved["book"]["memory"]["processed_through"] = 999
+        saved["book_sha256"] = digest(canonical(saved["book"]))
+        path.write_text(json.dumps(saved, ensure_ascii=False), encoding="utf-8")
+        with self.assertRaises(ContractError):
+            _load_compatible_checkpoint(path, session.plan)
+
     def test_checkpoint_from_before_test_classification_resumes(self):
         session = self.session(Local(), event=False)
         session.write_next("继续")

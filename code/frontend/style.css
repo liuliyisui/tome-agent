@@ -215,3 +215,5 @@ html:has(.home-view), body:has(.home-view) { height: 100%; overflow: hidden; }
 .provider-list { max-height: min(64vh, 650px); overflow-y: auto; }
 .provider-unavailable { display: block; padding: 8px 10px; color: var(--text-secondary, #7d8675); font-size: 11px; opacity: .75; }
 @media (max-width: 620px) { .provider-list { max-height: 180px; } }
+.book-item .mini-book:has(img) { overflow: hidden; border-left: 0; }
+.book-item .mini-book img { display: block; width: 100%; height: 100%; object-fit: cover; }

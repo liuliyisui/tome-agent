@@ -754,6 +754,8 @@ const app = createApp({
         });
         const result = await api(`${bookUrl(key)}/cover`, { image: encoded });
         if (id.value === key) state.current.cover_version = result.cover_version;
+        const summary = state.books.find((book) => book.id === key);
+        if (summary) summary.cover_version = result.cover_version;
         await refreshBooks();
         notify('封面已保存。');
       } catch (error) {
