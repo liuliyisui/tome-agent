@@ -99,11 +99,7 @@ class ImportBootstrapTests(unittest.TestCase):
         env["PYTHONPATH"] = os.pathsep.join(
             [str(REPO / "code/core_engine"), str(REPO / "code/backend")]
         )
-        probe = (
-            "import sys, memory_runtime;"
-            "print(int(any(p.replace('\\\\', '/').endswith('memory_runtime/src')"
-            " for p in sys.path)))"
-        )
+        probe = "import memory_runtime, tome_writer.chat_provider; print(1)"
         outcome = subprocess.run(
             [sys.executable, "-c", probe],
             cwd=str(REPO),

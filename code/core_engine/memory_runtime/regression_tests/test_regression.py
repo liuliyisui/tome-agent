@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "memory_runtime/src"))
+sys.path.insert(0, str(ROOT))
 from memory_runtime import pipeline
 from memory_runtime.engine import MemoryEngine
 from tome_writer.domain import ContractError, canonical

@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(ROOT / "memory_runtime/src"))
+sys.path.insert(0, str(ROOT))
 from memory_runtime.engine import MemoryEngine
 from tome_writer.chat_provider import ChatCompletionProvider
 from tome_writer.domain import ContractError, canonical
@@ -95,11 +95,14 @@ def source_hashes():
         if name in result:
             raise ContractError("Duplicate shared runtime source path")
         result[name] = sha(path)
+    package_init = shared / "__init__.py"
+    if package_init.is_file():
+        result["src/tome_writer/__init__.py"] = sha(package_init)
     return result
 
 
 _MIGRATION_MANIFEST_SHA256 = (
-    "e4e758d41b5b23f393d535f9b0c5c79dbea661f35ad84845722a233bdfcf7768"
+    "13f07c3f62833914bc04f8ddbfd64a97ef92e3874f531300505697bb615d8d26"
 )
 
 
@@ -203,6 +206,8 @@ def _source_hashes_compatible(saved, current):
                 "60dd234dbb192ae55a406466af02b3b8819365a96d4ed2143199bfc1952e942c",
                 "75971f1cd086d6d8ffce07867bfa1eb9791c91c134b7808eaa19119a03ee7c7a",
                 "246072924a44e69d8fea5549b05216a7e0a6f49289803f8c60c5c29c3973df35",
+                "4dc82c78af81c1b7a1fcebe3093d6ad987b18aec7b397224ca2282e3814798b2",
+                "ee83b48b652c7899954ba9e76cbc2125e216a24603282ad84562075100f8849f",
                 "e89627fdde7480c129527bf3147df80a0ea9491c355de9873478585d1aa22117",
                 "5ba85c8e98f0afad19d53097290909e2f5bb89de519bb7d5eabd5b209b4d5756",
             },
@@ -221,6 +226,8 @@ def _source_hashes_compatible(saved, current):
                 "2fe7734631e712ba9bb7b228ccfeb245429902033ed7aa0a130a1984cbfe3af3",
                 "cd5c2cc06c09ba2e4c4f56d7799581300058ec5509c1a65caf37f2bc84d00f5c",
                 "40070d46922d015b28509af2cef81c269117bfa081cab7c5614fbc8a876de61a",
+                "5b3e1a6bdab21d8330a134d0e25eace13fcd9995f586fd1eed66294b2dbf04c7",
+                "337b99a9cc8cb168e5c46e18e7fd36d4f37800aa16e5f9cf5f4bf638943f6a82",
                 "e5601c0f69180e12300e1487876310b13f2997ef7e53c5a0e2f46a81485df287",
                 "fa0bfefce93bb9fb649de433b4c853c70dbd230acc13ee092b2c139d6d185b27",
             },

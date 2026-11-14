@@ -259,7 +259,7 @@ class WritingIntegration(unittest.TestCase):
     def test_default_launcher_uses_live_runtime_and_runs_all_memory_phases(self):
         provider = Local()
         result = self.launch(provider)
-        self.assertEqual(cli.SOURCE, ROOT / "memory_runtime/src")
+        self.assertEqual(cli.SOURCE, ROOT / "tome_writer")
         self.assertTrue(result["draft_completed"])
         self.assertTrue(result["memory_complete"])
         self.assertEqual(result["memory_processed_through"], 4)
@@ -271,7 +271,7 @@ class WritingIntegration(unittest.TestCase):
         state = self.read(self.root / "output/final_state.json")
         self.assertEqual(len(state["memory"]["items"]), 4)
         manifest = self.read(self.root / "output/launch_manifest.json")
-        self.assertEqual(manifest["source_relative"], "memory_runtime/src")
+        self.assertEqual(manifest["source_relative"], "tome_writer")
         self.assertIn(
             "writing.py", manifest["writing_runtime_sha256"]["memory_runtime"]
         )

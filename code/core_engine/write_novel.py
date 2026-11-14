@@ -15,7 +15,7 @@ from uuid import uuid4
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parent
-SOURCE = ROOT / "memory_runtime/src"
+SOURCE = ROOT / "tome_writer"
 sys.path.insert(0, str(SOURCE))
 from tome_writer.chat_provider import ChatCompletionProvider
 from tome_writer.domain import ContractError, canonical, digest, strict_json
