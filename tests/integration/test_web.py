@@ -101,7 +101,9 @@ class WebIntegrationTests(unittest.TestCase):
             self.assertEqual(changed.exception.code, 400)
             self.assertIn("模型配置", changed.exception.read().decode("utf-8"))
             self.assertEqual(
-                self.request(f"/api/books/{old_id}/estimate", {"count": 1})["pricing"]["requested_model"],
+                self.request(f"/api/books/{old_id}/estimate", {"count": 1})["pricing"][
+                    "requested_model"
+                ],
                 "deepseek-chat",
             )
 
@@ -415,7 +417,9 @@ class WebIntegrationTests(unittest.TestCase):
     def test_estimate_is_offline_and_generation_requires_confirmation(self):
         # This case verifies alias pricing; isolate it from the developer's .env.
         active_config = patch.object(
-            settings.Settings, "load", return_value=Settings(api_key="FAKE_TEST_KEY", model="deepseek-chat")
+            settings.Settings,
+            "load",
+            return_value=Settings(api_key="FAKE_TEST_KEY", model="deepseek-chat"),
         )
         active_config.start()
         self.addCleanup(active_config.stop)

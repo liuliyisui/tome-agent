@@ -49,7 +49,11 @@ class ModelSettingsTests(unittest.TestCase):
         self.assertNotIn("provider_name", cfg.public_config())
         with self.assertRaises(ValueError):
             settings.configure_model(
-                "compatible", "qwen-plus", "https://example.com/v1", "safe-key", "坏名称\nINJECTED=yes"
+                "compatible",
+                "qwen-plus",
+                "https://example.com/v1",
+                "safe-key",
+                "坏名称\nINJECTED=yes",
             )
 
     def test_connection_test_does_not_save_and_checks_provider_response(self):
@@ -57,22 +61,38 @@ class ModelSettingsTests(unittest.TestCase):
 
         connection = Mock()
         connection.getresponse.return_value.status = 200
-        connection.getresponse.return_value.read.return_value = b'{"choices":[{"message":{"content":"OK"}}]}'
-        with patch.object(settings.http.client, "HTTPSConnection", return_value=connection):
-            self.assertTrue(settings.test_model_connection("compatible", "qwen", "https://example.com/v1", "safe-key", "千问"))
+        connection.getresponse.return_value.read.return_value = (
+            b'{"choices":[{"message":{"content":"OK"}}]}'
+        )
+        with patch.object(
+            settings.http.client, "HTTPSConnection", return_value=connection
+        ):
+            self.assertTrue(
+                settings.test_model_connection(
+                    "compatible", "qwen", "https://example.com/v1", "safe-key", "千问"
+                )
+            )
             self.assertFalse((self.root / ".env").exists())
             connection.getresponse.return_value.status = 401
             with self.assertRaisesRegex(ValueError, "HTTP 401"):
-                settings.test_model_connection("compatible", "qwen", "https://example.com/v1", "safe-key", "千问")
+                settings.test_model_connection(
+                    "compatible", "qwen", "https://example.com/v1", "safe-key", "千问"
+                )
             self.assertFalse((self.root / ".env").exists())
 
     def test_saved_endpoint_key_can_be_reused_without_disclosure(self):
-        settings.configure_model("compatible", "first", "https://example.com/v1", "saved-key", "服务商")
-        result = settings.configure_model("compatible", "second", "https://example.com/v1", "", "服务商")
+        settings.configure_model(
+            "compatible", "first", "https://example.com/v1", "saved-key", "服务商"
+        )
+        result = settings.configure_model(
+            "compatible", "second", "https://example.com/v1", "", "服务商"
+        )
         self.assertEqual(result.api_key, "saved-key")
         self.assertNotIn("saved-key", str(result.public_config()))
         with self.assertRaises(ValueError):
-            settings.configure_model("compatible", "model", "https://another.example/v1", "", "其他")
+            settings.configure_model(
+                "compatible", "model", "https://another.example/v1", "", "其他"
+            )
 
     def test_multiple_endpoints_keep_distinct_credentials(self):
         endpoint = "https://example.com/compatible-mode/v1/chat/completions"

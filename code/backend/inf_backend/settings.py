@@ -2,8 +2,8 @@
 
 import hashlib
 import http.client
-import json
 import ipaddress
+import json
 import os
 import re
 import tempfile
@@ -74,7 +74,9 @@ def _validate_endpoint(endpoint, *, allow_base_url=False):
 def _model_values(provider, model, endpoint, api_key, provider_name=None):
     if provider_name is None:
         provider_name = {
-            "deepseek": "DeepSeek", "openai": "OpenAI", "compatible": "自定义"
+            "deepseek": "DeepSeek",
+            "openai": "OpenAI",
+            "compatible": "自定义",
         }.get(provider, "")
     if (
         not isinstance(provider_name, str)
@@ -98,7 +100,9 @@ def _model_values(provider, model, endpoint, api_key, provider_name=None):
     if api_key == "":
         name = _key_name(endpoint)
         values = {**_dotenv(BACKEND_ROOT / ".env"), **os.environ}
-        api_key = values.get(name, "") or (values.get("DEEPSEEK_API_KEY", "") if provider == "deepseek" else "")
+        api_key = values.get(name, "") or (
+            values.get("DEEPSEEK_API_KEY", "") if provider == "deepseek" else ""
+        )
     if not isinstance(api_key, str) or not re.fullmatch(
         r"[A-Za-z0-9._~+\-/=]{1,512}", api_key
     ):
@@ -120,20 +124,34 @@ def test_model_connection(provider, model, endpoint, api_key, provider_name=None
     connection = http.client.HTTPSConnection(url.hostname, port=url.port, timeout=30)
     try:
         connection.request(
-            "POST", url.path, json.dumps(payload).encode("utf-8"),
-            {"Authorization": "Bearer " + api_key, "Content-Type": "application/json", "Accept": "application/json"},
+            "POST",
+            url.path,
+            json.dumps(payload).encode("utf-8"),
+            {
+                "Authorization": "Bearer " + api_key,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
         )
         response = connection.getresponse()
         if response.status != 200:
-            raise ValueError(f"连接测试失败：服务商返回 HTTP {response.status}，请检查密钥、地址、模型和额度")
+            raise ValueError(
+                f"连接测试失败：服务商返回 HTTP {response.status}，请检查密钥、地址、模型和额度"
+            )
         raw = response.read(262145)
         if len(raw) > 262144:
             raise ValueError("连接测试失败：服务商返回内容过大")
         result = json.loads(raw)
-        if not isinstance(result, dict) or not isinstance(result.get("choices"), list) or not result["choices"]:
+        if (
+            not isinstance(result, dict)
+            or not isinstance(result.get("choices"), list)
+            or not result["choices"]
+        ):
             raise ValueError("连接测试失败：服务商返回的接口格式不兼容")
     except (OSError, http.client.HTTPException, UnicodeError, json.JSONDecodeError):
-        raise ValueError("连接测试失败：无法连接服务商或返回格式无效，请检查网络和接口地址") from None
+        raise ValueError(
+            "连接测试失败：无法连接服务商或返回格式无效，请检查网络和接口地址"
+        ) from None
     finally:
         connection.close()
     return True
@@ -294,7 +312,11 @@ class Settings:
             provider=provider,
             provider_name=get(
                 "TOME_PROVIDER_NAME",
-                {"deepseek": "DeepSeek", "openai": "OpenAI", "compatible": "自定义"}.get(provider, ""),
+                {
+                    "deepseek": "DeepSeek",
+                    "openai": "OpenAI",
+                    "compatible": "自定义",
+                }.get(provider, ""),
             ),
             timeout=float(get("DEEPSEEK_TIMEOUT", "180")),
             max_calls=int(get("INF_MAX_CALLS", "40")),

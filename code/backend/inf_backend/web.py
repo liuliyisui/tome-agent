@@ -15,7 +15,13 @@ from tome_writer.memory_temporality import current_claim, has_current_content
 
 from . import database, generation, library, service
 from .logging_setup import configure_logging, log_failure, logger
-from .settings import BACKEND_ROOT, Settings, configure_api_key, configure_model, test_model_connection
+from .settings import (
+    BACKEND_ROOT,
+    Settings,
+    configure_api_key,
+    configure_model,
+    test_model_connection,
+)
 
 FRONTEND = (
     Path(sys._MEIPASS) / "frontend"
@@ -127,7 +133,9 @@ class WebServer(ThreadingHTTPServer):
         ):
             raise ValueError("请先查看本次 token 和费用预估，再点击继续生成")
         settings = Settings.load()
-        if estimate["signature"] != generation.signature(book_id, model_config=settings.public_config()):
+        if estimate["signature"] != generation.signature(
+            book_id, model_config=settings.public_config()
+        ):
             raise ValueError("作品、文风或模型配置已更新，请重新查看费用预估后再确认")
         count = estimate["count"]
         current_price = generation.price_for(settings.public_config())
@@ -370,8 +378,11 @@ class Handler(BaseHTTPRequestHandler):
                 )
             elif post and path == "/api/model-test":
                 test_model_connection(
-                    data.get("provider"), data.get("model"), data.get("endpoint"),
-                    data.get("api_key"), data.get("provider_name"),
+                    data.get("provider"),
+                    data.get("model"),
+                    data.get("endpoint"),
+                    data.get("api_key"),
+                    data.get("provider_name"),
                 )
                 self.reply(200, {"ok": True})
             elif post and path == "/api/model-config":

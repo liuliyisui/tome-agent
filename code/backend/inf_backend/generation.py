@@ -39,7 +39,8 @@ def signature(book_id, book=None, model_config=None):
         canonical(
             {
                 "metadata": book["metadata"],
-                "active_model": model_config or Settings.load(require_key=False).public_config(),
+                "active_model": model_config
+                or Settings.load(require_key=False).public_config(),
                 "chapters": chapters,
                 "style": service.load_writing_style(book_id),
                 "skills": service.load_book_skills(book_id),
