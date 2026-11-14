@@ -5,7 +5,7 @@ import json
 import re
 from pathlib import Path
 
-from inf_writer.domain import Snapshot, canonical, digest, project_id
+from tome_writer.domain import Snapshot, canonical, digest, project_id
 
 from . import database as db
 from . import service

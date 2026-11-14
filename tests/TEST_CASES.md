@@ -2,7 +2,7 @@
 
 ## 测试范围
 
-本次验收的核心写作流程包括章节生成与恢复（`memory_runtime/writing.py`）、事件推演（`event_first.py`）、连续性（`continuity.py`）、记忆处理（`pipeline.py`、`inf_writer/tiered_memory.py`）、流程编排（`graph_runtime.py`）、基础数据契约（`inf_writer/domain.py`）和角色请求（`inf_writer/agents.py`）。这 8 个模块覆盖从规划、状态更新到正文保存与记忆维护的主要链路；它们不是整个项目，也不包含网页、数据库和全部辅助模块。
+本次验收的核心写作流程包括章节生成与恢复（`memory_runtime/writing_flow/writing.py`）、事件推演（`event_first.py`）、连续性（`continuity.py`）、记忆处理（`pipeline.py`、`tome_writer/tiered_memory.py`）、流程编排（`graph_runtime.py`）、基础数据契约（`tome_writer/domain.py`）和角色请求（`tome_writer/agents.py`）。这 8 个模块覆盖从规划、状态更新到正文保存与记忆维护的主要链路；它们不是整个项目，也不包含网页、数据库和全部辅助模块。
 
 测试代码主要位于 `tests/unit/` 和 `tests/integration/`。引擎回归入口为 `tests/run_engine_regression.py`，其中复用 `code/core_engine/memory_runtime/` 的现有测试。模型回复使用离线模拟，不访问付费模型。
 
@@ -53,7 +53,7 @@
 | `tests/unit`，上述 8 个核心模块 | **60.32%** | 48.34% | 56.64% |
 | `tests/unit` + 引擎回归，上述 8 个核心模块 | 68.17% | 54.83% | **64.08%** |
 
-综合覆盖率采用 coverage.py 的语句与分支合计口径。核心模块的单元测试**语句覆盖率**达到 60%，但其分支覆盖率为 48.34%，语句与分支合计的综合覆盖率为 56.64%；64.08% 是单元测试与引擎回归合并后的综合结果。整个后端与引擎的单元测试覆盖没有达到 60%。`memory_runtime/pipeline.py`、`continuity.py` 等仍需继续补测。引擎回归有 3 项因缺少历史样本而跳过；测试代码与重复的 `memory_runtime/src/` 副本未计入统计分母。
+综合覆盖率采用 coverage.py 的语句与分支合计口径。核心模块的单元测试**语句覆盖率**达到 60%，但其分支覆盖率为 48.34%，语句与分支合计的综合覆盖率为 56.64%；64.08% 是单元测试与引擎回归合并后的综合结果。整个后端与引擎的单元测试覆盖没有达到 60%。`memory_runtime/memory_processing/pipeline.py`、`continuity.py` 等仍需继续补测。引擎回归有 3 项因缺少历史样本而跳过；测试代码与重复的 `memory_runtime/src/` 副本未计入统计分母。
 
 从项目根目录运行：
 

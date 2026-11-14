@@ -167,7 +167,7 @@ def fail(message, prior=None):
 **重构**（结构性修复 12 处，其余 30 处为脚本引导，已登记豁免）：
 
 ```python
-# code/core_engine/inf_writer/agents.py：import 曾被放在 PROMPTS 赋值之后
+# code/core_engine/tome_writer/agents.py：import 曾被放在 PROMPTS 赋值之后
  from .domain import ContractError, chapter_plan, fields, strict_json, text
 +from .memory_output_contract import MEMORY_PROMPT
  from .models import ModelGateway, ModelRequest
@@ -186,9 +186,9 @@ def fail(message, prior=None):
 +    sys.path.insert(0, str(_SOURCE))
 ```
 
-**为什么还剩 35 处**：`check_memory.py`、`write_novel.py` 与 `memory_runtime/test_*.py` 是**可直接执行的脚本**（`python memory_runtime/test_writing.py`），必须先 `sys.path.insert` 再导入 `inf_writer`。Python 无法在 `sys.path` 生效前完成导入，只能在配置里显式登记（Ruff 的 `per-file-ignores` 里同样登记了这 30 个文件）。
+**为什么还剩 35 处**：`check_memory.py`、`write_novel.py` 与 `memory_runtime/test_*.py` 是**可直接执行的脚本**（`python memory_runtime/test_writing.py`），必须先 `sys.path.insert` 再导入 `tome_writer`。Python 无法在 `sys.path` 生效前完成导入，只能在配置里显式登记（Ruff 的 `per-file-ignores` 里同样登记了这 30 个文件）。
 
-**测试**：`test_importing_memory_runtime_exposes_the_bundled_inf_writer` —— 在子进程里只 `import memory_runtime`，断言内置 `inf_writer` 已可导入（基线上该断言失败）。
+**测试**：`test_importing_memory_runtime_exposes_the_bundled_tome_writer` —— 在子进程里只 `import memory_runtime`，断言内置 `tome_writer` 已可导入（基线上该断言失败）。
 
 ### Top 5 — `unnecessary-lambda-assignment`（1 → 0）
 
@@ -212,7 +212,7 @@ def fail(message, prior=None):
 | `test_longform_pointer_error_keeps_contract_error_as_cause` | FAIL（`__cause__` 为 None） | PASS |
 | `test_migrate_failure_suppresses_the_underlying_exception` | FAIL | PASS |
 | `test_planner_json_recovery_does_not_leak_the_parser_error` | FAIL（`__cause__` 泄漏 JSON 解析异常） | PASS |
-| `test_importing_memory_runtime_exposes_the_bundled_inf_writer` | FAIL | PASS |
+| `test_importing_memory_runtime_exposes_the_bundled_tome_writer` | FAIL | PASS |
 | `test_continuity_error_reports_the_normalised_attribute`（保持性） | PASS | PASS |
 
 实测记录：
@@ -277,7 +277,7 @@ ruff format --check . 182 files already formatted
 
 ### 6.3 重复率 1.68%（751 行 / 63 组）
 
-主要来源不是复制粘贴，而是 **`inf_writer/` 与 `memory_runtime/src/inf_writer/` 两份逐字节相同的副本**（35 个文件）。删掉一份会改变运行期 `import inf_writer` 的解析路径，必须与打包方式一起调整，属于独立任务。**建议**：单一源 + `pip install -e`，并在 CI 加两树一致性校验。
+主要来源不是复制粘贴，而是 **`tome_writer/` 与 `memory_runtime/src/tome_writer/` 两份逐字节相同的副本**（35 个文件）。删掉一份会改变运行期 `import tome_writer` 的解析路径，必须与打包方式一起调整，属于独立任务。**建议**：单一源 + `pip install -e`，并在 CI 加两树一致性校验。
 
 ### 6.4 其余未处理项
 

@@ -16,10 +16,10 @@ import unittest
 from unittest import mock
 
 from inf_backend import migrate, service
-from inf_writer.domain import ContractError
-from inf_writer.narrative_context import parse_planner_json
 from memory_runtime import continuity
 from memory_runtime.identifiers import attribute_identifier
+from tome_writer.domain import ContractError
+from tome_writer.narrative_context import parse_planner_json
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 
@@ -91,10 +91,10 @@ class LoopClosureTests(unittest.TestCase):
 
 class ImportBootstrapTests(unittest.TestCase):
     """Refactor 4 — Pylint C0413 / Ruff E402: importing the package itself must
-    expose the bundled ``inf_writer``, so no submodule needs a mid-file
+    expose the bundled ``tome_writer``, so no submodule needs a mid-file
     ``sys.path`` insert before its imports."""
 
-    def test_importing_memory_runtime_exposes_the_bundled_inf_writer(self):
+    def test_importing_memory_runtime_exposes_the_bundled_tome_writer(self):
         env = dict(os.environ)
         env["PYTHONPATH"] = os.pathsep.join(
             [str(REPO / "code/core_engine"), str(REPO / "code/backend")]

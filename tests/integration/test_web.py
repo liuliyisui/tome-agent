@@ -12,8 +12,8 @@ from urllib.request import ProxyHandler, Request, build_opener
 from inf_backend import official_pricing, service, settings
 from inf_backend.settings import Settings
 from inf_backend.web import WebServer
-from inf_writer.domain import apply_chapter, digest
-from inf_writer.storage import FileStore
+from tome_writer.domain import apply_chapter, digest
+from tome_writer.storage import FileStore
 
 
 class WebIntegrationTests(unittest.TestCase):

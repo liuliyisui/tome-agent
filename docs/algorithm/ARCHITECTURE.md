@@ -33,7 +33,7 @@ flowchart TD
 
 ## 基础严格事务流程
 
-以下流程对应 `inf_writer.runtime.Coordinator`，同样使用真实编译后的 LangGraph 图。它与上面的“先保存草稿”策略不同：审核拒绝时正式状态保持不变。
+以下流程对应 `tome_writer.runtime.Coordinator`，同样使用真实编译后的 LangGraph 图。它与上面的“先保存草稿”策略不同：审核拒绝时正式状态保持不变。
 
 ## 主流程
 

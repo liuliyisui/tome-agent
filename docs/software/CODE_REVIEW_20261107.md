@@ -33,7 +33,7 @@
 |---|---|---|
 | 功能完成度 | 部分 | 写作、记忆推进与工作室流程可用；旧存档跨版本续写仍只有只读回退，缺通用迁移流程 |
 | 算法模型选择 | 未评估 | 回归全部使用离线夹具，未调用真实模型或做质量对比 |
-| 设计模式和代码结构 | 部分合理 | 端口/适配器边界清晰（`ports.py`、`ModelGateway`）、网页层与引擎层分离；但 `inf_writer` 存在两份逐字节相同的副本 |
+| 设计模式和代码结构 | 部分合理 | 端口/适配器边界清晰（`ports.py`、`ModelGateway`）、网页层与引擎层分离；但 `tome_writer` 存在两份逐字节相同的副本 |
 | 缺失功能清晰标注 | 较好 | 全仓 `TODO/FIXME` 为 0；缺失历史夹具在 `tests/run_engine_regression.py:23-27` 用显式 `unavailable` 字典登记并跳过，属可核查的标注方式 |
 | 存在设计文档 | 是 | `docs/algorithm/ARCHITECTURE.md`、`docs/software/architecture.md`，本次新增 `docs/software/CODE_QUALITY_FIXES.md` |
 | 代码与文档相符 | 部分 | 本次整改已补文档；`e4d23ce` 新增的工作室导航/封面改动未见对应设计说明同步 |
@@ -51,17 +51,17 @@
 | 错误处理 | 断言 | 通过 | 测试使用 `assert`（`tests/**` 已按指南豁免 `S101`），生产输入校验使用显式异常；无裸 `except:` |
 | 错误处理 | 日志 | 未评估 | 仅 2 个模块使用 `logging`，未评估轮转与敏感信息脱敏 |
 | 错误处理 | 资源泄漏、线程安全、死锁 | 未确认 | 沿用线程与锁；未证明全部场景安全 |
-| 结构 | 冗余、复制粘贴 | 有问题 | `inf_writer` 两份副本、35 个文件逐字节相同（见第 5 节 P2） |
+| 结构 | 冗余、复制粘贴 | 有问题 | `tome_writer` 两份副本、35 个文件逐字节相同（见第 5 节 P2） |
 
 ## 5. 语句级审查
 
 | 优先级 | 文件与位置 | 问题 | 建议 |
 |---|---|---|---|
 | P1 | `code/core_engine/memory_runtime/test_continuity.py:44`、`test_regression.py:20`、`test_writing.py:244` 等 9 个测试模块 | 这些脚本式测试模块依赖未入库夹具（`code/core_engine/runs/`、`docs/analysis/novel_review_20261021_c/paragraphs.json`、`tools/continuous_memory_20261021_i/test_run.py`），干净副本上会直接 `FileNotFoundError`／`setUpClass` 失败。CI 只跑 `tests/`（127 项）和 `tests/run_engine_regression.py`（42 项），这 9 个模块不在其中：`test_continuity`、`test_event_first`、`test_grounding_references`、`test_generation_foundations`、`test_projection_grounding`、`test_provider_stop`、`test_story_review`、`test_writing`、`test_regression`。实测这 9 个模块在当前副本上均有报错（单个模块 1~35 个用例受影响，`test_regression.py` 为导入期失败），其余用例通过。 | 夹具入库或改造成生成式夹具；把可运行部分并入 `tests/run_engine_regression.py` 的类清单，让 CI 真正覆盖。 |
-| P2 | `code/core_engine/inf_writer/` 与 `code/core_engine/memory_runtime/src/inf_writer/`（各 35 个文件） | 两份副本逐字节相同，但 `import inf_writer` 命中哪一份取决于 `sys.path` 插入顺序（`write_novel.py:19`、`memory_runtime/__init__.py:14`、`check_memory.py:14` 各自插入不同目录）。本次整改不得不在两侧重复修改 `agents.py` 与 `narrative_context.py`，漏改一处就会让两个入口行为分叉。 | 保留单一源（删除一份改软链接，或改 `src/` 布局 + `pip install -e`）；CI 增加两树一致性校验（本次以逐文件哈希核验，35/35 相同）。 |
+| P2 | `code/core_engine/tome_writer/` 与 `code/core_engine/memory_runtime/src/tome_writer/`（各 35 个文件） | 两份副本逐字节相同，但 `import tome_writer` 命中哪一份取决于 `sys.path` 插入顺序（`write_novel.py:19`、`memory_runtime/__init__.py:14`、`check_memory.py:14` 各自插入不同目录）。本次整改不得不在两侧重复修改 `agents.py` 与 `narrative_context.py`，漏改一处就会让两个入口行为分叉。 | 保留单一源（删除一份改软链接，或改 `src/` 布局 + `pip install -e`）；CI 增加两树一致性校验（本次以逐文件哈希核验，35/35 相同）。 |
 | P2 | `code/core_engine/memory_runtime/continuity.py:167` | `fail()` 闭包依赖循环变量 `row` 的晚绑定，而 `row` 在同一轮迭代内会被重新赋值（`row = copy.deepcopy(row)` 后改写 `attribute`）。本次以 `# noqa: B023` 加注释保留，因为改用默认参数会把错误详情冻结成未规范化的旧值；但该写法依赖「闭包只在当前迭代内调用」，将来若被缓存或跨迭代复用会静默错报。 | 改为显式传参（`fail(message, row, prior)`），或先算出规范化记录存进局部常量再闭包引用。 |
 | P2 | 全仓类型注解 | 1633 个函数仅 24 个有返回注解；CI 无静态类型门禁。对 4 万行级引擎做结构性改动（如上面的去重）缺少编译期保护，只能靠测试兜底。 | 按模块增量补注解（先 `domain/`、`ports.py` 等接口层），在 `pyproject.toml` 增加 `[tool.mypy]` 并让 CI 逐步扩大检查范围。 |
-| P3 | `code/core_engine/inf_writer/agents.py:13` 等 107 个文件 | 490 行超过 88 列，其中 416 行是中文提示词/长字符串（最长 1109 字符）。`ruff format` 不拆分字符串，`E501` 又被配置忽略，导致提示词既难 diff 也无法复用。 | 长提示词抽到独立的 `.md`/`.txt` 资源按段落加载；保留 `E501` 忽略以免噪音。 |
+| P3 | `code/core_engine/tome_writer/agents.py:13` 等 107 个文件 | 490 行超过 88 列，其中 416 行是中文提示词/长字符串（最长 1109 字符）。`ruff format` 不拆分字符串，`E501` 又被配置忽略，导致提示词既难 diff 也无法复用。 | 长提示词抽到独立的 `.md`/`.txt` 资源按段落加载；保留 `E501` 忽略以免噪音。 |
 | P3 | `pyproject.toml:36-44` | 30 处 `E402`（`check_memory.py`、`write_novel.py`、`memory_runtime/test_*.py`）通过 `per-file-ignores` 豁免，根因是项目以「脚本 + `sys.path.insert`」方式运行（全仓 17 处），而非可安装包。 | 逐步改为可安装包布局并删除 `sys.path` 引导；短期保留豁免（配置内已注明理由）。 |
 | P3 | `code/backend/pyproject.toml` 与根 `pyproject.toml` | 前者只做打包（`[project]`、`setuptools`），后者只做 Ruff 规则；同名文件、职责不同，且 `requires-python` 与 `target-version` 需人工同步（当前均为 3.11）。 | 在打包配置顶部或 README 注明分工，或把打包配置上移统一。 |
 

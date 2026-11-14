@@ -28,41 +28,41 @@
       "recall_search.py": "48b0f193e3e5ce731eac01babf395e8f14a669ed10469fab4f9e111ee29bfc5b",
       "reference_choices.py": "3364b5d3426fc55f97238b6f8615fb90f32c71584a25fbd7e3892c0357b18edf",
       "semantics.py": "37c0a821565bac1f511ba86660a11e6071dbb1288e9c47300a36fd47713536e7",
-      "src/inf_writer/__init__.py": "54c0a6dd1883508635a62f8951bdc8e38878511e6162574dc34b10aa033c2ffe",
-      "src/inf_writer/__main__.py": "cf7390a2508a0fcad4777a4a629fc5212ab655cb45845975995f835676a834e3",
-      "src/inf_writer/agents.py": "a46d157ef8c8673676ca0ea54e1f47feabca2cf93fd07af39b6788a55afe6605",
-      "src/inf_writer/chat_provider.py": "b8c540ef715804f1e9c5a7eea9b8c446080b4718fca8b2521652a1254287bab7",
-      "src/inf_writer/claim_updates.py": "533866c0d0a955bb75faa6f851f4f34a89be85324d414cc95dc9d873eb3eabcc",
-      "src/inf_writer/cli.py": "df9bfb32222169a038844f29c5aa97fed931fbfe608f5d4c2606351c72ba5af5",
-      "src/inf_writer/demo.py": "a4da216c897faf022708898d191de0a20c9c81e3eddd3f59f83d82db71574c05",
-      "src/inf_writer/domain.py": "a57f906c18cf204e2a7eca0d0c3f07c4cce0de8d889adb6ffc9009f3a7384b4d",
-      "src/inf_writer/drafting.py": "cc011676459a9b3f3e10cab5d4d9579129a7e09f31ab8b2fc47ba9d6b52f5cd7",
-      "src/inf_writer/judgment_review.py": "2971ab74ffd00f6deb46cfd5ca74ad59ec35387e614f240071dba2a202120e5f",
-      "src/inf_writer/light_memory.py": "f5a04654fd500116308a7504a990c6b42d6b993d3816f9c7caf090d01820cffd",
-      "src/inf_writer/locator_review.py": "5fc33836b31e5d9cc2e499b8d89d3ecfee9d6cb3f879412bfd6ea8c55f3f1cbd",
-      "src/inf_writer/memory.py": "c8fd87b1ca9060e7a45b31920e1b71475cb6d41d04bbf8008c12a0c2d4854b5d",
-      "src/inf_writer/memory_action_contract.py": "33758072a65c705199750cab2e38f4c24868e683543b1edc475ce0c89672ae6d",
-      "src/inf_writer/memory_meaning.py": "dda163b24dc7f4a9632f53268af1fbb6eefcbbd3bbd9e25b12396a3791a94bad",
-      "src/inf_writer/memory_output_contract.py": "bc2b9681c2a8defbcf422d1ec16ddb1ab6f2a3fea02bdb7f7ff3dfeefd7066b2",
-      "src/inf_writer/memory_submission.py": "99d5b8a29163c1586f51711aa7adc0a3206be1f7464f9d3f42d5785a0f23cb84",
-      "src/inf_writer/memory_temporality.py": "60ccea6f379ebc50e2d4599082467b9349cbffa1b6d72b8a0ecbe9927eb6890f",
-      "src/inf_writer/models.py": "44835ee6524c84f383bfe2dca7a8f3ff9cb971f7753947caca7d5bf5ad9964bd",
-      "src/inf_writer/narrative_context.py": "093e41214d63cc4b2011a7ec604c6b23c4bb8699ca0abfab7d4f67b02db33a41",
-      "src/inf_writer/ports.py": "b3037f8e73d328a476a77a7b962738cd498a08274cb6d8dfc627492247e188e9",
-      "src/inf_writer/repair_pilot.py": "60b6fcefbcdb1a1c4cad5e4bb406562828b9833b5763f7a1432361dc2f5547f1",
-      "src/inf_writer/review_contract.py": "978d2adf81e4292798ee40be693bb8878e0ddcb42acb94f4b87e4c45b39e003e",
-      "src/inf_writer/review_policy.py": "f099616237f478fcd428e5de2275eceadfdca1831c02d542d844623edb89bea3",
-      "src/inf_writer/review_repair.py": "f6f1ce5cb079a44edb02340cdeee3d1b271ecf0cb2acc25918ae4959dc650901",
-      "src/inf_writer/review_state.py": "bf8cec27adb4a06512fa74dc039014bb3fea37b1036f60f28d124ebc0e41ea95",
-      "src/inf_writer/review_transport.py": "4cd0f26eeb931f9dacdbbc103821458ca29a08e3e6688b5b20fc30a78fccaf99",
-      "src/inf_writer/runtime.py": "691ff1a48f4556b14d253469a04fb23dcdf20788acd59f7945c41b8d4527865f",
-      "src/inf_writer/semantic_review.py": "e1069cf952527aed3beb6c8ff2d960a93d334bd063cc5eaf4fa15f013e1e4766",
-      "src/inf_writer/storage.py": "da514c7c27c314fd3fbae627494bd104f71f25d11cbc55b4aa71b0ac497e7963",
-      "src/inf_writer/temporal_agent.py": "c0553c792f787af4ec7a36340b8a4f8473b84777e80572cd94183a3b82a85f20",
-      "src/inf_writer/temporal_transport.py": "35f29eeaa538207c96e38e02b99ab586198ebc19168e41f10c0b13b46ad79c57",
-      "src/inf_writer/tiered_memory.py": "fd7217b13b34c111de46efda6af4b5b9e0f8decd6880acaf16bd286e18a17972",
-      "src/inf_writer/tiered_runtime.py": "c959f126a8615ca34cc84a709112d9e12e7ea6507481d9aaf099b6ef3150f852",
-      "src/inf_writer/trial.py": "8e176343243a49a2265152f79b5647955d296185cc53f9e16cd5a651a7c1609c",
+      "src/tome_writer/__init__.py": "54c0a6dd1883508635a62f8951bdc8e38878511e6162574dc34b10aa033c2ffe",
+      "src/tome_writer/__main__.py": "cf7390a2508a0fcad4777a4a629fc5212ab655cb45845975995f835676a834e3",
+      "src/tome_writer/agents.py": "a46d157ef8c8673676ca0ea54e1f47feabca2cf93fd07af39b6788a55afe6605",
+      "src/tome_writer/chat_provider.py": "b8c540ef715804f1e9c5a7eea9b8c446080b4718fca8b2521652a1254287bab7",
+      "src/tome_writer/claim_updates.py": "533866c0d0a955bb75faa6f851f4f34a89be85324d414cc95dc9d873eb3eabcc",
+      "src/tome_writer/cli.py": "df9bfb32222169a038844f29c5aa97fed931fbfe608f5d4c2606351c72ba5af5",
+      "src/tome_writer/demo.py": "a4da216c897faf022708898d191de0a20c9c81e3eddd3f59f83d82db71574c05",
+      "src/tome_writer/domain.py": "a57f906c18cf204e2a7eca0d0c3f07c4cce0de8d889adb6ffc9009f3a7384b4d",
+      "src/tome_writer/drafting.py": "cc011676459a9b3f3e10cab5d4d9579129a7e09f31ab8b2fc47ba9d6b52f5cd7",
+      "src/tome_writer/judgment_review.py": "2971ab74ffd00f6deb46cfd5ca74ad59ec35387e614f240071dba2a202120e5f",
+      "src/tome_writer/light_memory.py": "f5a04654fd500116308a7504a990c6b42d6b993d3816f9c7caf090d01820cffd",
+      "src/tome_writer/locator_review.py": "5fc33836b31e5d9cc2e499b8d89d3ecfee9d6cb3f879412bfd6ea8c55f3f1cbd",
+      "src/tome_writer/memory.py": "c8fd87b1ca9060e7a45b31920e1b71475cb6d41d04bbf8008c12a0c2d4854b5d",
+      "src/tome_writer/memory_action_contract.py": "33758072a65c705199750cab2e38f4c24868e683543b1edc475ce0c89672ae6d",
+      "src/tome_writer/memory_meaning.py": "dda163b24dc7f4a9632f53268af1fbb6eefcbbd3bbd9e25b12396a3791a94bad",
+      "src/tome_writer/memory_output_contract.py": "bc2b9681c2a8defbcf422d1ec16ddb1ab6f2a3fea02bdb7f7ff3dfeefd7066b2",
+      "src/tome_writer/memory_submission.py": "99d5b8a29163c1586f51711aa7adc0a3206be1f7464f9d3f42d5785a0f23cb84",
+      "src/tome_writer/memory_temporality.py": "60ccea6f379ebc50e2d4599082467b9349cbffa1b6d72b8a0ecbe9927eb6890f",
+      "src/tome_writer/models.py": "44835ee6524c84f383bfe2dca7a8f3ff9cb971f7753947caca7d5bf5ad9964bd",
+      "src/tome_writer/narrative_context.py": "093e41214d63cc4b2011a7ec604c6b23c4bb8699ca0abfab7d4f67b02db33a41",
+      "src/tome_writer/ports.py": "b3037f8e73d328a476a77a7b962738cd498a08274cb6d8dfc627492247e188e9",
+      "src/tome_writer/repair_pilot.py": "60b6fcefbcdb1a1c4cad5e4bb406562828b9833b5763f7a1432361dc2f5547f1",
+      "src/tome_writer/review_contract.py": "978d2adf81e4292798ee40be693bb8878e0ddcb42acb94f4b87e4c45b39e003e",
+      "src/tome_writer/review_policy.py": "f099616237f478fcd428e5de2275eceadfdca1831c02d542d844623edb89bea3",
+      "src/tome_writer/review_repair.py": "f6f1ce5cb079a44edb02340cdeee3d1b271ecf0cb2acc25918ae4959dc650901",
+      "src/tome_writer/review_state.py": "bf8cec27adb4a06512fa74dc039014bb3fea37b1036f60f28d124ebc0e41ea95",
+      "src/tome_writer/review_transport.py": "4cd0f26eeb931f9dacdbbc103821458ca29a08e3e6688b5b20fc30a78fccaf99",
+      "src/tome_writer/runtime.py": "691ff1a48f4556b14d253469a04fb23dcdf20788acd59f7945c41b8d4527865f",
+      "src/tome_writer/semantic_review.py": "e1069cf952527aed3beb6c8ff2d960a93d334bd063cc5eaf4fa15f013e1e4766",
+      "src/tome_writer/storage.py": "da514c7c27c314fd3fbae627494bd104f71f25d11cbc55b4aa71b0ac497e7963",
+      "src/tome_writer/temporal_agent.py": "c0553c792f787af4ec7a36340b8a4f8473b84777e80572cd94183a3b82a85f20",
+      "src/tome_writer/temporal_transport.py": "35f29eeaa538207c96e38e02b99ab586198ebc19168e41f10c0b13b46ad79c57",
+      "src/tome_writer/tiered_memory.py": "fd7217b13b34c111de46efda6af4b5b9e0f8decd6880acaf16bd286e18a17972",
+      "src/tome_writer/tiered_runtime.py": "c959f126a8615ca34cc84a709112d9e12e7ea6507481d9aaf099b6ef3150f852",
+      "src/tome_writer/trial.py": "8e176343243a49a2265152f79b5647955d296185cc53f9e16cd5a651a7c1609c",
       "stage_planning.py": "1d25bb7d1cd5332cafc239a8a7f1cb030e4bd12ce5cc6c7cf97be3faca33b83a",
       "state_recovery.py": "2f02c584a0f974f9100f991fb9d328ae84b02014ca1553a6635be0a20366ccb4",
       "story_budget.py": "f4e9f5214840d042f9f0aa8267b56400e02c38c6099e8efb5375689ee3dd9063",
@@ -218,143 +218,143 @@
       "sha256": "37c0a821565bac1f511ba86660a11e6071dbb1288e9c47300a36fd47713536e7"
     },
     {
-      "path": "memory_runtime/src/inf_writer/__init__.py",
+      "path": "memory_runtime/src/tome_writer/__init__.py",
       "sha256": "54c0a6dd1883508635a62f8951bdc8e38878511e6162574dc34b10aa033c2ffe"
     },
     {
-      "path": "memory_runtime/src/inf_writer/__main__.py",
+      "path": "memory_runtime/src/tome_writer/__main__.py",
       "sha256": "cf7390a2508a0fcad4777a4a629fc5212ab655cb45845975995f835676a834e3"
     },
     {
-      "path": "memory_runtime/src/inf_writer/agents.py",
+      "path": "memory_runtime/src/tome_writer/agents.py",
       "sha256": "a46d157ef8c8673676ca0ea54e1f47feabca2cf93fd07af39b6788a55afe6605"
     },
     {
-      "path": "memory_runtime/src/inf_writer/chat_provider.py",
+      "path": "memory_runtime/src/tome_writer/chat_provider.py",
       "sha256": "b8c540ef715804f1e9c5a7eea9b8c446080b4718fca8b2521652a1254287bab7"
     },
     {
-      "path": "memory_runtime/src/inf_writer/claim_updates.py",
+      "path": "memory_runtime/src/tome_writer/claim_updates.py",
       "sha256": "533866c0d0a955bb75faa6f851f4f34a89be85324d414cc95dc9d873eb3eabcc"
     },
     {
-      "path": "memory_runtime/src/inf_writer/cli.py",
+      "path": "memory_runtime/src/tome_writer/cli.py",
       "sha256": "df9bfb32222169a038844f29c5aa97fed931fbfe608f5d4c2606351c72ba5af5"
     },
     {
-      "path": "memory_runtime/src/inf_writer/demo.py",
+      "path": "memory_runtime/src/tome_writer/demo.py",
       "sha256": "a4da216c897faf022708898d191de0a20c9c81e3eddd3f59f83d82db71574c05"
     },
     {
-      "path": "memory_runtime/src/inf_writer/domain.py",
+      "path": "memory_runtime/src/tome_writer/domain.py",
       "sha256": "a57f906c18cf204e2a7eca0d0c3f07c4cce0de8d889adb6ffc9009f3a7384b4d"
     },
     {
-      "path": "memory_runtime/src/inf_writer/drafting.py",
+      "path": "memory_runtime/src/tome_writer/drafting.py",
       "sha256": "cc011676459a9b3f3e10cab5d4d9579129a7e09f31ab8b2fc47ba9d6b52f5cd7"
     },
     {
-      "path": "memory_runtime/src/inf_writer/judgment_review.py",
+      "path": "memory_runtime/src/tome_writer/judgment_review.py",
       "sha256": "2971ab74ffd00f6deb46cfd5ca74ad59ec35387e614f240071dba2a202120e5f"
     },
     {
-      "path": "memory_runtime/src/inf_writer/light_memory.py",
+      "path": "memory_runtime/src/tome_writer/light_memory.py",
       "sha256": "f5a04654fd500116308a7504a990c6b42d6b993d3816f9c7caf090d01820cffd"
     },
     {
-      "path": "memory_runtime/src/inf_writer/locator_review.py",
+      "path": "memory_runtime/src/tome_writer/locator_review.py",
       "sha256": "5fc33836b31e5d9cc2e499b8d89d3ecfee9d6cb3f879412bfd6ea8c55f3f1cbd"
     },
     {
-      "path": "memory_runtime/src/inf_writer/memory.py",
+      "path": "memory_runtime/src/tome_writer/memory.py",
       "sha256": "c8fd87b1ca9060e7a45b31920e1b71475cb6d41d04bbf8008c12a0c2d4854b5d"
     },
     {
-      "path": "memory_runtime/src/inf_writer/memory_action_contract.py",
+      "path": "memory_runtime/src/tome_writer/memory_action_contract.py",
       "sha256": "33758072a65c705199750cab2e38f4c24868e683543b1edc475ce0c89672ae6d"
     },
     {
-      "path": "memory_runtime/src/inf_writer/memory_meaning.py",
+      "path": "memory_runtime/src/tome_writer/memory_meaning.py",
       "sha256": "dda163b24dc7f4a9632f53268af1fbb6eefcbbd3bbd9e25b12396a3791a94bad"
     },
     {
-      "path": "memory_runtime/src/inf_writer/memory_output_contract.py",
+      "path": "memory_runtime/src/tome_writer/memory_output_contract.py",
       "sha256": "bc2b9681c2a8defbcf422d1ec16ddb1ab6f2a3fea02bdb7f7ff3dfeefd7066b2"
     },
     {
-      "path": "memory_runtime/src/inf_writer/memory_submission.py",
+      "path": "memory_runtime/src/tome_writer/memory_submission.py",
       "sha256": "99d5b8a29163c1586f51711aa7adc0a3206be1f7464f9d3f42d5785a0f23cb84"
     },
     {
-      "path": "memory_runtime/src/inf_writer/memory_temporality.py",
+      "path": "memory_runtime/src/tome_writer/memory_temporality.py",
       "sha256": "60ccea6f379ebc50e2d4599082467b9349cbffa1b6d72b8a0ecbe9927eb6890f"
     },
     {
-      "path": "memory_runtime/src/inf_writer/models.py",
+      "path": "memory_runtime/src/tome_writer/models.py",
       "sha256": "44835ee6524c84f383bfe2dca7a8f3ff9cb971f7753947caca7d5bf5ad9964bd"
     },
     {
-      "path": "memory_runtime/src/inf_writer/narrative_context.py",
+      "path": "memory_runtime/src/tome_writer/narrative_context.py",
       "sha256": "093e41214d63cc4b2011a7ec604c6b23c4bb8699ca0abfab7d4f67b02db33a41"
     },
     {
-      "path": "memory_runtime/src/inf_writer/ports.py",
+      "path": "memory_runtime/src/tome_writer/ports.py",
       "sha256": "b3037f8e73d328a476a77a7b962738cd498a08274cb6d8dfc627492247e188e9"
     },
     {
-      "path": "memory_runtime/src/inf_writer/repair_pilot.py",
+      "path": "memory_runtime/src/tome_writer/repair_pilot.py",
       "sha256": "60b6fcefbcdb1a1c4cad5e4bb406562828b9833b5763f7a1432361dc2f5547f1"
     },
     {
-      "path": "memory_runtime/src/inf_writer/review_contract.py",
+      "path": "memory_runtime/src/tome_writer/review_contract.py",
       "sha256": "978d2adf81e4292798ee40be693bb8878e0ddcb42acb94f4b87e4c45b39e003e"
     },
     {
-      "path": "memory_runtime/src/inf_writer/review_policy.py",
+      "path": "memory_runtime/src/tome_writer/review_policy.py",
       "sha256": "f099616237f478fcd428e5de2275eceadfdca1831c02d542d844623edb89bea3"
     },
     {
-      "path": "memory_runtime/src/inf_writer/review_repair.py",
+      "path": "memory_runtime/src/tome_writer/review_repair.py",
       "sha256": "f6f1ce5cb079a44edb02340cdeee3d1b271ecf0cb2acc25918ae4959dc650901"
     },
     {
-      "path": "memory_runtime/src/inf_writer/review_state.py",
+      "path": "memory_runtime/src/tome_writer/review_state.py",
       "sha256": "bf8cec27adb4a06512fa74dc039014bb3fea37b1036f60f28d124ebc0e41ea95"
     },
     {
-      "path": "memory_runtime/src/inf_writer/review_transport.py",
+      "path": "memory_runtime/src/tome_writer/review_transport.py",
       "sha256": "4cd0f26eeb931f9dacdbbc103821458ca29a08e3e6688b5b20fc30a78fccaf99"
     },
     {
-      "path": "memory_runtime/src/inf_writer/runtime.py",
+      "path": "memory_runtime/src/tome_writer/runtime.py",
       "sha256": "691ff1a48f4556b14d253469a04fb23dcdf20788acd59f7945c41b8d4527865f"
     },
     {
-      "path": "memory_runtime/src/inf_writer/semantic_review.py",
+      "path": "memory_runtime/src/tome_writer/semantic_review.py",
       "sha256": "e1069cf952527aed3beb6c8ff2d960a93d334bd063cc5eaf4fa15f013e1e4766"
     },
     {
-      "path": "memory_runtime/src/inf_writer/storage.py",
+      "path": "memory_runtime/src/tome_writer/storage.py",
       "sha256": "da514c7c27c314fd3fbae627494bd104f71f25d11cbc55b4aa71b0ac497e7963"
     },
     {
-      "path": "memory_runtime/src/inf_writer/temporal_agent.py",
+      "path": "memory_runtime/src/tome_writer/temporal_agent.py",
       "sha256": "c0553c792f787af4ec7a36340b8a4f8473b84777e80572cd94183a3b82a85f20"
     },
     {
-      "path": "memory_runtime/src/inf_writer/temporal_transport.py",
+      "path": "memory_runtime/src/tome_writer/temporal_transport.py",
       "sha256": "35f29eeaa538207c96e38e02b99ab586198ebc19168e41f10c0b13b46ad79c57"
     },
     {
-      "path": "memory_runtime/src/inf_writer/tiered_memory.py",
+      "path": "memory_runtime/src/tome_writer/tiered_memory.py",
       "sha256": "fd7217b13b34c111de46efda6af4b5b9e0f8decd6880acaf16bd286e18a17972"
     },
     {
-      "path": "memory_runtime/src/inf_writer/tiered_runtime.py",
+      "path": "memory_runtime/src/tome_writer/tiered_runtime.py",
       "sha256": "c959f126a8615ca34cc84a709112d9e12e7ea6507481d9aaf099b6ef3150f852"
     },
     {
-      "path": "memory_runtime/src/inf_writer/trial.py",
+      "path": "memory_runtime/src/tome_writer/trial.py",
       "sha256": "8e176343243a49a2265152f79b5647955d296185cc53f9e16cd5a651a7c1609c"
     },
     {

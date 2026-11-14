@@ -69,7 +69,7 @@ index f03fc55..61e9b3d 100644
 
 - `ruff format --check` 在整改前即已全部通过，说明代码此前已按 Black 风格格式化（双引号、88 列折行），本次不产生大范围格式噪音；
 - `F401`（未使用导入）整改前为 0，说明历史上已清理过；
-- `I001` 的 36 处全部由**本次新增的项目配置**触发：指南要求把本项目自有包（`inf_writer`、`memory_runtime`…）声明为 first-party，声明后原先把它们当作 third-party 分组的空行就多了。
+- `I001` 的 36 处全部由**本次新增的项目配置**触发：指南要求把本项目自有包（`tome_writer`、`memory_runtime`…）声明为 first-party，声明后原先把它们当作 third-party 分组的空行就多了。
 
 ---
 
@@ -103,7 +103,7 @@ ignore = ["E501"]                                 # 与指南示例一致：行�
 "code/core_engine/memory_runtime/test_*.py" = ["E402"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["inf_writer", "memory_runtime", "inf_backend",
+known-first-party = ["tome_writer", "memory_runtime", "inf_backend",
                      "user_runtime", "write_novel", "check_memory"]
 
 [tool.ruff.format]
@@ -140,7 +140,7 @@ ruff check --show-settings code/backend/inf_backend/web.py
 }
 ```
 
-- `python.analysis.extraPaths` 是本仓库的特例：`inf_writer`、`memory_runtime`、`inf_backend` 都没有作为发行包安装，Pylance 需要这两个目录才能解析导入（这也解释了 `tests/unit/__init__.py` 里的 `sys.path` 引导）。
+- `python.analysis.extraPaths` 是本仓库的特例：`tome_writer`、`memory_runtime`、`inf_backend` 都没有作为发行包安装，Pylance 需要这两个目录才能解析导入（这也解释了 `tests/unit/__init__.py` 里的 `sys.path` 引导）。
 - 指南示例中的 `"ruff.lint.args": ["--select=E,F,UP,B,SIM,I"]` 不要照抄：它会覆盖 `pyproject.toml` 的 `select`，使编辑器与 CI/预提交判定不一致（`SIM` 也不在项目规则集内）。规则唯一来源是仓库根 `pyproject.toml`。
 - 想把上面这段只作用于本仓库而不是全局：用 `File → Save Workspace As…` 存成 `.code-workspace` 文件放在仓库**之外**，或用 VS Code 的「Workspace」设置但不提交。
 
@@ -193,11 +193,11 @@ repos:
 
 | # | 位置 | 修改前 | 修改后 |
 | --- | --- | --- | --- |
-| 1 | `code/core_engine/inf_writer/agents.py:101` | `PROMPTS["memory"] += (...)` 之后才 `from .memory_output_contract import MEMORY_PROMPT` | 该 import 移入文件顶部 import 块（`.domain` / `.memory_output_contract` / `.models` 按字母序），`memory_output_contract` 只依赖 `.domain`，无循环导入 |
-| 2 | `code/core_engine/memory_runtime/src/inf_writer/agents.py:101` | 同上（该目录是 `inf_writer` 的同步副本） | 同上 |
-| 3 | `code/core_engine/memory_runtime/engine.py:7-11` | `SOURCE = ...; sys.path.insert(...)` 之后才导入 `inf_writer` | 删除本地 `sys.path` 引导，改为在包入口 `memory_runtime/__init__.py` 中统一引导；`engine.py` 顶部恢复为纯 import 块 |
-| 4 | `code/core_engine/memory_runtime/__init__.py` | 仅一行文档字符串 | 新增 13 行：把 `memory_runtime/src` 加入 `sys.path`（带存在性判断），使该包的所有子模块导入 `inf_writer` 时无需在文件中部改 `sys.path` |
-| 5 | `code/core_engine/memory_runtime/test_regression.py:174-179` | 类定义之后（第 174 行）才导入 `inf_writer.*` 与 `memory_runtime.engine` | 5 条 import 合并到文件顶部导入块（`sys.path` 引导之后），`_fixture_complete = ...` 保持原位 |
+| 1 | `code/core_engine/tome_writer/agents.py:101` | `PROMPTS["memory"] += (...)` 之后才 `from .memory_output_contract import MEMORY_PROMPT` | 该 import 移入文件顶部 import 块（`.domain` / `.memory_output_contract` / `.models` 按字母序），`memory_output_contract` 只依赖 `.domain`，无循环导入 |
+| 2 | `code/core_engine/memory_runtime/src/tome_writer/agents.py:101` | 同上（该目录是 `tome_writer` 的同步副本） | 同上 |
+| 3 | `code/core_engine/memory_runtime/engine.py:7-11` | `SOURCE = ...; sys.path.insert(...)` 之后才导入 `tome_writer` | 删除本地 `sys.path` 引导，改为在包入口 `memory_runtime/__init__.py` 中统一引导；`engine.py` 顶部恢复为纯 import 块 |
+| 4 | `code/core_engine/memory_runtime/__init__.py` | 仅一行文档字符串 | 新增 13 行：把 `memory_runtime/src` 加入 `sys.path`（带存在性判断），使该包的所有子模块导入 `tome_writer` 时无需在文件中部改 `sys.path` |
+| 5 | `code/core_engine/memory_runtime/test_regression.py:174-179` | 类定义之后（第 174 行）才导入 `tome_writer.*` 与 `memory_runtime.engine` | 5 条 import 合并到文件顶部导入块（`sys.path` 引导之后），`_fixture_complete = ...` 保持原位 |
 
 `memory_runtime/__init__.py` 改正后：
 
@@ -219,8 +219,8 @@ if str(_SOURCE) not in sys.path:
 | # | 位置 | 修改前 | 修改后 |
 | --- | --- | --- | --- |
 | 1 | `code/backend/inf_backend/migrate.py:230` | `raise SystemExit(...)` | `raise SystemExit(...) from None`（不再把底层 `DatabaseUnavailable/OSError` 挂在用户提示后面） |
-| 2 | `code/core_engine/inf_writer/narrative_context.py:35,37,40` | `raise original`（3 处） | `raise original from None`（显式声明"丢弃 JSON 解析异常"，避免 `During handling of the above exception` 噪音） |
-| 3 | `code/core_engine/memory_runtime/src/inf_writer/narrative_context.py:35,37,40` | 同上（同步副本） | 同上 |
+| 2 | `code/core_engine/tome_writer/narrative_context.py:35,37,40` | `raise original`（3 处） | `raise original from None`（显式声明"丢弃 JSON 解析异常"，避免 `During handling of the above exception` 噪音） |
+| 3 | `code/core_engine/memory_runtime/src/tome_writer/narrative_context.py:35,37,40` | 同上（同步副本） | 同上 |
 | 4 | `code/core_engine/memory_runtime/pipeline.py:1172` | `except TemporalUnresolved:` | `except TemporalUnresolved as unresolved:`，处理器内 8 处 `raise` 全部改为 `raise ... from unresolved` |
 | 5 | `code/core_engine/memory_runtime/reference_choices.py:293` | `except ContractError:` → `raise ContractError("Malformed reference selector...")` | `except ContractError as invalid:` → `... from invalid`（保留"原始解析错误"作为原因，便于排障） |
 
@@ -323,17 +323,17 @@ def read(name):
 
 ### 3.7 `I001` 导入块分组/排序（36 处，30 个文件）
 
-由新增的 `known-first-party` 配置触发：`inf_writer` / `memory_runtime` / `user_runtime` 从"第三方块"归入"自有包块"。修改形态统一为删除多余分组空行、必要时按字母序调整，例如：
+由新增的 `known-first-party` 配置触发：`tome_writer` / `memory_runtime` / `user_runtime` 从"第三方块"归入"自有包块"。修改形态统一为删除多余分组空行、必要时按字母序调整，例如：
 
 ```python
 # 修改前（code/core_engine/memory_runtime/test_writing.py）
-from inf_writer.models import ModelReply, ModelRequest
+from tome_writer.models import ModelReply, ModelRequest
 
 from memory_runtime.story_review import StoryReferenceGateway
 from memory_runtime.writing import load_resume
 
 # 修改后
-from inf_writer.models import ModelReply, ModelRequest
+from tome_writer.models import ModelReply, ModelRequest
 from memory_runtime.story_review import StoryReferenceGateway
 from memory_runtime.writing import load_resume
 ```
@@ -361,7 +361,7 @@ from memory_runtime.writing import load_resume
 
 | 豁免项 | 范围 | 依据与理由 |
 | --- | --- | --- |
-| `E402` | `check_memory.py`、`write_novel.py`、`memory_runtime/test_*.py`（共 30 处） | 这些是可直接执行的脚本/脚本式测试（`python -X utf8 memory_runtime/test_writing.py`），必须先 `sys.path.insert` 再导入 `inf_writer`。Python 无法在 `sys.path` 生效前完成该导入，只能调整顺序或豁免。按指南第三节的 `per-file-ignores` 集中登记，并在配置内注释原因；`engine.py`、`agents.py`、`test_regression.py` 等 12 处可结构性修复的已全部修复（见 3.1） |
+| `E402` | `check_memory.py`、`write_novel.py`、`memory_runtime/test_*.py`（共 30 处） | 这些是可直接执行的脚本/脚本式测试（`python -X utf8 memory_runtime/test_writing.py`），必须先 `sys.path.insert` 再导入 `tome_writer`。Python 无法在 `sys.path` 生效前完成该导入，只能调整顺序或豁免。按指南第三节的 `per-file-ignores` 集中登记，并在配置内注释原因；`engine.py`、`agents.py`、`test_regression.py` 等 12 处可结构性修复的已全部修复（见 3.1） |
 | `E501` | 全仓库 | 与指南示例配置一致：行宽由 `ruff format` 保证（88 列），不再重复报警 |
 | `S101` / `F401` | `tests/**`、`code/**/test_*.py` | 与指南示例一致：测试允许 `assert` 与夹具式导入。注：`S`（bandit）当前未在 `select` 中，该条属"预留登记" |
 
@@ -423,7 +423,7 @@ ContinuityTests.test_patch_cannot_clear_conflict_or_change_other_paragraph      
 
 ## 六、其他必要说明与后续建议
 
-1. **两份 `inf_writer` 同步维护**：`code/core_engine/inf_writer/` 与 `code/core_engine/memory_runtime/src/inf_writer/` 当前内容完全一致（逐文件哈希相同），本次对 `agents.py`、`narrative_context.py` 的修改在两侧同步落实。建议后续二选一（保留一份 + 软链接/打包安装），否则规则整改需要做两遍，且运行期可能出现同名模块双实例（`import inf_writer` 究竟命中哪一份取决于 `sys.path` 顺序）。
+1. **两份 `tome_writer` 同步维护**：`code/core_engine/tome_writer/` 与 `code/core_engine/memory_runtime/src/tome_writer/` 当前内容完全一致（逐文件哈希相同），本次对 `agents.py`、`narrative_context.py` 的修改在两侧同步落实。建议后续二选一（保留一份 + 软链接/打包安装），否则规则整改需要做两遍，且运行期可能出现同名模块双实例（`import tome_writer` 究竟命中哪一份取决于 `sys.path` 顺序）。
 
 2. **未采纳指南的方案 B（Black + Pylint + Mypy）**：指南建议二选一，本项目采用方案 A。Ruff 已在 `select` 中覆盖 Flake8/isort/pyupgrade/bugbear 的主要能力，且 `ruff format` 与 Black 输出兼容（整改前 `--check` 即通过，说明历史格式就是 Black 风格）。若后续要做严格类型门禁，可在 `pyproject.toml` 追加 `[tool.mypy]` 并在 CI 增加一步；当前代码库尚未全量标注类型，直接开启会一次性产生大量报错，建议按模块推进。
 
@@ -433,7 +433,7 @@ ContinuityTests.test_patch_cannot_clear_conflict_or_change_other_paragraph      
 
 4. **修复既有测试夹具缺失**：第 5 节列出的 `runs/`、`tools/`、`docs/analysis/` 目录未入库，导致 `code/core_engine/memory_runtime` 下 8 个测试模块在干净副本上无法运行（CI 也只跑 `tests/`）。建议把这些夹具入库或改为生成式夹具，否则这部分回归实际上长期处于"未验证"状态。
 
-5. **编辑器侧一次性动作（本机，不入库）**：安装 `charliermarsh.ruff` 后按第二节第 2 条填好用户设置并重开窗口，确认 Ruff 输出面板没有 "unable to find pyproject.toml" 提示；仓库根 `pyproject.toml` 生效后，`code/backend/pyproject.toml`（仅打包用、无 `[tool.ruff]`）不会被 Ruff 误当成配置源（已用 `ruff check --show-settings` 验证）。用 Pylance 时 `python.analysis.extraPaths` 必须包含 `code/core_engine` 与 `code/backend`，否则 `inf_writer` 会显示为无法解析的导入。
+5. **编辑器侧一次性动作（本机，不入库）**：安装 `charliermarsh.ruff` 后按第二节第 2 条填好用户设置并重开窗口，确认 Ruff 输出面板没有 "unable to find pyproject.toml" 提示；仓库根 `pyproject.toml` 生效后，`code/backend/pyproject.toml`（仅打包用、无 `[tool.ruff]`）不会被 Ruff 误当成配置源（已用 `ruff check --show-settings` 验证）。用 Pylance 时 `python.analysis.extraPaths` 必须包含 `code/core_engine` 与 `code/backend`，否则 `tome_writer` 会显示为无法解析的导入。
 ````
 
 ---
@@ -479,7 +479,7 @@ ContinuityTests.test_patch_cannot_clear_conflict_or_change_other_paragraph      
 |---|---|---|
 | 功能完成度 | 部分 | 写作、记忆推进与工作室流程可用；旧存档跨版本续写仍只有只读回退，缺通用迁移流程 |
 | 算法模型选择 | 未评估 | 回归全部使用离线夹具，未调用真实模型或做质量对比 |
-| 设计模式和代码结构 | 部分合理 | 端口/适配器边界清晰（`ports.py`、`ModelGateway`）、网页层与引擎层分离；但 `inf_writer` 存在两份逐字节相同的副本 |
+| 设计模式和代码结构 | 部分合理 | 端口/适配器边界清晰（`ports.py`、`ModelGateway`）、网页层与引擎层分离；但 `tome_writer` 存在两份逐字节相同的副本 |
 | 缺失功能清晰标注 | 较好 | 全仓 `TODO/FIXME` 为 0；缺失历史夹具在 `tests/run_engine_regression.py:23-27` 用显式 `unavailable` 字典登记并跳过，属可核查的标注方式 |
 | 存在设计文档 | 是 | `docs/algorithm/ARCHITECTURE.md`、`docs/software/architecture.md`，本次新增 `docs/software/CODE_QUALITY_FIXES.md` |
 | 代码与文档相符 | 部分 | 本次整改已补文档；`e4d23ce` 新增的工作室导航/封面改动未见对应设计说明同步 |
@@ -497,17 +497,17 @@ ContinuityTests.test_patch_cannot_clear_conflict_or_change_other_paragraph      
 | 错误处理 | 断言 | 通过 | 测试使用 `assert`（`tests/**` 已按指南豁免 `S101`），生产输入校验使用显式异常；无裸 `except:` |
 | 错误处理 | 日志 | 未评估 | 仅 2 个模块使用 `logging`，未评估轮转与敏感信息脱敏 |
 | 错误处理 | 资源泄漏、线程安全、死锁 | 未确认 | 沿用线程与锁；未证明全部场景安全 |
-| 结构 | 冗余、复制粘贴 | 有问题 | `inf_writer` 两份副本、35 个文件逐字节相同（见第 5 节 P2） |
+| 结构 | 冗余、复制粘贴 | 有问题 | `tome_writer` 两份副本、35 个文件逐字节相同（见第 5 节 P2） |
 
 ## 5. 语句级审查
 
 | 优先级 | 文件与位置 | 问题 | 建议 |
 |---|---|---|---|
 | P1 | `code/core_engine/memory_runtime/test_continuity.py:44`、`test_regression.py:20`、`test_writing.py:244` 等 9 个测试模块 | 这些脚本式测试模块依赖未入库夹具（`code/core_engine/runs/`、`docs/analysis/novel_review_20261021_c/paragraphs.json`、`tools/continuous_memory_20261021_i/test_run.py`），干净副本上会直接 `FileNotFoundError`／`setUpClass` 失败。CI 只跑 `tests/`（127 项）和 `tests/run_engine_regression.py`（42 项），这 9 个模块不在其中：`test_continuity`、`test_event_first`、`test_grounding_references`、`test_generation_foundations`、`test_projection_grounding`、`test_provider_stop`、`test_story_review`、`test_writing`、`test_regression`。实测这 9 个模块在当前副本上均有报错（单个模块 1~35 个用例受影响，`test_regression.py` 为导入期失败），其余用例通过。 | 夹具入库或改造成生成式夹具；把可运行部分并入 `tests/run_engine_regression.py` 的类清单，让 CI 真正覆盖。 |
-| P2 | `code/core_engine/inf_writer/` 与 `code/core_engine/memory_runtime/src/inf_writer/`（各 35 个文件） | 两份副本逐字节相同，但 `import inf_writer` 命中哪一份取决于 `sys.path` 插入顺序（`write_novel.py:19`、`memory_runtime/__init__.py:14`、`check_memory.py:14` 各自插入不同目录）。本次整改不得不在两侧重复修改 `agents.py` 与 `narrative_context.py`，漏改一处就会让两个入口行为分叉。 | 保留单一源（删除一份改软链接，或改 `src/` 布局 + `pip install -e`）；CI 增加两树一致性校验（本次以逐文件哈希核验，35/35 相同）。 |
+| P2 | `code/core_engine/tome_writer/` 与 `code/core_engine/memory_runtime/src/tome_writer/`（各 35 个文件） | 两份副本逐字节相同，但 `import tome_writer` 命中哪一份取决于 `sys.path` 插入顺序（`write_novel.py:19`、`memory_runtime/__init__.py:14`、`check_memory.py:14` 各自插入不同目录）。本次整改不得不在两侧重复修改 `agents.py` 与 `narrative_context.py`，漏改一处就会让两个入口行为分叉。 | 保留单一源（删除一份改软链接，或改 `src/` 布局 + `pip install -e`）；CI 增加两树一致性校验（本次以逐文件哈希核验，35/35 相同）。 |
 | P2 | `code/core_engine/memory_runtime/continuity.py:167` | `fail()` 闭包依赖循环变量 `row` 的晚绑定，而 `row` 在同一轮迭代内会被重新赋值（`row = copy.deepcopy(row)` 后改写 `attribute`）。本次以 `# noqa: B023` 加注释保留，因为改用默认参数会把错误详情冻结成未规范化的旧值；但该写法依赖「闭包只在当前迭代内调用」，将来若被缓存或跨迭代复用会静默错报。 | 改为显式传参（`fail(message, row, prior)`），或先算出规范化记录存进局部常量再闭包引用。 |
 | P2 | 全仓类型注解 | 1633 个函数仅 24 个有返回注解；CI 无静态类型门禁。对 4 万行级引擎做结构性改动（如上面的去重）缺少编译期保护，只能靠测试兜底。 | 按模块增量补注解（先 `domain/`、`ports.py` 等接口层），在 `pyproject.toml` 增加 `[tool.mypy]` 并让 CI 逐步扩大检查范围。 |
-| P3 | `code/core_engine/inf_writer/agents.py:13` 等 107 个文件 | 490 行超过 88 列，其中 416 行是中文提示词/长字符串（最长 1109 字符）。`ruff format` 不拆分字符串，`E501` 又被配置忽略，导致提示词既难 diff 也无法复用。 | 长提示词抽到独立的 `.md`/`.txt` 资源按段落加载；保留 `E501` 忽略以免噪音。 |
+| P3 | `code/core_engine/tome_writer/agents.py:13` 等 107 个文件 | 490 行超过 88 列，其中 416 行是中文提示词/长字符串（最长 1109 字符）。`ruff format` 不拆分字符串，`E501` 又被配置忽略，导致提示词既难 diff 也无法复用。 | 长提示词抽到独立的 `.md`/`.txt` 资源按段落加载；保留 `E501` 忽略以免噪音。 |
 | P3 | `pyproject.toml:36-44` | 30 处 `E402`（`check_memory.py`、`write_novel.py`、`memory_runtime/test_*.py`）通过 `per-file-ignores` 豁免，根因是项目以「脚本 + `sys.path.insert`」方式运行（全仓 17 处），而非可安装包。 | 逐步改为可安装包布局并删除 `sys.path` 引导；短期保留豁免（配置内已注明理由）。 |
 | P3 | `code/backend/pyproject.toml` 与根 `pyproject.toml` | 前者只做打包（`[project]`、`setuptools`），后者只做 Ruff 规则；同名文件、职责不同，且 `requires-python` 与 `target-version` 需人工同步（当前均为 3.11）。 | 在打包配置顶部或 README 注明分工，或把打包配置上移统一。 |
 
@@ -708,7 +708,7 @@ def fail(message, prior=None):
 **重构**（结构性修复 12 处，其余 30 处为脚本引导，已登记豁免）：
 
 ```python
-# code/core_engine/inf_writer/agents.py：import 曾被放在 PROMPTS 赋值之后
+# code/core_engine/tome_writer/agents.py：import 曾被放在 PROMPTS 赋值之后
  from .domain import ContractError, chapter_plan, fields, strict_json, text
 +from .memory_output_contract import MEMORY_PROMPT
  from .models import ModelGateway, ModelRequest
@@ -727,9 +727,9 @@ def fail(message, prior=None):
 +    sys.path.insert(0, str(_SOURCE))
 ```
 
-**为什么还剩 35 处**：`check_memory.py`、`write_novel.py` 与 `memory_runtime/test_*.py` 是**可直接执行的脚本**（`python memory_runtime/test_writing.py`），必须先 `sys.path.insert` 再导入 `inf_writer`。Python 无法在 `sys.path` 生效前完成导入，只能在配置里显式登记（Ruff 的 `per-file-ignores` 里同样登记了这 30 个文件）。
+**为什么还剩 35 处**：`check_memory.py`、`write_novel.py` 与 `memory_runtime/test_*.py` 是**可直接执行的脚本**（`python memory_runtime/test_writing.py`），必须先 `sys.path.insert` 再导入 `tome_writer`。Python 无法在 `sys.path` 生效前完成导入，只能在配置里显式登记（Ruff 的 `per-file-ignores` 里同样登记了这 30 个文件）。
 
-**测试**：`test_importing_memory_runtime_exposes_the_bundled_inf_writer` —— 在子进程里只 `import memory_runtime`，断言内置 `inf_writer` 已可导入（基线上该断言失败）。
+**测试**：`test_importing_memory_runtime_exposes_the_bundled_tome_writer` —— 在子进程里只 `import memory_runtime`，断言内置 `tome_writer` 已可导入（基线上该断言失败）。
 
 ### Top 5 — `unnecessary-lambda-assignment`（1 → 0）
 
@@ -753,7 +753,7 @@ def fail(message, prior=None):
 | `test_longform_pointer_error_keeps_contract_error_as_cause` | FAIL（`__cause__` 为 None） | PASS |
 | `test_migrate_failure_suppresses_the_underlying_exception` | FAIL | PASS |
 | `test_planner_json_recovery_does_not_leak_the_parser_error` | FAIL（`__cause__` 泄漏 JSON 解析异常） | PASS |
-| `test_importing_memory_runtime_exposes_the_bundled_inf_writer` | FAIL | PASS |
+| `test_importing_memory_runtime_exposes_the_bundled_tome_writer` | FAIL | PASS |
 | `test_continuity_error_reports_the_normalised_attribute`（保持性） | PASS | PASS |
 
 实测记录：
@@ -811,7 +811,7 @@ ruff format --check . 181 files already formatted
 
 ### 6.3 重复率 1.68%（751 行 / 63 组）
 
-主要来源不是复制粘贴，而是 **`inf_writer/` 与 `memory_runtime/src/inf_writer/` 两份逐字节相同的副本**（35 个文件）。删掉一份会改变运行期 `import inf_writer` 的解析路径，必须与打包方式一起调整，属于独立任务。**建议**：单一源 + `pip install -e`，并在 CI 加两树一致性校验。
+主要来源不是复制粘贴，而是 **`tome_writer/` 与 `memory_runtime/src/tome_writer/` 两份逐字节相同的副本**（35 个文件）。删掉一份会改变运行期 `import tome_writer` 的解析路径，必须与打包方式一起调整，属于独立任务。**建议**：单一源 + `pip install -e`，并在 CI 加两树一致性校验。
 
 ### 6.4 其余未处理项
 

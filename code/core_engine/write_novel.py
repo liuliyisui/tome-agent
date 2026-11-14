@@ -17,9 +17,9 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parent
 SOURCE = ROOT / "memory_runtime/src"
 sys.path.insert(0, str(SOURCE))
-from inf_writer.chat_provider import ChatCompletionProvider
-from inf_writer.domain import ContractError, canonical, digest, strict_json
-from inf_writer.trial import save_new
+from tome_writer.chat_provider import ChatCompletionProvider
+from tome_writer.domain import ContractError, canonical, digest, strict_json
+from tome_writer.trial import save_new
 from user_runtime import run_draft_trial
 
 

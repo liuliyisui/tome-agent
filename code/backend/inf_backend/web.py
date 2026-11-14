@@ -11,7 +11,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 from uuid import uuid4
 
-from inf_writer.memory_temporality import current_claim, has_current_content
+from tome_writer.memory_temporality import current_claim, has_current_content
 
 from . import database, generation, library, service
 from .logging_setup import configure_logging, log_failure, logger

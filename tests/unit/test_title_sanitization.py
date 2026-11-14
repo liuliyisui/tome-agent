@@ -2,9 +2,9 @@
 
 import unittest
 
-from inf_writer.agents import validate
-from inf_writer.domain import chapter_plan, sanitize_title
 from memory_runtime.completion import unplanned_packet
+from tome_writer.agents import validate
+from tome_writer.domain import chapter_plan, sanitize_title
 
 
 class SanitizeTitleTests(unittest.TestCase):

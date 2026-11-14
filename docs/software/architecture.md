@@ -43,7 +43,7 @@ Tome Agent 的主要技术难点是：长篇生成需要多次模型调用，人
 | 执行路径便于展示 | 通过显式状态图与调用记录说明正常和异常路径 | 便于团队学习、故障定位及课程答辩 |
 | 恢复职责清楚 | 图负责调度，应用检查点负责当前版本的状态保存 | 沿用现有完整性校验，并明确后续持久化学习范围 |
 
-当前真实入口是 [`WritingSession`](../../code/core_engine/memory_runtime/writing.py)，由 [`graph_runtime.py`](../../code/core_engine/memory_runtime/graph_runtime.py) 构建并编译 `StateGraph`。规划、写作、提交、记忆和审核为独立节点；写作提出事件修订时，经条件边返回规划节点，保留一次修订上限。基础严格事务入口 [`Coordinator`](../../code/core_engine/inf_writer/runtime.py) 也使用 LangGraph，通过审核条件边选择提交或拒绝。
+当前真实入口是 [`WritingSession`](../../code/core_engine/memory_runtime/writing.py)，由 [`graph_runtime.py`](../../code/core_engine/memory_runtime/graph_runtime.py) 构建并编译 `StateGraph`。规划、写作、提交、记忆和审核为独立节点；写作提出事件修订时，经条件边返回规划节点，保留一次修订上限。基础严格事务入口 [`Coordinator`](../../code/core_engine/tome_writer/runtime.py) 也使用 LangGraph，通过审核条件边选择提交或拒绝。
 
 **能力边界：** 当前继续用应用自身的原子检查点恢复作品，未启用 LangGraph 原生 checkpointer、任意节点级重放或人工 `interrupt()`。官方 checkpointer 与长期 store 的职责不同，未来接入前应先确认和现有作品状态的关系，避免两套状态互相覆盖。[LangGraph 持久化文档](https://docs.langchain.com/oss/python/langgraph/persistence)
 
@@ -63,7 +63,7 @@ Tome Agent 的主要技术难点是：长篇生成需要多次模型调用，人
 
 主要风险是网络失败、响应截断、格式不符与事实判断错误。应记录实际用量和错误，保留已完成正文，并区分“请求失败”“可能已计费”和“内容未审核”。迁移本身不会解决人物复活或情节重复。
 
-代码依据：[`chat_provider.py`](../../code/core_engine/inf_writer/chat_provider.py)、[`official_pricing.py`](../../code/backend/inf_backend/official_pricing.py)。
+代码依据：[`chat_provider.py`](../../code/core_engine/tome_writer/chat_provider.py)、[`official_pricing.py`](../../code/backend/inf_backend/official_pricing.py)。
 
 ### 2.4 长篇一致性：事件先行与三层记忆
 
@@ -78,7 +78,7 @@ Tome Agent 的主要技术难点是：长篇生成需要多次模型调用，人
 
 这些取舍来自项目设计分析，不是已经完成的检索方案性能实验。向量检索可作为后续补充，但本周不新增向量数据库，以免扩大交付范围。
 
-代码依据：[`event_first.py`](../../code/core_engine/memory_runtime/event_first.py)、[`engine.py`](../../code/core_engine/memory_runtime/engine.py)、[`tiered_memory.py`](../../code/core_engine/inf_writer/tiered_memory.py)。事件先行模式目前沿用“正文故事审核关闭”的配置；不能因为图中存在审核节点就宣称每章正文都经过模型审核。
+代码依据：[`event_first.py`](../../code/core_engine/memory_runtime/event_first.py)、[`engine.py`](../../code/core_engine/memory_runtime/engine.py)、[`tiered_memory.py`](../../code/core_engine/tome_writer/tiered_memory.py)。事件先行模式目前沿用“正文故事审核关闭”的配置；不能因为图中存在审核节点就宣称每章正文都经过模型审核。
 
 ### 2.5 持久化：PostgreSQL、Psycopg 与应用检查点
 

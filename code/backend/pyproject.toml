@@ -64,13 +64,13 @@ ignore = ["E501"]
 # code/core_engine/memory_runtime/__init__.py.
 "code/core_engine/check_memory.py" = ["E402"]
 "code/core_engine/write_novel.py" = ["E402"]
-"code/core_engine/memory_runtime/test_*.py" = ["E402"]
+"code/core_engine/memory_runtime/regression_tests/test_*.py" = ["E402"]
 
 [tool.ruff.lint.isort]
 # First-party packages living under code/ (resolved through explicit
 # sys.path bootstraps and PYTHONPATH, not through an installed distribution).
 known-first-party = [
-    "inf_writer",
+    "tome_writer",
     "memory_runtime",
     "inf_backend",
     "user_runtime",

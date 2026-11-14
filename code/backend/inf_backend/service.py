@@ -14,8 +14,9 @@ from dataclasses import replace
 from pathlib import Path
 from uuid import uuid4
 
-from inf_writer.chat_provider import ChatCompletionProvider
-from inf_writer.domain import (
+from memory_runtime.writing import WritingSession, load_resume, runtime_hashes
+from tome_writer.chat_provider import ChatCompletionProvider
+from tome_writer.domain import (
     ContractError,
     Snapshot,
     canonical,
@@ -24,9 +25,8 @@ from inf_writer.domain import (
     sanitize_title,
     strict_json,
 )
-from inf_writer.models import Budget, ModelGateway
-from inf_writer.storage import FileStore
-from memory_runtime.writing import WritingSession, load_resume, runtime_hashes
+from tome_writer.models import Budget, ModelGateway
+from tome_writer.storage import FileStore
 
 from . import database
 from .settings import BACKEND_ROOT, Settings

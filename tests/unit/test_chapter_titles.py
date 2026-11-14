@@ -8,14 +8,14 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 from inf_backend.service import export_markdown
-from inf_writer.domain import canonical
-from inf_writer.models import ModelReply
 from memory_runtime.chapter_titles import clean_title, resolve_title
 from memory_runtime.completion import PlanningOutputFailure, unplanned_packet
 from memory_runtime.continuity import empty
 from memory_runtime.event_first import verify
 from memory_runtime.test_writing import Local, config
 from memory_runtime.writing import WritingSession, load_resume
+from tome_writer.domain import canonical
+from tome_writer.models import ModelReply
 
 
 class ChapterTitleTests(unittest.TestCase):

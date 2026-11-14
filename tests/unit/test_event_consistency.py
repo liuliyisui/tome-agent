@@ -3,9 +3,9 @@
 import copy
 import unittest
 
-from inf_writer.domain import ContractError, canonical
 from memory_runtime.continuity import empty
 from memory_runtime.event_first import prepare, realize
+from tome_writer.domain import ContractError, canonical
 
 
 def proposal(number=1, *, scope="actual", kind="state", changes=None):

@@ -7,8 +7,8 @@ from unittest.mock import patch
 
 from inf_backend import service
 from inf_backend.settings import Settings
-from inf_writer.domain import ContractError, canonical
 from memory_runtime.continuity import apply, context_view, empty
+from tome_writer.domain import ContractError, canonical
 
 
 def event(identifier, date, quote, mode="present"):

@@ -6,5 +6,5 @@ if not exist "code\backend\.venv\Scripts\python.exe" (
   exit /b 1
 )
 set "PYTHONPATH=%CD%\code\core_engine;%CD%\code\backend;%PYTHONPATH%"
-"code\backend\.venv\Scripts\python.exe" -m inf_writer demo --output code\backend\data\runs\offline-demo
+"code\backend\.venv\Scripts\python.exe" -m tome_writer demo --output code\backend\data\runs\offline-demo
 pause
