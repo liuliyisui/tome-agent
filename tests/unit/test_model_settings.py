@@ -57,6 +57,28 @@ class ModelSettingsTests(unittest.TestCase):
             generation.price_for({**old, "model": "deepseek-chat"})["rates"]
         )
 
+    def test_compatible_base_url_reuses_full_endpoint_credentials(self):
+        base_url = "https://example.com/compatible-mode/v1"
+        endpoint = base_url + "/chat/completions"
+        original = settings.configure_model(
+            "compatible", "qwen-plus", endpoint, "old-key"
+        )
+        for address in (base_url, base_url + "/", endpoint, endpoint + "/"):
+            with self.subTest(address=address):
+                cfg = settings.configure_model(
+                    "compatible", "qwen-plus", address, "new-key"
+                )
+                self.assertEqual(cfg.public_config(), original.public_config())
+                self.assertEqual(settings.Settings.load().endpoint, endpoint)
+                self.assertEqual(
+                    settings.Settings.for_book(original.public_config()).api_key,
+                    "new-key",
+                )
+        cfg = settings.configure_model(
+            "compatible", "qwen-plus", "https://example.com", "new-key"
+        )
+        self.assertEqual(cfg.endpoint, "https://example.com/chat/completions")
+
     def test_existing_checkpoint_remains_resumable_after_switch(self):
         (self.root / ".env").write_text(
             "DEEPSEEK_API_KEY=sk-old-test-key\n", encoding="utf-8"
@@ -95,6 +117,12 @@ class ModelSettingsTests(unittest.TestCase):
             "https://user:pass@example.com/chat/completions",
             "https://127.0.0.1/chat/completions",
             "https://example.com/chat/completions\nX=1",
+            "https://@example.com/v1",
+            "https://example.com/v1?token=secret",
+            "https://example.com/v1#fragment",
+            "https://localhost/v1",
+            "https://example.com:8443/v1",
+            "https://example.com/v1\\chat",
         ):
             with self.subTest(endpoint=endpoint), self.assertRaises(ValueError):
                 settings.configure_model("compatible", "model", endpoint, "safe-key")

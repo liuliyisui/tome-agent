@@ -90,7 +90,7 @@ code\backend\setup.cmd
 code\backend\run-web.cmd
 ```
 
-打开 http://127.0.0.1:8765，在「设置 → 配置模型服务」中填写所选服务商的 API Key 和模型名称。选择其他兼容服务时，需填写以 `/chat/completions` 结尾的完整 HTTPS 接口地址；模型须支持 Chat Completions、JSON 对象输出和用量返回。文件模式下作品存放于 `code/backend/data/inf_books/`。如需使用 PostgreSQL，请按[数据库说明](docs/software/POSTGRESQL.md)配置 `DATABASE_URL`、初始化数据库，并按需导入旧作品；引擎检查点仍保存在本地文件中。
+打开 http://127.0.0.1:8765，在「设置 → 配置模型服务」中填写所选服务商的 API Key 和模型名称。选择「自定义」时，填写服务商提供的 HTTPS Base URL 或完整 Chat Completions 地址；模型须支持 Chat Completions、JSON 对象输出和用量返回。文件模式下作品存放于 `code/backend/data/inf_books/`。如需使用 PostgreSQL，请按[数据库说明](docs/software/POSTGRESQL.md)配置 `DATABASE_URL`、初始化数据库，并按需导入旧作品；引擎检查点仍保存在本地文件中。
 
 新作品使用当前模型配置，已有作品继续使用创建时绑定的模型和对应接口；切换服务不会覆盖原 DeepSeek 密钥。更换相同接口的密钥后，该接口下的作品使用新密钥。密钥保存在本机 `.env` 中，不会返回网页。其他服务的价格暂不能自动核验，系统也不能按金额限制这些服务的调用，生成前请到服务商处确认费用和额度；兼容接口和具体模型的能力、上下文长度及计费可能不同。
 
