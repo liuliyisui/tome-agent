@@ -125,6 +125,20 @@ class HostedTests(unittest.TestCase):
             200,
         )
 
+    def test_registration_reports_actionable_errors(self):
+        self.register("writer_one")
+        for username, password, expected in (
+            ("writer_one", "strong-pass-123", "用户名已被使用"),
+            ("ab", "strong-pass-123", "用户名须为 3 至 32 位字母、数字或下划线"),
+            ("new_writer", "short", "注册密码长度须为 8 至 16 位"),
+        ):
+            with self.subTest(expected=expected):
+                code, body, _ = self.request(
+                    "/_account/register", {"username": username, "password": password}
+                )
+                self.assertEqual(code, 400)
+                self.assertEqual(json.loads(body)["error"], expected)
+
     def test_data_survives_service_restart(self):
         cookie = self.register("writer_one")
         code, body, _ = self.request(
@@ -177,12 +191,20 @@ class HostedTests(unittest.TestCase):
                 page.locator('input[name="password"]').fill("eight888")
                 page.get_by_role("button", name="注册").click()
                 page.wait_for_selector("#my-works")
-                page.wait_for_selector("#settings-dialog .hosted-logout", state="attached")
-                self.assertEqual(page.locator("#settings-dialog .hosted-logout").count(), 1)
-                self.assertFalse(page.get_by_role("button", name="退出登录").is_visible())
+                page.wait_for_selector(
+                    "#settings-dialog .hosted-logout", state="attached"
+                )
+                self.assertEqual(
+                    page.locator("#settings-dialog .hosted-logout").count(), 1
+                )
+                self.assertFalse(
+                    page.get_by_role("button", name="退出登录").is_visible()
+                )
                 page.get_by_role("button", name="关闭模型服务设置").click()
                 page.locator("#open-settings").click()
-                self.assertTrue(page.get_by_role("button", name="退出登录").is_visible())
+                self.assertTrue(
+                    page.get_by_role("button", name="退出登录").is_visible()
+                )
                 for theme in ("light", "dark"):
                     page.locator(f'input[name="theme"][value="{theme}"]').check()
                     model = page.locator("#open-model-settings").bounding_box()

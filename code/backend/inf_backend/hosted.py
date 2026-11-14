@@ -238,7 +238,24 @@ class HostedHandler(BaseHTTPRequestHandler):
                 raise ValueError("请求格式无效")
             username, password = data.get("username"), data.get("password")
             if path.endswith("register"):
-                user_id = self.server.accounts.register(username, password)
+                try:
+                    user_id = self.server.accounts.register(username, password)
+                except ValueError as exc:
+                    allowed = {
+                        "用户名须为 3 至 32 位字母、数字或下划线",
+                        "注册密码长度须为 8 至 16 位",
+                        "用户名已被使用",
+                    }
+                    message = str(exc)
+                    self.respond(
+                        400,
+                        {
+                            "error": message
+                            if message in allowed
+                            else "请求格式或内容无效"
+                        },
+                    )
+                    return
             else:
                 user_id = self.server.accounts.authenticate(username, password)
                 if not user_id:
