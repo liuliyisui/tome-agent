@@ -81,11 +81,11 @@ document.querySelector('#account').addEventListener('submit', async event => {{
 }});</script></body></html>"""
 
 LOGOUT_SCRIPT = """const b=document.createElement('button');b.type='button';b.textContent='退出登录';
+b.className='outline hosted-logout';
 b.addEventListener('click',async()=>{await fetch('/_account/logout',{method:'POST'});location.assign('/');});
-const place=()=>{const target=document.querySelector('dialog[open]')||document.body;
-  if(b.parentNode!==target)target.prepend(b);};
-new MutationObserver(place).observe(document.documentElement,{subtree:true,childList:true,
-  attributes:true,attributeFilter:['open']});place();""".encode()
+const place=()=>{const target=document.querySelector('#settings-dialog #open-model-settings');
+  if(target && b.parentNode!==target.parentNode)target.after(b);};
+new MutationObserver(place).observe(document.documentElement,{subtree:true,childList:true});place();""".encode()
 
 
 class HostedServer(ThreadingHTTPServer):

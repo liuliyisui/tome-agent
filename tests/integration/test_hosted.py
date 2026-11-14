@@ -177,6 +177,12 @@ class HostedTests(unittest.TestCase):
                 page.locator('input[name="password"]').fill("eight888")
                 page.get_by_role("button", name="注册").click()
                 page.wait_for_selector("#my-works")
+                page.wait_for_selector("#settings-dialog .hosted-logout", state="attached")
+                self.assertEqual(page.locator("#settings-dialog .hosted-logout").count(), 1)
+                self.assertFalse(page.get_by_role("button", name="退出登录").is_visible())
+                page.get_by_role("button", name="关闭模型服务设置").click()
+                page.locator("#open-settings").click()
+                self.assertTrue(page.get_by_role("button", name="退出登录").is_visible())
                 page.get_by_role("button", name="退出登录").click()
                 page.wait_for_selector('input[name="username"]')
             finally:
