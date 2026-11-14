@@ -1,5 +1,9 @@
 # 三层记忆运行时
 
+业务模块按职责归入 `writing_flow/`、`memory_processing/`、`events/`、`planning_review/` 和 `support/`。原有 `memory_runtime.<模块名>` 导入方式继续可用；检查点校验仍按原模块名识别已审阅版本。
+
+不依赖原文件位置的引擎回归测试归在 `regression_tests/`。为兼容现有测试入口，仍可通过原来的 `memory_runtime.test_*` 名称导入；其余测试也已调整路径并归入此目录。写作引擎的重复实现已合并到 `code/core_engine/tome_writer`，原运行时路径保留兼容入口；已有作品数据未移动。
+
 **最新修复**：公开接口由统一定义生成，区分9类操作、10类记录、引用命名空间及三种版本。正式流程把实际正文分段、附原文来源写入同一三层库；正文改写不再导致空库被判成功。队列完成、正文覆盖与方案对齐分别报告；摘录不是当前世界事实声明。288项本地测试通过，见[修复说明](../docs/verification/接口职责统一与正文记忆修复_2026-10-22.md)。以下默认流程仍停用正文内容校验和自动审核。
 
 **最新开发策略**：正式event_first生成已移除正文内容校验和自动审核，保留数据完整性检查。数量来源与限定词在生成前提供，引用原样展开；没有正文来源的记忆投影记录缺项，不伪造来源或阻断写作。事件状态属于方案推演，不能视作正文语义认证。见[变更说明](../docs/verification/正文免校验与数值来源生成_2026-10-22.md)。
@@ -35,9 +39,9 @@
 运行本地回归：
 
 ```powershell
-python -X utf8 memory_runtime/test_regression.py
-python -X utf8 memory_runtime/test_writing.py
-python -X utf8 memory_runtime/test_story_review.py
+python -X utf8 memory_runtime/regression_tests/test_regression.py
+python -X utf8 memory_runtime/regression_tests/test_writing.py
+python -X utf8 memory_runtime/regression_tests/test_story_review.py
 ```
 
 检查已有小说（先不调用模型）：

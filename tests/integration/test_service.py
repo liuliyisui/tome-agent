@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch
 
 from inf_backend import generation, official_pricing, service
 from inf_backend.settings import Settings
-from inf_writer.models import ModelReply, ModelRequest
+from tome_writer.models import ModelReply, ModelRequest
 
 
 class ServiceIntegrationTests(unittest.TestCase):

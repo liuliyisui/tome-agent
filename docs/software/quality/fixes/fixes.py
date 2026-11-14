@@ -83,10 +83,10 @@ index f843927..7d412d7 100644
              raise ValueError("旧版存档完整性校验失败") from exc
          return {"metadata": meta, "state": state, "read_only": True}
      return {"metadata": meta, "state": state}
-diff --git a/code/core_engine/inf_writer/agents.py b/code/core_engine/inf_writer/agents.py
+diff --git a/code/core_engine/tome_writer/agents.py b/code/core_engine/tome_writer/agents.py
 index b5fc154..62d53e3 100644
---- a/code/core_engine/inf_writer/agents.py
-+++ b/code/core_engine/inf_writer/agents.py
+--- a/code/core_engine/tome_writer/agents.py
++++ b/code/core_engine/tome_writer/agents.py
 @@ -4,6 +4,7 @@ import copy
  from dataclasses import dataclass
  
@@ -104,10 +104,10 @@ index b5fc154..62d53e3 100644
  PROMPTS["memory"] = MEMORY_PROMPT
  
  
-diff --git a/code/core_engine/inf_writer/narrative_context.py b/code/core_engine/inf_writer/narrative_context.py
+diff --git a/code/core_engine/tome_writer/narrative_context.py b/code/core_engine/tome_writer/narrative_context.py
 index 29e72e9..376eb7a 100644
---- a/code/core_engine/inf_writer/narrative_context.py
-+++ b/code/core_engine/inf_writer/narrative_context.py
+--- a/code/core_engine/tome_writer/narrative_context.py
++++ b/code/core_engine/tome_writer/narrative_context.py
 @@ -32,12 +32,12 @@ def parse_planner_json(raw):
          try:
              _, end = json.JSONDecoder().raw_decode(stripped)
@@ -134,8 +134,8 @@ index 74502be..630a82e 100644
 +import sys
 +from pathlib import Path
 +
-+# ``inf_writer`` is a top-level package that lives both in
-+# ``code/core_engine/inf_writer`` and in ``memory_runtime/src/inf_writer``, and it
++# ``tome_writer`` is a top-level package that lives both in
++# ``code/core_engine/tome_writer`` and in ``memory_runtime/src/tome_writer``, and it
 +# is never installed as a distribution. Submodules of this package (and the
 +# ``python memory_runtime/test_*.py`` suites) import it by name, so the bundled
 +# copy must be importable as soon as this package is imported. Bootstrapping it
@@ -159,7 +159,7 @@ index 8d5fd30..454f812 100644
 +            raise ContinuityError(message, row, prior)  # noqa: B023
  
          if kind == "fact":
-             from inf_writer.domain import identity
+             from tome_writer.domain import identity
 diff --git a/code/core_engine/memory_runtime/engine.py b/code/core_engine/memory_runtime/engine.py
 index f8a6915..193a237 100644
 --- a/code/core_engine/memory_runtime/engine.py
@@ -173,9 +173,9 @@ index f8a6915..193a237 100644
  
 -SOURCE = Path(__file__).resolve().parent / "src"
 -sys.path.insert(0, str(SOURCE))
- from inf_writer.domain import ContractError
- from inf_writer.tiered_memory import empty_memory, select_context
- from inf_writer.tiered_runtime import TieredMemoryAgent
+ from tome_writer.domain import ContractError
+ from tome_writer.tiered_memory import empty_memory, select_context
+ from tome_writer.tiered_runtime import TieredMemoryAgent
 diff --git a/code/core_engine/memory_runtime/pipeline.py b/code/core_engine/memory_runtime/pipeline.py
 index 247a35e..a9c329b 100644
 --- a/code/core_engine/memory_runtime/pipeline.py
@@ -289,10 +289,10 @@ index abe614c..a6be53d 100644
              if not isinstance(parsed, dict):
                  raise ContractError("Reference selector must be an object")
              return resolve(parsed, current, depth + 1)
-diff --git a/code/core_engine/memory_runtime/src/inf_writer/agents.py b/code/core_engine/memory_runtime/src/inf_writer/agents.py
+diff --git a/code/core_engine/memory_runtime/src/tome_writer/agents.py b/code/core_engine/memory_runtime/src/tome_writer/agents.py
 index b5fc154..62d53e3 100644
---- a/code/core_engine/memory_runtime/src/inf_writer/agents.py
-+++ b/code/core_engine/memory_runtime/src/inf_writer/agents.py
+--- a/code/core_engine/memory_runtime/src/tome_writer/agents.py
++++ b/code/core_engine/memory_runtime/src/tome_writer/agents.py
 @@ -4,6 +4,7 @@ import copy
  from dataclasses import dataclass
  
@@ -310,10 +310,10 @@ index b5fc154..62d53e3 100644
  PROMPTS["memory"] = MEMORY_PROMPT
  
  
-diff --git a/code/core_engine/memory_runtime/src/inf_writer/narrative_context.py b/code/core_engine/memory_runtime/src/inf_writer/narrative_context.py
+diff --git a/code/core_engine/memory_runtime/src/tome_writer/narrative_context.py b/code/core_engine/memory_runtime/src/tome_writer/narrative_context.py
 index 29e72e9..376eb7a 100644
---- a/code/core_engine/memory_runtime/src/inf_writer/narrative_context.py
-+++ b/code/core_engine/memory_runtime/src/inf_writer/narrative_context.py
+--- a/code/core_engine/memory_runtime/src/tome_writer/narrative_context.py
++++ b/code/core_engine/memory_runtime/src/tome_writer/narrative_context.py
 @@ -32,12 +32,12 @@ def parse_planner_json(raw):
          try:
              _, end = json.JSONDecoder().raw_decode(stripped)
@@ -350,8 +350,8 @@ index b80d8d5..ba5ff1a 100644
 +++ b/code/core_engine/memory_runtime/test_closure_repair.py
 @@ -7,7 +7,6 @@ from types import SimpleNamespace
  
- from inf_writer.domain import canonical
- from inf_writer.models import ModelReply
+ from tome_writer.domain import canonical
+ from tome_writer.models import ModelReply
 -
  from memory_runtime import test_story_closure as fixtures
  from memory_runtime.story_closure import StoryClosure
@@ -412,8 +412,8 @@ index 5afb767..40e2234 100644
 +++ b/code/core_engine/memory_runtime/test_completion.py
 @@ -12,7 +12,6 @@ from unittest.mock import patch
  import write_novel as cli
- from inf_writer.domain import canonical
- from inf_writer.models import ModelReply
+ from tome_writer.domain import canonical
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.completion import prose_from_reply
  from memory_runtime.test_event_first import EventLocal, event_config
@@ -424,8 +424,8 @@ index 27c193f..43803e9 100644
 +++ b/code/core_engine/memory_runtime/test_continuity.py
 @@ -9,7 +9,6 @@ ROOT = Path(__file__).resolve().parents[1]
  sys.path.insert(0, str(ROOT))
- from inf_writer.domain import ContractError, canonical
- from inf_writer.models import ModelReply
+ from tome_writer.domain import ContractError, canonical
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.continuity import apply, context_view, empty, guard
  
@@ -461,8 +461,8 @@ index 12bd92f..438b44e 100644
 +++ b/code/core_engine/memory_runtime/test_ending_intents.py
 @@ -12,8 +12,6 @@ from unittest.mock import patch
  import write_novel as cli
- from inf_writer.domain import canonical
- from inf_writer.models import ModelReply
+ from tome_writer.domain import canonical
+ from tome_writer.models import ModelReply
 -from user_runtime import run_draft_trial
 -
  from memory_runtime.narrative_planning import (
@@ -482,8 +482,8 @@ index 9a3d01e..d991c80 100644
 +++ b/code/core_engine/memory_runtime/test_event_first.py
 @@ -15,7 +15,6 @@ sys.path.insert(0, str(ROOT))
  import write_novel as cli
- from inf_writer.domain import ContractError, canonical, digest
- from inf_writer.models import ModelReply
+ from tome_writer.domain import ContractError, canonical, digest
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.continuity import empty
  from memory_runtime.event_first import prepare, project_memory, realize
@@ -491,7 +491,7 @@ index 9a3d01e..d991c80 100644
 @@ -252,7 +251,6 @@ class EventFirstTests(unittest.TestCase):
  
      def test_real_r_prepared_chapter_fits_writer_budget_without_losing_events(self):
-         from inf_writer.narrative_context import event_role_context
+         from tome_writer.narrative_context import event_role_context
 -
          from memory_runtime.event_first import writer_view
          from memory_runtime.writing import WritingSession
@@ -590,8 +590,8 @@ index 0191bf3..e841b0d 100644
 +++ b/code/core_engine/memory_runtime/test_evidence_access.py
 @@ -10,7 +10,6 @@ from unittest.mock import patch
  import write_novel as cli
- from inf_writer.domain import canonical, digest
- from inf_writer.models import ModelReply
+ from tome_writer.domain import canonical, digest
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.evidence_access import context as material_context
  from memory_runtime.narrative_planning import (
@@ -602,8 +602,8 @@ index 7648fa6..a90f365 100644
 +++ b/code/core_engine/memory_runtime/test_generation_foundations.py
 @@ -10,7 +10,6 @@ from types import SimpleNamespace
  import write_novel as cli
- from inf_writer.domain import ContractError, canonical, digest
- from inf_writer.models import ModelReply
+ from tome_writer.domain import ContractError, canonical, digest
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.continuity import empty
  from memory_runtime.length_control import adjust
@@ -633,8 +633,8 @@ index 5156632..ad90353 100644
 +++ b/code/core_engine/memory_runtime/test_grounding_references.py
 @@ -7,7 +7,6 @@ from unittest.mock import patch
  
- from inf_writer.domain import ContractError, canonical, digest, evidence_segments
- from inf_writer.models import ModelReply
+ from tome_writer.domain import ContractError, canonical, digest, evidence_segments
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.engine import MemoryEngine
  from memory_runtime.event_first import project_memory
@@ -652,10 +652,10 @@ diff --git a/code/core_engine/memory_runtime/test_input_output_budget.py b/code/
 index ea5466e..429b82a 100644
 --- a/code/core_engine/memory_runtime/test_input_output_budget.py
 +++ b/code/core_engine/memory_runtime/test_input_output_budget.py
-@@ -11,7 +11,6 @@ from inf_writer.agents import JsonAgent
- from inf_writer.chat_provider import ChatCompletionProvider
- from inf_writer.domain import canonical, digest
- from inf_writer.models import ModelReply, ModelRequest
+@@ -11,7 +11,6 @@ from tome_writer.agents import JsonAgent
+ from tome_writer.chat_provider import ChatCompletionProvider
+ from tome_writer.domain import canonical, digest
+ from tome_writer.models import ModelReply, ModelRequest
 -
  from memory_runtime.input_budget import fit, select_qualified_state, size
  
@@ -663,7 +663,7 @@ index ea5466e..429b82a 100644
 @@ -196,7 +195,6 @@ class InputOutputBudgetTests(unittest.TestCase):
  
      def test_dependency_wrapper_never_allows_unknown_or_ambiguous_selector(self):
-         from inf_writer.domain import ContractError
+         from tome_writer.domain import ContractError
 -
          from memory_runtime.reference_choices import compile_plan
          from memory_runtime.test_stage_repair import public_plan
@@ -674,8 +674,8 @@ index 18d4d1c..1baa0af 100644
 +++ b/code/core_engine/memory_runtime/test_interface_memory_repair.py
 @@ -12,7 +12,6 @@ from unittest.mock import patch
  import write_novel as cli
- from inf_writer.domain import ContractError, canonical
- from inf_writer.models import ModelReply
+ from tome_writer.domain import ContractError, canonical
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.continuity import empty
  from memory_runtime.engine import MemoryEngine
@@ -684,10 +684,10 @@ diff --git a/code/core_engine/memory_runtime/test_memory_meaning.py b/code/core_
 index e42e203..f3a5a5e 100644
 --- a/code/core_engine/memory_runtime/test_memory_meaning.py
 +++ b/code/core_engine/memory_runtime/test_memory_meaning.py
-@@ -18,7 +18,6 @@ from inf_writer.memory_meaning import (
+@@ -18,7 +18,6 @@ from tome_writer.memory_meaning import (
  )
- from inf_writer.models import ModelReply
- from inf_writer.tiered_memory import apply_delta, empty_memory
+ from tome_writer.models import ModelReply
+ from tome_writer.tiered_memory import apply_delta, empty_memory
 -
  from memory_runtime.meaning_organizer import _annotate, _relation, organize
  
@@ -698,8 +698,8 @@ index 3a548d9..ca98dd2 100644
 +++ b/code/core_engine/memory_runtime/test_narrative_accountability.py
 @@ -11,7 +11,6 @@ from unittest.mock import patch
  
- from inf_writer.domain import canonical, digest
- from inf_writer.models import ModelReply
+ from tome_writer.domain import canonical, digest
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.narrative_planning import (
      context,
@@ -710,8 +710,8 @@ index 61afc85..ff4a89a 100644
 +++ b/code/core_engine/memory_runtime/test_narrative_planning.py
 @@ -12,7 +12,6 @@ from unittest.mock import patch
  import write_novel as cli
- from inf_writer.domain import ContractError, canonical, digest
- from inf_writer.models import ModelReply
+ from tome_writer.domain import ContractError, canonical, digest
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.narrative_planning import (
      context,
@@ -720,10 +720,10 @@ diff --git a/code/core_engine/memory_runtime/test_planner_boundary.py b/code/cor
 index 9232e4a..88fb427 100644
 --- a/code/core_engine/memory_runtime/test_planner_boundary.py
 +++ b/code/core_engine/memory_runtime/test_planner_boundary.py
-@@ -8,7 +8,6 @@ from inf_writer.agents import JsonAgent, validate
- from inf_writer.domain import ContractError
- from inf_writer.models import ModelReply
- from inf_writer.narrative_context import normalize_planner_metadata, parse_planner_json
+@@ -8,7 +8,6 @@ from tome_writer.agents import JsonAgent, validate
+ from tome_writer.domain import ContractError
+ from tome_writer.models import ModelReply
+ from tome_writer.narrative_context import normalize_planner_metadata, parse_planner_json
 -
  from memory_runtime.reference_choices import compile_plan
  from memory_runtime.test_event_first import ROOT
@@ -733,9 +733,9 @@ index d7f6116..257822f 100644
 --- a/code/core_engine/memory_runtime/test_projection_grounding.py
 +++ b/code/core_engine/memory_runtime/test_projection_grounding.py
 @@ -12,7 +12,6 @@ from unittest.mock import patch
- from inf_writer.domain import ContractError, canonical, digest
- from inf_writer.models import ModelReply
- from inf_writer.tiered_memory import select_context
+ from tome_writer.domain import ContractError, canonical, digest
+ from tome_writer.models import ModelReply
+ from tome_writer.tiered_memory import select_context
 -
  from memory_runtime.engine import MemoryEngine
  from memory_runtime.event_first import project_memory
@@ -776,8 +776,8 @@ index 97dae99..afa5dc5 100644
 +++ b/code/core_engine/memory_runtime/test_projection_transfer.py
 @@ -6,7 +6,6 @@ import unittest
  
- from inf_writer.domain import canonical
- from inf_writer.models import ModelReply
+ from tome_writer.domain import canonical
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.projection_grounding import (
      ground,
@@ -788,8 +788,8 @@ index 06de2b4..a5b97de 100644
 +++ b/code/core_engine/memory_runtime/test_prose_generation.py
 @@ -12,7 +12,6 @@ from unittest.mock import patch
  import write_novel as cli
- from inf_writer.domain import ContractError, canonical, digest
- from inf_writer.models import ModelReply
+ from tome_writer.domain import ContractError, canonical, digest
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.continuity import empty
  from memory_runtime.event_first import prepare, project_memory
@@ -798,10 +798,10 @@ diff --git a/code/core_engine/memory_runtime/test_provider_stop.py b/code/core_e
 index fbc47a1..f83d28c 100644
 --- a/code/core_engine/memory_runtime/test_provider_stop.py
 +++ b/code/core_engine/memory_runtime/test_provider_stop.py
-@@ -14,10 +14,9 @@ from inf_writer.chat_provider import ChatCompletionProvider, ProviderError
- from inf_writer.domain import canonical
- from inf_writer.models import ModelReply, ModelRequest
- from inf_writer.trial import RecordedProvider
+@@ -14,10 +14,9 @@ from tome_writer.chat_provider import ChatCompletionProvider, ProviderError
+ from tome_writer.domain import canonical
+ from tome_writer.models import ModelReply, ModelRequest
+ from tome_writer.trial import RecordedProvider
 -from user_runtime import MeteredGateway, run_draft_trial
 -
  from memory_runtime.test_event_first import ROOT
@@ -876,8 +876,8 @@ index 3546120..86985d9 100644
 +++ b/code/core_engine/memory_runtime/test_quote_repair.py
 @@ -8,7 +8,6 @@ from unittest.mock import patch
  
- from inf_writer.domain import ContractError, canonical
- from inf_writer.models import ModelReply
+ from tome_writer.domain import ContractError, canonical
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.engine import MemoryEngine
  from memory_runtime.event_first import project_memory
@@ -888,8 +888,8 @@ index 2bbd06b..0c5be68 100644
 +++ b/code/core_engine/memory_runtime/test_recall_search.py
 @@ -8,7 +8,6 @@ from pathlib import Path
  import write_novel
- from inf_writer.domain import ContractError, canonical
- from inf_writer.models import ModelReply
+ from tome_writer.domain import ContractError, canonical
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.pipeline import recall_selection
  from memory_runtime.recall_search import searches, selection, source_windows
@@ -902,10 +902,10 @@ index 7cdb35e..16dba9e 100644
  ROOT = Path(__file__).resolve().parents[1]
  sys.path.insert(0, str(ROOT))
  sys.path.insert(0, str(ROOT / "memory_runtime/src"))
-+from inf_writer.domain import ContractError, canonical
-+from inf_writer.models import ModelReply, ModelRequest
-+from inf_writer.temporal_agent import SYSTEM
-+from inf_writer.tiered_runtime import MEMORY_SYSTEM
++from tome_writer.domain import ContractError, canonical
++from tome_writer.models import ModelReply, ModelRequest
++from tome_writer.temporal_agent import SYSTEM
++from tome_writer.tiered_runtime import MEMORY_SYSTEM
  from memory_runtime import pipeline
 +from memory_runtime.engine import MemoryEngine
  
@@ -915,10 +915,10 @@ index 7cdb35e..16dba9e 100644
          self.assertEqual(result["temporal_processed_through"], 11)
  
  
--from inf_writer.domain import ContractError, canonical
--from inf_writer.models import ModelReply, ModelRequest
--from inf_writer.temporal_agent import SYSTEM
--from inf_writer.tiered_runtime import MEMORY_SYSTEM
+-from tome_writer.domain import ContractError, canonical
+-from tome_writer.models import ModelReply, ModelRequest
+-from tome_writer.temporal_agent import SYSTEM
+-from tome_writer.tiered_runtime import MEMORY_SYSTEM
 -
 -from memory_runtime.engine import MemoryEngine
 -
@@ -928,15 +928,15 @@ index 7cdb35e..16dba9e 100644
 @@ -673,7 +671,6 @@ class StructuralRegression(unittest.TestCase):
          import json
  
-         from inf_writer.tiered_memory import apply_delta
+         from tome_writer.tiered_memory import apply_delta
 -
          from memory_runtime.semantics import guard_extraction
  
          parent = ROOT / "runs/continuous_memory_stable_20261021_d"
 @@ -735,7 +732,6 @@ class StructuralRegression(unittest.TestCase):
  
-         from inf_writer.memory_temporality import annotated
-         from inf_writer.tiered_memory import apply_delta, empty_memory
+         from tome_writer.memory_temporality import annotated
+         from tome_writer.tiered_memory import apply_delta, empty_memory
 -
          from memory_runtime.semantics import guard_temporal
  
@@ -948,7 +948,7 @@ index 1935395..b1d119c 100644
 @@ -7,7 +7,6 @@ from types import SimpleNamespace
  from unittest.mock import patch
  
- from inf_writer.domain import ContractError
+ from tome_writer.domain import ContractError
 -
  from memory_runtime.engine import MemoryEngine
  from memory_runtime.narrative_planning import design_units
@@ -958,9 +958,9 @@ index 516ce05..ee7cd17 100644
 --- a/code/core_engine/memory_runtime/test_stage_format_preservation.py
 +++ b/code/core_engine/memory_runtime/test_stage_format_preservation.py
 @@ -7,7 +7,6 @@ import unittest
- from inf_writer.agents import JsonAgent
- from inf_writer.domain import ContractError, canonical
- from inf_writer.models import ModelReply
+ from tome_writer.agents import JsonAgent
+ from tome_writer.domain import ContractError, canonical
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.completion import continue_prose
  from memory_runtime.test_event_first import ROOT
@@ -971,8 +971,8 @@ index dc42022..448873d 100644
 +++ b/code/core_engine/memory_runtime/test_stage_repair.py
 @@ -9,7 +9,6 @@ from pathlib import Path
  import write_novel as cli
- from inf_writer.domain import ContractError, canonical, digest
- from inf_writer.models import ModelReply
+ from tome_writer.domain import ContractError, canonical, digest
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.continuity import empty
  from memory_runtime.event_first import prepare, verify
@@ -983,8 +983,8 @@ index f7f3d1b..ab834ec 100644
 +++ b/code/core_engine/memory_runtime/test_state_recovery.py
 @@ -9,7 +9,6 @@ from pathlib import Path
  import write_novel as cli
- from inf_writer.domain import ContractError, canonical, digest
- from inf_writer.models import ModelReply
+ from tome_writer.domain import ContractError, canonical, digest
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.plan_repair import protect_targets
  from memory_runtime.reference_choices import compile_plan
@@ -995,8 +995,8 @@ index a7e6d6c..8585d89 100644
 +++ b/code/core_engine/memory_runtime/test_story_closure.py
 @@ -11,7 +11,6 @@ from unittest.mock import patch
  
- from inf_writer.domain import canonical
- from inf_writer.models import ModelReply
+ from tome_writer.domain import canonical
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.story_closure import (
      CHUNK_CHARS,
@@ -1007,8 +1007,8 @@ index b63bf82..307840d 100644
 +++ b/code/core_engine/memory_runtime/test_story_review.py
 @@ -10,7 +10,6 @@ ROOT = Path(__file__).resolve().parents[1]
  sys.path.insert(0, str(ROOT))
- from inf_writer.domain import ContractError, canonical
- from inf_writer.models import ModelReply
+ from tome_writer.domain import ContractError, canonical
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.story_review import StoryReviewAgent, adjudicate_issues
  
@@ -1016,7 +1016,7 @@ index b63bf82..307840d 100644
 @@ -72,7 +71,6 @@ class Replies:
  class EditorialTests(unittest.TestCase):
      def test_real_u_pending_review_shares_evidence_losslessly_under_same_budget(self):
-         from inf_writer.light_memory import prepare_review
+         from tome_writer.light_memory import prepare_review
 -
          from memory_runtime.story_review import (
              REVIEW_PROMPT,
@@ -1039,8 +1039,8 @@ index 1c7116d..a132b5a 100644
 +++ b/code/core_engine/memory_runtime/test_thread_closure.py
 @@ -12,7 +12,6 @@ from unittest.mock import patch
  
- from inf_writer.domain import ContractError, canonical, digest
- from inf_writer.models import ModelReply
+ from tome_writer.domain import ContractError, canonical, digest
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.narrative_planning import (
      apply_thread_review,
@@ -1051,8 +1051,8 @@ index baf032a..65acb4c 100644
 +++ b/code/core_engine/memory_runtime/test_time_calculation.py
 @@ -10,7 +10,6 @@ ROOT = Path(__file__).resolve().parents[1]
  sys.path.insert(0, str(ROOT))
- from inf_writer.domain import ContractError, canonical
- from inf_writer.models import ModelReply
+ from tome_writer.domain import ContractError, canonical
+ from tome_writer.models import ModelReply
 -
  from memory_runtime.time_calculation import (
      calculate,
@@ -1062,9 +1062,9 @@ index 446cf05..7037d4f 100644
 --- a/code/core_engine/memory_runtime/test_writing.py
 +++ b/code/core_engine/memory_runtime/test_writing.py
 @@ -16,7 +16,6 @@ import write_novel as cli
- from inf_writer.domain import ContractError, canonical
- from inf_writer.light_memory import LightAgent, validate_light_review
- from inf_writer.models import ModelReply, ModelRequest
+ from tome_writer.domain import ContractError, canonical
+ from tome_writer.light_memory import LightAgent, validate_light_review
+ from tome_writer.models import ModelReply, ModelRequest
 -
  from memory_runtime.story_review import StoryReferenceGateway
  from memory_runtime.writing import load_resume
@@ -1378,8 +1378,8 @@ import unittest
 from unittest import mock
 
 from inf_backend import migrate, service
-from inf_writer.domain import ContractError
-from inf_writer.narrative_context import parse_planner_json
+from tome_writer.domain import ContractError
+from tome_writer.narrative_context import parse_planner_json
 from memory_runtime import continuity
 from memory_runtime.identifiers import attribute_identifier
 
@@ -1453,10 +1453,10 @@ class LoopClosureTests(unittest.TestCase):
 
 class ImportBootstrapTests(unittest.TestCase):
     """Refactor 4 — Pylint C0413 / Ruff E402: importing the package itself must
-    expose the bundled ``inf_writer``, so no submodule needs a mid-file
+    expose the bundled ``tome_writer``, so no submodule needs a mid-file
     ``sys.path`` insert before its imports."""
 
-    def test_importing_memory_runtime_exposes_the_bundled_inf_writer(self):
+    def test_importing_memory_runtime_exposes_the_bundled_tome_writer(self):
         env = dict(os.environ)
         env["PYTHONPATH"] = os.pathsep.join(
             [str(REPO / "code/core_engine"), str(REPO / "code/backend")]

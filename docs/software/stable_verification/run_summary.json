@@ -33,7 +33,7 @@
   },
   "calls": 111,
   "cost_usd_estimate_not_bill": 0.8122628999999999,
-  "resume_checkpoint": "D:\\学习\\INF writer\\runs\\event_first_50000_20261022_ar\\working\\checkpoint_0075.json",
+  "resume_checkpoint": "[历史本地检查点路径已省略]",
   "source_unchanged": true,
   "memory_layers_complete": true,
   "pending_layer_ids": []

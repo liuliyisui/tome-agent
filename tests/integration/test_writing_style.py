@@ -5,8 +5,8 @@ from unittest.mock import Mock, patch
 
 from inf_backend import service
 from inf_backend.settings import Settings
-from inf_writer.models import ModelReply, ModelRequest
 from memory_runtime.writing import WritingSession
+from tome_writer.models import ModelReply, ModelRequest
 
 
 class WritingStyleTests(unittest.TestCase):

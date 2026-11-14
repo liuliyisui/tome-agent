@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 from inf_backend import service
-from inf_writer.models import ModelRequest
+from tome_writer.models import ModelRequest
 
 
 class SkillTests(unittest.TestCase):

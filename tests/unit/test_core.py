@@ -7,11 +7,11 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from inf_writer.agents import build_agents
-from inf_writer.domain import ConflictError, ContractError, Snapshot, apply_chapter
-from inf_writer.models import Budget, ModelGateway, ModelReply
-from inf_writer.runtime import ContextBuilder, Coordinator
-from inf_writer.storage import FileStore
+from tome_writer.agents import build_agents
+from tome_writer.domain import ConflictError, ContractError, Snapshot, apply_chapter
+from tome_writer.models import Budget, ModelGateway, ModelReply
+from tome_writer.runtime import ContextBuilder, Coordinator
+from tome_writer.storage import FileStore
 
 TEXT = "艾岚的眼睛是灰色。"
 GOLD = "艾岚喝下药剂，眼睛变为金色。"
@@ -281,7 +281,7 @@ class RuntimeTests(unittest.TestCase):
             self.store.load("demo"), plan(), TEXT, [change()], "r1", "h"
         )
         with patch(
-            "inf_writer.storage.os.replace",
+            "tome_writer.storage.os.replace",
             side_effect=OSError("simulated write failure"),
         ):
             with self.assertRaises(OSError):
@@ -305,7 +305,7 @@ class RuntimeTests(unittest.TestCase):
 
         budget = Budget(max_calls=2, max_cost_usd=0.1)
         gateway = ModelGateway(Broken(), budget, reserve_per_call=0.1)
-        from inf_writer.models import ModelRequest
+        from tome_writer.models import ModelRequest
 
         with self.assertRaises(OSError):
             gateway.complete(ModelRequest("writer", "test", {}, 100))
@@ -320,7 +320,7 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(runner.write_next("other", "r1").status, "COMMITTED")
 
     def test_duplicate_json_key_is_not_silently_accepted(self):
-        from inf_writer.domain import strict_json
+        from tome_writer.domain import strict_json
 
         with self.assertRaises(ContractError):
             strict_json('{"approved":true,"approved":false}')
@@ -339,7 +339,7 @@ class RuntimeTests(unittest.TestCase):
     def test_no_nst_code_dependency(self):
         import ast
 
-        source = Path(__file__).resolve().parents[1] / "src" / "inf_writer"
+        source = Path(__file__).resolve().parents[1] / "src" / "tome_writer"
         for path in source.rglob("*.py"):
             for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
                 names = (
@@ -364,7 +364,7 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(self.store.load("demo").revision, 1)
 
     def test_archived_history_is_source_checked(self):
-        from inf_writer.memory import VersionedMemory
+        from tome_writer.memory import VersionedMemory
 
         state = apply_chapter(
             self.store.load("demo"), plan(), TEXT, [change()], "r1", "h"

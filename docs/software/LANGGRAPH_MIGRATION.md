@@ -17,7 +17,7 @@
 | 基础严格四角色事务 | Coordinator → StateGraph，审核条件分支选择提交或拒绝 |
 | 已有章节的待处理任务 | WritingSession.finish_pending → 图的恢复入口 → memory → reviewer |
 
-`memory_runtime/graph_runtime.py` 定义真实图节点与条件边；`writing.py` 保留领域逻辑，并将规划、写作和章节提交拆成对应方法。不是把整个原循环包成单个图节点。`inf_writer/runtime.py` 与 `memory_runtime/src/inf_writer/runtime.py` 同时迁移，避免不同入口导入不同编排框架。
+`memory_runtime/graph_runtime.py` 定义真实图节点与条件边；`writing.py` 保留领域逻辑，并将规划、写作和章节提交拆成对应方法。不是把整个原循环包成单个图节点。`tome_writer/runtime.py` 与 `memory_runtime/src/tome_writer/runtime.py` 同时迁移，避免不同入口导入不同编排框架。
 
 重规划通过图的条件边执行，仍有一次修订上限。模型输出格式修复、事件阶段处理、记忆顺序队列等局部逻辑留在节点内部。三层记忆是项目已有的领域能力，并非 LangGraph 自动理解了小说。
 

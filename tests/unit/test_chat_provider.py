@@ -10,13 +10,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from inf_writer.agents import build_agents
-from inf_writer.chat_provider import ChatCompletionProvider, ProviderError
-from inf_writer.demo import DemoModel
-from inf_writer.domain import Snapshot
-from inf_writer.models import Budget, ModelGateway, ModelRequest
-from inf_writer.runtime import Coordinator
-from inf_writer.storage import FileStore
+from tome_writer.agents import build_agents
+from tome_writer.chat_provider import ChatCompletionProvider, ProviderError
+from tome_writer.demo import DemoModel
+from tome_writer.domain import Snapshot
+from tome_writer.models import Budget, ModelGateway, ModelRequest
+from tome_writer.runtime import Coordinator
+from tome_writer.storage import FileStore
 
 
 class ChatProviderTests(unittest.TestCase):

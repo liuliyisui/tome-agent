@@ -1,4 +1,4 @@
-"""Evidence-binding and support-review contracts in ``inf_writer.domain``.
+"""Evidence-binding and support-review contracts in ``tome_writer.domain``.
 
 These functions decide whether a memory change is backed by literal prose.
 They are pure and offline, so every rejection branch can be pinned exactly.
@@ -6,7 +6,7 @@ They are pure and offline, so every rejection branch can be pinned exactly.
 
 import unittest
 
-from inf_writer.domain import (
+from tome_writer.domain import (
     ContractError,
     checked_support,
     evidence_segments,

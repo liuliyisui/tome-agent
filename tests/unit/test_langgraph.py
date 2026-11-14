@@ -7,13 +7,13 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from inf_writer.agents import build_agents
-from inf_writer.domain import ContractError, Snapshot, canonical
-from inf_writer.models import Budget, ModelGateway, ModelReply
-from inf_writer.runtime import Coordinator
-from inf_writer.storage import FileStore
 from memory_runtime.test_writing import Local, config
 from memory_runtime.writing import WritingSession, load_resume
+from tome_writer.agents import build_agents
+from tome_writer.domain import ContractError, Snapshot, canonical
+from tome_writer.models import Budget, ModelGateway, ModelReply
+from tome_writer.runtime import Coordinator
+from tome_writer.storage import FileStore
 
 
 class EventProvider(Local):
@@ -216,6 +216,32 @@ class LangGraphTests(unittest.TestCase):
         path.write_text(json.dumps(tampered, ensure_ascii=False), encoding="utf-8")
         with self.assertRaises(ContractError):
             load_resume(path, session.plan)
+
+    def test_checkpoint_from_before_test_classification_resumes(self):
+        session = self.session(Local(), event=False)
+        session.write_next("继续")
+        path = session.latest_checkpoint
+        saved = json.loads(path.read_text(encoding="utf-8"))
+        runtime = saved["runtime_sha256"]
+        runtime["memory_runtime"]["__init__.py"] = (
+            "975bd3f06cd496a8bd99d99467758577b900f26dbeedaa777540bf6a5cf7033e"
+        )
+        runtime["memory_runtime"]["writing.py"] = (
+            "4dfe525d3bd41eb370a9aa1399685a2aa157e7ff7199493dc697475c8391a2ee"
+        )
+        runtime["memory_runtime"]["test_regression.py"] = (
+            "1938a437a45c925674f21360c7b35d0a955975fb929ba74bea7937c6dfb1fd19"
+        )
+        runtime["entrypoints"]["check_memory.py"] = (
+            "a8cc33a3b15635d5ce1cfb6e7a2a9eae338eda4e3223342c55b4f4ad43d679af"
+        )
+        path.write_text(json.dumps(saved, ensure_ascii=False), encoding="utf-8")
+        book = load_resume(path, session.plan)
+        resumed = self.session(
+            Local(), event=False, name="classified-resume", book=book
+        )
+        resumed.write_next("继续")
+        self.assertEqual(len(resumed.book["chapters"]), 2)
         runtime["memory_runtime"]["writing.py"] = "unknown"
         path.write_text(json.dumps(saved, ensure_ascii=False), encoding="utf-8")
         with self.assertRaises(ContractError):

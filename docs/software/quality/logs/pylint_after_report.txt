@@ -32,7 +32,7 @@ External dependencies
       \-service (tests.integration.test_library,tests.integration.test_postgresql,tests.integration.test_service,tests.integration.test_web,tests.integration.test_writing_style,tests.integration.vue_ui_preview,tests.unit.test_chapter_titles,tests.unit.test_quality_refactors)
       \-settings (tests.integration.test_library,tests.integration.test_postgresql,tests.integration.test_service,tests.integration.test_web,tests.integration.test_writing_style,tests.integration.vue_ui_preview)
       \-web (desktop,tests.integration.test_postgresql,tests.integration.test_web,tests.integration.vue_ui_preview)
-    inf_writer 
+    tome_writer
       \-agents (memory_runtime.test_event_first,memory_runtime.test_input_output_budget,memory_runtime.test_interface_memory_repair,memory_runtime.test_planner_boundary,memory_runtime.test_stage_format_preservation,memory_runtime.writing,tests.unit.test_chat_provider,tests.unit.test_core,tests.unit.test_drafting,tests.unit.test_langgraph,tests.unit.test_title_sanitization,tests.unit.test_writer_format)
       \-chat_provider (check_memory,inf_backend.service,memory_runtime.test_input_output_budget,memory_runtime.test_provider_stop,tests.unit.test_chat_provider,user_runtime,write_novel)
       \-demo (tests.unit.test_chat_provider,tests.unit.test_writer_format)
@@ -52,7 +52,7 @@ External dependencies
       \-tiered_runtime (memory_runtime.engine,memory_runtime.pipeline,memory_runtime.test_regression)
       \-trial (check_memory,inf_backend.longform_runtime,memory_runtime.test_provider_stop,user_runtime,write_novel)
     langgraph 
-      \-graph (inf_writer.runtime,memory_runtime.graph_runtime)
+      \-graph (tome_writer.runtime,memory_runtime.graph_runtime)
     memory_runtime 
       \-chapter_titles (tests.unit.test_chapter_titles)
       \-completion (tests.unit.test_chapter_titles,tests.unit.test_title_sanitization)
@@ -144,7 +144,7 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |user_runtime                                  |7.41  |0.56    |0.85     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.domain                             |3.70  |0.56    |2.27     |1.70       |
+|tome_writer.domain                             |3.70  |0.56    |2.27     |1.70       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_interface_memory_repair   |3.70  |0.00    |1.27     |0.57       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -152,7 +152,7 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.interface_contract             |3.70  |0.00    |1.13     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.light_memory                       |3.70  |0.00    |0.57     |2.27       |
+|tome_writer.light_memory                       |3.70  |0.00    |0.57     |2.27       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_projection_grounding      |3.70  |0.00    |0.42     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -178,7 +178,7 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_scene_memory_coordination |0.00  |2.82    |0.00     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.drafting                           |0.00  |2.26    |1.70     |1.14       |
+|tome_writer.drafting                           |0.00  |2.26    |1.70     |1.14       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_generation_foundations    |0.00  |2.26    |1.13     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -192,7 +192,7 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.meaning_organizer              |0.00  |1.69    |1.98     |3.41       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.tiered_runtime                     |0.00  |1.69    |0.99     |1.14       |
+|tome_writer.tiered_runtime                     |0.00  |1.69    |0.99     |1.14       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_provider_stop             |0.00  |1.69    |0.71     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -210,7 +210,7 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_closure_repair            |0.00  |1.13    |0.57     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.runtime                            |0.00  |1.13    |0.42     |1.14       |
+|tome_writer.runtime                            |0.00  |1.13    |0.42     |1.14       |
 +----------------------------------------------+------+--------+---------+-----------+
 |inf_backend.official_pricing                  |0.00  |1.13    |0.42     |1.14       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -266,7 +266,7 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |inf_backend.database                          |0.00  |0.56    |0.42     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.repair_pilot                       |0.00  |0.56    |0.28     |0.57       |
+|tome_writer.repair_pilot                       |0.00  |0.56    |0.28     |0.57       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_projection_transfer       |0.00  |0.56    |0.28     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -282,43 +282,43 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.semantics                      |0.00  |0.00    |1.27     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.tiered_memory                      |0.00  |0.00    |1.27     |0.00       |
+|tome_writer.tiered_memory                      |0.00  |0.00    |1.27     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.temporal_agent                     |0.00  |0.00    |1.27     |0.00       |
+|tome_writer.temporal_agent                     |0.00  |0.00    |1.27     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.agents                             |0.00  |0.00    |1.13     |3.41       |
+|tome_writer.agents                             |0.00  |0.00    |1.13     |3.41       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.semantic_review                    |0.00  |0.00    |1.13     |0.57       |
+|tome_writer.semantic_review                    |0.00  |0.00    |1.13     |0.57       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.trial                              |0.00  |0.00    |0.99     |1.14       |
+|tome_writer.trial                              |0.00  |0.00    |0.99     |1.14       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.judgment_review                    |0.00  |0.00    |0.99     |0.57       |
+|tome_writer.judgment_review                    |0.00  |0.00    |0.99     |0.57       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.chat_provider                      |0.00  |0.00    |0.85     |1.70       |
+|tome_writer.chat_provider                      |0.00  |0.00    |0.85     |1.70       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.plan_repair                    |0.00  |0.00    |0.85     |1.14       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.review_transport                   |0.00  |0.00    |0.85     |1.14       |
+|tome_writer.review_transport                   |0.00  |0.00    |0.85     |1.14       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.completion                     |0.00  |0.00    |0.85     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.time_calculation               |0.00  |0.00    |0.71     |0.57       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.memory_submission                  |0.00  |0.00    |0.71     |0.57       |
+|tome_writer.memory_submission                  |0.00  |0.00    |0.71     |0.57       |
 +----------------------------------------------+------+--------+---------+-----------+
 |tests.unit.test_core                          |0.00  |0.00    |0.57     |2.84       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.event_contract                 |0.00  |0.00    |0.57     |1.14       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.locator_review                     |0.00  |0.00    |0.57     |0.57       |
+|tome_writer.locator_review                     |0.00  |0.00    |0.57     |0.57       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_stage_format_preservation |0.00  |0.00    |0.57     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.memory_temporality                 |0.00  |0.00    |0.57     |0.00       |
+|tome_writer.memory_temporality                 |0.00  |0.00    |0.57     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.memory                             |0.00  |0.00    |0.57     |0.00       |
+|tome_writer.memory                             |0.00  |0.00    |0.57     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.claim_updates                      |0.00  |0.00    |0.57     |0.00       |
+|tome_writer.claim_updates                      |0.00  |0.00    |0.57     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
 |tests.unit.test_drafting                      |0.00  |0.00    |0.42     |2.27       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -326,19 +326,19 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.input_budget                   |0.00  |0.00    |0.42     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.models                             |0.00  |0.00    |0.42     |0.00       |
+|tome_writer.models                             |0.00  |0.00    |0.42     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.memory_output_contract             |0.00  |0.00    |0.42     |0.00       |
+|tome_writer.memory_output_contract             |0.00  |0.00    |0.42     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.memory_meaning                     |0.00  |0.00    |0.42     |0.00       |
+|tome_writer.memory_meaning                     |0.00  |0.00    |0.42     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_story_review              |0.00  |0.00    |0.28     |1.70       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.review_repair                      |0.00  |0.00    |0.28     |1.14       |
+|tome_writer.review_repair                      |0.00  |0.00    |0.28     |1.14       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.engine                         |0.00  |0.00    |0.28     |0.57       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.review_contract                    |0.00  |0.00    |0.28     |0.57       |
+|tome_writer.review_contract                    |0.00  |0.00    |0.28     |0.57       |
 +----------------------------------------------+------+--------+---------+-----------+
 |tests.unit.test_chapter_titles                |0.00  |0.00    |0.28     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -358,19 +358,19 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.event_references               |0.00  |0.00    |0.14     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.temporal_transport                 |0.00  |0.00    |0.14     |0.00       |
+|tome_writer.temporal_transport                 |0.00  |0.00    |0.14     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.review_state                       |0.00  |0.00    |0.14     |0.00       |
+|tome_writer.review_state                       |0.00  |0.00    |0.14     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.ports                              |0.00  |0.00    |0.14     |0.00       |
+|tome_writer.ports                              |0.00  |0.00    |0.14     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.demo                               |0.00  |0.00    |0.14     |0.00       |
+|tome_writer.demo                               |0.00  |0.00    |0.14     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.review_policy                      |0.00  |0.00    |0.00     |1.14       |
+|tome_writer.review_policy                      |0.00  |0.00    |0.00     |1.14       |
 +----------------------------------------------+------+--------+---------+-----------+
 |package_windows                               |0.00  |0.00    |0.00     |0.57       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.memory_action_contract             |0.00  |0.00    |0.00     |0.57       |
+|tome_writer.memory_action_contract             |0.00  |0.00    |0.00     |0.57       |
 +----------------------------------------------+------+--------+---------+-----------+
 |inf_backend.pg_library                        |0.00  |0.00    |0.00     |0.57       |
 +----------------------------------------------+------+--------+---------+-----------+

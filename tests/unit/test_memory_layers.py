@@ -3,13 +3,13 @@
 import copy
 import unittest
 
-from inf_writer.domain import canonical, digest
-from inf_writer.models import ModelReply
 from memory_runtime.continuity import empty
 from memory_runtime.engine import MemoryEngine
 from memory_runtime.event_first import prepare, project_memory, realize
 from memory_runtime.pipeline import LayerAgent
 from tests.unit.test_event_consistency import proposal
+from tome_writer.domain import canonical, digest
+from tome_writer.models import ModelReply
 
 
 class PartialPlacementGateway:

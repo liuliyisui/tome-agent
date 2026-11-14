@@ -8,19 +8,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "code" / "backend" / "data"
-SOURCE = "code/backend/inf_backend,code/core_engine/inf_writer,code/core_engine/memory_runtime"
+SOURCE = "code/backend/inf_backend,code/core_engine/tome_writer,code/core_engine/memory_runtime"
 OMIT = "*/test_*,*/src/*"
 CORE = ",".join(
     f"*/{path}"
     for path in (
-        "memory_runtime/writing.py",
-        "memory_runtime/event_first.py",
-        "memory_runtime/pipeline.py",
-        "memory_runtime/continuity.py",
-        "memory_runtime/graph_runtime.py",
-        "inf_writer/domain.py",
-        "inf_writer/agents.py",
-        "inf_writer/tiered_memory.py",
+        "memory_runtime/writing_flow/writing.py",
+        "memory_runtime/events/event_first.py",
+        "memory_runtime/memory_processing/pipeline.py",
+        "memory_runtime/events/continuity.py",
+        "memory_runtime/writing_flow/graph_runtime.py",
+        "tome_writer/domain.py",
+        "tome_writer/agents.py",
+        "tome_writer/tiered_memory.py",
     )
 )
 

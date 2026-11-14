@@ -82,9 +82,9 @@ code\backend\inf_backend\web.py:410:15: W0718: Catching too general exception Ex
 code\backend\inf_backend\web.py:238:4: R0912: Too many branches (37/12) (too-many-branches)
 code\backend\inf_backend\web.py:238:4: R0915: Too many statements (113/50) (too-many-statements)
 ************* Module check_memory
-code\core_engine\check_memory.py:15:0: C0413: Import "from inf_writer.chat_provider import ChatCompletionProvider" should be placed at the top of the module (wrong-import-position)
-code\core_engine\check_memory.py:16:0: C0413: Import "from inf_writer.domain import ContractError, canonical" should be placed at the top of the module (wrong-import-position)
-code\core_engine\check_memory.py:17:0: C0413: Import "from inf_writer.trial import RecordedProvider, load_authorized_nst_secret" should be placed at the top of the module (wrong-import-position)
+code\core_engine\check_memory.py:15:0: C0413: Import "from tome_writer.chat_provider import ChatCompletionProvider" should be placed at the top of the module (wrong-import-position)
+code\core_engine\check_memory.py:16:0: C0413: Import "from tome_writer.domain import ContractError, canonical" should be placed at the top of the module (wrong-import-position)
+code\core_engine\check_memory.py:17:0: C0413: Import "from tome_writer.trial import RecordedProvider, load_authorized_nst_secret" should be placed at the top of the module (wrong-import-position)
 code\core_engine\check_memory.py:18:0: C0413: Import "from memory_runtime.engine import MemoryEngine" should be placed at the top of the module (wrong-import-position)
 code\core_engine\check_memory.py:56:0: R0913: Too many arguments (7/5) (too-many-arguments)
 code\core_engine\check_memory.py:56:0: R0917: Too many positional arguments (7/5) (too-many-positional-arguments)
@@ -105,9 +105,9 @@ code\core_engine\user_runtime.py:92:0: R0915: Too many statements (107/50) (too-
 code\core_engine\write_novel.py:30:0: R1260: 'validate_config' is too complex. The McCabe rating is 18 (too-complex)
 code\core_engine\write_novel.py:146:0: R1260: 'read_settings' is too complex. The McCabe rating is 16 (too-complex)
 code\core_engine\write_novel.py:202:0: R1260: 'resolve_config' is too complex. The McCabe rating is 13 (too-complex)
-code\core_engine\write_novel.py:20:0: C0413: Import "from inf_writer.chat_provider import ChatCompletionProvider" should be placed at the top of the module (wrong-import-position)
-code\core_engine\write_novel.py:21:0: C0413: Import "from inf_writer.domain import ContractError, canonical, digest, strict_json" should be placed at the top of the module (wrong-import-position)
-code\core_engine\write_novel.py:22:0: C0413: Import "from inf_writer.trial import save_new" should be placed at the top of the module (wrong-import-position)
+code\core_engine\write_novel.py:20:0: C0413: Import "from tome_writer.chat_provider import ChatCompletionProvider" should be placed at the top of the module (wrong-import-position)
+code\core_engine\write_novel.py:21:0: C0413: Import "from tome_writer.domain import ContractError, canonical, digest, strict_json" should be placed at the top of the module (wrong-import-position)
+code\core_engine\write_novel.py:22:0: C0413: Import "from tome_writer.trial import save_new" should be placed at the top of the module (wrong-import-position)
 code\core_engine\write_novel.py:23:0: C0413: Import "from user_runtime import run_draft_trial" should be placed at the top of the module (wrong-import-position)
 code\core_engine\write_novel.py:72:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
 code\core_engine\write_novel.py:82:12: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
@@ -118,231 +118,231 @@ code\core_engine\write_novel.py:97:12: R0916: Too many boolean expressions in if
 code\core_engine\write_novel.py:30:0: R0912: Too many branches (16/12) (too-many-branches)
 code\core_engine\write_novel.py:146:0: R0912: Too many branches (15/12) (too-many-branches)
 code\core_engine\write_novel.py:264:44: W0613: Unused argument 'confirmed' (unused-argument)
-************* Module inf_writer.agents
-code\core_engine\inf_writer\agents.py:106:0: R1260: 'validate' is too complex. The McCabe rating is 14 (too-complex)
-code\core_engine\inf_writer\agents.py:196:4: R1260: 'run' is too complex. The McCabe rating is 66 (too-complex)
-code\core_engine\inf_writer\agents.py:101:0: C0413: Import "from .memory_output_contract import MEMORY_PROMPT" should be placed at the top of the module (wrong-import-position)
-code\core_engine\inf_writer\agents.py:171:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\agents.py:106:0: R0912: Too many branches (14/12) (too-many-branches)
-code\core_engine\inf_writer\agents.py:186:0: R0902: Too many instance attributes (8/7) (too-many-instance-attributes)
-code\core_engine\inf_writer\agents.py:196:4: R0914: Too many local variables (41/15) (too-many-locals)
-code\core_engine\inf_writer\agents.py:198:12: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\agents.py:204:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\agents.py:248:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\agents.py:265:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\agents.py:276:15: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\agents.py:275:8: R1702: Too many nested blocks (6/5) (too-many-nested-blocks)
-code\core_engine\inf_writer\agents.py:196:4: R0912: Too many branches (65/12) (too-many-branches)
-code\core_engine\inf_writer\agents.py:196:4: R0915: Too many statements (176/50) (too-many-statements)
-************* Module inf_writer.chat_provider
-code\core_engine\inf_writer\chat_provider.py:52:4: R1260: '__post_init__' is too complex. The McCabe rating is 12 (too-complex)
-code\core_engine\inf_writer\chat_provider.py:106:4: R1260: 'complete' is too complex. The McCabe rating is 16 (too-complex)
-code\core_engine\inf_writer\chat_provider.py:23:15: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\chat_provider.py:41:0: R0902: Too many instance attributes (9/7) (too-many-instance-attributes)
-code\core_engine\inf_writer\chat_provider.py:55:12: R0916: Too many boolean expressions in if statement (7/5) (too-many-boolean-expressions)
-code\core_engine\inf_writer\chat_provider.py:71:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\chat_provider.py:90:16: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\chat_provider.py:106:4: R0914: Too many local variables (17/15) (too-many-locals)
-code\core_engine\inf_writer\chat_provider.py:106:4: R0912: Too many branches (14/12) (too-many-branches)
-************* Module inf_writer.claim_updates
-code\core_engine\inf_writer\claim_updates.py:42:0: R1260: 'resolve_patch' is too complex. The McCabe rating is 20 (too-complex)
-code\core_engine\inf_writer\claim_updates.py:42:0: R0914: Too many local variables (24/15) (too-many-locals)
-code\core_engine\inf_writer\claim_updates.py:42:0: R0912: Too many branches (22/12) (too-many-branches)
-code\core_engine\inf_writer\claim_updates.py:42:0: R0915: Too many statements (65/50) (too-many-statements)
-************* Module inf_writer.demo
-code\core_engine\inf_writer\demo.py:8:0: R0903: Too few public methods (1/2) (too-few-public-methods)
-************* Module inf_writer.domain
-code\core_engine\inf_writer\domain.py:156:0: R1260: 'checked_support' is too complex. The McCabe rating is 17 (too-complex)
-code\core_engine\inf_writer\domain.py:291:4: R1260: 'from_dict' is too complex. The McCabe rating is 38 (too-complex)
-code\core_engine\inf_writer\domain.py:441:0: R1260: 'apply_chapter' is too complex. The McCabe rating is 21 (too-complex)
-code\core_engine\inf_writer\domain.py:35:11: W0621: Redefining name 'text' from outer scope (line 39) (redefined-outer-name)
-code\core_engine\inf_writer\domain.py:46:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\domain.py:156:0: R0913: Too many arguments (6/5) (too-many-arguments)
-code\core_engine\inf_writer\domain.py:156:0: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
-code\core_engine\inf_writer\domain.py:156:0: R0914: Too many local variables (22/15) (too-many-locals)
-code\core_engine\inf_writer\domain.py:191:57: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\domain.py:156:0: R0912: Too many branches (16/12) (too-many-branches)
-code\core_engine\inf_writer\domain.py:268:0: R0902: Too many instance attributes (10/7) (too-many-instance-attributes)
-code\core_engine\inf_writer\domain.py:292:21: E1101: Class 'Snapshot' has no '__dataclass_fields__' member (no-member)
-code\core_engine\inf_writer\domain.py:295:15: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\domain.py:320:8: R0912: Too many branches (13/12) (too-many-branches)
-code\core_engine\inf_writer\domain.py:291:4: R0912: Too many branches (17/12) (too-many-branches)
-code\core_engine\inf_writer\domain.py:291:4: R0915: Too many statements (85/50) (too-many-statements)
-code\core_engine\inf_writer\domain.py:441:0: R0913: Too many arguments (6/5) (too-many-arguments)
-code\core_engine\inf_writer\domain.py:441:0: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
-code\core_engine\inf_writer\domain.py:441:0: R0914: Too many local variables (23/15) (too-many-locals)
-code\core_engine\inf_writer\domain.py:441:0: R0912: Too many branches (23/12) (too-many-branches)
-code\core_engine\inf_writer\domain.py:441:0: R0915: Too many statements (73/50) (too-many-statements)
-************* Module inf_writer.drafting
-code\core_engine\inf_writer\drafting.py:55:0: R1260: 'normalize_memory' is too complex. The McCabe rating is 19 (too-complex)
-code\core_engine\inf_writer\drafting.py:189:0: R1260: 'validate_review' is too complex. The McCabe rating is 21 (too-complex)
-code\core_engine\inf_writer\drafting.py:310:4: R1260: 'write_next' is too complex. The McCabe rating is 28 (too-complex)
-code\core_engine\inf_writer\drafting.py:55:0: R0914: Too many local variables (28/15) (too-many-locals)
-code\core_engine\inf_writer\drafting.py:130:19: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\drafting.py:55:0: R0912: Too many branches (19/12) (too-many-branches)
-code\core_engine\inf_writer\drafting.py:55:0: R0915: Too many statements (61/50) (too-many-statements)
-code\core_engine\inf_writer\drafting.py:189:0: R0914: Too many local variables (23/15) (too-many-locals)
-code\core_engine\inf_writer\drafting.py:206:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\drafting.py:189:0: R0912: Too many branches (20/12) (too-many-branches)
-code\core_engine\inf_writer\drafting.py:189:0: R0915: Too many statements (56/50) (too-many-statements)
-code\core_engine\inf_writer\drafting.py:310:4: R0914: Too many local variables (27/15) (too-many-locals)
-code\core_engine\inf_writer\drafting.py:492:15: W0718: Catching too general exception Exception (broad-exception-caught)
-code\core_engine\inf_writer\drafting.py:363:19: W0718: Catching too general exception Exception (broad-exception-caught)
-code\core_engine\inf_writer\drafting.py:396:19: W0718: Catching too general exception Exception (broad-exception-caught)
-code\core_engine\inf_writer\drafting.py:488:19: W0718: Catching too general exception Exception (broad-exception-caught)
-code\core_engine\inf_writer\drafting.py:310:4: R0912: Too many branches (21/12) (too-many-branches)
-code\core_engine\inf_writer\drafting.py:310:4: R0915: Too many statements (88/50) (too-many-statements)
-************* Module inf_writer.judgment_review
-code\core_engine\inf_writer\judgment_review.py:101:0: R1260: 'compile_judgments' is too complex. The McCabe rating is 31 (too-complex)
-code\core_engine\inf_writer\judgment_review.py:91:28: R1735: Consider using '{"ref": 'draft_' + s['id'], "chapter_number": context['chapter_number'], ... }' instead of a call to 'dict'. (use-dict-literal)
-code\core_engine\inf_writer\judgment_review.py:101:0: R0914: Too many local variables (36/15) (too-many-locals)
-code\core_engine\inf_writer\judgment_review.py:116:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\judgment_review.py:168:24: R1735: Consider using '{"chapter_number": source['chapter_number'], "chapter_sha256": source['chapter_sha256'], ... }' instead of a call to 'dict'. (use-dict-literal)
-code\core_engine\inf_writer\judgment_review.py:255:32: R1735: Consider using '{"missing_fact": row['fact'], "coverage_refs": memory_refs.copy()}' instead of a call to 'dict'. (use-dict-literal)
-code\core_engine\inf_writer\judgment_review.py:101:0: R0912: Too many branches (30/12) (too-many-branches)
-code\core_engine\inf_writer\judgment_review.py:101:0: R0915: Too many statements (108/50) (too-many-statements)
-************* Module inf_writer.light_memory
-code\core_engine\inf_writer\light_memory.py:150:0: R1260: 'validate_light_review' is too complex. The McCabe rating is 11 (too-complex)
-code\core_engine\inf_writer\light_memory.py:213:4: R1260: 'run' is too complex. The McCabe rating is 12 (too-complex)
-code\core_engine\inf_writer\light_memory.py:156:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\light_memory.py:203:0: R0902: Too many instance attributes (8/7) (too-many-instance-attributes)
-code\core_engine\inf_writer\light_memory.py:213:4: R0914: Too many local variables (16/15) (too-many-locals)
-code\core_engine\inf_writer\light_memory.py:215:12: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\light_memory.py:242:20: E1101: Instance of 'object' has no 'complete' member (no-member)
-code\core_engine\inf_writer\light_memory.py:301:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\light_memory.py:303:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-************* Module inf_writer.locator_review
-code\core_engine\inf_writer\locator_review.py:76:0: R1260: 'validate_coverage' is too complex. The McCabe rating is 20 (too-complex)
-code\core_engine\inf_writer\locator_review.py:6:9: C0207: Use BASE_PROMPT.split('��������coverage_checks����', maxsplit=1)[0] instead (use-maxsplit-arg)
-code\core_engine\inf_writer\locator_review.py:76:0: R0914: Too many local variables (22/15) (too-many-locals)
-code\core_engine\inf_writer\locator_review.py:76:0: R0912: Too many branches (19/12) (too-many-branches)
-code\core_engine\inf_writer\locator_review.py:76:0: R0915: Too many statements (54/50) (too-many-statements)
-************* Module inf_writer.memory
-code\core_engine\inf_writer\memory.py:11:4: R0913: Too many arguments (6/5) (too-many-arguments)
-code\core_engine\inf_writer\memory.py:11:4: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
-code\core_engine\inf_writer\memory.py:20:4: R0913: Too many arguments (6/5) (too-many-arguments)
-code\core_engine\inf_writer\memory.py:20:4: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
-************* Module inf_writer.memory_action_contract
-code\core_engine\inf_writer\memory_action_contract.py:47:28: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-************* Module inf_writer.memory_meaning
-code\core_engine\inf_writer\memory_meaning.py:158:0: R1260: 'verify_meanings' is too complex. The McCabe rating is 17 (too-complex)
-code\core_engine\inf_writer\memory_meaning.py:158:0: R0914: Too many local variables (19/15) (too-many-locals)
-code\core_engine\inf_writer\memory_meaning.py:158:0: R0912: Too many branches (16/12) (too-many-branches)
-************* Module inf_writer.memory_output_contract
-code\core_engine\inf_writer\memory_output_contract.py:126:0: R1260: 'candidate_error' is too complex. The McCabe rating is 16 (too-complex)
-code\core_engine\inf_writer\memory_output_contract.py:126:0: R0914: Too many local variables (23/15) (too-many-locals)
-code\core_engine\inf_writer\memory_output_contract.py:126:0: R0912: Too many branches (16/12) (too-many-branches)
-************* Module inf_writer.memory_submission
-code\core_engine\inf_writer\memory_submission.py:105:0: R1260: 'check_submission' is too complex. The McCabe rating is 32 (too-complex)
-code\core_engine\inf_writer\memory_submission.py:105:0: R0914: Too many local variables (33/15) (too-many-locals)
-code\core_engine\inf_writer\memory_submission.py:115:12: R1735: Consider using '{"candidate_index": index, "index_base": 0, "path": path, "code": code, ... }' instead of a call to 'dict'. (use-dict-literal)
-code\core_engine\inf_writer\memory_submission.py:258:23: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\memory_submission.py:105:0: R0912: Too many branches (29/12) (too-many-branches)
-code\core_engine\inf_writer\memory_submission.py:105:0: R0915: Too many statements (86/50) (too-many-statements)
-************* Module inf_writer.memory_temporality
-code\core_engine\inf_writer\memory_temporality.py:124:0: R1260: 'reconcile' is too complex. The McCabe rating is 22 (too-complex)
-code\core_engine\inf_writer\memory_temporality.py:124:0: R0914: Too many local variables (19/15) (too-many-locals)
-code\core_engine\inf_writer\memory_temporality.py:124:0: R0912: Too many branches (21/12) (too-many-branches)
-code\core_engine\inf_writer\memory_temporality.py:124:0: R0915: Too many statements (53/50) (too-many-statements)
-************* Module inf_writer.models
-code\core_engine\inf_writer\models.py:29:0: R0903: Too few public methods (1/2) (too-few-public-methods)
-code\core_engine\inf_writer\models.py:34:0: R0902: Too many instance attributes (8/7) (too-many-instance-attributes)
-code\core_engine\inf_writer\models.py:61:0: R0903: Too few public methods (1/2) (too-few-public-methods)
-************* Module inf_writer.narrative_context
-code\core_engine\inf_writer\narrative_context.py:35:12: W0707: Consider explicitly re-raising using 'except (ValueError, TypeError) as exc' and 'raise original from exc' (raise-missing-from)
-************* Module inf_writer.ports
-code\core_engine\inf_writer\ports.py:15:0: R0903: Too few public methods (1/2) (too-few-public-methods)
-************* Module inf_writer.repair_pilot
-code\core_engine\inf_writer\repair_pilot.py:34:0: R1260: 'run_repair_pilot' is too complex. The McCabe rating is 11 (too-complex)
-code\core_engine\inf_writer\repair_pilot.py:34:0: R0914: Too many local variables (22/15) (too-many-locals)
-code\core_engine\inf_writer\repair_pilot.py:36:8: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\repair_pilot.py:93:15: W0718: Catching too general exception Exception (broad-exception-caught)
-************* Module inf_writer.review_contract
-code\core_engine\inf_writer\review_contract.py:262:0: R1260: 'validate_catalog_checks' is too complex. The McCabe rating is 11 (too-complex)
-code\core_engine\inf_writer\review_contract.py:68:0: R0914: Too many local variables (17/15) (too-many-locals)
-code\core_engine\inf_writer\review_contract.py:164:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-************* Module inf_writer.review_policy
-code\core_engine\inf_writer\review_policy.py:40:8: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\review_policy.py:45:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-************* Module inf_writer.review_repair
-code\core_engine\inf_writer\review_repair.py:30:0: R1260: 'encode_previous' is too complex. The McCabe rating is 15 (too-complex)
-code\core_engine\inf_writer\review_repair.py:74:0: R1260: 'decode_previous' is too complex. The McCabe rating is 11 (too-complex)
-code\core_engine\inf_writer\review_repair.py:91:16: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\review_repair.py:92:19: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-************* Module inf_writer.review_state
-code\core_engine\inf_writer\review_state.py:86:11: R1735: Consider using '{"status": status, "total": len(checks), **counts}' instead of a call to 'dict'. (use-dict-literal)
-************* Module inf_writer.review_transport
-code\core_engine\inf_writer\review_transport.py:36:0: R1260: 'compact_review_context' is too complex. The McCabe rating is 20 (too-complex)
-code\core_engine\inf_writer\review_transport.py:118:0: R1260: '_resolve' is too complex. The McCabe rating is 11 (too-complex)
-code\core_engine\inf_writer\review_transport.py:168:0: R1260: 'expand_review_context' is too complex. The McCabe rating is 14 (too-complex)
-code\core_engine\inf_writer\review_transport.py:36:0: R0914: Too many local variables (19/15) (too-many-locals)
-code\core_engine\inf_writer\review_transport.py:38:8: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\review_transport.py:36:0: R0912: Too many branches (19/12) (too-many-branches)
-code\core_engine\inf_writer\review_transport.py:173:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\review_transport.py:168:0: R0912: Too many branches (13/12) (too-many-branches)
-************* Module inf_writer.runtime
-code\core_engine\inf_writer\runtime.py:160:4: R1260: '_build_graph' is too complex. The McCabe rating is 11 (too-complex)
-code\core_engine\inf_writer\runtime.py:26:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\runtime.py:33:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\runtime.py:100:4: R0914: Too many local variables (16/15) (too-many-locals)
-code\core_engine\inf_writer\runtime.py:135:15: W0718: Catching too general exception Exception (broad-exception-caught)
-code\core_engine\inf_writer\runtime.py:155:15: W0718: Catching too general exception Exception (broad-exception-caught)
-code\core_engine\inf_writer\runtime.py:77:0: R0903: Too few public methods (1/2) (too-few-public-methods)
-************* Module inf_writer.semantic_review
-code\core_engine\inf_writer\semantic_review.py:38:0: R1260: 'prepare' is too complex. The McCabe rating is 16 (too-complex)
-code\core_engine\inf_writer\semantic_review.py:163:0: R1260: 'validate' is too complex. The McCabe rating is 34 (too-complex)
-code\core_engine\inf_writer\semantic_review.py:38:0: R0914: Too many local variables (27/15) (too-many-locals)
-code\core_engine\inf_writer\semantic_review.py:89:24: R1735: Consider using '{"ref": ref, "chapter_number": number, "chapter_sha256": digest(body), ... }' instead of a call to 'dict'. (use-dict-literal)
-code\core_engine\inf_writer\semantic_review.py:38:0: R0912: Too many branches (15/12) (too-many-branches)
-code\core_engine\inf_writer\semantic_review.py:163:0: R0914: Too many local variables (30/15) (too-many-locals)
-code\core_engine\inf_writer\semantic_review.py:181:19: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\semantic_review.py:163:0: R0912: Too many branches (32/12) (too-many-branches)
-code\core_engine\inf_writer\semantic_review.py:163:0: R0915: Too many statements (87/50) (too-many-statements)
-************* Module inf_writer.temporal_agent
-code\core_engine\inf_writer\temporal_agent.py:42:4: R1260: 'run' is too complex. The McCabe rating is 21 (too-complex)
-code\core_engine\inf_writer\temporal_agent.py:42:4: R0913: Too many arguments (6/5) (too-many-arguments)
-code\core_engine\inf_writer\temporal_agent.py:42:4: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
-code\core_engine\inf_writer\temporal_agent.py:42:4: R0914: Too many local variables (26/15) (too-many-locals)
-code\core_engine\inf_writer\temporal_agent.py:42:4: R0912: Too many branches (19/12) (too-many-branches)
-code\core_engine\inf_writer\temporal_agent.py:42:4: R0915: Too many statements (59/50) (too-many-statements)
-code\core_engine\inf_writer\temporal_agent.py:42:4: R1710: Either all return statements in a function should return an expression, or none of them should. (inconsistent-return-statements)
-code\core_engine\inf_writer\temporal_agent.py:36:0: R0903: Too few public methods (1/2) (too-few-public-methods)
-code\core_engine\inf_writer\temporal_agent.py:225:0: R0903: Too few public methods (1/2) (too-few-public-methods)
-************* Module inf_writer.temporal_transport
-code\core_engine\inf_writer\temporal_transport.py:37:0: R1260: 'decode' is too complex. The McCabe rating is 13 (too-complex)
-************* Module inf_writer.tiered_memory
-code\core_engine\inf_writer\tiered_memory.py:177:0: R1260: 'apply_delta' is too complex. The McCabe rating is 26 (too-complex)
-code\core_engine\inf_writer\tiered_memory.py:417:0: R1260: 'select_history_context' is too complex. The McCabe rating is 12 (too-complex)
-code\core_engine\inf_writer\tiered_memory.py:177:0: R0914: Too many local variables (21/15) (too-many-locals)
-code\core_engine\inf_writer\tiered_memory.py:177:0: R0912: Too many branches (26/12) (too-many-branches)
-code\core_engine\inf_writer\tiered_memory.py:177:0: R0915: Too many statements (82/50) (too-many-statements)
-code\core_engine\inf_writer\tiered_memory.py:332:0: R0913: Too many arguments (6/5) (too-many-arguments)
-code\core_engine\inf_writer\tiered_memory.py:332:0: R0914: Too many local variables (17/15) (too-many-locals)
-code\core_engine\inf_writer\tiered_memory.py:393:8: R1735: Consider using '{"subject": r['subject'], "attribute": r['attribute'], "value": r['claim'], ... }' instead of a call to 'dict'. (use-dict-literal)
-code\core_engine\inf_writer\tiered_memory.py:417:0: R0914: Too many local variables (19/15) (too-many-locals)
-************* Module inf_writer.tiered_runtime
-code\core_engine\inf_writer\tiered_runtime.py:244:4: R1260: 'write_next' is too complex. The McCabe rating is 12 (too-complex)
-code\core_engine\inf_writer\tiered_runtime.py:79:4: R0914: Too many local variables (16/15) (too-many-locals)
-code\core_engine\inf_writer\tiered_runtime.py:79:4: R1710: Either all return statements in a function should return an expression, or none of them should. (inconsistent-return-statements)
-code\core_engine\inf_writer\tiered_runtime.py:71:0: R0903: Too few public methods (1/2) (too-few-public-methods)
-code\core_engine\inf_writer\tiered_runtime.py:134:4: R0913: Too many arguments (6/5) (too-many-arguments)
-code\core_engine\inf_writer\tiered_runtime.py:244:4: R0914: Too many local variables (19/15) (too-many-locals)
-code\core_engine\inf_writer\tiered_runtime.py:248:15: W0718: Catching too general exception Exception (broad-exception-caught)
-code\core_engine\inf_writer\tiered_runtime.py:378:15: W0718: Catching too general exception Exception (broad-exception-caught)
-code\core_engine\inf_writer\tiered_runtime.py:295:20: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\tiered_runtime.py:321:19: W0718: Catching too general exception Exception (broad-exception-caught)
-code\core_engine\inf_writer\tiered_runtime.py:244:4: R0915: Too many statements (55/50) (too-many-statements)
-code\core_engine\inf_writer\tiered_runtime.py:403:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-************* Module inf_writer.trial
-code\core_engine\inf_writer\trial.py:241:0: R1260: 'run_draft_trial' is too complex. The McCabe rating is 13 (too-complex)
-code\core_engine\inf_writer\trial.py:49:8: R0916: Too many boolean expressions in if statement (8/5) (too-many-boolean-expressions)
-code\core_engine\inf_writer\trial.py:69:0: R0903: Too few public methods (1/2) (too-few-public-methods)
-code\core_engine\inf_writer\trial.py:116:0: R0914: Too many local variables (24/15) (too-many-locals)
-code\core_engine\inf_writer\trial.py:241:0: R0914: Too many local variables (33/15) (too-many-locals)
-code\core_engine\inf_writer\trial.py:248:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\trial.py:262:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-code\core_engine\inf_writer\trial.py:273:16: R0916: Too many boolean expressions in if statement (8/5) (too-many-boolean-expressions)
-code\core_engine\inf_writer\trial.py:241:0: R0915: Too many statements (59/50) (too-many-statements)
+************* Module tome_writer.agents
+code\core_engine\tome_writer\agents.py:106:0: R1260: 'validate' is too complex. The McCabe rating is 14 (too-complex)
+code\core_engine\tome_writer\agents.py:196:4: R1260: 'run' is too complex. The McCabe rating is 66 (too-complex)
+code\core_engine\tome_writer\agents.py:101:0: C0413: Import "from .memory_output_contract import MEMORY_PROMPT" should be placed at the top of the module (wrong-import-position)
+code\core_engine\tome_writer\agents.py:171:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\agents.py:106:0: R0912: Too many branches (14/12) (too-many-branches)
+code\core_engine\tome_writer\agents.py:186:0: R0902: Too many instance attributes (8/7) (too-many-instance-attributes)
+code\core_engine\tome_writer\agents.py:196:4: R0914: Too many local variables (41/15) (too-many-locals)
+code\core_engine\tome_writer\agents.py:198:12: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\agents.py:204:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\agents.py:248:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\agents.py:265:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\agents.py:276:15: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\agents.py:275:8: R1702: Too many nested blocks (6/5) (too-many-nested-blocks)
+code\core_engine\tome_writer\agents.py:196:4: R0912: Too many branches (65/12) (too-many-branches)
+code\core_engine\tome_writer\agents.py:196:4: R0915: Too many statements (176/50) (too-many-statements)
+************* Module tome_writer.chat_provider
+code\core_engine\tome_writer\chat_provider.py:52:4: R1260: '__post_init__' is too complex. The McCabe rating is 12 (too-complex)
+code\core_engine\tome_writer\chat_provider.py:106:4: R1260: 'complete' is too complex. The McCabe rating is 16 (too-complex)
+code\core_engine\tome_writer\chat_provider.py:23:15: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\chat_provider.py:41:0: R0902: Too many instance attributes (9/7) (too-many-instance-attributes)
+code\core_engine\tome_writer\chat_provider.py:55:12: R0916: Too many boolean expressions in if statement (7/5) (too-many-boolean-expressions)
+code\core_engine\tome_writer\chat_provider.py:71:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\chat_provider.py:90:16: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\chat_provider.py:106:4: R0914: Too many local variables (17/15) (too-many-locals)
+code\core_engine\tome_writer\chat_provider.py:106:4: R0912: Too many branches (14/12) (too-many-branches)
+************* Module tome_writer.claim_updates
+code\core_engine\tome_writer\claim_updates.py:42:0: R1260: 'resolve_patch' is too complex. The McCabe rating is 20 (too-complex)
+code\core_engine\tome_writer\claim_updates.py:42:0: R0914: Too many local variables (24/15) (too-many-locals)
+code\core_engine\tome_writer\claim_updates.py:42:0: R0912: Too many branches (22/12) (too-many-branches)
+code\core_engine\tome_writer\claim_updates.py:42:0: R0915: Too many statements (65/50) (too-many-statements)
+************* Module tome_writer.demo
+code\core_engine\tome_writer\demo.py:8:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+************* Module tome_writer.domain
+code\core_engine\tome_writer\domain.py:156:0: R1260: 'checked_support' is too complex. The McCabe rating is 17 (too-complex)
+code\core_engine\tome_writer\domain.py:291:4: R1260: 'from_dict' is too complex. The McCabe rating is 38 (too-complex)
+code\core_engine\tome_writer\domain.py:441:0: R1260: 'apply_chapter' is too complex. The McCabe rating is 21 (too-complex)
+code\core_engine\tome_writer\domain.py:35:11: W0621: Redefining name 'text' from outer scope (line 39) (redefined-outer-name)
+code\core_engine\tome_writer\domain.py:46:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\domain.py:156:0: R0913: Too many arguments (6/5) (too-many-arguments)
+code\core_engine\tome_writer\domain.py:156:0: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
+code\core_engine\tome_writer\domain.py:156:0: R0914: Too many local variables (22/15) (too-many-locals)
+code\core_engine\tome_writer\domain.py:191:57: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\domain.py:156:0: R0912: Too many branches (16/12) (too-many-branches)
+code\core_engine\tome_writer\domain.py:268:0: R0902: Too many instance attributes (10/7) (too-many-instance-attributes)
+code\core_engine\tome_writer\domain.py:292:21: E1101: Class 'Snapshot' has no '__dataclass_fields__' member (no-member)
+code\core_engine\tome_writer\domain.py:295:15: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\domain.py:320:8: R0912: Too many branches (13/12) (too-many-branches)
+code\core_engine\tome_writer\domain.py:291:4: R0912: Too many branches (17/12) (too-many-branches)
+code\core_engine\tome_writer\domain.py:291:4: R0915: Too many statements (85/50) (too-many-statements)
+code\core_engine\tome_writer\domain.py:441:0: R0913: Too many arguments (6/5) (too-many-arguments)
+code\core_engine\tome_writer\domain.py:441:0: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
+code\core_engine\tome_writer\domain.py:441:0: R0914: Too many local variables (23/15) (too-many-locals)
+code\core_engine\tome_writer\domain.py:441:0: R0912: Too many branches (23/12) (too-many-branches)
+code\core_engine\tome_writer\domain.py:441:0: R0915: Too many statements (73/50) (too-many-statements)
+************* Module tome_writer.drafting
+code\core_engine\tome_writer\drafting.py:55:0: R1260: 'normalize_memory' is too complex. The McCabe rating is 19 (too-complex)
+code\core_engine\tome_writer\drafting.py:189:0: R1260: 'validate_review' is too complex. The McCabe rating is 21 (too-complex)
+code\core_engine\tome_writer\drafting.py:310:4: R1260: 'write_next' is too complex. The McCabe rating is 28 (too-complex)
+code\core_engine\tome_writer\drafting.py:55:0: R0914: Too many local variables (28/15) (too-many-locals)
+code\core_engine\tome_writer\drafting.py:130:19: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\drafting.py:55:0: R0912: Too many branches (19/12) (too-many-branches)
+code\core_engine\tome_writer\drafting.py:55:0: R0915: Too many statements (61/50) (too-many-statements)
+code\core_engine\tome_writer\drafting.py:189:0: R0914: Too many local variables (23/15) (too-many-locals)
+code\core_engine\tome_writer\drafting.py:206:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\drafting.py:189:0: R0912: Too many branches (20/12) (too-many-branches)
+code\core_engine\tome_writer\drafting.py:189:0: R0915: Too many statements (56/50) (too-many-statements)
+code\core_engine\tome_writer\drafting.py:310:4: R0914: Too many local variables (27/15) (too-many-locals)
+code\core_engine\tome_writer\drafting.py:492:15: W0718: Catching too general exception Exception (broad-exception-caught)
+code\core_engine\tome_writer\drafting.py:363:19: W0718: Catching too general exception Exception (broad-exception-caught)
+code\core_engine\tome_writer\drafting.py:396:19: W0718: Catching too general exception Exception (broad-exception-caught)
+code\core_engine\tome_writer\drafting.py:488:19: W0718: Catching too general exception Exception (broad-exception-caught)
+code\core_engine\tome_writer\drafting.py:310:4: R0912: Too many branches (21/12) (too-many-branches)
+code\core_engine\tome_writer\drafting.py:310:4: R0915: Too many statements (88/50) (too-many-statements)
+************* Module tome_writer.judgment_review
+code\core_engine\tome_writer\judgment_review.py:101:0: R1260: 'compile_judgments' is too complex. The McCabe rating is 31 (too-complex)
+code\core_engine\tome_writer\judgment_review.py:91:28: R1735: Consider using '{"ref": 'draft_' + s['id'], "chapter_number": context['chapter_number'], ... }' instead of a call to 'dict'. (use-dict-literal)
+code\core_engine\tome_writer\judgment_review.py:101:0: R0914: Too many local variables (36/15) (too-many-locals)
+code\core_engine\tome_writer\judgment_review.py:116:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\judgment_review.py:168:24: R1735: Consider using '{"chapter_number": source['chapter_number'], "chapter_sha256": source['chapter_sha256'], ... }' instead of a call to 'dict'. (use-dict-literal)
+code\core_engine\tome_writer\judgment_review.py:255:32: R1735: Consider using '{"missing_fact": row['fact'], "coverage_refs": memory_refs.copy()}' instead of a call to 'dict'. (use-dict-literal)
+code\core_engine\tome_writer\judgment_review.py:101:0: R0912: Too many branches (30/12) (too-many-branches)
+code\core_engine\tome_writer\judgment_review.py:101:0: R0915: Too many statements (108/50) (too-many-statements)
+************* Module tome_writer.light_memory
+code\core_engine\tome_writer\light_memory.py:150:0: R1260: 'validate_light_review' is too complex. The McCabe rating is 11 (too-complex)
+code\core_engine\tome_writer\light_memory.py:213:4: R1260: 'run' is too complex. The McCabe rating is 12 (too-complex)
+code\core_engine\tome_writer\light_memory.py:156:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\light_memory.py:203:0: R0902: Too many instance attributes (8/7) (too-many-instance-attributes)
+code\core_engine\tome_writer\light_memory.py:213:4: R0914: Too many local variables (16/15) (too-many-locals)
+code\core_engine\tome_writer\light_memory.py:215:12: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\light_memory.py:242:20: E1101: Instance of 'object' has no 'complete' member (no-member)
+code\core_engine\tome_writer\light_memory.py:301:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\light_memory.py:303:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+************* Module tome_writer.locator_review
+code\core_engine\tome_writer\locator_review.py:76:0: R1260: 'validate_coverage' is too complex. The McCabe rating is 20 (too-complex)
+code\core_engine\tome_writer\locator_review.py:6:9: C0207: Use BASE_PROMPT.split('��������coverage_checks����', maxsplit=1)[0] instead (use-maxsplit-arg)
+code\core_engine\tome_writer\locator_review.py:76:0: R0914: Too many local variables (22/15) (too-many-locals)
+code\core_engine\tome_writer\locator_review.py:76:0: R0912: Too many branches (19/12) (too-many-branches)
+code\core_engine\tome_writer\locator_review.py:76:0: R0915: Too many statements (54/50) (too-many-statements)
+************* Module tome_writer.memory
+code\core_engine\tome_writer\memory.py:11:4: R0913: Too many arguments (6/5) (too-many-arguments)
+code\core_engine\tome_writer\memory.py:11:4: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
+code\core_engine\tome_writer\memory.py:20:4: R0913: Too many arguments (6/5) (too-many-arguments)
+code\core_engine\tome_writer\memory.py:20:4: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
+************* Module tome_writer.memory_action_contract
+code\core_engine\tome_writer\memory_action_contract.py:47:28: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+************* Module tome_writer.memory_meaning
+code\core_engine\tome_writer\memory_meaning.py:158:0: R1260: 'verify_meanings' is too complex. The McCabe rating is 17 (too-complex)
+code\core_engine\tome_writer\memory_meaning.py:158:0: R0914: Too many local variables (19/15) (too-many-locals)
+code\core_engine\tome_writer\memory_meaning.py:158:0: R0912: Too many branches (16/12) (too-many-branches)
+************* Module tome_writer.memory_output_contract
+code\core_engine\tome_writer\memory_output_contract.py:126:0: R1260: 'candidate_error' is too complex. The McCabe rating is 16 (too-complex)
+code\core_engine\tome_writer\memory_output_contract.py:126:0: R0914: Too many local variables (23/15) (too-many-locals)
+code\core_engine\tome_writer\memory_output_contract.py:126:0: R0912: Too many branches (16/12) (too-many-branches)
+************* Module tome_writer.memory_submission
+code\core_engine\tome_writer\memory_submission.py:105:0: R1260: 'check_submission' is too complex. The McCabe rating is 32 (too-complex)
+code\core_engine\tome_writer\memory_submission.py:105:0: R0914: Too many local variables (33/15) (too-many-locals)
+code\core_engine\tome_writer\memory_submission.py:115:12: R1735: Consider using '{"candidate_index": index, "index_base": 0, "path": path, "code": code, ... }' instead of a call to 'dict'. (use-dict-literal)
+code\core_engine\tome_writer\memory_submission.py:258:23: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\memory_submission.py:105:0: R0912: Too many branches (29/12) (too-many-branches)
+code\core_engine\tome_writer\memory_submission.py:105:0: R0915: Too many statements (86/50) (too-many-statements)
+************* Module tome_writer.memory_temporality
+code\core_engine\tome_writer\memory_temporality.py:124:0: R1260: 'reconcile' is too complex. The McCabe rating is 22 (too-complex)
+code\core_engine\tome_writer\memory_temporality.py:124:0: R0914: Too many local variables (19/15) (too-many-locals)
+code\core_engine\tome_writer\memory_temporality.py:124:0: R0912: Too many branches (21/12) (too-many-branches)
+code\core_engine\tome_writer\memory_temporality.py:124:0: R0915: Too many statements (53/50) (too-many-statements)
+************* Module tome_writer.models
+code\core_engine\tome_writer\models.py:29:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+code\core_engine\tome_writer\models.py:34:0: R0902: Too many instance attributes (8/7) (too-many-instance-attributes)
+code\core_engine\tome_writer\models.py:61:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+************* Module tome_writer.narrative_context
+code\core_engine\tome_writer\narrative_context.py:35:12: W0707: Consider explicitly re-raising using 'except (ValueError, TypeError) as exc' and 'raise original from exc' (raise-missing-from)
+************* Module tome_writer.ports
+code\core_engine\tome_writer\ports.py:15:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+************* Module tome_writer.repair_pilot
+code\core_engine\tome_writer\repair_pilot.py:34:0: R1260: 'run_repair_pilot' is too complex. The McCabe rating is 11 (too-complex)
+code\core_engine\tome_writer\repair_pilot.py:34:0: R0914: Too many local variables (22/15) (too-many-locals)
+code\core_engine\tome_writer\repair_pilot.py:36:8: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\repair_pilot.py:93:15: W0718: Catching too general exception Exception (broad-exception-caught)
+************* Module tome_writer.review_contract
+code\core_engine\tome_writer\review_contract.py:262:0: R1260: 'validate_catalog_checks' is too complex. The McCabe rating is 11 (too-complex)
+code\core_engine\tome_writer\review_contract.py:68:0: R0914: Too many local variables (17/15) (too-many-locals)
+code\core_engine\tome_writer\review_contract.py:164:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+************* Module tome_writer.review_policy
+code\core_engine\tome_writer\review_policy.py:40:8: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\review_policy.py:45:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+************* Module tome_writer.review_repair
+code\core_engine\tome_writer\review_repair.py:30:0: R1260: 'encode_previous' is too complex. The McCabe rating is 15 (too-complex)
+code\core_engine\tome_writer\review_repair.py:74:0: R1260: 'decode_previous' is too complex. The McCabe rating is 11 (too-complex)
+code\core_engine\tome_writer\review_repair.py:91:16: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\review_repair.py:92:19: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+************* Module tome_writer.review_state
+code\core_engine\tome_writer\review_state.py:86:11: R1735: Consider using '{"status": status, "total": len(checks), **counts}' instead of a call to 'dict'. (use-dict-literal)
+************* Module tome_writer.review_transport
+code\core_engine\tome_writer\review_transport.py:36:0: R1260: 'compact_review_context' is too complex. The McCabe rating is 20 (too-complex)
+code\core_engine\tome_writer\review_transport.py:118:0: R1260: '_resolve' is too complex. The McCabe rating is 11 (too-complex)
+code\core_engine\tome_writer\review_transport.py:168:0: R1260: 'expand_review_context' is too complex. The McCabe rating is 14 (too-complex)
+code\core_engine\tome_writer\review_transport.py:36:0: R0914: Too many local variables (19/15) (too-many-locals)
+code\core_engine\tome_writer\review_transport.py:38:8: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\review_transport.py:36:0: R0912: Too many branches (19/12) (too-many-branches)
+code\core_engine\tome_writer\review_transport.py:173:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\review_transport.py:168:0: R0912: Too many branches (13/12) (too-many-branches)
+************* Module tome_writer.runtime
+code\core_engine\tome_writer\runtime.py:160:4: R1260: '_build_graph' is too complex. The McCabe rating is 11 (too-complex)
+code\core_engine\tome_writer\runtime.py:26:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\runtime.py:33:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\runtime.py:100:4: R0914: Too many local variables (16/15) (too-many-locals)
+code\core_engine\tome_writer\runtime.py:135:15: W0718: Catching too general exception Exception (broad-exception-caught)
+code\core_engine\tome_writer\runtime.py:155:15: W0718: Catching too general exception Exception (broad-exception-caught)
+code\core_engine\tome_writer\runtime.py:77:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+************* Module tome_writer.semantic_review
+code\core_engine\tome_writer\semantic_review.py:38:0: R1260: 'prepare' is too complex. The McCabe rating is 16 (too-complex)
+code\core_engine\tome_writer\semantic_review.py:163:0: R1260: 'validate' is too complex. The McCabe rating is 34 (too-complex)
+code\core_engine\tome_writer\semantic_review.py:38:0: R0914: Too many local variables (27/15) (too-many-locals)
+code\core_engine\tome_writer\semantic_review.py:89:24: R1735: Consider using '{"ref": ref, "chapter_number": number, "chapter_sha256": digest(body), ... }' instead of a call to 'dict'. (use-dict-literal)
+code\core_engine\tome_writer\semantic_review.py:38:0: R0912: Too many branches (15/12) (too-many-branches)
+code\core_engine\tome_writer\semantic_review.py:163:0: R0914: Too many local variables (30/15) (too-many-locals)
+code\core_engine\tome_writer\semantic_review.py:181:19: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\semantic_review.py:163:0: R0912: Too many branches (32/12) (too-many-branches)
+code\core_engine\tome_writer\semantic_review.py:163:0: R0915: Too many statements (87/50) (too-many-statements)
+************* Module tome_writer.temporal_agent
+code\core_engine\tome_writer\temporal_agent.py:42:4: R1260: 'run' is too complex. The McCabe rating is 21 (too-complex)
+code\core_engine\tome_writer\temporal_agent.py:42:4: R0913: Too many arguments (6/5) (too-many-arguments)
+code\core_engine\tome_writer\temporal_agent.py:42:4: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
+code\core_engine\tome_writer\temporal_agent.py:42:4: R0914: Too many local variables (26/15) (too-many-locals)
+code\core_engine\tome_writer\temporal_agent.py:42:4: R0912: Too many branches (19/12) (too-many-branches)
+code\core_engine\tome_writer\temporal_agent.py:42:4: R0915: Too many statements (59/50) (too-many-statements)
+code\core_engine\tome_writer\temporal_agent.py:42:4: R1710: Either all return statements in a function should return an expression, or none of them should. (inconsistent-return-statements)
+code\core_engine\tome_writer\temporal_agent.py:36:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+code\core_engine\tome_writer\temporal_agent.py:225:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+************* Module tome_writer.temporal_transport
+code\core_engine\tome_writer\temporal_transport.py:37:0: R1260: 'decode' is too complex. The McCabe rating is 13 (too-complex)
+************* Module tome_writer.tiered_memory
+code\core_engine\tome_writer\tiered_memory.py:177:0: R1260: 'apply_delta' is too complex. The McCabe rating is 26 (too-complex)
+code\core_engine\tome_writer\tiered_memory.py:417:0: R1260: 'select_history_context' is too complex. The McCabe rating is 12 (too-complex)
+code\core_engine\tome_writer\tiered_memory.py:177:0: R0914: Too many local variables (21/15) (too-many-locals)
+code\core_engine\tome_writer\tiered_memory.py:177:0: R0912: Too many branches (26/12) (too-many-branches)
+code\core_engine\tome_writer\tiered_memory.py:177:0: R0915: Too many statements (82/50) (too-many-statements)
+code\core_engine\tome_writer\tiered_memory.py:332:0: R0913: Too many arguments (6/5) (too-many-arguments)
+code\core_engine\tome_writer\tiered_memory.py:332:0: R0914: Too many local variables (17/15) (too-many-locals)
+code\core_engine\tome_writer\tiered_memory.py:393:8: R1735: Consider using '{"subject": r['subject'], "attribute": r['attribute'], "value": r['claim'], ... }' instead of a call to 'dict'. (use-dict-literal)
+code\core_engine\tome_writer\tiered_memory.py:417:0: R0914: Too many local variables (19/15) (too-many-locals)
+************* Module tome_writer.tiered_runtime
+code\core_engine\tome_writer\tiered_runtime.py:244:4: R1260: 'write_next' is too complex. The McCabe rating is 12 (too-complex)
+code\core_engine\tome_writer\tiered_runtime.py:79:4: R0914: Too many local variables (16/15) (too-many-locals)
+code\core_engine\tome_writer\tiered_runtime.py:79:4: R1710: Either all return statements in a function should return an expression, or none of them should. (inconsistent-return-statements)
+code\core_engine\tome_writer\tiered_runtime.py:71:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+code\core_engine\tome_writer\tiered_runtime.py:134:4: R0913: Too many arguments (6/5) (too-many-arguments)
+code\core_engine\tome_writer\tiered_runtime.py:244:4: R0914: Too many local variables (19/15) (too-many-locals)
+code\core_engine\tome_writer\tiered_runtime.py:248:15: W0718: Catching too general exception Exception (broad-exception-caught)
+code\core_engine\tome_writer\tiered_runtime.py:378:15: W0718: Catching too general exception Exception (broad-exception-caught)
+code\core_engine\tome_writer\tiered_runtime.py:295:20: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\tiered_runtime.py:321:19: W0718: Catching too general exception Exception (broad-exception-caught)
+code\core_engine\tome_writer\tiered_runtime.py:244:4: R0915: Too many statements (55/50) (too-many-statements)
+code\core_engine\tome_writer\tiered_runtime.py:403:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+************* Module tome_writer.trial
+code\core_engine\tome_writer\trial.py:241:0: R1260: 'run_draft_trial' is too complex. The McCabe rating is 13 (too-complex)
+code\core_engine\tome_writer\trial.py:49:8: R0916: Too many boolean expressions in if statement (8/5) (too-many-boolean-expressions)
+code\core_engine\tome_writer\trial.py:69:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+code\core_engine\tome_writer\trial.py:116:0: R0914: Too many local variables (24/15) (too-many-locals)
+code\core_engine\tome_writer\trial.py:241:0: R0914: Too many local variables (33/15) (too-many-locals)
+code\core_engine\tome_writer\trial.py:248:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\trial.py:262:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
+code\core_engine\tome_writer\trial.py:273:16: R0916: Too many boolean expressions in if statement (8/5) (too-many-boolean-expressions)
+code\core_engine\tome_writer\trial.py:241:0: R0915: Too many statements (59/50) (too-many-statements)
 ************* Module memory_runtime.chapter_titles
 code\core_engine\memory_runtime\chapter_titles.py:23:0: R1260: 'assign' is too complex. The McCabe rating is 14 (too-complex)
 code\core_engine\memory_runtime\chapter_titles.py:87:11: W0718: Catching too general exception Exception (broad-exception-caught)
@@ -383,9 +383,9 @@ code\core_engine\memory_runtime\continuity.py:538:0: R0914: Too many local varia
 code\core_engine\memory_runtime\continuity.py:538:0: R0912: Too many branches (19/12) (too-many-branches)
 code\core_engine\memory_runtime\continuity.py:538:0: R0915: Too many statements (68/50) (too-many-statements)
 ************* Module memory_runtime.engine
-code\core_engine\memory_runtime\engine.py:9:0: C0413: Import "from inf_writer.domain import ContractError" should be placed at the top of the module (wrong-import-position)
-code\core_engine\memory_runtime\engine.py:10:0: C0413: Import "from inf_writer.tiered_memory import empty_memory, select_context" should be placed at the top of the module (wrong-import-position)
-code\core_engine\memory_runtime\engine.py:11:0: C0413: Import "from inf_writer.tiered_runtime import TieredMemoryAgent" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\engine.py:9:0: C0413: Import "from tome_writer.domain import ContractError" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\engine.py:10:0: C0413: Import "from tome_writer.tiered_memory import empty_memory, select_context" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\engine.py:11:0: C0413: Import "from tome_writer.tiered_runtime import TieredMemoryAgent" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\engine.py:13:0: C0413: Import "from .pipeline import ExtractionAdapter, LayerAgent, ReviewedTemporal, recall_probe" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\engine.py:14:0: C0413: Import "from .semantics import guard_extraction, guard_temporal" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\engine.py:25:4: R0914: Too many local variables (20/15) (too-many-locals)
@@ -717,8 +717,8 @@ code\core_engine\memory_runtime\test_completion.py:119:8: R0903: Too few public 
 code\core_engine\memory_runtime\test_completion.py:185:8: R0903: Too few public methods (1/2) (too-few-public-methods)
 code\core_engine\memory_runtime\test_completion.py:353:20: W0212: Access to a protected member _save of a client class (protected-access)
 ************* Module memory_runtime.test_continuity
-code\core_engine\memory_runtime\test_continuity.py:10:0: C0413: Import "from inf_writer.domain import ContractError, canonical" should be placed at the top of the module (wrong-import-position)
-code\core_engine\memory_runtime\test_continuity.py:11:0: C0413: Import "from inf_writer.models import ModelReply" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_continuity.py:10:0: C0413: Import "from tome_writer.domain import ContractError, canonical" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_continuity.py:11:0: C0413: Import "from tome_writer.models import ModelReply" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\test_continuity.py:13:0: C0413: Import "from memory_runtime.continuity import apply, context_view, empty, guard" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\test_continuity.py:29:11: R1735: Consider using '{"type": 'object', "id": identifier, "label": '7-B', "form": 'original', ... }' instead of a call to 'dict'. (use-dict-literal)
 code\core_engine\memory_runtime\test_continuity.py:252:8: R0903: Too few public methods (1/2) (too-few-public-methods)
@@ -730,8 +730,8 @@ code\core_engine\memory_runtime\test_ending_intents.py:34:0: R0903: Too few publ
 ************* Module memory_runtime.test_event_first
 code\core_engine\memory_runtime\test_event_first.py:1:0: C0302: Too many lines in module (2201/1000) (too-many-lines)
 code\core_engine\memory_runtime\test_event_first.py:15:0: C0413: Import "import write_novel as cli" should be placed at the top of the module (wrong-import-position)
-code\core_engine\memory_runtime\test_event_first.py:16:0: C0413: Import "from inf_writer.domain import ContractError, canonical, digest" should be placed at the top of the module (wrong-import-position)
-code\core_engine\memory_runtime\test_event_first.py:17:0: C0413: Import "from inf_writer.models import ModelReply" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_event_first.py:16:0: C0413: Import "from tome_writer.domain import ContractError, canonical, digest" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_event_first.py:17:0: C0413: Import "from tome_writer.models import ModelReply" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\test_event_first.py:19:0: C0413: Import "from memory_runtime.continuity import empty" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\test_event_first.py:20:0: C0413: Import "from memory_runtime.event_first import prepare, project_memory, realize" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\test_event_first.py:21:0: C0413: Import "from memory_runtime.test_writing import Local, config" should be placed at the top of the module (wrong-import-position)
@@ -898,10 +898,10 @@ code\core_engine\memory_runtime\test_regression.py:11:0: C0413: Import "from mem
 code\core_engine\memory_runtime\test_regression.py:114:31: W0613: Unused argument 'request' (unused-argument)
 code\core_engine\memory_runtime\test_regression.py:113:8: R0903: Too few public methods (1/2) (too-few-public-methods)
 code\core_engine\memory_runtime\test_regression.py:150:8: R0903: Too few public methods (1/2) (too-few-public-methods)
-code\core_engine\memory_runtime\test_regression.py:174:0: C0413: Import "from inf_writer.domain import ContractError, canonical" should be placed at the top of the module (wrong-import-position)
-code\core_engine\memory_runtime\test_regression.py:175:0: C0413: Import "from inf_writer.models import ModelReply, ModelRequest" should be placed at the top of the module (wrong-import-position)
-code\core_engine\memory_runtime\test_regression.py:176:0: C0413: Import "from inf_writer.temporal_agent import SYSTEM" should be placed at the top of the module (wrong-import-position)
-code\core_engine\memory_runtime\test_regression.py:177:0: C0413: Import "from inf_writer.tiered_runtime import MEMORY_SYSTEM" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_regression.py:174:0: C0413: Import "from tome_writer.domain import ContractError, canonical" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_regression.py:175:0: C0413: Import "from tome_writer.models import ModelReply, ModelRequest" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_regression.py:176:0: C0413: Import "from tome_writer.temporal_agent import SYSTEM" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_regression.py:177:0: C0413: Import "from tome_writer.tiered_runtime import MEMORY_SYSTEM" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\test_regression.py:179:0: C0413: Import "from memory_runtime.engine import MemoryEngine" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\test_regression.py:226:8: R0903: Too few public methods (1/2) (too-few-public-methods)
 code\core_engine\memory_runtime\test_regression.py:257:8: R0903: Too few public methods (1/2) (too-few-public-methods)
@@ -969,8 +969,8 @@ code\core_engine\memory_runtime\test_story_closure.py:352:8: R0903: Too few publ
 code\core_engine\memory_runtime\test_story_closure.py:404:8: R0903: Too few public methods (1/2) (too-few-public-methods)
 code\core_engine\memory_runtime\test_story_closure.py:83:0: R0904: Too many public methods (21/20) (too-many-public-methods)
 ************* Module memory_runtime.test_story_review
-code\core_engine\memory_runtime\test_story_review.py:11:0: C0413: Import "from inf_writer.domain import ContractError, canonical" should be placed at the top of the module (wrong-import-position)
-code\core_engine\memory_runtime\test_story_review.py:12:0: C0413: Import "from inf_writer.models import ModelReply" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_story_review.py:11:0: C0413: Import "from tome_writer.domain import ContractError, canonical" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_story_review.py:12:0: C0413: Import "from tome_writer.models import ModelReply" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\test_story_review.py:14:0: C0413: Import "from memory_runtime.story_review import StoryReviewAgent, adjudicate_issues" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\test_story_review.py:57:0: R0903: Too few public methods (1/2) (too-few-public-methods)
 code\core_engine\memory_runtime\test_story_review.py:73:4: R0914: Too many local variables (17/15) (too-many-locals)
@@ -980,8 +980,8 @@ code\core_engine\memory_runtime\test_thread_closure.py:114:20: W0613: Unused arg
 code\core_engine\memory_runtime\test_thread_closure.py:455:12: W0237: Parameter 'request' has been renamed to 'r' in overriding 'Provider.complete' method (arguments-renamed)
 code\core_engine\memory_runtime\test_thread_closure.py:454:8: R0903: Too few public methods (1/2) (too-few-public-methods)
 ************* Module memory_runtime.test_time_calculation
-code\core_engine\memory_runtime\test_time_calculation.py:11:0: C0413: Import "from inf_writer.domain import ContractError, canonical" should be placed at the top of the module (wrong-import-position)
-code\core_engine\memory_runtime\test_time_calculation.py:12:0: C0413: Import "from inf_writer.models import ModelReply" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_time_calculation.py:11:0: C0413: Import "from tome_writer.domain import ContractError, canonical" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_time_calculation.py:12:0: C0413: Import "from tome_writer.models import ModelReply" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\test_time_calculation.py:14:0: C0413: Import "from memory_runtime.time_calculation import calculate, render, unbound_claims, write_with_calculations" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\test_time_calculation.py:30:18: W0613: Unused argument 'context' (unused-argument)
 code\core_engine\memory_runtime\test_time_calculation.py:30:27: W0613: Unused argument 'trace' (unused-argument)
@@ -989,9 +989,9 @@ code\core_engine\memory_runtime\test_time_calculation.py:135:27: R1735: Consider
 ************* Module memory_runtime.test_writing
 code\core_engine\memory_runtime\test_writing.py:50:4: R1260: 'complete' is too complex. The McCabe rating is 18 (too-complex)
 code\core_engine\memory_runtime\test_writing.py:15:0: C0413: Import "import write_novel as cli" should be placed at the top of the module (wrong-import-position)
-code\core_engine\memory_runtime\test_writing.py:16:0: C0413: Import "from inf_writer.domain import ContractError, canonical" should be placed at the top of the module (wrong-import-position)
-code\core_engine\memory_runtime\test_writing.py:17:0: C0413: Import "from inf_writer.light_memory import LightAgent, validate_light_review" should be placed at the top of the module (wrong-import-position)
-code\core_engine\memory_runtime\test_writing.py:18:0: C0413: Import "from inf_writer.models import ModelReply, ModelRequest" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_writing.py:16:0: C0413: Import "from tome_writer.domain import ContractError, canonical" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_writing.py:17:0: C0413: Import "from tome_writer.light_memory import LightAgent, validate_light_review" should be placed at the top of the module (wrong-import-position)
+code\core_engine\memory_runtime\test_writing.py:18:0: C0413: Import "from tome_writer.models import ModelReply, ModelRequest" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\test_writing.py:20:0: C0413: Import "from memory_runtime.story_review import StoryReferenceGateway" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\test_writing.py:21:0: C0413: Import "from memory_runtime.writing import load_resume" should be placed at the top of the module (wrong-import-position)
 code\core_engine\memory_runtime\test_writing.py:50:4: R0912: Too many branches (18/12) (too-many-branches)
@@ -1088,13 +1088,13 @@ tests\integration\vue_ui_preview.py:45:0: W0613: Unused argument 'options' (unus
 tests\unit\test_chapter_titles.py:108:8: R0903: Too few public methods (1/2) (too-few-public-methods)
 tests\unit\test_chapter_titles.py:142:8: R0903: Too few public methods (1/2) (too-few-public-methods)
 ************* Module tests.unit.test_chat_provider
-tests\unit\test_chat_provider.py:13:0: C0413: Import "from inf_writer.agents import build_agents" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_chat_provider.py:14:0: C0413: Import "from inf_writer.chat_provider import ChatCompletionProvider, ProviderError" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_chat_provider.py:15:0: C0413: Import "from inf_writer.demo import DemoModel" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_chat_provider.py:16:0: C0413: Import "from inf_writer.domain import Snapshot" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_chat_provider.py:17:0: C0413: Import "from inf_writer.models import Budget, ModelGateway, ModelRequest" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_chat_provider.py:18:0: C0413: Import "from inf_writer.runtime import Coordinator" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_chat_provider.py:19:0: C0413: Import "from inf_writer.storage import FileStore" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_chat_provider.py:13:0: C0413: Import "from tome_writer.agents import build_agents" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_chat_provider.py:14:0: C0413: Import "from tome_writer.chat_provider import ChatCompletionProvider, ProviderError" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_chat_provider.py:15:0: C0413: Import "from tome_writer.demo import DemoModel" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_chat_provider.py:16:0: C0413: Import "from tome_writer.domain import Snapshot" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_chat_provider.py:17:0: C0413: Import "from tome_writer.models import Budget, ModelGateway, ModelRequest" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_chat_provider.py:18:0: C0413: Import "from tome_writer.runtime import Coordinator" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_chat_provider.py:19:0: C0413: Import "from tome_writer.storage import FileStore" should be placed at the top of the module (wrong-import-position)
 tests\unit\test_chat_provider.py:29:12: C0103: Method name "do_POST" doesn't conform to snake_case naming style (invalid-name)
 tests\unit\test_chat_provider.py:31:16: E1101: Class 'ChatProviderTests' has no 'requests' member; maybe 'request'? (no-member)
 tests\unit\test_chat_provider.py:33:51: E1101: Class 'ChatProviderTests' has no 'response' member (no-member)
@@ -1111,20 +1111,20 @@ tests\unit\test_chat_provider.py:137:29: E1101: Instance of 'ChatProviderTests' 
 tests\unit\test_chat_provider.py:177:29: E1101: Instance of 'ChatProviderTests' has no 'requests' member; maybe 'request'? (no-member)
 tests\unit\test_chat_provider.py:224:33: E1101: Instance of 'ChatProviderTests' has no 'requests' member; maybe 'request'? (no-member)
 ************* Module tests.unit.test_core
-tests\unit\test_core.py:10:0: C0413: Import "from inf_writer.agents import build_agents" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_core.py:11:0: C0413: Import "from inf_writer.domain import ConflictError, ContractError, Snapshot, apply_chapter" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_core.py:12:0: C0413: Import "from inf_writer.models import Budget, ModelGateway, ModelReply" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_core.py:13:0: C0413: Import "from inf_writer.runtime import ContextBuilder, Coordinator" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_core.py:14:0: C0413: Import "from inf_writer.storage import FileStore" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_core.py:10:0: C0413: Import "from tome_writer.agents import build_agents" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_core.py:11:0: C0413: Import "from tome_writer.domain import ConflictError, ContractError, Snapshot, apply_chapter" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_core.py:12:0: C0413: Import "from tome_writer.models import Budget, ModelGateway, ModelReply" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_core.py:13:0: C0413: Import "from tome_writer.runtime import ContextBuilder, Coordinator" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_core.py:14:0: C0413: Import "from tome_writer.storage import FileStore" should be placed at the top of the module (wrong-import-position)
 tests\unit\test_core.py:41:0: R0903: Too few public methods (1/2) (too-few-public-methods)
 tests\unit\test_core.py:190:20: R1732: Consider using 'with' for resource-allocating operations (consider-using-with)
 tests\unit\test_core.py:302:8: R0903: Too few public methods (1/2) (too-few-public-methods)
 tests\unit\test_core.py:186:0: R0904: Too many public methods (23/20) (too-many-public-methods)
 ************* Module tests.unit.test_drafting
-tests\unit\test_drafting.py:11:0: C0413: Import "from inf_writer.agents import build_agents" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_drafting.py:12:0: C0413: Import "from inf_writer.domain import ContractError, Snapshot" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_drafting.py:13:0: C0413: Import "from inf_writer.drafting import DraftSession, evidence_segments, normalize_memory, validate_review" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_drafting.py:19:0: C0413: Import "from inf_writer.models import Budget, ModelGateway, ModelReply" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_drafting.py:11:0: C0413: Import "from tome_writer.agents import build_agents" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_drafting.py:12:0: C0413: Import "from tome_writer.domain import ContractError, Snapshot" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_drafting.py:13:0: C0413: Import "from tome_writer.drafting import DraftSession, evidence_segments, normalize_memory, validate_review" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_drafting.py:19:0: C0413: Import "from tome_writer.models import Budget, ModelGateway, ModelReply" should be placed at the top of the module (wrong-import-position)
 tests\unit\test_drafting.py:24:0: R0903: Too few public methods (1/2) (too-few-public-methods)
 tests\unit\test_drafting.py:94:20: R1732: Consider using 'with' for resource-allocating operations (consider-using-with)
 tests\unit\test_drafting.py:136:8: R0903: Too few public methods (1/2) (too-few-public-methods)
@@ -1134,12 +1134,12 @@ tests\unit\test_langgraph.py:65:20: R1732: Consider using 'with' for resource-al
 tests\unit\test_langgraph.py:170:15: W0212: Access to a protected member _save of a client class (protected-access)
 tests\unit\test_langgraph.py:195:8: R0903: Too few public methods (1/2) (too-few-public-methods)
 ************* Module tests.unit.test_writer_format
-tests\unit\test_writer_format.py:10:0: C0413: Import "from inf_writer.agents import JsonAgent, build_agents, validate" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_writer_format.py:11:0: C0413: Import "from inf_writer.demo import DemoModel" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_writer_format.py:12:0: C0413: Import "from inf_writer.domain import ContractError, Snapshot" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_writer_format.py:13:0: C0413: Import "from inf_writer.models import Budget, ModelGateway, ModelReply" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_writer_format.py:14:0: C0413: Import "from inf_writer.runtime import Coordinator" should be placed at the top of the module (wrong-import-position)
-tests\unit\test_writer_format.py:15:0: C0413: Import "from inf_writer.storage import FileStore" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_writer_format.py:10:0: C0413: Import "from tome_writer.agents import JsonAgent, build_agents, validate" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_writer_format.py:11:0: C0413: Import "from tome_writer.demo import DemoModel" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_writer_format.py:12:0: C0413: Import "from tome_writer.domain import ContractError, Snapshot" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_writer_format.py:13:0: C0413: Import "from tome_writer.models import Budget, ModelGateway, ModelReply" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_writer_format.py:14:0: C0413: Import "from tome_writer.runtime import Coordinator" should be placed at the top of the module (wrong-import-position)
+tests\unit\test_writer_format.py:15:0: C0413: Import "from tome_writer.storage import FileStore" should be placed at the top of the module (wrong-import-position)
 tests\unit\test_writer_format.py:65:31: W0613: Unused argument 'request' (unused-argument)
 tests\unit\test_writer_format.py:64:8: R0903: Too few public methods (1/2) (too-few-public-methods)
 tests\unit\test_writer_format.py:87:31: W0613: Unused argument 'request' (unused-argument)
@@ -1575,7 +1575,7 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
     def complete(self, request): (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
 ==inf_backend.longform_runtime:[53:62]
-==inf_writer.models:[71:80]
+==tome_writer.models:[71:80]
         if not isinstance(reply, ModelReply):
             raise ContractError("Provider must return ModelReply with usage")
         integer(reply.input_tokens, "input_tokens")
@@ -1586,8 +1586,8 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
             or reply.cost_usd < 0
         ): (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.locator_review:[105:114]
-==inf_writer.semantic_review:[232:241]
+==tome_writer.locator_review:[105:114]
+==tome_writer.semantic_review:[232:241]
                 status = fact["status"]
                 if status not in ("covered", "missing", "uncertain", "not_needed"):
                     raise ContractError("Invalid coverage fact status")
@@ -1659,8 +1659,8 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
 if __name__ == "__main__":
     main() (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.domain:[485:493]
-==inf_writer.drafting:[82:90]
+==tome_writer.domain:[485:493]
+==tome_writer.drafting:[82:90]
                 (
                     "action",
                     "subject",
@@ -1701,7 +1701,7 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
                 "current_state": state["writing_state"], (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
 ==inf_backend.settings:[110:117]
-==inf_writer.trial:[47:54]
+==tome_writer.trial:[47:54]
     if (
         url.scheme != "https"
         or url.hostname != "api.deepseek.com"
@@ -1710,8 +1710,8 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
         or url.query
         or url.fragment (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.agents:[387:394]
-==inf_writer.light_memory:[244:251]
+==tome_writer.agents:[387:394]
+==tome_writer.light_memory:[244:251]
                 )
             )
             entry.update(
@@ -1720,8 +1720,8 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
                 output_tokens=reply.output_tokens,
                 cost_usd=reply.cost_usd, (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.drafting:[236:243]
-==inf_writer.light_memory:[170:177]
+==tome_writer.drafting:[236:243]
+==tome_writer.light_memory:[170:177]
             )
             kind, ref = issue["kind"], issue["basis_ref"]
             if (
@@ -1730,8 +1730,8 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
                 or not isinstance(ref, str)
                 or not ref.startswith(kinds[kind]) (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.drafting:[448:457]
-==inf_writer.runtime:[234:243]
+==tome_writer.drafting:[448:457]
+==tome_writer.runtime:[234:243]
                 if getattr(self.agents["reviewer"], "review_policy_version", 0) in (
                     1,
                     2,
@@ -1742,8 +1742,8 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
                     from .review_policy import prepare_policy_context
  (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.judgment_review:[296:303]
-==inf_writer.semantic_review:[265:272]
+==tome_writer.judgment_review:[296:303]
+==tome_writer.semantic_review:[265:272]
         expected = (
             "missing"
             if "missing" in statuses
@@ -1752,8 +1752,8 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
             else "sufficient"
         ) (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.locator_review:[126:133]
-==inf_writer.semantic_review:[255:262]
+==tome_writer.locator_review:[126:133]
+==tome_writer.semantic_review:[255:262]
                     if (
                         text(cite["quote"], "Memory value quote")
                         not in context["coverage_targets"][key]
@@ -1877,7 +1877,7 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
         ): (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
 ==inf_backend.service:[65:75]
-==inf_writer.storage:[36:44]
+==tome_writer.storage:[36:44]
                 stream.flush()
                 os.fsync(stream.fileno())
             os.replace(name, path)
@@ -1887,7 +1887,7 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
 
     def initialize(self, state): (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.chat_provider:[55:61]
+==tome_writer.chat_provider:[55:61]
 ==write_novel:[97:103]
             or not url.hostname
             or url.username
@@ -1896,8 +1896,8 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
             or url.fragment
             or not url.path.endswith("/chat/completions") (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.judgment_review:[297:303]
-==inf_writer.locator_review:[135:141]
+==tome_writer.judgment_review:[297:303]
+==tome_writer.locator_review:[135:141]
         "missing"
         if "missing" in statuses
         else "uncertain"
@@ -1905,8 +1905,8 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
         else "sufficient"
     ) (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.judgment_review:[11:17]
-==inf_writer.review_contract:[173:179]
+==tome_writer.judgment_review:[11:17]
+==tome_writer.review_contract:[173:179]
     "top_level": [
         "approved",
         "issues",
@@ -1914,8 +1914,8 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
         "memory_check",
         "support_checks", (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.locator_review:[116:122]
-==inf_writer.semantic_review:[245:251]
+==tome_writer.locator_review:[116:122]
+==tome_writer.semantic_review:[245:251]
                 for cite in refs:
                     fields(cite, ("ref", "quote"))
                     key = cite["ref"]
@@ -1923,8 +1923,8 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
                         not isinstance(key, str)
                         or key not in context["coverage_targets"] (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.locator_review:[142:148]
-==inf_writer.semantic_review:[273:279]
+==tome_writer.locator_review:[142:148]
+==tome_writer.semantic_review:[273:279]
             raise ContractError("Coverage ledger and global coverage disagree")
         issues = [r for r in result["issues"] if r["kind"] == "memory_omission"]
         for quote in missing:
@@ -1932,7 +1932,7 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
                 r["draft_quote"] in quote or quote in r["draft_quote"] for r in issues
             ): (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.memory_meaning:[203:209]
+==tome_writer.memory_meaning:[203:209]
 ==memory_runtime.meaning_organizer:[230:236]
             "meaning_"
             + digest(
@@ -1941,8 +1941,8 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
                         k: v
                         for k, v in relation.items() (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.repair_pilot:[63:69]
-==inf_writer.trial:[118:124]
+==tome_writer.repair_pilot:[63:69]
+==tome_writer.trial:[118:124]
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
     save_new(
@@ -1950,7 +1950,7 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
         {
             "started_at": datetime.now().astimezone().isoformat(), (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.tiered_memory:[484:490]
+==tome_writer.tiered_memory:[484:490]
 ==memory_runtime.pipeline:[1098:1104]
         if len(canonical(selected + [row]).encode("utf-8")) <= max_bytes:
             selected.append(row)
@@ -1985,24 +1985,24 @@ tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
     try:
         session.finish_pending() (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.agents:[519:524]
-==inf_writer.light_memory:[278:283]
+==tome_writer.agents:[519:524]
+==tome_writer.light_memory:[278:283]
                 entry["status"] = "ACCEPTED"
                 return result
             except ContractError as exc:
                 entry.update(status="FORMAT_FAILED", error=str(exc))
                 details = getattr(exc, "repair_details", None) (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.drafting:[223:228]
-==inf_writer.review_policy:[151:156]
+==tome_writer.drafting:[223:228]
+==tome_writer.review_policy:[151:156]
         "fact_conflict": ("fact_", "past_", "draft_"),
         "world_rule": ("constraint_",),
         "causality": ("fact_", "past_", "draft_"),
         "unsupported_memory": ("memory_",),
         "memory_omission": ("draft_", "fact_"), (duplicate-code)
 tests\unit\__init__.py:1:0: R0801: Similar lines in 2 files
-==inf_writer.judgment_review:[107:112]
-==inf_writer.review_contract:[174:179]
+==tome_writer.judgment_review:[107:112]
+==tome_writer.review_contract:[174:179]
             "approved",
             "issues",
             "suggestions",
@@ -2032,30 +2032,30 @@ for _name in ("core_engine", "backend"):
     _path = str(_ROOT / "code" / _name)
     if _path not in sys.path:
         sys.path.insert(0, _path) (duplicate-code)
-tests\unit\__init__.py:1:0: R0401: Cyclic import (inf_writer.memory_temporality -> inf_writer.tiered_memory) (cyclic-import)
-tests\unit\__init__.py:1:0: R0401: Cyclic import (inf_writer.claim_updates -> inf_writer.domain) (cyclic-import)
-tests\unit\__init__.py:1:0: R0401: Cyclic import (inf_writer.locator_review -> inf_writer.semantic_review) (cyclic-import)
+tests\unit\__init__.py:1:0: R0401: Cyclic import (tome_writer.memory_temporality -> tome_writer.tiered_memory) (cyclic-import)
+tests\unit\__init__.py:1:0: R0401: Cyclic import (tome_writer.claim_updates -> tome_writer.domain) (cyclic-import)
+tests\unit\__init__.py:1:0: R0401: Cyclic import (tome_writer.locator_review -> tome_writer.semantic_review) (cyclic-import)
 tests\unit\__init__.py:1:0: R0401: Cyclic import (memory_runtime.length_control -> memory_runtime.narrative_planning -> memory_runtime.story_budget) (cyclic-import)
 tests\unit\__init__.py:1:0: R0401: Cyclic import (memory_runtime.completion -> memory_runtime.narrative_planning -> memory_runtime.story_budget -> memory_runtime.length_control) (cyclic-import)
 tests\unit\__init__.py:1:0: R0401: Cyclic import (memory_runtime.event_references -> memory_runtime.state_recovery -> memory_runtime.meaning_organizer) (cyclic-import)
 tests\unit\__init__.py:1:0: R0401: Cyclic import (memory_runtime.meaning_organizer -> memory_runtime.state_recovery) (cyclic-import)
-tests\unit\__init__.py:1:0: R0401: Cyclic import (inf_writer.agents -> inf_writer.drafting -> inf_writer.light_memory) (cyclic-import)
-tests\unit\__init__.py:1:0: R0401: Cyclic import (inf_writer.drafting -> inf_writer.runtime) (cyclic-import)
-tests\unit\__init__.py:1:0: R0401: Cyclic import (inf_writer.temporal_agent -> inf_writer.tiered_runtime) (cyclic-import)
+tests\unit\__init__.py:1:0: R0401: Cyclic import (tome_writer.agents -> tome_writer.drafting -> tome_writer.light_memory) (cyclic-import)
+tests\unit\__init__.py:1:0: R0401: Cyclic import (tome_writer.drafting -> tome_writer.runtime) (cyclic-import)
+tests\unit\__init__.py:1:0: R0401: Cyclic import (tome_writer.temporal_agent -> tome_writer.tiered_runtime) (cyclic-import)
 tests\unit\__init__.py:1:0: R0401: Cyclic import (memory_runtime.event_first -> memory_runtime.stage_planning -> memory_runtime.event_references -> memory_runtime.state_recovery -> memory_runtime.projection_grounding) (cyclic-import)
 tests\unit\__init__.py:1:0: R0401: Cyclic import (memory_runtime.event_first -> memory_runtime.prose_rendering) (cyclic-import)
 tests\unit\__init__.py:1:0: R0401: Cyclic import (memory_runtime.closure_repair -> memory_runtime.story_closure) (cyclic-import)
 tests\unit\__init__.py:1:0: R0401: Cyclic import (memory_runtime.event_references -> memory_runtime.state_recovery) (cyclic-import)
 tests\unit\__init__.py:1:0: R0401: Cyclic import (memory_runtime.event_first -> memory_runtime.stage_planning) (cyclic-import)
 tests\unit\__init__.py:1:0: R0401: Cyclic import (memory_runtime.event_first -> memory_runtime.stage_planning -> memory_runtime.event_references -> memory_runtime.state_recovery) (cyclic-import)
-tests\unit\__init__.py:1:0: R0401: Cyclic import (inf_writer.domain -> inf_writer.review_contract -> inf_writer.semantic_review -> inf_writer.locator_review) (cyclic-import)
-tests\unit\__init__.py:1:0: R0401: Cyclic import (inf_writer.agents -> inf_writer.narrative_context -> inf_writer.light_memory) (cyclic-import)
-tests\unit\__init__.py:1:0: R0401: Cyclic import (inf_writer.domain -> inf_writer.review_contract -> inf_writer.review_state -> inf_writer.review_policy -> inf_writer.judgment_review -> inf_writer.semantic_review -> inf_writer.locator_review) (cyclic-import)
-tests\unit\__init__.py:1:0: R0401: Cyclic import (inf_writer.domain -> inf_writer.review_contract -> inf_writer.semantic_review) (cyclic-import)
-tests\unit\__init__.py:1:0: R0401: Cyclic import (inf_writer.memory_meaning -> inf_writer.memory_temporality -> inf_writer.tiered_memory) (cyclic-import)
-tests\unit\__init__.py:1:0: R0401: Cyclic import (inf_writer.agents -> inf_writer.drafting -> inf_writer.runtime -> inf_writer.narrative_context -> inf_writer.light_memory) (cyclic-import)
-tests\unit\__init__.py:1:0: R0401: Cyclic import (inf_writer.domain -> inf_writer.review_contract -> inf_writer.review_state -> inf_writer.review_policy -> inf_writer.semantic_review -> inf_writer.locator_review) (cyclic-import)
-tests\unit\__init__.py:1:0: R0401: Cyclic import (inf_writer.domain -> inf_writer.review_contract -> inf_writer.review_state) (cyclic-import)
+tests\unit\__init__.py:1:0: R0401: Cyclic import (tome_writer.domain -> tome_writer.review_contract -> tome_writer.semantic_review -> tome_writer.locator_review) (cyclic-import)
+tests\unit\__init__.py:1:0: R0401: Cyclic import (tome_writer.agents -> tome_writer.narrative_context -> tome_writer.light_memory) (cyclic-import)
+tests\unit\__init__.py:1:0: R0401: Cyclic import (tome_writer.domain -> tome_writer.review_contract -> tome_writer.review_state -> tome_writer.review_policy -> tome_writer.judgment_review -> tome_writer.semantic_review -> tome_writer.locator_review) (cyclic-import)
+tests\unit\__init__.py:1:0: R0401: Cyclic import (tome_writer.domain -> tome_writer.review_contract -> tome_writer.semantic_review) (cyclic-import)
+tests\unit\__init__.py:1:0: R0401: Cyclic import (tome_writer.memory_meaning -> tome_writer.memory_temporality -> tome_writer.tiered_memory) (cyclic-import)
+tests\unit\__init__.py:1:0: R0401: Cyclic import (tome_writer.agents -> tome_writer.drafting -> tome_writer.runtime -> tome_writer.narrative_context -> tome_writer.light_memory) (cyclic-import)
+tests\unit\__init__.py:1:0: R0401: Cyclic import (tome_writer.domain -> tome_writer.review_contract -> tome_writer.review_state -> tome_writer.review_policy -> tome_writer.semantic_review -> tome_writer.locator_review) (cyclic-import)
+tests\unit\__init__.py:1:0: R0401: Cyclic import (tome_writer.domain -> tome_writer.review_contract -> tome_writer.review_state) (cyclic-import)
 tests\unit\__init__.py:1:0: R0401: Cyclic import (memory_runtime.continuity -> memory_runtime.event_references -> memory_runtime.state_recovery -> memory_runtime.projection_grounding -> memory_runtime.event_first) (cyclic-import)
 tests\unit\__init__.py:1:0: R0401: Cyclic import (memory_runtime.continuity -> memory_runtime.event_contract -> memory_runtime.event_references -> memory_runtime.state_recovery -> memory_runtime.projection_grounding -> memory_runtime.event_first) (cyclic-import)
 tests\unit\__init__.py:1:0: R0401: Cyclic import (memory_runtime.event_contract -> memory_runtime.event_references -> memory_runtime.state_recovery -> memory_runtime.reference_choices) (cyclic-import)
@@ -2095,7 +2095,7 @@ External dependencies
       \-service (tests.integration.test_library,tests.integration.test_postgresql,tests.integration.test_service,tests.integration.test_web,tests.integration.test_writing_style,tests.integration.vue_ui_preview,tests.unit.test_chapter_titles)
       \-settings (tests.integration.test_library,tests.integration.test_postgresql,tests.integration.test_service,tests.integration.test_web,tests.integration.test_writing_style,tests.integration.vue_ui_preview)
       \-web (desktop,tests.integration.test_postgresql,tests.integration.test_web,tests.integration.vue_ui_preview)
-    inf_writer 
+    tome_writer
       \-agents (memory_runtime.test_event_first,memory_runtime.test_input_output_budget,memory_runtime.test_interface_memory_repair,memory_runtime.test_planner_boundary,memory_runtime.test_stage_format_preservation,memory_runtime.writing,tests.unit.test_chat_provider,tests.unit.test_core,tests.unit.test_drafting,tests.unit.test_langgraph,tests.unit.test_title_sanitization,tests.unit.test_writer_format)
       \-chat_provider (check_memory,inf_backend.service,memory_runtime.test_input_output_budget,memory_runtime.test_provider_stop,tests.unit.test_chat_provider,user_runtime,write_novel)
       \-demo (tests.unit.test_chat_provider,tests.unit.test_writer_format)
@@ -2115,7 +2115,7 @@ External dependencies
       \-tiered_runtime (memory_runtime.engine,memory_runtime.pipeline,memory_runtime.test_regression)
       \-trial (check_memory,inf_backend.longform_runtime,memory_runtime.test_provider_stop,user_runtime,write_novel)
     langgraph 
-      \-graph (inf_writer.runtime,memory_runtime.graph_runtime)
+      \-graph (tome_writer.runtime,memory_runtime.graph_runtime)
     memory_runtime 
       \-chapter_titles (tests.unit.test_chapter_titles)
       \-completion (tests.unit.test_chapter_titles,tests.unit.test_title_sanitization)
@@ -2208,7 +2208,7 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_projection_grounding      |3.70  |0.98    |0.42     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.domain                             |3.70  |0.49    |2.27     |1.63       |
+|tome_writer.domain                             |3.70  |0.49    |2.27     |1.63       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_interface_memory_repair   |3.70  |0.00    |1.27     |0.54       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -2216,7 +2216,7 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.interface_contract             |3.70  |0.00    |1.13     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.light_memory                       |3.70  |0.00    |0.57     |2.17       |
+|tome_writer.light_memory                       |3.70  |0.00    |0.57     |2.17       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_prose_generation          |3.70  |0.00    |0.28     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -2248,7 +2248,7 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_scene_memory_coordination |0.00  |2.45    |0.00     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.drafting                           |0.00  |1.96    |1.70     |1.09       |
+|tome_writer.drafting                           |0.00  |1.96    |1.70     |1.09       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.closure_repair                 |0.00  |1.96    |0.57     |0.54       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -2260,7 +2260,7 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.meaning_organizer              |0.00  |1.47    |1.98     |3.26       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.tiered_runtime                     |0.00  |1.47    |0.99     |1.09       |
+|tome_writer.tiered_runtime                     |0.00  |1.47    |0.99     |1.09       |
 +----------------------------------------------+------+--------+---------+-----------+
 |inf_backend.service                           |0.00  |1.47    |0.85     |1.63       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -2280,7 +2280,7 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_continuity                |0.00  |0.98    |0.42     |1.63       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.runtime                            |0.00  |0.98    |0.42     |1.09       |
+|tome_writer.runtime                            |0.00  |0.98    |0.42     |1.09       |
 +----------------------------------------------+------+--------+---------+-----------+
 |inf_backend.official_pricing                  |0.00  |0.98    |0.42     |1.09       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -2330,13 +2330,13 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |inf_backend.database                          |0.00  |0.49    |0.42     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.repair_pilot                       |0.00  |0.49    |0.28     |0.54       |
+|tome_writer.repair_pilot                       |0.00  |0.49    |0.28     |0.54       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_projection_transfer       |0.00  |0.49    |0.28     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_planner_boundary          |0.00  |0.49    |0.28     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.narrative_context                  |0.00  |0.49    |0.00     |0.00       |
+|tome_writer.narrative_context                  |0.00  |0.49    |0.00     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
 |tests.unit.__init__                           |0.00  |0.00    |12.75    |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -2344,43 +2344,43 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.semantics                      |0.00  |0.00    |1.27     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.tiered_memory                      |0.00  |0.00    |1.27     |0.00       |
+|tome_writer.tiered_memory                      |0.00  |0.00    |1.27     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.temporal_agent                     |0.00  |0.00    |1.27     |0.00       |
+|tome_writer.temporal_agent                     |0.00  |0.00    |1.27     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.agents                             |0.00  |0.00    |1.13     |3.80       |
+|tome_writer.agents                             |0.00  |0.00    |1.13     |3.80       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.semantic_review                    |0.00  |0.00    |1.13     |0.54       |
+|tome_writer.semantic_review                    |0.00  |0.00    |1.13     |0.54       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.trial                              |0.00  |0.00    |0.99     |1.09       |
+|tome_writer.trial                              |0.00  |0.00    |0.99     |1.09       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.judgment_review                    |0.00  |0.00    |0.99     |0.54       |
+|tome_writer.judgment_review                    |0.00  |0.00    |0.99     |0.54       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.chat_provider                      |0.00  |0.00    |0.85     |1.63       |
+|tome_writer.chat_provider                      |0.00  |0.00    |0.85     |1.63       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.plan_repair                    |0.00  |0.00    |0.85     |1.09       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.review_transport                   |0.00  |0.00    |0.85     |1.09       |
+|tome_writer.review_transport                   |0.00  |0.00    |0.85     |1.09       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.completion                     |0.00  |0.00    |0.85     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.time_calculation               |0.00  |0.00    |0.71     |0.54       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.memory_submission                  |0.00  |0.00    |0.71     |0.54       |
+|tome_writer.memory_submission                  |0.00  |0.00    |0.71     |0.54       |
 +----------------------------------------------+------+--------+---------+-----------+
 |tests.unit.test_core                          |0.00  |0.00    |0.57     |2.72       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.event_contract                 |0.00  |0.00    |0.57     |1.09       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.locator_review                     |0.00  |0.00    |0.57     |0.54       |
+|tome_writer.locator_review                     |0.00  |0.00    |0.57     |0.54       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_stage_format_preservation |0.00  |0.00    |0.57     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.memory_temporality                 |0.00  |0.00    |0.57     |0.00       |
+|tome_writer.memory_temporality                 |0.00  |0.00    |0.57     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.memory                             |0.00  |0.00    |0.57     |0.00       |
+|tome_writer.memory                             |0.00  |0.00    |0.57     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.claim_updates                      |0.00  |0.00    |0.57     |0.00       |
+|tome_writer.claim_updates                      |0.00  |0.00    |0.57     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
 |tests.unit.test_drafting                      |0.00  |0.00    |0.42     |2.17       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -2388,19 +2388,19 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.input_budget                   |0.00  |0.00    |0.42     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.models                             |0.00  |0.00    |0.42     |0.00       |
+|tome_writer.models                             |0.00  |0.00    |0.42     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.memory_output_contract             |0.00  |0.00    |0.42     |0.00       |
+|tome_writer.memory_output_contract             |0.00  |0.00    |0.42     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.memory_meaning                     |0.00  |0.00    |0.42     |0.00       |
+|tome_writer.memory_meaning                     |0.00  |0.00    |0.42     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.engine                         |0.00  |0.00    |0.28     |3.26       |
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.test_story_review              |0.00  |0.00    |0.28     |2.17       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.review_repair                      |0.00  |0.00    |0.28     |1.09       |
+|tome_writer.review_repair                      |0.00  |0.00    |0.28     |1.09       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.review_contract                    |0.00  |0.00    |0.28     |0.54       |
+|tome_writer.review_contract                    |0.00  |0.00    |0.28     |0.54       |
 +----------------------------------------------+------+--------+---------+-----------+
 |tests.unit.test_chapter_titles                |0.00  |0.00    |0.28     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
@@ -2420,19 +2420,19 @@ Messages by category
 +----------------------------------------------+------+--------+---------+-----------+
 |memory_runtime.event_references               |0.00  |0.00    |0.14     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.temporal_transport                 |0.00  |0.00    |0.14     |0.00       |
+|tome_writer.temporal_transport                 |0.00  |0.00    |0.14     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.review_state                       |0.00  |0.00    |0.14     |0.00       |
+|tome_writer.review_state                       |0.00  |0.00    |0.14     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.ports                              |0.00  |0.00    |0.14     |0.00       |
+|tome_writer.ports                              |0.00  |0.00    |0.14     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.demo                               |0.00  |0.00    |0.14     |0.00       |
+|tome_writer.demo                               |0.00  |0.00    |0.14     |0.00       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.review_policy                      |0.00  |0.00    |0.00     |1.09       |
+|tome_writer.review_policy                      |0.00  |0.00    |0.00     |1.09       |
 +----------------------------------------------+------+--------+---------+-----------+
 |package_windows                               |0.00  |0.00    |0.00     |0.54       |
 +----------------------------------------------+------+--------+---------+-----------+
-|inf_writer.memory_action_contract             |0.00  |0.00    |0.00     |0.54       |
+|tome_writer.memory_action_contract             |0.00  |0.00    |0.00     |0.54       |
 +----------------------------------------------+------+--------+---------+-----------+
 |inf_backend.pg_library                        |0.00  |0.00    |0.00     |0.54       |
 +----------------------------------------------+------+--------+---------+-----------+

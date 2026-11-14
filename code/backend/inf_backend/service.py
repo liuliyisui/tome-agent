@@ -14,8 +14,9 @@ from dataclasses import replace
 from pathlib import Path
 from uuid import uuid4
 
-from inf_writer.chat_provider import ChatCompletionProvider
-from inf_writer.domain import (
+from memory_runtime.writing import WritingSession, load_resume, runtime_hashes
+from tome_writer.chat_provider import ChatCompletionProvider
+from tome_writer.domain import (
     ContractError,
     Snapshot,
     canonical,
@@ -24,9 +25,8 @@ from inf_writer.domain import (
     sanitize_title,
     strict_json,
 )
-from inf_writer.models import Budget, ModelGateway
-from inf_writer.storage import FileStore
-from memory_runtime.writing import WritingSession, load_resume, runtime_hashes
+from tome_writer.models import Budget, ModelGateway
+from tome_writer.storage import FileStore
 
 from . import database
 from .settings import BACKEND_ROOT, Settings
@@ -606,8 +606,26 @@ def generate_longform(
     cfg = settings or Settings.for_book(meta["model"])
     if cfg.public_config() != meta["model"]:
         raise ValueError("当前模型配置与创建作品时不一致")
+    stream_provider = None
     if gateway is None:
         gateway, budget = _gateway(replace(cfg, max_calls=cfg.max_calls * count))
+        if (
+            progress
+            and cfg.provider in ("deepseek", "openai")
+            and isinstance(gateway, ModelGateway)
+            and isinstance(gateway.provider, ChatCompletionProvider)
+        ):
+            from .streaming import ProseProgressProvider, describe_prose_request
+
+            stream_provider = ProseProgressProvider(
+                gateway.provider,
+                progress,
+                count_units,
+                lambda request: describe_prose_request(
+                    session.book, request, count_units
+                ),
+            )
+            gateway.provider = stream_provider
     gateway = StyleGateway(gateway, load_writing_style(book_id))
     selected = set(load_book_skills(book_id))
     skills = [item for item in list_skills() if item["id"] in selected]
@@ -625,12 +643,16 @@ def generate_longform(
     )
     failure = None
     for _ in range(count):
+        if stream_provider:
+            stream_provider.reset_chapter()
         number = len(session.book["chapters"]) + 1
         if progress:
             progress(
                 {
                     "completed": len(session.book["chapters"]) - written,
                     "current_chapter": number,
+                    "live_units": None,
+                    "live_phase": "planning",
                 }
             )
         used = sum(count_units(chapter["text"]) for chapter in session.book["chapters"])

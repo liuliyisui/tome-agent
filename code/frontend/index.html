@@ -321,8 +321,8 @@
                         placeholder="例如：第三人称，短句为主，叙述克制；通过动作和对白展现情绪。避免堆砌比喻、重复心理描写和章末说教。"
                       ></textarea
                       ><small
-                        >可描述视角、句式、节奏、对白比例，以及希望避免的写法。最多
-                        2,000 字。</small
+                        >建议 50～300 字，可描述视角、句式、节奏和希望避免的写法。
+                        已输入 {{style.instructions.length}} / 2,000 字符。</small
                       ></label
                     ><label
                       >参考片段<textarea
@@ -336,8 +336,8 @@
                         placeholder="粘贴你自己写的或有权使用的片段，仅作写法参考。"
                       ></textarea
                       ><small
-                        >建议 1,000～3,000 字，最多 6,000
-                        字。仅作写法参考。</small
+                        >建议 1,000～3,000 字，仅作写法参考。
+                        已输入 {{style.reference.length}} / 6,000 字符。</small
                       ></label
                     >
                   </div>
@@ -677,7 +677,7 @@
                   placeholder="描述视角、句式、节奏、对白及希望避免的写法"
                   v-model="state.createForm.instructions"
                   :disabled="state.busy.create"
-                ></textarea></label
+                ></textarea><small>建议 50～300 字，可描述叙述视角、语言节奏和希望避免的写法。已输入 {{state.createForm.instructions.length}} / 2,000 字符。</small></label
               ><label
                 >参考片段<textarea
                   name="style_reference"
@@ -686,7 +686,7 @@
                   placeholder="粘贴你自己写的或有权使用的片段，仅作写法参考"
                   v-model="state.createForm.reference"
                   :disabled="state.busy.create"
-                ></textarea>
+                ></textarea><small>建议 1,000～3,000 字，选择你自己写的或有权使用的片段。已输入 {{state.createForm.reference.length}} / 6,000 字符。</small>
               </label>
             </details>
             <details class="create-style">

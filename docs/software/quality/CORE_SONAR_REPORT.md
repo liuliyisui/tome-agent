@@ -1,6 +1,6 @@
 # Tome 核心代码 Sonar 复核报告
 
-基线为 Git 提交 `a13dab9`，复扫对象为本次修改后的工作区。使用 VS Code SonarQube for IDE 6.3.0 随附的 SonarPython 分析器，按 S3776 默认阈值 15 统计函数认知复杂度。扫描覆盖 `code/core_engine` 中 Git 跟踪的 109 个非测试 Python 文件，包括仓库内的两套 `inf_writer` 源码。扫描中有 104 个文件定义了独立计分的函数。本次指标限于 Python 认知复杂度。
+基线为 Git 提交 `a13dab9`，复扫对象为本次修改后的工作区。使用 VS Code SonarQube for IDE 6.3.0 随附的 SonarPython 分析器，按 S3776 默认阈值 15 统计函数认知复杂度。扫描覆盖 `code/core_engine` 中 Git 跟踪的 109 个非测试 Python 文件，包括仓库内的两套 `tome_writer` 源码。扫描中有 104 个文件定义了独立计分的函数。本次指标限于 Python 认知复杂度。
 
 | 指标 | 修改前 | 修改后 |
 | --- | ---: | ---: |

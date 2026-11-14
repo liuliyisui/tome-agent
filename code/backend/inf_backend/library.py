@@ -5,7 +5,7 @@ import shutil
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from inf_writer.domain import strict_json
+from tome_writer.domain import strict_json
 
 from . import database, pg_library, service
 

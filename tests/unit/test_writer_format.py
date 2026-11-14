@@ -7,12 +7,12 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from inf_writer.agents import JsonAgent, build_agents, validate
-from inf_writer.demo import DemoModel
-from inf_writer.domain import ContractError, Snapshot
-from inf_writer.models import Budget, ModelGateway, ModelReply
-from inf_writer.runtime import Coordinator
-from inf_writer.storage import FileStore
+from tome_writer.agents import JsonAgent, build_agents, validate
+from tome_writer.demo import DemoModel
+from tome_writer.domain import ContractError, Snapshot
+from tome_writer.models import Budget, ModelGateway, ModelReply
+from tome_writer.runtime import Coordinator
+from tome_writer.storage import FileStore
 
 BODY = "灯塔下，林澄展开了那份档案。\n\n她没有立刻说话。"
 

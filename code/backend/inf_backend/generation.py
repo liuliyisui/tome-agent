@@ -2,7 +2,7 @@
 
 import math
 
-from inf_writer.domain import canonical, digest
+from tome_writer.domain import canonical, digest
 
 from . import official_pricing, service
 

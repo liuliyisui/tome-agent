@@ -10,11 +10,11 @@ import re
 import time
 from pathlib import Path
 
-from inf_writer.domain import ContractError, digest, integer, text
-from inf_writer.memory_temporality import has_current_content
-from inf_writer.models import ModelReply
-from inf_writer.trial import RecordedProvider, save_new
 from memory_runtime.writing import WritingSession
+from tome_writer.domain import ContractError, digest, integer, text
+from tome_writer.memory_temporality import has_current_content
+from tome_writer.models import ModelReply
+from tome_writer.trial import RecordedProvider, save_new
 
 
 class MeteredGateway:

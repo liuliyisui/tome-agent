@@ -8,15 +8,15 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from inf_writer.agents import build_agents
-from inf_writer.domain import ContractError, Snapshot
-from inf_writer.drafting import (
+from tome_writer.agents import build_agents
+from tome_writer.domain import ContractError, Snapshot
+from tome_writer.drafting import (
     DraftSession,
     evidence_segments,
     normalize_memory,
     validate_review,
 )
-from inf_writer.models import Budget, ModelGateway, ModelReply
+from tome_writer.models import Budget, ModelGateway, ModelReply
 
 BODY = "艾岚的眼睛是灰色。她在灯塔前等候守卫。"
 

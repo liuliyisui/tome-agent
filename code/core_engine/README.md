@@ -2,9 +2,9 @@
 
 这里保存基于 F 盘 `transfer_and_closure_20261028` 引擎和 LangGraph 编排合并的长文本运行代码。
 
-- `inf_writer/`：模型适配、基础角色、契约、事务和版本化事实。
+- `tome_writer/`：模型适配、基础角色、契约、事务和版本化事实。
 - `memory_runtime/`：事件先行、三层记忆、连续性、篇幅和输入预算控制。
-- `memory_runtime/graph_runtime.py`：实际写作入口的 LangGraph 状态图、重规划条件边和待处理任务恢复入口。
+- `memory_runtime/writing_flow/graph_runtime.py`：实际写作入口的 LangGraph 状态图、重规划条件边和待处理任务恢复入口。
 - `write_novel.py`、`user_runtime.py`、`check_memory.py`：稳定版运行入口及检查工具。
 - `stable_release_manifest.json`：稳定版文件哈希和真实测试摘要。
 

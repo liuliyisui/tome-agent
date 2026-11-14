@@ -20,8 +20,8 @@
 |---|---|---|
 | 输入校验（`service.create_book`） | ✅ 单元测试 | 纯校验，精确断言，等价类 + 边界值 |
 | 长度控制（`memory_runtime.length_control`） | ✅ 单元测试 | 容差规则与降级路径，FakeGateway 隔离模型 |
-| 证据绑定（`inf_writer.domain.checked_support`） | ✅ 单元测试 | 纯函数，精确断言引文与偏移 |
-| 支持审核（`inf_writer.domain.validate_support_review`） | ✅ 单元测试 | 纯函数，检查覆盖与状态 |
+| 证据绑定（`tome_writer.domain.checked_support`） | ✅ 单元测试 | 纯函数，精确断言引文与偏移 |
+| 支持审核（`tome_writer.domain.validate_support_review`） | ✅ 单元测试 | 纯函数，检查覆盖与状态 |
 | 事件、连续性、记忆分层（`event_first` / `continuity` / `tiered_memory`） | ✅ 单元测试（既有） | 状态机与契约校验 |
 | 长文生成、检查点、导出（`service.generate` / `export_markdown`） | ⭕ 集成测试 | 见 [../integration/TEST_CASES.md](../integration/TEST_CASES.md) |
 | 浏览器交互（创建 → 生成 → 刷新） | ⭕ E2E 冒烟 | 见 [../integration/TEST_CASES.md](../integration/TEST_CASES.md) |
@@ -268,7 +268,7 @@ def test_lower_tolerance_boundary_is_kept(self):
 ### 2.6 单元测试执行与覆盖门槛
 
 ```bash
-pytest tests/unit -q --cov=code/backend/inf_backend --cov=code/core_engine/inf_writer --cov=code/core_engine/memory_runtime
+pytest tests/unit -q --cov=code/backend/inf_backend --cov=code/core_engine/tome_writer --cov=code/core_engine/memory_runtime
 ```
 
 | 模块范围 | 目标语句覆盖 | 实测语句覆盖 | 实测分支覆盖 | 实测综合覆盖 |

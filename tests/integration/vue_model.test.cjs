@@ -188,6 +188,25 @@ test("unsaved styles survive book switching and save before estimation", async (
   assert.equal(f.model.state.estimate, null);
   f.dispose();
 });
+test("job status reports received prose without claiming it is saved", async () => {
+  const f = await fixture();
+  await f.model.selectBook("a");
+  f.model.state.jobs.a = "job-1";
+  f.model.state.current.job = { count: 1, completed: 0, current_chapter: 2, live_units: 123, live_phase: "writing" };
+  assert.match(f.model.jobStatus.value, /当前片段已接收约 123 字/);
+  assert.match(f.model.jobStatus.value, /尚未存档/);
+  f.model.state.current.job.live_draft_units = 1800;
+  f.model.state.current.job.live_completed_units = 500;
+  f.model.state.current.job.live_unit_number = 2;
+  f.model.state.current.job.live_unit_total = 3;
+  f.model.state.current.job.live_units = 0;
+  assert.match(f.model.jobStatus.value, /本章已完成片段约 500 字/);
+  assert.match(f.model.jobStatus.value, /第 2 \/ 3 段草稿约 1,800 字，正在调整，调整内容已接收约 0 字/);
+  f.model.state.current.job.live_draft_units = null;
+  f.model.state.current.job.live_phase = "processing";
+  assert.match(f.model.jobStatus.value, /正在整理/);
+  f.dispose();
+});
 test("approval fills remaining chapters; background completion stays in library", async () => {
   const f = await fixture();
   await f.model.selectBook("a");
