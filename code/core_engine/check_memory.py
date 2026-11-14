@@ -82,7 +82,16 @@ def source_hashes():
     for path in sorted(shared.rglob("*.py")):
         if "__pycache__" in path.parts or path.name == "__init__.py":
             continue
-        name = "src/tome_writer/" + path.relative_to(shared).as_posix()
+        relative = path.relative_to(shared)
+        if len(relative.parts) == 2 and relative.parts[0] in (
+            "model_io",
+            "writing_flow",
+            "memory_system",
+            "review_system",
+            "foundation",
+        ):
+            relative = Path(relative.name)
+        name = "src/tome_writer/" + relative.as_posix()
         if name in result:
             raise ContractError("Duplicate shared runtime source path")
         result[name] = sha(path)
@@ -90,7 +99,7 @@ def source_hashes():
 
 
 _MIGRATION_MANIFEST_SHA256 = (
-    "363a190f21a5a41234452db0d4e7cbd4dec4e16fbd894d4bd072feeae030b866"
+    "e4e758d41b5b23f393d535f9b0c5c79dbea661f35ad84845722a233bdfcf7768"
 )
 
 

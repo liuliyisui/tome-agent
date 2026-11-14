@@ -137,6 +137,9 @@ def main():
     try:
         # Import after choosing data storage: the package never reads the
         # developer's .env or bundles any saved books.
+        if getattr(sys, "frozen", False):
+            sys.path.insert(0, str(Path(sys._MEIPASS) / "tome-core"))
+            sys.dont_write_bytecode = True
         from inf_backend.web import WebServer
 
         previous = read_state(state_path)

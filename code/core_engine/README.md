@@ -2,7 +2,13 @@
 
 这里保存基于 F 盘 `transfer_and_closure_20261028` 引擎和 LangGraph 编排合并的长文本运行代码。
 
-- `tome_writer/`：模型适配、基础角色、契约、事务和版本化事实。
+- `tome_writer/model_io/`：模型适配和接口。
+- `tome_writer/writing_flow/`：写作代理和编排。
+- `tome_writer/memory_system/`：分层记忆及其契约。
+- `tome_writer/review_system/`：审核、验证和修复。
+- `tome_writer/foundation/`：领域数据和存储。
+
+上述目录保留原有 `tome_writer.<模块名>` 导入方式；检查点校验沿用原有模块标识。
 - `memory_runtime/`：事件先行、三层记忆、连续性、篇幅和输入预算控制。
 - `memory_runtime/writing_flow/graph_runtime.py`：实际写作入口的 LangGraph 状态图、重规划条件边和待处理任务恢复入口。
 - `write_novel.py`、`user_runtime.py`、`check_memory.py`：稳定版运行入口及检查工具。
