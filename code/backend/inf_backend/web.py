@@ -15,7 +15,7 @@ from tome_writer.memory_temporality import current_claim, has_current_content
 
 from . import database, generation, library, service
 from .logging_setup import configure_logging, log_failure, logger
-from .settings import BACKEND_ROOT, Settings, configure_api_key, configure_model
+from .settings import BACKEND_ROOT, Settings, configure_api_key, configure_model, test_model_connection
 
 FRONTEND = (
     Path(sys._MEIPASS) / "frontend"
@@ -126,10 +126,11 @@ class WebServer(ThreadingHTTPServer):
             or estimate["expires_at"] < time.time()
         ):
             raise ValueError("请先查看本次 token 和费用预估，再点击继续生成")
-        if estimate["signature"] != generation.signature(book_id):
-            raise ValueError("作品或文风已更新，请重新查看费用预估后再确认")
+        settings = Settings.load()
+        if estimate["signature"] != generation.signature(book_id, model_config=settings.public_config()):
+            raise ValueError("作品、文风或模型配置已更新，请重新查看费用预估后再确认")
         count = estimate["count"]
-        current_price = generation.price_for(service._metadata(book_id)["model"])
+        current_price = generation.price_for(settings.public_config())
         if (
             current_price["period"] != estimate["pricing"]["period"]
             or current_price["rates"] != estimate["prices"]
@@ -143,7 +144,7 @@ class WebServer(ThreadingHTTPServer):
             )
         if len(view["state"]["chapters"]) >= book["metadata"]["target_chapters"]:
             raise ValueError("全书章节已完成")
-        settings = Settings.for_book(book["metadata"]["model"])
+        settings = Settings.load()
         with self.job_lock:
             if book_id in self.busy:
                 for job_id, job in self.jobs.items():
@@ -216,7 +217,7 @@ class WebServer(ThreadingHTTPServer):
             info = service.regeneration_scope(
                 book["state"]["chapters"], number, confirmed
             )
-            settings = Settings.for_book(book["metadata"]["model"])
+            settings = Settings.load()
             job_id = uuid4().hex
             self.busy.add(book_id)
             started_at = time.time()
@@ -361,18 +362,33 @@ class Handler(BaseHTTPRequestHandler):
                 cfg = Settings.load(require_key=False)
                 self.reply(
                     200,
-                    {**cfg.public_config(), "configured": bool(cfg.api_key.strip())},
+                    {
+                        **cfg.public_config(),
+                        "provider_name": cfg.provider_name,
+                        "configured": bool(cfg.api_key.strip()),
+                    },
                 )
+            elif post and path == "/api/model-test":
+                test_model_connection(
+                    data.get("provider"), data.get("model"), data.get("endpoint"),
+                    data.get("api_key"), data.get("provider_name"),
+                )
+                self.reply(200, {"ok": True})
             elif post and path == "/api/model-config":
                 cfg = configure_model(
                     data.get("provider"),
                     data.get("model"),
                     data.get("endpoint"),
                     data.get("api_key"),
+                    data.get("provider_name"),
                 )
                 self.reply(
                     200,
-                    {**cfg.public_config(), "configured": bool(cfg.api_key.strip())},
+                    {
+                        **cfg.public_config(),
+                        "provider_name": cfg.provider_name,
+                        "configured": bool(cfg.api_key.strip()),
+                    },
                 )
             elif not post and path == "/api/skills":
                 self.reply(200, {"skills": service.list_skills()})

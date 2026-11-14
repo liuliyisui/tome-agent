@@ -100,6 +100,18 @@ const FactMemory = {
   },
 };
 
+const PROVIDER_PRESETS = [
+  { id: "deepseek", name: "DeepSeek", icon: "D", provider: "deepseek", model: "deepseek-chat", endpoint: "" },
+  { id: "openai", name: "OpenAI", icon: "O", provider: "openai", model: "gpt-4o", endpoint: "" },
+  { id: "qwen", name: "千问（阿里云百炼）", icon: "千", provider: "compatible", endpoint: "https://dashscope.aliyuncs.com/compatible-mode/v1" },
+  { id: "doubao", name: "豆包（火山方舟）", icon: "豆", provider: "compatible", endpoint: "https://ark.cn-beijing.volces.com/api/v3" },
+  { id: "gemini", name: "Gemini", icon: "G", provider: "compatible", endpoint: "https://generativelanguage.googleapis.com/v1beta/openai" },
+  { id: "minimax", name: "MiniMax Global", icon: "M", provider: "compatible", endpoint: "https://api.minimax.io/v1" },
+  { id: "siliconflow", name: "SiliconFlow", icon: "S", provider: "compatible", endpoint: "https://api.siliconflow.cn/v1" },
+  { id: "openrouter", name: "OpenRouter", icon: "O", provider: "compatible", endpoint: "https://openrouter.ai/api/v1" },
+  { id: "glm", name: "GLM（智谱）", icon: "智", provider: "compatible", endpoint: "https://open.bigmodel.cn/api/paas/v4" },
+  { id: "mimo", name: "Xiaomi MiMo", icon: "米", provider: "compatible", endpoint: "https://api.xiaomimimo.com/v1" },
+];
 const app = createApp({
   name: "TomeStudio",
   components: { ChapterReader, FactMemory },
@@ -161,7 +173,11 @@ const app = createApp({
       },
       regeneration: null,
       apiKey: "",
-      modelForm: { provider: "deepseek", model: "deepseek-chat", endpoint: "" },
+      providerSlot: "deepseek",
+      activeProvider: null,
+      customProviders: [],
+      providerDrafts: {},
+      modelForm: { provider: "deepseek", providerName: "DeepSeek", model: "deepseek-chat", endpoint: "" },
       createForm: {
         title: "",
         prompt: "",
@@ -430,20 +446,80 @@ const app = createApp({
       state.errors.create = "";
       state.dialogs.create = true;
     }
+    function selectProvider(slot) {
+      if (state.providerSlot === slot) return;
+      state.providerDrafts[state.providerSlot] = { ...state.modelForm };
+      state.providerSlot = slot;
+      const preset = PROVIDER_PRESETS.find((item) => item.id === slot);
+      state.modelForm = state.providerDrafts[slot] ? { ...state.providerDrafts[slot] } : {
+        provider: preset?.provider || "compatible",
+        providerName: preset?.name || "",
+        model: preset?.model || "",
+        endpoint: preset?.endpoint || "",
+      };
+      state.apiKey = "";
+      state.errors.api = "";
+    }
+    function addCustomProvider() {
+      let number = 1;
+      while (state.customProviders.includes(`custom-${number}`)) number++;
+      const slot = `custom-${number}`;
+      state.customProviders.push(slot);
+      selectProvider(slot);
+    }
+    function removeCustomProvider(slot) {
+      if (!state.customProviders.includes(slot)) return;
+      const removed = state.providerSlot === slot ? state.modelForm : state.providerDrafts[slot];
+      if (removed && state.activeProvider && removed.providerName === state.activeProvider.providerName && removed.endpoint === state.activeProvider.endpoint) {
+        try { localStorage.setItem("tome-hidden-active-provider", JSON.stringify(state.activeProvider)); } catch {}
+      }
+      if (state.providerSlot === slot) {
+        state.providerSlot = "deepseek";
+        state.modelForm = state.providerDrafts.deepseek ? { ...state.providerDrafts.deepseek } : {
+          provider: "deepseek", providerName: "DeepSeek", model: "deepseek-chat", endpoint: "",
+        };
+        state.apiKey = "";
+        state.errors.api = "";
+      }
+      state.customProviders = state.customProviders.filter((item) => item !== slot);
+      delete state.providerDrafts[slot];
+      saveCustomProviders();
+    }
+    function saveCustomProviders() {
+      const records = state.customProviders.map((slot) => {
+        const draft = slot === state.providerSlot ? state.modelForm : state.providerDrafts[slot];
+        return draft && { providerName: draft.providerName, model: draft.model, endpoint: draft.endpoint };
+      }).filter((draft) => draft && draft.providerName && draft.model && draft.endpoint);
+      try {
+        localStorage.setItem("tome-custom-providers", JSON.stringify(records));
+        const presets = {};
+        for (const item of PROVIDER_PRESETS) {
+          const draft = item.id === state.providerSlot ? state.modelForm : state.providerDrafts[item.id];
+          if (draft && draft.model && (draft.provider !== "compatible" || draft.endpoint)) presets[item.id] = { provider: draft.provider, providerName: draft.providerName, model: draft.model, endpoint: draft.endpoint };
+        }
+        localStorage.setItem("tome-provider-presets", JSON.stringify(presets));
+      } catch {}
+    }
     async function configure() {
       if (state.busy.api) return;
       state.busy.api = true;
       state.errors.api = "";
       try {
         const form = state.modelForm;
-        const cfg = await api("/api/model-config", { provider: form.provider, model: form.model.trim(), endpoint: form.endpoint.trim(), api_key: state.apiKey.trim() });
+        const payload = { provider: form.provider, provider_name: form.providerName.trim(), model: form.model.trim(), endpoint: form.endpoint.trim(), api_key: state.apiKey.trim() };
+        await api("/api/model-test", payload);
+        const cfg = await api("/api/model-config", payload);
         state.configured = cfg.configured;
         state.model = cfg.model;
         state.modelForm = {
           provider: cfg.provider,
+          providerName: cfg.provider_name || (cfg.provider === "deepseek" ? "DeepSeek" : cfg.provider === "openai" ? "OpenAI" : "自定义"),
           model: cfg.model,
           endpoint: cfg.provider === "compatible" ? cfg.endpoint : "",
         };
+        state.activeProvider = { providerName: cfg.provider_name, endpoint: cfg.endpoint };
+        try { localStorage.removeItem("tome-hidden-active-provider"); } catch {}
+        saveCustomProviders();
         state.apiKey = "";
         state.dialogs.api = false;
         notify("API Key 已保存，可以开始创作。");
@@ -894,6 +970,19 @@ const app = createApp({
       try {
         localStorage.removeItem("tome-selected-book");
         localStorage.removeItem("tome-last-deleted");
+        const savedPresets = JSON.parse(localStorage.getItem("tome-provider-presets") || "{}");
+        for (const preset of PROVIDER_PRESETS) {
+          const draft = savedPresets[preset.id];
+          if (draft && draft.provider === preset.provider && typeof draft.model === "string" && typeof draft.endpoint === "string") state.providerDrafts[preset.id] = { provider: preset.provider, providerName: preset.name, model: draft.model, endpoint: draft.endpoint };
+        }
+        const custom = JSON.parse(localStorage.getItem("tome-custom-providers") || "[]");
+        if (Array.isArray(custom)) {
+          custom.filter((entry) => entry && typeof entry.providerName === "string" && typeof entry.model === "string" && typeof entry.endpoint === "string").slice(0, 100).forEach((entry, index) => {
+            const slot = `custom-${index + 1}`;
+            state.customProviders.push(slot);
+            state.providerDrafts[slot] = { provider: "compatible", ...entry };
+          });
+        }
       } catch {}
       try {
         const cfg = await api("/api/config");
@@ -902,8 +991,24 @@ const app = createApp({
         try {
           const modelConfig = await api("/api/model-config");
           if (modelConfig.provider) {
-            state.modelForm = {
+            state.activeProvider = { providerName: modelConfig.provider_name, endpoint: modelConfig.endpoint };
+            let hidden = null;
+            try { hidden = JSON.parse(localStorage.getItem("tome-hidden-active-provider") || "null"); } catch {}
+            const isHidden = modelConfig.provider === "compatible" && hidden && hidden.providerName === modelConfig.provider_name && hidden.endpoint === modelConfig.endpoint;
+            if (isHidden) {
+              // Deleting a list item does not deactivate the saved backend configuration.
+            } else if (modelConfig.provider === "compatible" && PROVIDER_PRESETS.some((item) => item.provider === "compatible" && item.name === modelConfig.provider_name)) {
+              state.providerSlot = PROVIDER_PRESETS.find((item) => item.provider === "compatible" && item.name === modelConfig.provider_name).id;
+            } else if (modelConfig.provider === "compatible") {
+              const existing = state.customProviders.find((slot) => state.providerDrafts[slot].endpoint === modelConfig.endpoint && state.providerDrafts[slot].providerName === modelConfig.provider_name);
+              state.providerSlot = existing || `custom-${state.customProviders.length + 1}`;
+              if (!existing) state.customProviders.push(state.providerSlot);
+            } else {
+              state.providerSlot = modelConfig.provider;
+            }
+            if (!isHidden) state.modelForm = {
               provider: modelConfig.provider,
+              providerName: modelConfig.provider_name || (modelConfig.provider === "deepseek" ? "DeepSeek" : modelConfig.provider === "openai" ? "OpenAI" : "自定义"),
               model: modelConfig.model,
               endpoint: modelConfig.provider === "compatible" ? modelConfig.endpoint : "",
             };
@@ -962,6 +1067,10 @@ const app = createApp({
       closeDialog,
       openCreate,
       configure,
+      providerPresets: PROVIDER_PRESETS,
+      selectProvider,
+      addCustomProvider,
+      removeCustomProvider,
       createBook,
       selectBook,
       pinBook,
