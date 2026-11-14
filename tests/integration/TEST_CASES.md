@@ -85,8 +85,11 @@ class SuccessfulSession:
 class FailingSecondChapter(SuccessfulSession):
     def write_next(self, instruction):
         if len(self.book["chapters"]) == 1:
-            return {"status": "NO_DRAFT", "chapter_number": 2,
-                    "errors": ["模型连接超时"]}
+            return {
+                "status": "NO_DRAFT",
+                "chapter_number": 2,
+                "errors": ["模型连接超时"],
+            }
         return super().write_next(instruction)
 ```
 

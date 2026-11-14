@@ -161,8 +161,12 @@ class FakeGateway:
 # tests/unit/test_book_input_validation.py 片段
 def test_target_units_boundary_values(self):
     cases = (
-        (499, False), (500, True), (501, True),
-        (199999, True), (200000, True), (200001, False),
+        (499, False),
+        (500, True),
+        (501, True),
+        (199999, True),
+        (200000, True),
+        (200001, False),
     )
     for index, (value, valid) in enumerate(cases):
         with self.subTest(value=value):
