@@ -30,6 +30,7 @@ label{display:block;font-size:14px;font-weight:600;margin:20px 0 8px}input{width
 input:focus-visible,button:focus-visible{outline:3px solid #bc9d6f;outline-offset:2px}.password-row{display:flex;gap:8px}.password-row button{white-space:nowrap;border:1px solid #ccd6c4;background:transparent;color:var(--ink);padding:0 14px;border-radius:5px;cursor:pointer}
 .field-hint{display:block;color:var(--muted);font-size:12px;line-height:1.6;margin-top:7px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:26px}.actions button{min-height:48px;border-radius:5px;border:1px solid #285645;cursor:pointer;font:inherit;font-weight:600}.primary{background:#285645;color:white}.secondary{background:transparent;color:#285645}.actions button:disabled{opacity:.6;cursor:wait}
 #message{min-height:1.5em;color:#a33329;font-size:14px;margin:14px 0 0}.note{font-size:12px;color:var(--muted);line-height:1.7;margin:20px 0 0}
+.admin-user{margin-bottom:18px}
 @media(max-width:720px){main{display:block;padding:34px 20px}.intro{padding:0 0 28px}.mark{margin:22px 0 18px}h1{font-size:38px}.panel{padding:28px 22px}}
 """
 LOGIN_STYLE_HASH = base64.b64encode(
@@ -97,9 +98,38 @@ document.querySelector('#account').addEventListener('submit', async event => {{
 LOGOUT_SCRIPT = """const b=document.createElement('button');b.type='button';b.textContent='退出登录';
 b.className='outline hosted-logout';
 b.addEventListener('click',async()=>{await fetch('/_account/logout',{method:'POST'});location.assign('/');});
+fetch('/_admin/me').then(r=>r.json()).then(info=>{if(!info.admin)return;
+ const a=document.createElement('a');a.className='outline hosted-logout';a.href='/_admin';a.textContent='账号管理';
+ const mount=()=>{const target=document.querySelector('#settings-dialog #open-model-settings');
+ if(target && a.parentNode!==target.parentNode)target.after(a);};
+ new MutationObserver(mount).observe(document.documentElement,{subtree:true,childList:true});mount();}).catch(()=>{});
 const place=()=>{const target=document.querySelector('#settings-dialog #open-model-settings');
   if(target && b.parentNode!==target.parentNode)target.after(b);};
 new MutationObserver(place).observe(document.documentElement,{subtree:true,childList:true});place();""".encode()
+
+ADMIN_PAGE = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>账号管理 · Tome</title>
+<style>{LOGIN_STYLE}</style></head><body><main><section class="intro"><div class="brand">TOME · 故事工作室</div>
+<div class="mark"></div><h1>账号管理</h1><p>管理工作室的用户账号。</p></section>
+<section class="panel"><h2>用户列表</h2><p class="hint">禁用账号或重置密码后，该用户需要重新登录。作品会保留。</p>
+<div id="users"></div><p id="message" role="alert"></p><a href="/">返回工作室</a></section></main>
+<script>
+const message=document.querySelector('#message');
+async function load(){{const response=await fetch('/_admin/users');if(!response.ok){{message.textContent='无法加载用户';return;}}
+ const data=await response.json(), root=document.querySelector('#users');root.replaceChildren();
+ for(const user of data.users){{const row=document.createElement('div'); row.className='admin-user';
+ const name=document.createElement('strong');name.textContent=user.username+(user.disabled?'（已禁用）':'');row.append(name);
+ if(!user.is_admin){{const actions=document.createElement('div');actions.className='actions';
+ const state=document.createElement('button');state.className='secondary';state.textContent=user.disabled?'启用':'禁用';
+ state.onclick=async()=>{{if(!confirm('确认'+state.textContent+'该账号？'))return;await update('/_admin/status',{{username:user.username,disabled:!user.disabled}});}};
+ const reset=document.createElement('button');reset.className='secondary';reset.textContent='重置密码';
+ reset.onclick=async()=>{{const password=prompt('请输入新的 8～16 位密码');if(password===null)return;
+ if(Array.from(password).length<8||Array.from(password).length>16){{message.textContent='密码长度须为 8 至 16 位';return;}}
+ await update('/_admin/password',{{username:user.username,password}});}};
+ actions.append(state,reset);row.append(actions);}}root.append(row);}}}}
+async function update(path,data){{try{{const response=await fetch(path,{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify(data)}});
+ const result=await response.json();message.textContent=response.ok?'操作成功':(result.error||'操作失败');if(response.ok)await load();
+ }}catch(_){{message.textContent='连接失败，请稍后重试';}}}}load();</script></body></html>""".encode()
 
 
 class HostedServer(ThreadingHTTPServer):
@@ -122,6 +152,13 @@ class HostedServer(ThreadingHTTPServer):
         home = Path(data_home).resolve()
         home.mkdir(parents=True, exist_ok=True)
         self.accounts = AccountStore(home / "accounts.sqlite3")
+        admin_name = os.environ.get("TOME_ADMIN_USERNAME", "")
+        self.admin_name = self.accounts._username(admin_name) if admin_name else None
+        if self.admin_name and not any(
+            user["username"] == self.admin_name and not user["disabled"]
+            for user in self.accounts.list_users()
+        ):
+            raise ValueError("指定的管理员账号不存在或已禁用")
         self.workers = WorkerPool(home / "users", limit=worker_limit)
         self.auth_slots = threading.BoundedSemaphore(2)
         self.auth_attempts = deque()
@@ -219,6 +256,43 @@ class HostedHandler(BaseHTTPRequestHandler):
                     self.respond(200, LOGIN_PAGE.encode(), "text/html; charset=utf-8")
                 else:
                     self.respond(401, {"error": "请先登录"})
+                return
+            if path.startswith("/_admin"):
+                is_admin = bool(
+                    self.server.admin_name
+                    and self.server.accounts.username_for(user_id)
+                    == self.server.admin_name
+                )
+                if path == "/_admin/me" and not post:
+                    self.respond(200, {"admin": is_admin})
+                    return
+                if not is_admin:
+                    self.respond(403, {"error": "无权访问"})
+                    return
+                if path == "/_admin" and not post:
+                    self.respond(200, ADMIN_PAGE, "text/html; charset=utf-8")
+                    return
+                if path == "/_admin/users" and not post:
+                    users = self.server.accounts.list_users()
+                    for user in users:
+                        user["is_admin"] = user["username"] == self.server.admin_name
+                    self.respond(200, {"users": users})
+                    return
+                if post and path in ("/_admin/status", "/_admin/password"):
+                    data = json.loads(self.read_body(4096))
+                    if not isinstance(data, dict):
+                        raise ValueError("无效请求")
+                    name = self.server.accounts._username(data.get("username"))
+                    if name == self.server.admin_name:
+                        self.respond(400, {"error": "不能操作管理员账号"})
+                        return
+                    if path == "/_admin/status":
+                        self.server.accounts.set_disabled(name, data.get("disabled"))
+                    else:
+                        self.server.accounts.reset_password(name, data.get("password"))
+                    self.respond(200, {"ok": True})
+                    return
+                self.respond(404, {"error": "未找到"})
                 return
             if not post and path == "/_account/logout.js":
                 self.respond(200, LOGOUT_SCRIPT, "text/javascript; charset=utf-8")

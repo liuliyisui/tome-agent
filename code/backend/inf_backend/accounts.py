@@ -26,6 +26,11 @@ class AccountStore:
                     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
                 );"""
             )
+            columns = {row[1] for row in db.execute("PRAGMA table_info(users)")}
+            if "disabled" not in columns:
+                db.execute(
+                    "ALTER TABLE users ADD COLUMN disabled INTEGER NOT NULL DEFAULT 0"
+                )
 
     @contextmanager
     def connect(self):
@@ -69,7 +74,7 @@ class AccountStore:
         try:
             with self.connect() as db:
                 db.execute(
-                    "INSERT INTO users VALUES (?, ?, ?, ?)",
+                    "INSERT INTO users (id, username, salt, password_hash) VALUES (?, ?, ?, ?)",
                     (user_id, name, salt, digest),
                 )
         except sqlite3.IntegrityError:
@@ -83,14 +88,19 @@ class AccountStore:
             name = ""
         with self.connect() as db:
             row = db.execute(
-                "SELECT id, salt, password_hash FROM users WHERE username = ?", (name,)
+                "SELECT id, salt, password_hash, disabled FROM users WHERE username = ?",
+                (name,),
             ).fetchone()
         salt = row[1] if row else bytes(16)
         try:
             digest = self._password(password, salt)
         except ValueError:
             return None
-        return row[0] if row and hmac.compare_digest(digest, row[2]) else None
+        return (
+            row[0]
+            if row and not row[3] and hmac.compare_digest(digest, row[2])
+            else None
+        )
 
     def create_session(self, user_id, lifetime=86400):
         token = secrets.token_urlsafe(32)
@@ -111,10 +121,59 @@ class AccountStore:
         digest = hashlib.sha256(token.encode("ascii")).digest()
         with self.connect() as db:
             row = db.execute(
-                "SELECT user_id FROM sessions WHERE token_hash = ? AND expires_at > ?",
+                "SELECT sessions.user_id FROM sessions JOIN users ON users.id = sessions.user_id "
+                "WHERE token_hash = ? AND expires_at > ? AND users.disabled = 0",
                 (digest, int(time.time())),
             ).fetchone()
         return row[0] if row else None
+
+    def username_for(self, user_id):
+        with self.connect() as db:
+            row = db.execute(
+                "SELECT username FROM users WHERE id = ?", (user_id,)
+            ).fetchone()
+        return row[0] if row else None
+
+    def list_users(self):
+        with self.connect() as db:
+            return [
+                {"username": row[0], "disabled": bool(row[1])}
+                for row in db.execute(
+                    "SELECT username, disabled FROM users ORDER BY username"
+                )
+            ]
+
+    def set_disabled(self, username, disabled):
+        name = self._username(username)
+        if not isinstance(disabled, bool):
+            raise ValueError("无效状态")
+        with self.connect() as db:
+            row = db.execute(
+                "SELECT id FROM users WHERE username = ?", (name,)
+            ).fetchone()
+            if not row:
+                raise ValueError("用户不存在")
+            db.execute("UPDATE users SET disabled = ? WHERE id = ?", (disabled, row[0]))
+            if disabled:
+                db.execute("DELETE FROM sessions WHERE user_id = ?", (row[0],))
+
+    def reset_password(self, username, password):
+        name = self._username(username)
+        if not isinstance(password, str) or not 8 <= len(password) <= 16:
+            raise ValueError("密码长度须为 8 至 16 位")
+        salt = secrets.token_bytes(16)
+        digest = self._password(password, salt)
+        with self.connect() as db:
+            row = db.execute(
+                "SELECT id FROM users WHERE username = ?", (name,)
+            ).fetchone()
+            if not row:
+                raise ValueError("用户不存在")
+            db.execute(
+                "UPDATE users SET salt = ?, password_hash = ? WHERE id = ?",
+                (salt, digest, row[0]),
+            )
+            db.execute("DELETE FROM sessions WHERE user_id = ?", (row[0],))
 
     def revoke_session(self, token):
         if not isinstance(token, str) or not re.fullmatch(r"[A-Za-z0-9_-]{43}", token):

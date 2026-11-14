@@ -53,7 +53,7 @@ class AccountTests(unittest.TestCase):
         salt = b"0123456789abcdef"
         with self.store.connect() as db:
             db.execute(
-                "INSERT INTO users VALUES (?, ?, ?, ?)",
+                "INSERT INTO users (id, username, salt, password_hash) VALUES (?, ?, ?, ?)",
                 (
                     "legacy-id",
                     "legacy",
@@ -69,3 +69,19 @@ class AccountTests(unittest.TestCase):
         for username, password in (("ab", "long enough password"), ("name", "short")):
             with self.subTest(username=username), self.assertRaises(ValueError):
                 self.store.register(username, password)
+
+    def test_old_database_is_migrated_without_losing_credentials(self):
+        old_path = Path(self.folder.name) / "old.sqlite3"
+        password = "old-password-123"
+        salt = b"0123456789abcdef"
+        with closing(sqlite3.connect(old_path)) as db:
+            db.execute(
+                "CREATE TABLE users (id TEXT PRIMARY KEY, username TEXT NOT NULL UNIQUE, salt BLOB NOT NULL, password_hash BLOB NOT NULL)"
+            )
+            db.execute(
+                "INSERT INTO users VALUES (?, ?, ?, ?)",
+                ("old-id", "old_user", salt, AccountStore._password(password, salt)),
+            )
+            db.commit()
+        migrated = AccountStore(old_path)
+        self.assertEqual(migrated.authenticate("old_user", password), "old-id")

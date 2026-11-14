@@ -139,6 +139,68 @@ class HostedTests(unittest.TestCase):
                 self.assertEqual(code, 400)
                 self.assertEqual(json.loads(body)["error"], expected)
 
+    def test_admin_access_disable_and_password_reset(self):
+        self.server.admin_name = "admin_user"
+        admin = self.register("admin_user")
+        user = self.register("writer_one")
+        self.assertEqual(self.request("/_admin", cookie=user)[0], 403)
+        self.assertEqual(self.request("/_admin/users", cookie=user)[0], 403)
+        self.assertEqual(
+            self.request(
+                "/_admin/status", {"username": "writer_one", "disabled": True}, user
+            )[0],
+            403,
+        )
+        self.assertEqual(self.request("/_admin", cookie=admin)[0], 200)
+        self.assertEqual(
+            self.request(
+                "/_admin/status", {"username": "admin_user", "disabled": True}, admin
+            )[0],
+            400,
+        )
+        self.assertEqual(
+            self.request(
+                "/_admin/status", {"username": "writer_one", "disabled": True}, admin
+            )[0],
+            200,
+        )
+        self.assertEqual(self.request("/api/books", cookie=user)[0], 401)
+        self.assertEqual(
+            self.request(
+                "/_account/login",
+                {"username": "writer_one", "password": "strong-pass-123"},
+            )[0],
+            401,
+        )
+        self.assertEqual(
+            self.request(
+                "/_admin/status", {"username": "writer_one", "disabled": False}, admin
+            )[0],
+            200,
+        )
+        self.assertEqual(
+            self.request(
+                "/_admin/password",
+                {"username": "writer_one", "password": "new-pass-123"},
+                admin,
+            )[0],
+            200,
+        )
+        self.assertEqual(
+            self.request(
+                "/_account/login",
+                {"username": "writer_one", "password": "strong-pass-123"},
+            )[0],
+            401,
+        )
+        self.assertEqual(
+            self.request(
+                "/_account/login",
+                {"username": "writer_one", "password": "new-pass-123"},
+            )[0],
+            200,
+        )
+
     def test_data_survives_service_restart(self):
         cookie = self.register("writer_one")
         code, body, _ = self.request(
@@ -164,6 +226,7 @@ class HostedTests(unittest.TestCase):
     @unittest.skipUnless(sync_playwright, "Install playwright for browser tests")
     def test_browser_can_register_open_studio_and_log_out(self):
         # Chromium treats localhost as secure; production requires HTTPS.
+        self.server.admin_name = "browser_writer"
         self.server.host = f"127.0.0.1:{self.server.server_port}"
         self.server.origin = f"http://{self.server.host}"
         with sync_playwright() as playwright:
@@ -189,7 +252,9 @@ class HostedTests(unittest.TestCase):
                 page.get_by_role("button", name="隐藏密码").click()
                 page.get_by_role("button", name="注册账号").click()
                 self.assertEqual(page.title(), "注册 · Tome 故事工作室")
-                self.assertTrue(page.get_by_role("heading", name="创建账号").is_visible())
+                self.assertTrue(
+                    page.get_by_role("heading", name="创建账号").is_visible()
+                )
                 page.get_by_role("button", name="返回登录").click()
                 self.assertEqual(page.title(), "登录 · Tome 故事工作室")
                 page.get_by_role("button", name="注册账号").click()
@@ -201,7 +266,7 @@ class HostedTests(unittest.TestCase):
                     "#settings-dialog .hosted-logout", state="attached"
                 )
                 self.assertEqual(
-                    page.locator("#settings-dialog .hosted-logout").count(), 1
+                    page.locator("#settings-dialog button.hosted-logout").count(), 1
                 )
                 self.assertFalse(
                     page.get_by_role("button", name="退出登录").is_visible()
@@ -211,10 +276,18 @@ class HostedTests(unittest.TestCase):
                 self.assertTrue(
                     page.get_by_role("button", name="退出登录").is_visible()
                 )
+                page.get_by_role("link", name="账号管理").click()
+                self.assertTrue(
+                    page.get_by_role("heading", name="用户列表").is_visible()
+                )
+                self.assertTrue(page.get_by_text("browser_writer").is_visible())
+                page.get_by_role("link", name="返回工作室").click()
+                page.get_by_role("button", name="关闭模型服务设置").click()
+                page.locator("#open-settings").click()
                 for theme in ("light", "dark"):
                     page.locator(f'input[name="theme"][value="{theme}"]').check()
                     model = page.locator("#open-model-settings").bounding_box()
-                    logout = page.locator(".hosted-logout").bounding_box()
+                    logout = page.locator("button.hosted-logout").bounding_box()
                     self.assertAlmostEqual(model["width"], logout["width"], places=1)
                     self.assertAlmostEqual(model["height"], logout["height"], places=1)
                 page.get_by_role("button", name="退出登录").click()
