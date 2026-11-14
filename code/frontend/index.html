@@ -415,7 +415,7 @@
                           v-model="batch.approved"
                           :disabled="running||!chapters.length||complete"
                           @change="approveFirst"
-                        />我已阅读第一章，确认合适后自动续写</label
+                        />我已阅读已生成的内容，确认后自动续写</label
                       ><label
                         >本次输出章节数<input
                           id="generation-count"
@@ -427,7 +427,7 @@
                           required
                       /></label>
                       <p id="batch-hint" class="muted">
-                        {{!chapters.length?'先生成第一章，阅读确认后再自动续写。':`剩余 ${remaining} 章。确认首章后自动填入剩余章节数，可修改；提交前会显示用量和费用预估。`}}
+                        {{!chapters.length?'先生成第一章，阅读确认后再自动续写。':`剩余 ${remaining} 章。勾选确认后自动填入剩余章节数，可修改；提交前会显示用量和费用预估。`}}
                       </p>
                     </div>
                     <button
@@ -547,18 +547,29 @@
           aria-labelledby="api-key-title"
           @cancel.prevent="closeDialog('api')"
         >
-          <form id="api-key-form" @submit.prevent="configure">
-            <div class="eyebrow">WELCOME TO TOME</div>
-            <h2 id="api-key-title">先连接你的创作引擎</h2>
+          <div class="model-settings-heading">
+            <div><div class="eyebrow">MODEL SETTINGS</div><h2 id="api-key-title">模型服务</h2></div>
+            <button class="icon-button" type="button" aria-label="关闭模型服务设置" :disabled="state.busy.api" @click="closeDialog('api')">×</button>
+          </div>
+          <div class="model-settings-layout">
+            <nav class="provider-list" aria-label="模型供应商">
+              <span class="provider-list-title">供应商</span>
+              <button v-for="provider in providerPresets" :key="provider.id" type="button" class="provider-item" :class="{active: state.providerSlot===provider.id}" :aria-pressed="state.providerSlot===provider.id" :disabled="state.busy.api" @click="selectProvider(provider.id)"><span class="provider-avatar">{{provider.icon}}</span><span>{{provider.name}}</span></button>
+              <div v-for="slot in state.customProviders" :key="slot" class="provider-custom-row">
+                <button type="button" class="provider-item" :class="{active: state.providerSlot===slot}" :aria-pressed="state.providerSlot===slot" :disabled="state.busy.api" @click="selectProvider(slot)"><span class="provider-avatar">{{(state.providerSlot===slot ? state.modelForm.providerName : state.providerDrafts[slot]?.providerName || '自').slice(0, 1) || '自'}}</span><span>{{(state.providerSlot===slot ? state.modelForm.providerName : state.providerDrafts[slot]?.providerName) || '新供应商'}}</span></button>
+                <button type="button" class="provider-remove" :disabled="state.busy.api" :aria-label="'删除' + ((state.providerSlot===slot ? state.modelForm.providerName : state.providerDrafts[slot]?.providerName) || '新供应商')" title="删除供应商条目" @click="removeCustomProvider(slot)">×</button>
+              </div>
+              <button type="button" class="provider-add" :disabled="state.busy.api" @click="addCustomProvider">＋ 添加自定义供应商</button>
+            </nav>
+            <form id="api-key-form" @submit.prevent="configure">
+            <h3 class="model-provider-heading">{{state.modelForm.providerName || '自定义供应商'}}</h3>
             <p class="muted">
-              选择服务类型并填写模型信息。新建作品使用当前配置，已有作品继续使用原来的模型服务。
+              选择或输入供应商并填写模型信息。所有作品后续生成都会使用当前配置，正在进行的任务继续使用启动时的配置。
             </p>
-            <label for="model-provider">供应商</label>
-            <select id="model-provider" v-model="state.modelForm.provider" :disabled="state.busy.api" @change="state.modelForm.model=state.modelForm.provider==='deepseek'?'deepseek-chat':state.modelForm.provider==='openai'?'gpt-4o':''">
-              <option value="deepseek">DeepSeek</option>
-              <option value="openai">OpenAI</option>
-              <option value="compatible">自定义（OpenAI 兼容）</option>
-            </select>
+            <template v-if="state.providerSlot.startsWith('custom-')">
+              <label for="model-provider">供应商名称</label>
+              <input id="model-provider" v-model="state.modelForm.providerName" required maxlength="80" autocomplete="off" placeholder="填写供应商名称" :disabled="state.busy.api" />
+            </template>
             <template v-if="state.modelForm.provider==='compatible'">
               <label for="model-endpoint">Base URL</label>
               <input id="model-endpoint" v-model="state.modelForm.endpoint" type="url" required maxlength="2048" placeholder="https://api.example.com/v1" aria-describedby="model-endpoint-hint" :disabled="state.busy.api" />
@@ -568,10 +579,9 @@
             ><input
               id="api-key-input"
               type="password"
-              required
               autocomplete="off"
               spellcheck="false"
-              placeholder="填写所选服务商的密钥"
+              placeholder="填写 API Key；留空使用已保存的密钥"
               maxlength="512"
               v-model="state.apiKey"
               :disabled="state.busy.api"
@@ -579,8 +589,7 @@
             <label for="model-name">模型名称</label>
             <input id="model-name" v-model="state.modelForm.model" required maxlength="128" placeholder="填写服务商提供的模型 ID" :disabled="state.busy.api" />
             <p class="form-hint">
-              密钥仅保存在本机后端配置文件中，不会回显到页面。保存只检查格式，实际可用性在生成时由
-              所选服务商校验。更换服务时请填写该服务的密钥；兼容接口需支持 Chat Completions 和 JSON 输出。
+              保存前会发送一次简短请求测试连接，可能消耗少量额度或产生费用；成功后才保存配置。密钥仅保存在本机后端，不会回显。请确认 Base URL 与 API Key 的地域和计费方案匹配。自定义条目保存在当前浏览器，删除条目不会删除当前已保存的模型配置。
             </p>
             <p id="api-key-error" class="error" role="alert">
               {{state.errors.api}}
@@ -600,10 +609,11 @@
                 class="primary"
                 :disabled="state.busy.api"
               >
-                保存并开始使用
+                {{state.busy.api ? '正在测试连接…' : '测试连接并保存'}}
               </button>
             </div>
-          </form>
+            </form>
+          </div>
         </dialog>
         <dialog
           id="create-dialog"
@@ -762,6 +772,7 @@
               </div>
             </div>
             <p id="estimate-basis" class="muted">{{state.estimate.basis}}</p>
+            <p class="form-hint">本次使用模型：{{state.estimate.pricing.requested_model}}</p>
             <div class="official-price-panel">
               <strong id="estimate-period"
                 >{{state.estimate.pricing.label}} ·

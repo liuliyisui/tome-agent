@@ -629,9 +629,7 @@ def generate_longform(
     remaining = meta["target_chapters"] - written
     if type(count) is not int or not 1 <= count <= remaining:
         raise ValueError("本次章节数超出剩余范围")
-    cfg = settings or Settings.for_book(meta["model"])
-    if cfg.public_config() != meta["model"]:
-        raise ValueError("当前模型配置与创建作品时不一致")
+    cfg = settings or Settings.load()
     stream_provider = None
     if gateway is None:
         gateway, budget = _gateway(replace(cfg, max_calls=cfg.max_calls * count))

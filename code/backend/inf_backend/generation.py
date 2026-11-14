@@ -5,6 +5,7 @@ import math
 from tome_writer.domain import canonical, digest
 
 from . import official_pricing, service
+from .settings import Settings
 
 CALLS_PER_CHAPTER = 10
 CALL_OUTPUT_TOKENS = 600
@@ -30,7 +31,7 @@ def price_for(config):
     }
 
 
-def signature(book_id, book=None):
+def signature(book_id, book=None, model_config=None):
     book = book or service.load_book(book_id)
     state = book["state"]
     chapters = state["chapters"] if isinstance(state, dict) else state.chapters
@@ -38,6 +39,8 @@ def signature(book_id, book=None):
         canonical(
             {
                 "metadata": book["metadata"],
+                "active_model": model_config
+                or Settings.load(require_key=False).public_config(),
                 "chapters": chapters,
                 "style": service.load_writing_style(book_id),
                 "skills": service.load_book_skills(book_id),
@@ -104,7 +107,8 @@ def estimate(book_id, count=1, approved_first=False):
         sum(base_input * (1 + min(i * 0.06, 0.6)) for i in range(count))
     )
     outgoing = math.ceil(base_output * count)
-    pricing = price_for(meta["model"])
+    model_config = Settings.load(require_key=False).public_config()
+    pricing = price_for(model_config)
     rates, peak = pricing["rates"], pricing["peak_rates"]
     cost = (
         (incoming * rates["input"] + outgoing * rates["output"]) / 1_000_000
@@ -132,5 +136,5 @@ def estimate(book_id, count=1, approved_first=False):
         "note": "当前无法计算费用或按金额限制此服务的调用；实际费用以服务商账单为准，请先确认价格和额度。"
         if not rates
         else "按输入未命中缓存估算；缓存优惠可能降低费用。按当前时段报价，长任务跨时段时可能变化。实际用量和费用以服务商账单为准，不按估算值强制截断。",
-        "signature": signature(book_id, book),
+        "signature": signature(book_id, book, model_config),
     }

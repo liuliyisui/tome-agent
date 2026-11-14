@@ -285,3 +285,67 @@ test("invalid or blocked theme storage falls back to system without breaking sta
     f.dispose();
   }
 });
+
+test("provider selection preserves unsaved fields and clears the previous key", async () => {
+  const f = await fixture();
+  f.model.addCustomProvider();
+  f.model.state.modelForm.providerName = "千问";
+  f.model.state.modelForm.endpoint = "https://example.com/v1";
+  f.model.state.modelForm.model = "qwen-test";
+  f.model.state.apiKey = "custom-key";
+  f.model.selectProvider("openai");
+  assert.equal(f.model.state.modelForm.provider, "openai");
+  assert.equal(f.model.state.apiKey, "");
+  f.model.selectProvider("custom-1");
+  assert.equal(f.model.state.modelForm.providerName, "千问");
+  assert.equal(f.model.state.modelForm.endpoint, "https://example.com/v1");
+  assert.equal(f.model.state.modelForm.model, "qwen-test");
+  assert.equal(f.model.state.apiKey, "");
+  f.dispose();
+});
+
+
+test("adding another custom provider creates an independent editable entry", async () => {
+  const f = await fixture();
+  f.model.addCustomProvider();
+  f.model.state.modelForm.providerName = "千问";
+  f.model.state.modelForm.model = "qwen";
+  f.model.addCustomProvider();
+  assert.equal(f.model.state.providerSlot, "custom-2");
+  assert.equal(f.model.state.modelForm.providerName, "");
+  f.model.state.modelForm.providerName = "其他服务";
+  f.model.selectProvider("custom-1");
+  assert.equal(f.model.state.modelForm.providerName, "千问");
+  assert.equal(f.model.state.modelForm.model, "qwen");
+  f.model.selectProvider("custom-2");
+  assert.equal(f.model.state.modelForm.providerName, "其他服务");
+  f.dispose();
+});
+
+
+test("remove custom entries and select common providers", async () => {
+  const f = await fixture();
+  f.model.addCustomProvider();
+  f.model.addCustomProvider();
+  f.model.removeCustomProvider("custom-1");
+  assert.deepEqual(Array.from(f.model.state.customProviders), ["custom-2"]);
+  f.model.removeCustomProvider("custom-2");
+  assert.equal(f.model.state.providerSlot, "deepseek");
+  f.model.selectProvider("qwen");
+  assert.equal(f.model.state.modelForm.provider, "compatible");
+  assert.equal(f.model.state.modelForm.endpoint, "https://dashscope.aliyuncs.com/compatible-mode/v1");
+  f.model.selectProvider("doubao");
+  assert.equal(f.model.state.modelForm.endpoint, "https://ark.cn-beijing.volces.com/api/v3");
+  f.dispose();
+});
+
+
+test("provider catalog contains requested compatible services", async () => {
+  const f = await fixture();
+  for (const id of ["gemini", "minimax", "siliconflow", "openrouter", "glm", "mimo"]) {
+    f.model.selectProvider(id);
+    assert.equal(f.model.state.modelForm.provider, "compatible");
+    assert.match(f.model.state.modelForm.endpoint, /^https:\/\//);
+  }
+  f.dispose();
+});

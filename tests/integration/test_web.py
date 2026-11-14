@@ -81,6 +81,31 @@ class WebIntegrationTests(unittest.TestCase):
                     f"/api/books/{new['state']['project_id']}/estimate", {"count": 1}
                 )["prices"]
             )
+            old_estimate = self.request(f"/api/books/{old_id}/estimate", {"count": 1})
+            self.assertEqual(old_estimate["pricing"]["requested_model"], "gpt-4o")
+            self.assertIsNone(old_estimate["prices"])
+            with patch.object(service, "generate") as generate:
+                started = self.request(
+                    f"/api/books/{old_id}/generate",
+                    {"estimate_id": old_estimate["estimate_id"], "confirmed": True},
+                )
+                self.wait_job(started["job_id"])
+                self.assertEqual(generate.call_args.kwargs["settings"].model, "gpt-4o")
+            old_estimate = self.request(f"/api/books/{old_id}/estimate", {"count": 1})
+            settings.configure_model("deepseek", "deepseek-chat", "", "other-key")
+            with self.assertRaises(HTTPError) as changed:
+                self.request(
+                    f"/api/books/{old_id}/generate",
+                    {"estimate_id": old_estimate["estimate_id"], "confirmed": True},
+                )
+            self.assertEqual(changed.exception.code, 400)
+            self.assertIn("模型配置", changed.exception.read().decode("utf-8"))
+            self.assertEqual(
+                self.request(f"/api/books/{old_id}/estimate", {"count": 1})["pricing"][
+                    "requested_model"
+                ],
+                "deepseek-chat",
+            )
 
     def test_create_with_selected_skills(self):
         with patch.object(service, "DATA", Path(self.folder.name) / "skill-data"):
@@ -391,6 +416,13 @@ class WebIntegrationTests(unittest.TestCase):
 
     def test_estimate_is_offline_and_generation_requires_confirmation(self):
         # This case verifies alias pricing; isolate it from the developer's .env.
+        active_config = patch.object(
+            settings.Settings,
+            "load",
+            return_value=Settings(api_key="FAKE_TEST_KEY", model="deepseek-chat"),
+        )
+        active_config.start()
+        self.addCleanup(active_config.stop)
         with patch.object(
             settings.Settings,
             "load",

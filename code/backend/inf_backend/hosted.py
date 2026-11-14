@@ -214,7 +214,7 @@ class HostedHandler(BaseHTTPRequestHandler):
 
     def proxy(self, user_id, post, path):
         body = self.read_body(2_800_100) if post else None
-        if post and path == "/api/model-config":
+        if post and path in ("/api/model-config", "/api/model-test"):
             config = json.loads(body)
             if not isinstance(config, dict):
                 raise ValueError("请求格式无效")

@@ -147,10 +147,14 @@ class BrowserSmokeTests(unittest.TestCase):
             for key, value in os.environ.items()
             if key not in ("TOME_PROVIDER", "TOME_MODEL", "TOME_ENDPOINT")
         }
-        with patch.dict(os.environ, model_environment, clear=True):
+        with (
+            patch.dict(os.environ, model_environment, clear=True),
+            patch("inf_backend.web.test_model_connection", return_value=True),
+        ):
             self.page.click("#open-settings")
             self.page.click("#open-model-settings")
-            self.page.select_option("#model-provider", "compatible")
+            self.page.click(".provider-add")
+            self.page.fill("#model-provider", "测试供应商")
             self.page.get_by_label("Base URL").fill("https://example.com/v1/")
             self.page.fill("#model-name", "qwen-plus")
             self.page.fill("#api-key-input", "fake-model-key")
