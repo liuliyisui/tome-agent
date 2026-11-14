@@ -47,7 +47,7 @@ LOGIN_PAGE = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <span id="username-hint" class="field-hint">3～32 位英文字母、数字或下划线。</span>
 <label for="password">密码</label><div class="password-row"><input id="password" name="password" type="password" minlength="8" maxlength="128" autocomplete="current-password" required aria-describedby="password-hint">
 <button id="show-password" type="button" aria-label="显示密码" aria-pressed="false">显示</button></div>
-<span id="password-hint" class="field-hint">8～128 位；建议使用 12 位以上的独立密码。</span>
+<span id="password-hint" class="field-hint">新账号密码为 8～16 位，建议使用 12 位以上的独立密码。</span>
 <div class="actions"><button class="primary" name="action" value="login">登录</button><button class="secondary" name="action" value="register">注册账号</button></div>
 <p id="message" role="alert" aria-live="polite"></p></form>
 <p class="note">模型 API Key 在登录后单独配置，请妥善保管账号信息。</p></section>
@@ -66,6 +66,9 @@ document.querySelector('#account').addEventListener('submit', async event => {{
   if (!['login', 'register'].includes(action)) return;
   const buttons = form.querySelectorAll('.actions button');
   const message = document.querySelector('#message'); message.textContent = '';
+  if (action === 'register' && Array.from(password.value).length > 16) {{
+    message.textContent = '注册密码长度须为 8 至 16 位'; return;
+  }}
   buttons.forEach(button => button.disabled = true);
   try {{ const response = await fetch('/_account/' + action, {{method:'POST',
     headers:{{'Content-Type':'application/json'}}, body:JSON.stringify({{

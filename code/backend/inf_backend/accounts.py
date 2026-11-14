@@ -61,6 +61,8 @@ class AccountStore:
 
     def register(self, username, password):
         name = self._username(username)
+        if not isinstance(password, str) or not 8 <= len(password) <= 16:
+            raise ValueError("注册密码长度须为 8 至 16 位")
         salt = secrets.token_bytes(16)
         digest = self._password(password, salt)
         user_id = secrets.token_hex(16)

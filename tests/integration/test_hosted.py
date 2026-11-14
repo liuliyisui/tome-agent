@@ -61,7 +61,7 @@ class HostedTests(unittest.TestCase):
 
     def register(self, name):
         code, _, cookie = self.request(
-            "/_account/register", {"username": name, "password": "a strong password"}
+            "/_account/register", {"username": name, "password": "strong-pass-123"}
         )
         self.assertEqual(code, 200)
         self.assertIn("HttpOnly", cookie)
@@ -120,7 +120,7 @@ class HostedTests(unittest.TestCase):
         self.assertEqual(
             self.request(
                 "/_account/login",
-                {"username": "writer_one", "password": "a strong password"},
+                {"username": "writer_one", "password": "strong-pass-123"},
             )[0],
             200,
         )
