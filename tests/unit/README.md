@@ -1,4 +1,9 @@
 # 单元测试目录
 
-本目录保存框架、V4 架构和模型适配器的单元测试。
+本目录保存框架、写作引擎、模型适配器与作品输入校验的单元测试。
 
+测试用例文档见 [../TEST_CASES.md](../TEST_CASES.md)，其中 §2 为单元测试用例：
+
+- `test_book_input_validation.py`：作品输入校验（等价类 + 边界值）
+- `test_length_control.py`：章节长度控制
+- `test_domain_support_contract.py`：证据绑定与支持审核
