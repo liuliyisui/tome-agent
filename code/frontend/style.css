@@ -160,10 +160,10 @@ html:has(.home-view), body:has(.home-view) { height: 100%; overflow: hidden; }
 .theme-options input { width: 16px; height: 16px; padding: 0; margin: 0; flex-shrink: 0; accent-color: var(--green); }
 .theme-options small { display: block; color: var(--muted); margin-top: 3px; }
 #settings-dialog { width: 420px; }
+#settings-dialog #open-model-settings,
 #settings-dialog .hosted-logout {
   display: block;
   width: 100%;
-  margin-top: 18px;
   padding: 11px 18px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -171,6 +171,8 @@ html:has(.home-view), body:has(.home-view) { height: 100%; overflow: hidden; }
   color: var(--ink);
   text-align: center;
 }
+#settings-dialog .hosted-logout { margin-top: 18px; }
+#settings-dialog #open-model-settings:hover,
 #settings-dialog .hosted-logout:hover { border-color: var(--green); color: var(--green); }
 @media (max-width: 480px) { .header-actions { gap: 6px; } .settings-button { padding: 7px 10px; } }
 
