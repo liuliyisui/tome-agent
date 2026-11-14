@@ -257,14 +257,10 @@ def _compatible_runtime(saved, current):
     )
 
 
-def _verify_resume_envelope(record, plan, *, allow_runtime_mismatch=False):
+def _verify_resume_envelope(record, plan):
     if record.get("schema") != "inf-writing-checkpoint-v1":
         raise ContractError("仅可恢复新写作入口的完整检查点；旧小说需显式迁移")
-    if allow_runtime_mismatch and not isinstance(record.get("runtime_sha256"), dict):
-        raise ContractError("检查点缺少有效的写作运行时信息")
-    if not allow_runtime_mismatch and not _compatible_runtime(
-        record.get("runtime_sha256"), runtime_hashes()
-    ):
+    if not _compatible_runtime(record.get("runtime_sha256"), runtime_hashes()):
         raise ContractError("写作运行时版本不一致，不能直接恢复旧检查点")
     if record.get("writing_plan_sha256") != digest(canonical(plan)):
         raise ContractError("恢复时小说配置必须与原运行一致")
@@ -399,11 +395,11 @@ def _verify_prepared_resume_events(book, chapters, expected):
         verify_stage_realizations(prepared)
 
 
-def load_resume(path, plan, *, allow_runtime_mismatch=False):
+def load_resume(path, plan):
     from check_memory import read
 
     record = read(path)
-    _verify_resume_envelope(record, plan, allow_runtime_mismatch=allow_runtime_mismatch)
+    _verify_resume_envelope(record, plan)
     book = record["book"]
     done = _verify_resume_memory_coverage(book)
     if plan.get("event_first", True):

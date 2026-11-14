@@ -2,6 +2,7 @@
 
 import base64
 import binascii
+import copy
 import json
 import os
 import re
@@ -493,7 +494,21 @@ def _load_compatible_checkpoint(path, plan):
         if str(original) != "写作运行时版本不一致，不能直接恢复旧检查点":
             raise
         try:
-            return load_resume(path, plan, allow_runtime_mismatch=True)
+            from memory_runtime import writing
+
+            record = strict_json(Path(path).read_text(encoding="utf-8-sig"))
+            if (
+                record.get("schema") != "inf-writing-checkpoint-v1"
+                or not isinstance(record.get("runtime_sha256"), dict)
+                or record.get("writing_plan_sha256") != digest(canonical(plan))
+                or record.get("book_sha256") != digest(canonical(record["book"]))
+            ):
+                raise ContractError("检查点结构或完整性校验失败")
+            book = record["book"]
+            done = writing._verify_resume_memory_coverage(book)
+            if plan.get("event_first", True):
+                writing._verify_resume_event_history(book, done)
+            return copy.deepcopy(book)
         except (
             ContractError,
             KeyError,
