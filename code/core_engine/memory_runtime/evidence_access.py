@@ -30,6 +30,21 @@ def _grams(value):
     return {text[i : i + 2] for i in range(max(0, len(text) - 1))}
 
 
+def _rank_passages(chapters, numbers, query):
+    ranked = []
+    for n in numbers:
+        c = chapters.get(n)
+        if not c:
+            continue
+        offset = 0
+        for paragraph in c["text"].split("\n\n"):
+            score = len(query & _grams(paragraph))
+            if score:
+                ranked.append((n, score, offset, len(paragraph)))
+            offset += len(paragraph) + 2
+    return sorted(ranked, reverse=True)
+
+
 def _source_passages(book, row):
     """One source endpoint plus a relevant distinct source window, verbatim."""
     chapters = {c["number"]: c for c in book.get("chapters", [])}
@@ -63,18 +78,7 @@ def _source_passages(book, row):
         row["topic"] + " " + canonical(profile.get("available_materials", []))
     )
     numbers = set(sorted(chapters)[-2:] + [row["introduced_in_chapter"], number])
-    ranked = []
-    for n in numbers:
-        c = chapters.get(n)
-        if not c:
-            continue
-        offset = 0
-        for paragraph in c["text"].split("\n\n"):
-            score = len(query & _grams(paragraph))
-            if score:
-                ranked.append((n, score, offset, len(paragraph)))
-            offset += len(paragraph) + 2
-    for n, _, start, length in sorted(ranked, reverse=True):
+    for n, _, start, length in _rank_passages(chapters, numbers, query):
         before = len(result)
         c = chapters[n]
         left = max(0, start - 40)

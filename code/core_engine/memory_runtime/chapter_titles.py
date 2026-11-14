@@ -20,6 +20,22 @@ def valid(value):
     )
 
 
+def _title_from_planner(trace, number):
+    # Failed references do not invalidate an otherwise usable chapter name.
+    for item in reversed(trace):
+        if item.get("role") != "planner" or not isinstance(item.get("raw_output"), str):
+            continue
+        try:
+            proposal = strict_json(item["raw_output"])
+        except Exception:
+            continue
+        if not isinstance(proposal, dict):
+            continue
+        if proposal.get("number") == number and valid(proposal.get("title")):
+            return proposal["title"].strip()
+    return None
+
+
 def assign(book, chapter, gateway, trace):
     """Called only after the prose checkpoint exists; failures stay pending."""
     if not placeholder(chapter["title"]) and chapter.get("title_status") != "pending":
@@ -34,24 +50,10 @@ def assign(book, chapter, gateway, trace):
     entry = {"role": "chapter_title", "chapter": number}
     trace.append(entry)
     try:
-        title = None
-        # Failed references do not invalidate an otherwise usable chapter name.
-        for item in reversed(trace[:-1]):
-            if item.get("role") != "planner" or not isinstance(
-                item.get("raw_output"), str
-            ):
-                continue
-            try:
-                proposal = strict_json(item["raw_output"])
-            except Exception:
-                continue
-            if not isinstance(proposal, dict):
-                continue
-            if proposal.get("number") == number and valid(proposal.get("title")):
-                title = proposal["title"].strip()
-                entry["source"] = "same_chapter_planning_reply"
-                break
-        if title is None:
+        title = _title_from_planner(trace[:-1], number)
+        if title is not None:
+            entry["source"] = "same_chapter_planning_reply"
+        else:
             reply = gateway.complete(
                 ModelRequest(
                     "chapter_title",

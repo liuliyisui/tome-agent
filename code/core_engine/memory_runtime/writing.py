@@ -69,6 +69,51 @@ def runtime_hashes():
     }
 
 
+# LF and CRLF digests for source files changed by the reviewed Sonar refactor.
+_SONAR_REFACTOR_DIGESTS = {
+    "chapter_titles.py": (
+        (
+            "34239ce11a8600107fc73be5528d04fea4cacb1746c51a306679e0af20ddc87d",
+            "aff94ec2e3381470aa52b71928bd276b53dafb3cb2401de0f9884b5a58aea240",
+        ),
+        (
+            "3d2b9ab442f25da5004e191fee5ad006abe4b47ecd983b80800789d999907832",
+            "edf3fd726b6da9ec79398294d7706f9485d05d3d5c007c5a52ff775b96a5fa98",
+        ),
+    ),
+    "evidence_access.py": (
+        (
+            "c3dbc87f2642f52f36773015b91d1f4fa294700bcfeb3f83c68d45fca107605e",
+            "907825c51ce52dd3f6b00f5c24dd28fbfbd43aaa583e45fce29dac1c8c0b27df",
+        ),
+        (
+            "143c3e291e651853789cfe1b1d253fc4cf3dae04719381e26898807c11704200",
+            "96083f74553c22f9886acffacfae99769b598b412a0c37519e5038767ebe7e4d",
+        ),
+    ),
+    "stage_planning.py": (
+        (
+            "cf46d4be394adc22d74b9415546d76f2e5483d1edc1be8014eed974a4a876570",
+            "3c97c90aa9c585c6c92f02705a65ddc3cf7ca1e58fc349f817441d3b0c39dc2a",
+        ),
+        (
+            "a3b1414ad83fbdee3fdd9736635543dbae9cc31028af0cd08ed52711099cbb04",
+            "bcc38e93880b5e0d9912a580af0594f5e29e7534b19e7e72184d97436aa2f532",
+        ),
+    ),
+}
+
+
+def _matches_checkpoint_source(name, saved_digest, current_digest):
+    if saved_digest == current_digest:
+        return True
+    reviewed = _SONAR_REFACTOR_DIGESTS.get(name)
+    if reviewed is None:
+        return False
+    previous_digests, current_digests = reviewed
+    return saved_digest in previous_digests and current_digest in current_digests
+
+
 def _compatible_runtime(saved, current):
     """Accept only reviewed predecessor runtimes, while checking all other files."""
     if saved == current:
@@ -86,7 +131,7 @@ def _compatible_runtime(saved, current):
     ):
         return False
     if any(
-        value != current["memory_runtime"][name]
+        not _matches_checkpoint_source(name, value, current["memory_runtime"][name])
         for name, value in memory.items()
         if name not in {"writing.py", "test_regression.py"}
     ) or any(
@@ -97,6 +142,20 @@ def _compatible_runtime(saved, current):
         return False
     # Each pair is the LF and CRLF digest of a reviewed Git revision.
     previous = (
+        (
+            (
+                "b1ea19c9ed227aa993874357fdf99e68227386d654a46217f288ca9f40cf94e4",
+                "3eab57edf49f68672c72ff6bbec411c7b18df2b3b36dd70cbaca9a09802595d2",
+            ),
+            (
+                "87b5a3b46326d949cd47e54d89d76ebdbf1ea90ea31390a75c727523a68fd7a1",
+                "ab3a8456d22277e5605bd136e26ea3aafab001a8ebfe562badbba55e83b7cf10",
+            ),
+            (
+                "a8cc33a3b15635d5ce1cfb6e7a2a9eae338eda4e3223342c55b4f4ad43d679af",
+                "f14e8d8f7c4ed0a449465d6bbbfc79d3e502d84d5d042ae70bb9265f7cf726ac",
+            ),
+        ),
         (
             (
                 "0c2766414351d40a678edcc9b5e3af881ca0e6d85a21fcc87fcebb0ee0b91d19",

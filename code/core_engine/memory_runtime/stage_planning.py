@@ -10,6 +10,20 @@ from .event_references import plan_record
 from .identifiers import record_identifier
 
 
+def _add_planned_stage_references(refs, commit):
+    events = {b["id"]: b["event_id"] for s in commit["scenes"] for b in s["beats"]}
+    for row in commit["memory_projection"]:
+        if row["kind"] != "task" or row.get("status") != "planned":
+            continue
+        eid = events[row["beat_id"]]
+        identifier = row.get("proposed_record", {}).get("id") or record_identifier(
+            "plan:" + eid
+        )
+        refs.setdefault("plans", {})[identifier] = plan_record(
+            row, eid, None, refs.get("plans", {}).get(identifier)
+        )
+
+
 def prepare_stages(state, proposal, chapter, references, deferred=None):
     normalized, _ = normalize_plan(proposal, state, chapter, references=references)
     current = copy.deepcopy(state)
@@ -52,20 +66,7 @@ def prepare_stages(state, proposal, chapter, references, deferred=None):
                 "commit_sha256": packet["commit"]["sha256"],
             }
         )
-        events = {
-            b["id"]: b["event_id"]
-            for s in packet["commit"]["scenes"]
-            for b in s["beats"]
-        }
-        for row in packet["commit"]["memory_projection"]:
-            if row["kind"] == "task" and row.get("status") == "planned":
-                eid = events[row["beat_id"]]
-                identifier = row.get("proposed_record", {}).get(
-                    "id"
-                ) or record_identifier("plan:" + eid)
-                refs.setdefault("plans", {})[identifier] = plan_record(
-                    row, eid, None, refs.get("plans", {}).get(identifier)
-                )
+        _add_planned_stage_references(refs, packet["commit"])
     scenes = []
     projection = []
     for packet in packets:
