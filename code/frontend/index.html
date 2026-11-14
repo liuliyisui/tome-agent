@@ -395,7 +395,7 @@
                     <button type="button" class="chapter-step" :disabled="state.chapterIndex === 0" @click="turnChapter(-1)">← 上一章</button>
                     <span class="chapter-position">{{state.chapterIndex + 1}} / {{chapters.length}}</span>
                     <button type="button" class="chapter-step" :disabled="state.chapterIndex >= chapters.length - 1" @click="turnChapter(1)">下一章 →</button>
-                    <button type="button" class="chapter-step" :disabled="running || state.current.mode==='legacy' || !chapters.length" @click="regenerateChapter">↻ 重新生成本章</button>
+                    <button type="button" class="chapter-step" :disabled="running || state.current.mode==='legacy' || !chapters.length" @click="openRegeneration">↻ 重新生成本章</button>
                   </nav>
                 </section>
                 <aside class="writing-aside">
@@ -553,17 +553,16 @@
             <p class="muted">
               选择服务类型并填写模型信息。新建作品使用当前配置，已有作品继续使用原来的模型服务。
             </p>
-            <label for="model-provider">模型服务</label>
+            <label for="model-provider">供应商</label>
             <select id="model-provider" v-model="state.modelForm.provider" :disabled="state.busy.api" @change="state.modelForm.model=state.modelForm.provider==='deepseek'?'deepseek-chat':state.modelForm.provider==='openai'?'gpt-4o':''">
               <option value="deepseek">DeepSeek</option>
               <option value="openai">OpenAI</option>
-              <option value="compatible">其他 OpenAI 兼容服务（如通义千问、豆包）</option>
+              <option value="compatible">自定义（OpenAI 兼容）</option>
             </select>
-            <label for="model-name">模型名称</label>
-            <input id="model-name" v-model="state.modelForm.model" required maxlength="128" placeholder="例如 deepseek-chat、gpt-4o、qwen-plus" :disabled="state.busy.api" />
             <template v-if="state.modelForm.provider==='compatible'">
-              <label for="model-endpoint">完整接口地址</label>
-              <input id="model-endpoint" v-model="state.modelForm.endpoint" type="url" required placeholder="https://服务商域名/v1/chat/completions" :disabled="state.busy.api" />
+              <label for="model-endpoint">Base URL</label>
+              <input id="model-endpoint" v-model="state.modelForm.endpoint" type="url" required maxlength="2048" placeholder="https://api.example.com/v1" aria-describedby="model-endpoint-hint" :disabled="state.busy.api" />
+              <p id="model-endpoint-hint" class="form-hint">填写服务商提供的 HTTPS 基础地址，也可以粘贴完整的 /chat/completions 地址。</p>
             </template>
             <label for="api-key-input">API Key</label
             ><input
@@ -577,6 +576,8 @@
               v-model="state.apiKey"
               :disabled="state.busy.api"
             />
+            <label for="model-name">模型名称</label>
+            <input id="model-name" v-model="state.modelForm.model" required maxlength="128" placeholder="填写服务商提供的模型 ID" :disabled="state.busy.api" />
             <p class="form-hint">
               密钥仅保存在本机后端配置文件中，不会回显到页面。保存只检查格式，实际可用性在生成时由
               所选服务商校验。更换服务时请填写该服务的密钥；兼容接口需支持 Chat Completions 和 JSON 输出。
@@ -937,6 +938,36 @@
           <p id="trash-message" role="status" class="muted">
             {{state.trashMessage}}
           </p>
+        </dialog>
+        <dialog
+          id="regenerate-dialog"
+          v-dialog="state.dialogs.regenerate"
+          aria-labelledby="regenerate-title"
+          @cancel.prevent="closeDialog('regenerate')"
+        >
+          <form v-if="state.regeneration" @submit.prevent="regenerateChapter">
+            <h2 id="regenerate-title">重新生成第 {{state.regeneration.number}} 章</h2>
+            <p class="muted" v-if="state.regeneration.later">
+              新稿保存后会替换本章，后续 {{state.regeneration.later}} 章需要重新续写。
+            </p>
+            <label for="regenerate-feedback">作者意见（必填）</label>
+            <textarea
+              id="regenerate-feedback"
+              v-model="state.regeneration.feedback"
+              rows="4"
+              required
+              maxlength="2000"
+              placeholder="例如：保留结尾的线索，减少背景解释，用两人的对话推进冲突。"
+              :disabled="state.busy.regenerate"
+            ></textarea>
+            <p class="error" role="alert" v-if="state.errors.regenerate">{{state.errors.regenerate}}</p>
+            <div class="confirm-actions">
+              <button class="outline" type="button" :disabled="state.busy.regenerate" @click="closeDialog('regenerate')">取消</button>
+              <button id="regenerate-submit" class="primary" type="submit" :disabled="state.busy.regenerate || running || !state.regeneration.feedback.trim()">
+                {{state.busy.regenerate ? '正在提交…' : '按意见重新生成'}}
+              </button>
+            </div>
+          </form>
         </dialog>
         <dialog
           id="purge-dialog"

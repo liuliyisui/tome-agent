@@ -141,44 +141,40 @@ class BrowserSmokeTests(unittest.TestCase):
         self.assertIn("书架还是空的", page.inner_text(".works-empty"))
         self.assertEqual(page.text_content("#book-count").strip(), "0")
 
-    def test_model_configuration_accepts_compatible_service(self):
-        sent = []
-
-        def handle(route):
-            if route.request.method == "POST":
-                sent.append(route.request.post_data_json)
-                route.fulfill(
-                    json={
-                        "configured": True,
-                        "provider": "compatible",
-                        "model": "qwen-plus",
-                        "endpoint": "https://example.com/v1/chat/completions",
-                        "thinking": None,
-                    }
+    def test_model_configuration_accepts_compatible_base_url(self):
+        model_environment = {
+            key: value
+            for key, value in os.environ.items()
+            if key not in ("TOME_PROVIDER", "TOME_MODEL", "TOME_ENDPOINT")
+        }
+        with patch.dict(os.environ, model_environment, clear=True):
+            self.page.click("#open-settings")
+            self.page.click("#open-model-settings")
+            self.page.select_option("#model-provider", "compatible")
+            self.page.get_by_label("Base URL").fill("https://example.com/v1/")
+            self.page.fill("#model-name", "qwen-plus")
+            self.page.fill("#api-key-input", "fake-model-key")
+            with self.page.expect_response(
+                lambda response: (
+                    response.url.endswith("/api/model-config")
+                    and response.request.method == "POST"
                 )
-            else:
-                route.fulfill(
-                    json={
-                        "configured": True,
-                        "provider": "deepseek",
-                        "model": "deepseek-chat",
-                        "endpoint": "https://api.deepseek.com/chat/completions",
-                        "thinking": False,
-                    }
-                )
-
-        self.page.route("**/api/model-config", handle)
-        self.page.click("#open-settings")
-        self.page.click("#open-model-settings")
-        self.page.select_option("#model-provider", "compatible")
-        self.page.fill("#model-name", "qwen-plus")
-        self.page.fill("#model-endpoint", "https://example.com/v1/chat/completions")
-        self.page.fill("#api-key-input", "fake-model-key")
-        self.page.click("#api-key-save")
-        self.page.wait_for_selector("#api-key-dialog:not([open])", state="attached")
-        self.assertEqual(sent[0]["provider"], "compatible")
-        self.assertEqual(sent[0]["model"], "qwen-plus")
-        self.assertEqual(sent[0]["endpoint"], "https://example.com/v1/chat/completions")
+            ) as pending:
+                self.page.click("#api-key-save")
+            response = pending.value
+            self.assertTrue(response.ok)
+            self.assertEqual(
+                response.json()["endpoint"], "https://example.com/v1/chat/completions"
+            )
+            self.page.wait_for_selector("#api-key-dialog:not([open])", state="attached")
+            with self.page.expect_response("**/api/model-config"):
+                self.page.reload()
+            self.page.click("#open-settings")
+            self.page.click("#open-model-settings")
+            self.assertEqual(
+                self.page.get_by_label("Base URL").input_value(),
+                "https://example.com/v1/chat/completions",
+            )
 
     def test_cancel_skill_picker_keeps_create_dialog_and_draft(self):
         self.open_create_dialog()
@@ -251,6 +247,14 @@ class BrowserSmokeTests(unittest.TestCase):
                 "() => document.querySelector('#stat-chapters')?.textContent.includes('1 / 1')",
                 timeout=30000,
             )
+            self.page.wait_for_function(
+                "() => document.querySelector('#book-list .book-row.selected small')?.textContent.includes('1 / 1')",
+                timeout=4000,
+            )
+            self.page.wait_for_function(
+                "() => Number(document.querySelector('#stat-units')?.textContent.replace(/,/g, '')) > 0",
+                timeout=4000,
+            )
             self.assertIn("甲", self.page.inner_text("#chapter-body"))
             self.assertTrue(any(request.role == "writer" for request in model.requests))
             book_id = self.page.locator("#export").get_attribute("href").split("/")[3]
@@ -262,3 +266,79 @@ class BrowserSmokeTests(unittest.TestCase):
             self.page.wait_for_selector("#book-workspace")
             self.assertIn("甲", self.page.inner_text("#chapter-body"))
             self.page.wait_for_load_state("networkidle")
+
+    def test_regeneration_requires_feedback_and_preserves_draft_on_failure(self):
+        from memory_runtime.test_completion import Faults
+        from tome_writer.models import ModelReply
+
+        class RevisionModel(Faults):
+            fail_revision = False
+
+            def complete(self, request):
+                revision = request.payload.get("chapter_revision")
+                if request.role == "writer" and revision:
+                    if self.fail_revision:
+                        raise RuntimeError("simulated writer outage")
+                    self.requests.append(request)
+                    return ModelReply(
+                        "甲把来信折好。雨声渐急，他决定当面问清楚。" * 85,
+                        1,
+                        1,
+                        0,
+                    )
+                return super().complete(request)
+
+        model = RevisionModel()
+        with patch.object(service, "_gateway", return_value=(model, None)):
+            self.open_create_dialog()
+            self.fill_create_form()
+            self.page.click("#create-submit")
+            self.page.click("#generate")
+            self.page.click("#estimate-continue")
+            button = self.page.get_by_role("button", name="重新生成本章")
+            button.wait_for()
+            self.page.wait_for_function(
+                "() => document.querySelector('#chapter-body')?.textContent.includes('走廊')"
+            )
+            old_text = self.page.inner_text("#chapter-body")
+            book_id = self.page.locator("#export").get_attribute("href").split("/")[3]
+            endpoint = f"{self.base}/api/books/{book_id}/chapters/1/regenerate"
+            response = self.page.request.post(endpoint, data={"confirmed": True})
+            self.assertEqual(response.status, 400)
+            self.assertEqual(self.page.inner_text("#chapter-body"), old_text)
+
+            model.fail_revision = True
+            button.click()
+            feedback = self.page.get_by_label("作者意见（必填）")
+            submit = self.page.locator("#regenerate-submit")
+            self.assertTrue(submit.is_disabled())
+            feedback.fill("   ")
+            self.assertTrue(submit.is_disabled())
+            feedback.fill("保留来信，删掉走廊描写")
+            submit.click()
+            self.page.wait_for_function(
+                "() => document.body.textContent.includes('第1章未生成正文')"
+            )
+            self.assertEqual(self.page.inner_text("#chapter-body"), old_text)
+            saved = self.page.request.get(f"{self.base}/api/books/{book_id}").json()
+            self.assertIn("走廊", saved["state"]["chapters"][0]["text"])
+
+            model.fail_revision = False
+            button.click()
+            feedback.fill("保留来信，删掉走廊描写")
+            submit.click()
+            self.page.wait_for_function(
+                "() => document.querySelector('#chapter-body')?.textContent.includes('把来信折好')"
+            )
+            revisions = [
+                request
+                for request in model.requests
+                if request.payload.get("chapter_revision")
+            ]
+            self.assertEqual(
+                {request.role for request in revisions}, {"planner", "writer"}
+            )
+            for request in revisions:
+                revision = request.payload["chapter_revision"]
+                self.assertEqual(revision["author_feedback"], "保留来信，删掉走廊描写")
+                self.assertIn("走廊", revision["previous_draft"])
