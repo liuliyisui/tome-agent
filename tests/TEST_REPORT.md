@@ -2,9 +2,9 @@
 
 > 报告编号：TR-20261114-02（替代 TR-20261114-01）
 > 执行日期：2026-11-14
-> 被测版本：`d0cad77`（`main` 分支，含目录重构）
+> 被测版本：`624564c`（`main` 分支，含目录重构与 PR #28）
 > 被测系统：面向长篇小说创作的多智能体写作工作室
-> 执行结论：**通过** —— 246 项测试通过、0 项失败、8 项按环境跳过，核心逻辑覆盖率 61.01%，并完成一次真实模型端到端生成
+> 执行结论：**通过** —— 248 项测试通过、0 项失败、8 项按环境跳过，核心逻辑覆盖率 61.01%，并完成一次真实模型端到端生成
 
 ---
 
@@ -50,12 +50,12 @@ $env:PYTHONPATH="$PWD\code\core_engine;$PWD\code\backend"
 
 | 层级 | 收集用例 | 通过 | 失败 | 跳过 | 子测试 | 耗时 |
 |---|---:|---:|---:|---:|---:|---:|
-| 单元测试 `tests/unit` | 195 | **195** | 0 | 0 | 141 | 4.18s |
-| 集成测试 `tests/integration` | 59 | **51** | 0 | 8 | 2 | 24.59s |
+| 单元测试 `tests/unit` | 196 | **196** | 0 | 0 | 151 | 4.16s |
+| 集成测试 `tests/integration` | 60 | **52** | 0 | 8 | 2 | 32.02s |
 | 覆盖率脚本（单元 + 引擎回归） | 42 | 39 | 0 | 3 | — | 57.50s |
-| **合计（单元 + 集成）** | **254** | **246** | **0** | **8** | **143** | **28.77s** |
+| **合计（单元 + 集成）** | **256** | **248** | **0** | **8** | **153** | **36.18s** |
 
-> 与上一版报告相比：单元用例从 179 增至 195，集成通过数从 50 增至 51，均因远程合并了目录重构与新增测试文件（`test_memory_layout.py`、`test_package_migration.py`、`test_streaming_progress.py` 等）。
+> 与上一版报告相比：单元用例从 179 增至 196，集成通过数从 50 增至 52，均因远程合并了目录重构、PR #28 与新增测试文件（`test_memory_layout.py`、`test_package_migration.py`、`test_streaming_progress.py` 等）。
 
 ---
 
@@ -79,13 +79,13 @@ $env:PYTHONPATH="$PWD\code\core_engine;$PWD\code\backend"
 | `test_memory_layout.py` | 5 | ✅ | 记忆目录布局（重构后新增） |
 | `test_event_consistency.py` | 5 | ✅ | 事件一致性 |
 | `test_official_pricing.py` | 4 | ✅ | 计费口径 |
-| `test_model_settings.py` | 4 | ✅ | 模型配置 |
+| `test_model_settings.py` | 5 | ✅ | 模型配置（含自定义 base URL） |
 | `test_plan_bounds.py` | 3 | ✅ | 规划边界 |
 | `test_logging.py` | 3 | ✅ | 日志脱敏 |
 | `test_accounts.py` | 3 | ✅ | 账户与会话 |
 | `test_package_migration.py` | 1 | ✅ | 模块迁移兼容（重构后新增） |
 | `test_memory_layers.py` | 1 | ✅ | 分层记忆 |
-| **合计** | **195** | **✅** | 另有 141 个子测试通过 |
+| **合计** | **196** | **✅** | 另有 151 个子测试通过 |
 
 ### 4.1 等价类与边界值（课程重点）
 
@@ -104,7 +104,7 @@ $env:PYTHONPATH="$PWD\code\core_engine;$PWD\code\backend"
 |---|---:|---:|---:|---|
 | `test_web.py` | 19 | 19 | 0 | Web API 契约、创建/编辑/删除、生成任务、CORS |
 | `test_service.py` | 9 | 9 | 0 | 应用服务入口、失败保留、检查点 |
-| `test_browser_smoke.py` | 6 | 6 | 0 | Playwright 浏览器主流程冒烟 |
+| `test_browser_smoke.py` | 7 | 7 | 0 | Playwright 浏览器主流程冒烟 |
 | `test_hosted.py` | 4 | 4 | 0 | 托管部署与账户隔离 |
 | `test_story_flow_e2e.py` | 3 | 3 | 0 | 场景法端到端 |
 | `test_writing_style.py` | 3 | 3 | 0 | 写作风格约束 |
@@ -112,7 +112,7 @@ $env:PYTHONPATH="$PWD\code\core_engine;$PWD\code\backend"
 | `test_library.py` | 3 | 3 | 0 | 作品库 |
 | `test_hosted_workers.py` | 1 | 1 | 0 | 托管工作进程 |
 | `test_postgresql.py` | 8 | 0 | **8** | 未配置 `TOME_TEST_DATABASE_URL`，按设计跳过 |
-| **合计** | **59** | **51** | **8** | 另有 2 个子测试通过 |
+| **合计** | **60** | **52** | **8** | 另有 2 个子测试通过 |
 
 ### 5.1 场景法端到端（IT-FLOW-01~03）
 
@@ -142,7 +142,7 @@ Set TOME_TEST_DATABASE_URL for real PostgreSQL tests
 |---|---|---:|---:|---:|---:|---|
 | **单元测试** | 核心 8 模块 | 64.43%<br>(2141/3323) | 53.27%<br>(783/1470) | **61.01%** | ≥60% | ✅ 达标 |
 | 单元 + 引擎回归 | 核心 8 模块 | 71.26%<br>(2368/3323) | 59.05%<br>(868/1470) | **67.52%** | ≥60% | ✅ 达标 |
-| 单元测试 | 后端 + 引擎全量 | 42.44% | 30.92% | 38.90% | — | 参考值 |
+| 单元测试 | 后端 + 引擎全量 | 42.55% | 31.08% | 39.02% | — | 参考值 |
 
 ### 6.2 核心模块明细（单元测试口径）
 
@@ -184,7 +184,7 @@ Set TOME_TEST_DATABASE_URL for real PostgreSQL tests
 
 | # | 课程要求 | 落实位置 | 证据 | 结论 |
 |---|---|---|---|---|
-| 1 | 为核心逻辑编写单元测试（JUnit / pytest / Jest） | `tests/unit/` 共 22 个测试文件 | 195 项通过、141 子测试 | ✅ |
+| 1 | 为核心逻辑编写单元测试（JUnit / pytest / Jest） | `tests/unit/` 共 22 个测试文件 | 196 项通过、151 子测试 | ✅ |
 | 2 | 用等价类 + 边界值为至少一个输入字段设计用例 | `test_book_input_validation.py` | `chapters` 与 `target_units` 全部边界值通过 | ✅ |
 | 3 | 用场景法为一条关键业务流程编写端到端测试 | `test_story_flow_e2e.py` | IT-FLOW-01 创建 → 生成 → 检查点 → 导出；IT-FLOW-02/03 备选流 | ✅ |
 | 4 | 统计覆盖率，确保核心逻辑 ≥ 60% | `tests/run_coverage.py` | 核心 8 模块综合 **61.01%**，门禁内置 | ✅ |
@@ -274,7 +274,7 @@ Set TOME_TEST_DATABASE_URL for real PostgreSQL tests
 
 ## 10. 结论
 
-1. 当前基线 `d0cad77` 上，单元测试 **195 项全部通过**，集成测试 **51 项通过、8 项按环境跳过、0 项失败**。
+1. 当前基线 `624564c` 上，单元测试 **196 项全部通过**，集成测试 **52 项通过、8 项按环境跳过、0 项失败**。
 2. 核心 8 模块覆盖率 **61.01%**（语句 64.43% / 分支 53.27%），高于课程要求的 60%，覆盖率门禁未触发。
 3. 四项课程要求全部落实，均有可复现命令与原始覆盖率报告作为证据。
 4. 真实模型执行完成 2 章共 1545 字，18 次调用、耗时 102.6 秒，验证了完整业务链路。
