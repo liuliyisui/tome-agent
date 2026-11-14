@@ -3,9 +3,11 @@
 import base64
 import binascii
 import copy
+import hashlib
 import json
 import os
 import re
+import sys
 import tempfile
 import time
 from collections import Counter
@@ -33,6 +35,11 @@ from .settings import BACKEND_ROOT, Settings
 
 DATA = BACKEND_ROOT / "data"
 BOOKS = DATA / "inf_books"
+BUILTIN_SKILLS = (
+    Path(sys._MEIPASS) / "tome-core" / "writing_skills"
+    if getattr(sys, "frozen", False)
+    else Path(__file__).resolve().parents[2] / "core_engine" / "writing_skills"
+)
 
 
 def count_units(value):
@@ -303,9 +310,24 @@ class StyleGateway:
         return self.gateway.complete(request)
 
 
-def list_skills():
+def _installed_skills():
     path = DATA / "skills.json"
     return strict_json(path.read_text(encoding="utf-8")) if path.exists() else []
+
+
+def list_skills():
+    installed = _installed_skills()
+    contents = {item["content"].strip() for item in installed}
+    builtins = []
+    for path in sorted(BUILTIN_SKILLS.glob("*.md")):
+        content = path.read_text(encoding="utf-8-sig").strip()
+        if not content or content in contents:
+            continue
+        identifier = hashlib.sha256(path.name.encode("utf-8")).hexdigest()
+        builtins.append(
+            {"id": "builtin-" + identifier, "name": path.stem, "content": content}
+        )
+    return builtins + installed
 
 
 def install_skill(name, content):
@@ -315,7 +337,7 @@ def install_skill(name, content):
         raise ValueError("技能内容须为 1 到 12000 个字符")
     item = {"id": uuid4().hex, "name": name.strip(), "content": content.strip()}
     with operation_lock(DATA):
-        skills = list_skills()
+        skills = _installed_skills()
         if len(skills) >= 100:
             raise ValueError("技能数量已达到上限")
         _atomic_json(DATA / "skills.json", [*skills, item])

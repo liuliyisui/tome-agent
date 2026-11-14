@@ -11,6 +11,7 @@ core_files = [
     for path in (core / package).rglob('*.py')
     if '__pycache__' not in path.parts
 ]
+core_files += [(str(path), 'tome-core/writing_skills') for path in (core / 'writing_skills').glob('*.md')]
 core_files += [(str(core / name), 'tome-core') for name in (
     'check_memory.py', 'write_novel.py', 'user_runtime.py',
     'package_migration_fingerprints.json',
