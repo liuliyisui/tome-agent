@@ -571,6 +571,12 @@ class WebIntegrationTests(unittest.TestCase):
             self.assertEqual(response.status, 204)
             self.assertEqual(response.read(), b"")
 
+    def test_malformed_origin_returns_forbidden(self):
+        with self.assertRaises(HTTPError) as error:
+            self.request("/api/books", {}, {"Origin": "http://["})
+        self.assertEqual(error.exception.code, 403)
+        self.assertEqual(self.request("/api/books")["books"], [])
+
     def test_reject_cross_origin_and_path_escape(self):
         with self.assertRaises(HTTPError) as error:
             self.request("/api/books", {}, {"Origin": "https://example.com"})

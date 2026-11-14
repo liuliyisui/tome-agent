@@ -322,7 +322,10 @@ class Handler(BaseHTTPRequestHandler):
         if post:
             origin = self.headers.get("Origin")
             if origin:
-                same_origin = urlsplit(origin).netloc.lower() == host
+                try:
+                    same_origin = urlsplit(origin).netloc.lower() == host
+                except ValueError:
+                    same_origin = False
         if host not in allowed or not same_origin:
             self.reply(
                 403,
