@@ -16,6 +16,9 @@ class SkillTests(unittest.TestCase):
             p = patch.object(service, name, value)
             p.start()
             self.addCleanup(p.stop)
+        p = patch.object(service, "BUILTIN_SKILLS", root / "builtin")
+        p.start()
+        self.addCleanup(p.stop)
         p = patch.object(service, "_metadata", return_value={})
         p.start()
         self.addCleanup(p.stop)
@@ -36,6 +39,37 @@ class SkillTests(unittest.TestCase):
             service.save_book_skills("book-a", ["unknown"])
         with self.assertRaises(ValueError):
             service.install_skill("x", "x" * 12001)
+
+    def test_builtin_skills_load_without_install_and_keep_existing_ids(self):
+        service.BUILTIN_SKILLS.mkdir()
+        (service.BUILTIN_SKILLS / "内置.md").write_text("内置写法", encoding="utf-8")
+        builtin = service.list_skills()[0]
+        self.assertTrue(builtin["id"].startswith("builtin-"))
+        self.assertEqual(service.list_skills()[0]["id"], builtin["id"])
+        self.assertFalse((service.DATA / "skills.json").exists())
+        item = service.install_skill("已有技能", "内置写法")
+        self.assertEqual(service.list_skills(), [item])
+        service.save_book_skills("book-a", [item["id"]])
+        self.assertEqual(service.load_book_skills("book-a"), [item["id"]])
+
+    def test_repository_builtins_are_available_to_fresh_install(self):
+        root = (
+            Path(__file__).resolve().parents[2]
+            / "code"
+            / "core_engine"
+            / "writing_skills"
+        )
+        with patch.object(service, "BUILTIN_SKILLS", root):
+            names = {skill["name"] for skill in service.list_skills()}
+        self.assertEqual(
+            names,
+            {
+                "去AI味·自然化重写",
+                "网文工坊·通用写作指令",
+                "章末钩子与爽点",
+                "长篇结构·节奏与连续性",
+            },
+        )
 
     def test_only_writer_receives_selected_skill(self):
         inner = Mock()

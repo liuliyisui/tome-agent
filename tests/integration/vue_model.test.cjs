@@ -349,3 +349,21 @@ test("provider catalog contains requested compatible services", async () => {
   }
   f.dispose();
 });
+
+
+test("event identifiers are hidden without removing other facts", async () => {
+  const f = await fixture();
+  f.books.a.state.facts = {
+    a: { status: "active", kind: "event", subject: "event:c0001.a0001", value: "主角抵达客栈", source: { chapter_number: 1 } },
+    b: { status: "active", kind: "event", subject: "event:c0001.a0002", value: "主角发现线索", source: { chapter_number: 1 } },
+    c: { status: "active", kind: "event", subject: "event:c0002.a0001", value: "主角遇见对手", source: { chapter_number: 2 } },
+    d: { status: "active", subject: "主角", value: "信使", source: { chapter_number: 1 } },
+  };
+  await f.model.selectBook("a");
+  const groups = f.model.factGroups.value;
+  assert.equal(f.model.facts.value.length, 1);
+  assert.equal(Object.keys(f.books.a.state.facts).length, 4);
+  assert.ok(groups.some((g) => g.label === "主角"));
+  assert.ok(groups.every((g) => !g.label.includes("event:")));
+  f.dispose();
+});

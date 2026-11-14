@@ -157,6 +157,11 @@ class WebIntegrationTests(unittest.TestCase):
 
     def setUp(self):
         self.folder = tempfile.TemporaryDirectory()
+        self.builtin_skills_patch = patch.object(
+            service, "BUILTIN_SKILLS", Path(self.folder.name) / "builtin-skills"
+        )
+        self.builtin_skills_patch.start()
+        self.addCleanup(self.builtin_skills_patch.stop)
         self.books_patch = patch.object(service, "BOOKS", Path(self.folder.name))
         self.books_patch.start()
         self.prices_patch = patch.object(

@@ -46,6 +46,8 @@ const valueOf = (fact) =>
   typeof fact.value === "object"
     ? JSON.stringify(fact.value)
     : String(fact.value ?? "");
+const isEventFact = (fact) =>
+  fact.kind === "event" || String(fact.subject || "").startsWith("event:");
 const ChapterReader = {
   name: "ChapterReader",
   props: ["chapter"],
@@ -83,7 +85,7 @@ const FactMemory = {
       return h("div", { class: "fact" }, [
         excerpt
           ? null
-          : h("h4", `${concise(f.subject, 10)} · ${concise(value, 14)}`),
+          : h("h4", isEventFact(f) ? `事件 · ${concise(value, 18)}` : `${concise(f.subject, 10)} · ${concise(value, 14)}`),
         h("p", value),
         h(
           "small",
@@ -259,7 +261,7 @@ const app = createApp({
     );
     const facts = computed(() =>
       Object.values(state.current?.state.facts || {}).filter(
-        (f) => f.status === "active",
+        (f) => f.status === "active" && !isEventFact(f),
       ),
     );
     const factGroups = computed(() => {
