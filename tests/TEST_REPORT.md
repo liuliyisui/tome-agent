@@ -1,10 +1,10 @@
 # Tome Agent 测试执行报告
 
-> 报告编号：TR-20261114-02（替代 TR-20261114-01）
+> 报告编号：TR-20261114-03（替代 TR-20261114-02）
 > 执行日期：2026-11-14
 > 被测版本：`624564c`（`main` 分支，含目录重构与 PR #28）
 > 被测系统：面向长篇小说创作的多智能体写作工作室
-> 执行结论：**通过** —— 248 项测试通过、0 项失败、8 项按环境跳过，核心逻辑覆盖率 61.01%，并完成一次真实模型端到端生成
+> 执行结论：**通过** —— 256 项测试全部通过、0 项失败、0 项跳过，核心逻辑覆盖率 61.01%，并完成一次真实模型端到端生成与真实 PostgreSQL 验证
 
 ---
 
@@ -17,7 +17,8 @@
 | 测试框架 | pytest 9.2.0（unittest 兼容模式） |
 | 覆盖率工具 | coverage.py 7.17.2（C 扩展） |
 | 代码规范 | ruff 0.17.4 |
-| 数据库 | 未配置（`TOME_TEST_DATABASE_URL` 为空） |
+| 数据库 | PostgreSQL 18.7（独立临时集群，`127.0.0.1:5433`，trust 认证） |
+| 数据库驱动 | psycopg 3.3.3 |
 | 模型服务 | DeepSeek 官方接口 `https://api.deepseek.com/chat/completions` |
 | 模型 | `deepseek-chat` |
 | 网络 | 离线测试不联网；§8 真实冒烟为唯一联网环节 |
@@ -31,7 +32,7 @@
 | 步骤 | 命令 | 范围 |
 |---|---|---|
 | 1 | `pytest -q tests/unit` | 全部单元测试 |
-| 2 | `pytest -q tests/integration` | 全部集成测试 + E2E 冒烟 |
+| 2 | `TOME_TEST_DATABASE_URL=... pytest -q tests/integration` | 全部集成测试 + E2E 冒烟（含真实 PostgreSQL） |
 | 3 | `python tests/run_coverage.py` | 覆盖率统计与 60% 门禁（含引擎回归） |
 | 4 | 真实生成脚本 | 真实模型端到端冒烟 |
 
@@ -40,9 +41,12 @@
 ```powershell
 $env:PYTHONPATH="$PWD\code\core_engine;$PWD\code\backend"
 .venv\Scripts\python.exe -m pytest -p no:cacheprovider -q tests/unit
+$env:TOME_TEST_DATABASE_URL="postgresql://postgres@127.0.0.1:5433/tome_test"
 .venv\Scripts\python.exe -m pytest -p no:cacheprovider -q tests/integration
 .venv\Scripts\python.exe tests/run_coverage.py
 ```
+
+> PostgreSQL 使用独立临时集群（端口 5433，`--auth=trust`），不依赖系统服务与密码。
 
 ---
 
@@ -51,9 +55,9 @@ $env:PYTHONPATH="$PWD\code\core_engine;$PWD\code\backend"
 | 层级 | 收集用例 | 通过 | 失败 | 跳过 | 子测试 | 耗时 |
 |---|---:|---:|---:|---:|---:|---:|
 | 单元测试 `tests/unit` | 196 | **196** | 0 | 0 | 151 | 4.16s |
-| 集成测试 `tests/integration` | 60 | **52** | 0 | 8 | 2 | 32.02s |
+| 集成测试 `tests/integration` | 60 | **60** | 0 | **0** | 2 | 43.39s |
 | 覆盖率脚本（单元 + 引擎回归） | 42 | 39 | 0 | 3 | — | 57.50s |
-| **合计（单元 + 集成）** | **256** | **248** | **0** | **8** | **153** | **36.18s** |
+| **合计（单元 + 集成）** | **256** | **256** | **0** | **0** | **153** | **47.55s** |
 
 > 与上一版报告相比：单元用例从 179 增至 196，集成通过数从 50 增至 52，均因远程合并了目录重构、PR #28 与新增测试文件（`test_memory_layout.py`、`test_package_migration.py`、`test_streaming_progress.py` 等）。
 
@@ -111,8 +115,8 @@ $env:PYTHONPATH="$PWD\code\core_engine;$PWD\code\backend"
 | `test_skills.py` | 3 | 3 | 0 | 技能调用 |
 | `test_library.py` | 3 | 3 | 0 | 作品库 |
 | `test_hosted_workers.py` | 1 | 1 | 0 | 托管工作进程 |
-| `test_postgresql.py` | 8 | 0 | **8** | 未配置 `TOME_TEST_DATABASE_URL`，按设计跳过 |
-| **合计** | **60** | **52** | **8** | 另有 2 个子测试通过 |
+| `test_postgresql.py` | 8 | 8 | 0 | 真实 PostgreSQL 18.7，每个用例独立 schema |
+| **合计** | **60** | **60** | **0** | 另有 2 个子测试通过 |
 
 ### 5.1 场景法端到端（IT-FLOW-01~03）
 
@@ -122,15 +126,18 @@ $env:PYTHONPATH="$PWD\code\core_engine;$PWD\code\backend"
 | IT-FLOW-02 | 第 2 章返回 `NO_DRAFT`，抛 `RuntimeError` 且第 1 章保留 | ✅ |
 | IT-FLOW-03 | `count=0` / `count=4` 越界，抛 `ValueError` 且不产生运行目录 | ✅ |
 
-### 5.2 跳过项
+### 5.2 PostgreSQL 环境准备
 
-8 项全部来自 `test_postgresql.py`，原因均为：
+本轮不再跳过数据库用例，启动了独立的临时 PostgreSQL 集群：
 
-```text
-Set TOME_TEST_DATABASE_URL for real PostgreSQL tests
-```
+| 步骤 | 命令 / 配置 | 说明 |
+|---|---|---|
+| 初始化 | `initdb -D <临时目录> -U postgres --auth=trust` | 独立数据目录，不触碰系统服务 |
+| 启动 | `pg_ctl -o "-p 5433 -h 127.0.0.1" start` | 仅监听本机 5433 端口 |
+| 建库 | `createdb tome_test` | 测试库 |
+| 连接 | `postgresql://postgres@127.0.0.1:5433/tome_test` | 通过 `TOME_TEST_DATABASE_URL` 传入 |
 
-属于既有的环境门控，不是测试失败。
+每个用例在 `setUp` 中创建独立 schema，结束后 `DROP SCHEMA ... CASCADE`，互不干扰。8 项全部通过。
 
 ---
 
@@ -265,7 +272,7 @@ Set TOME_TEST_DATABASE_URL for real PostgreSQL tests
 |---|---|---|---|
 | R-01 | `pipeline.py` 综合覆盖率仅 42.2% | 该模块分支逻辑复杂，缺陷发现能力有限 | 补充管线降级、重试与异常路径的单元测试 |
 | R-02 | `continuity.py` / `tiered_memory.py` 单项低于 60% | 依赖 8 模块合计达标 | 补充记忆失效与连续性回退用例 |
-| R-03 | PostgreSQL 集成测试未执行 | 持久化层未在真实数据库验证 | 配置 `TOME_TEST_DATABASE_URL` 后单独执行 |
+| R-03 | PostgreSQL 使用临时集群（端口 5433） | 集群随临时目录销毁，非长期环境 | 需要长期验证时可部署正式实例并复用同一 `TOME_TEST_DATABASE_URL` |
 | R-04 | 真实生成仅覆盖 2 章 | 长程连续性与上下文压缩未验证 | 可执行 10 章以上的成本可控评估 |
 | R-05 | 本次真实调用使用了明文密钥 | 密钥已在对话中暴露 | 未写入任何文件和提交；建议吊销并重新生成 |
 | R-06 | 费用估算字段为 0 | 项目默认单价配置为 0，未反映真实账单 | 以 DeepSeek 控制台账单为准 |
@@ -274,7 +281,7 @@ Set TOME_TEST_DATABASE_URL for real PostgreSQL tests
 
 ## 10. 结论
 
-1. 当前基线 `624564c` 上，单元测试 **196 项全部通过**，集成测试 **52 项通过、8 项按环境跳过、0 项失败**。
+1. 当前基线 `624564c` 上，单元测试 **196 项全部通过**，集成测试 **60 项全部通过（含 8 项真实 PostgreSQL 用例）、0 项跳过、0 项失败**。
 2. 核心 8 模块覆盖率 **61.01%**（语句 64.43% / 分支 53.27%），高于课程要求的 60%，覆盖率门禁未触发。
 3. 四项课程要求全部落实，均有可复现命令与原始覆盖率报告作为证据。
 4. 真实模型执行完成 2 章共 1545 字，18 次调用、耗时 102.6 秒，验证了完整业务链路。
