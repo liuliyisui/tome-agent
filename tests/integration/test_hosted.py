@@ -187,9 +187,15 @@ class HostedTests(unittest.TestCase):
                     page.locator('input[name="password"]').get_attribute("type"), "text"
                 )
                 page.get_by_role("button", name="隐藏密码").click()
+                page.get_by_role("button", name="注册账号").click()
+                self.assertEqual(page.title(), "注册 · Tome 故事工作室")
+                self.assertTrue(page.get_by_role("heading", name="创建账号").is_visible())
+                page.get_by_role("button", name="返回登录").click()
+                self.assertEqual(page.title(), "登录 · Tome 故事工作室")
+                page.get_by_role("button", name="注册账号").click()
                 page.locator('input[name="username"]').fill("browser_writer")
                 page.locator('input[name="password"]').fill("eight888")
-                page.get_by_role("button", name="注册").click()
+                page.get_by_role("button", name="创建账号").click()
                 page.wait_for_selector("#my-works")
                 page.wait_for_selector(
                     "#settings-dialog .hosted-logout", state="attached"

@@ -41,19 +41,34 @@ LOGIN_PAGE = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <section class="intro"><div class="brand">TOME · 故事工作室</div><div class="mark"></div>
 <h1>让故事，<br>从这里继续。</h1><p>登录你的创作空间，保存灵感与章节，让每个故事都有继续的地方。</p></section>
 <section class="panel" aria-labelledby="account-title"><h2 id="account-title">进入工作室</h2>
-<p class="hint">登录已有账号，或填写信息后注册新账号。</p>
+<p class="hint" id="account-hint">使用已有账号登录，继续你的创作。</p>
 <form id="account"><label for="username">用户名</label>
 <input id="username" name="username" autocomplete="username" minlength="3" maxlength="32" pattern="[A-Za-z0-9_]+" required aria-describedby="username-hint">
 <span id="username-hint" class="field-hint">3～32 位英文字母、数字或下划线。</span>
 <label for="password">密码</label><div class="password-row"><input id="password" name="password" type="password" minlength="8" maxlength="128" autocomplete="current-password" required aria-describedby="password-hint">
 <button id="show-password" type="button" aria-label="显示密码" aria-pressed="false">显示</button></div>
-<span id="password-hint" class="field-hint">新账号密码为 8～16 位，建议使用 12 位以上的独立密码。</span>
-<div class="actions"><button class="primary" name="action" value="login">登录</button><button class="secondary" name="action" value="register">注册账号</button></div>
+<span id="password-hint" class="field-hint">请输入你的账号密码。</span>
+<div class="actions"><button id="submit-account" class="primary" type="submit">登录</button><button id="switch-account" class="secondary" type="button">注册账号</button></div>
 <p id="message" role="alert" aria-live="polite"></p></form>
 <p class="note">模型 API Key 在登录后单独配置，请妥善保管账号信息。</p></section>
 </main><script>
 const password = document.querySelector('#password');
 const toggle = document.querySelector('#show-password');
+const switchAccount = document.querySelector('#switch-account');
+const submitAccount = document.querySelector('#submit-account');
+let accountMode = 'login';
+switchAccount.addEventListener('click', () => {{
+  accountMode = accountMode === 'login' ? 'register' : 'login';
+  const registering = accountMode === 'register';
+  document.querySelector('#account-title').textContent = registering ? '创建账号' : '进入工作室';
+  document.querySelector('#account-hint').textContent = registering ? '注册账号，开启你的创作空间。' : '使用已有账号登录，继续你的创作。';
+  document.querySelector('#password-hint').textContent = registering ? '密码为 8～16 位，建议使用 12 位以上的独立密码。' : '请输入你的账号密码。';
+  document.title = (registering ? '注册' : '登录') + ' · Tome 故事工作室';
+  submitAccount.textContent = registering ? '创建账号' : '登录';
+  switchAccount.textContent = registering ? '返回登录' : '注册账号';
+  password.autocomplete = registering ? 'new-password' : 'current-password';
+  password.value = ''; document.querySelector('#message').textContent = '';
+}});
 toggle.addEventListener('click', () => {{
   const show = password.type === 'password'; password.type = show ? 'text' : 'password';
   toggle.textContent = show ? '隐藏' : '显示';
@@ -62,8 +77,7 @@ toggle.addEventListener('click', () => {{
 }});
 document.querySelector('#account').addEventListener('submit', async event => {{
   event.preventDefault(); const form = event.currentTarget;
-  const action = event.submitter && event.submitter.value;
-  if (!['login', 'register'].includes(action)) return;
+  const action = accountMode;
   const buttons = form.querySelectorAll('.actions button');
   const message = document.querySelector('#message'); message.textContent = '';
   if (action === 'register' && Array.from(password.value).length > 16) {{
