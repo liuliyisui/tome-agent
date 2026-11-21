@@ -220,10 +220,7 @@ const _hoisted_121 = {
   class: "error",
   role: "alert"
 }
-const _hoisted_122 = {
-  id: "chapter-body",
-  tabindex: "-1"
-}
+const _hoisted_122 = { class: "message-label" }
 const _hoisted_123 = {
   key: 2,
   class: "chapter-end-nav",
@@ -1106,7 +1103,7 @@ return function render(_ctx, _cache) {
                               : _createCommentVNode("v-if", true)
                           ])
                         ])), [
-                          [_directive_floating_menu, {anchorId:'chapter-picker-trigger',close:_ctx.closeChapterPicker}]
+                          [_directive_floating_menu, {anchorId:'chapter-picker-trigger',close:_ctx.closeChapterPicker,matchAnchorWidth:true}]
                         ])
                       : _createCommentVNode("v-if", true)
                   ])),
@@ -1203,12 +1200,30 @@ return function render(_ctx, _cache) {
                         ]))
                       : _createCommentVNode("v-if", true)
                   ])),
-                  _withDirectives(_createElementVNode("article", _hoisted_122, [
-                    _createVNode(_component_chapter_reader, {
-                      chapter: _ctx.chapter,
-                      match: _ctx.readerMatch
-                    }, null, 8 /* PROPS */, ["chapter", "match"])
-                  ], 512 /* NEED_PATCH */), [
+                  _withDirectives(_createElementVNode("article", {
+                    id: "chapter-body",
+                    tabindex: "-1",
+                    class: _normalizeClass({'generation-placeholder':_ctx.running&&!_ctx.chapter})
+                  }, [
+                    (_ctx.running)
+                      ? (_openBlock(), _createElementBlock("div", {
+                          key: 0,
+                          id: "generation-progress",
+                          class: _normalizeClass(["status-message", _ctx.jobLevel==='info'?'message-progress':`message-${_ctx.jobLevel}`]),
+                          role: "status"
+                        }, [
+                          _createElementVNode("strong", _hoisted_122, _toDisplayString(_ctx.jobLevel==='info'?'生成中':_ctx.messageLabels[_ctx.jobLevel]), 1 /* TEXT */),
+                          _createElementVNode("span", null, _toDisplayString(_ctx.jobStatus), 1 /* TEXT */)
+                        ], 2 /* CLASS */))
+                      : _createCommentVNode("v-if", true),
+                    (_ctx.chapter||!_ctx.running)
+                      ? (_openBlock(), _createBlock(_component_chapter_reader, {
+                          key: 1,
+                          chapter: _ctx.chapter,
+                          match: _ctx.readerMatch
+                        }, null, 8 /* PROPS */, ["chapter", "match"]))
+                      : _createCommentVNode("v-if", true)
+                  ], 2 /* CLASS */), [
                     [_vShow, !_ctx.state.editor]
                   ]),
                   (_ctx.chapter&&!_ctx.state.editor)
@@ -1303,7 +1318,7 @@ return function render(_ctx, _cache) {
                       _createElementVNode("strong", _hoisted_139, _toDisplayString(_ctx.messageLabels[_ctx.jobLevel]), 1 /* TEXT */),
                       _createElementVNode("span", null, _toDisplayString(_ctx.jobStatus), 1 /* TEXT */)
                     ], 10 /* CLASS, PROPS */, _hoisted_138), [
-                      [_vShow, _ctx.jobStatus]
+                      [_vShow, !_ctx.running&&_ctx.jobStatus]
                     ])
                   ]),
                   _createElementVNode("section", _hoisted_140, [
