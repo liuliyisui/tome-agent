@@ -43,10 +43,8 @@ jobs:
       - name: Check slide sources
         run: |
           test -f slides.md
+          test -f package.json
           test -f package-lock.json
-          if [ ! -f style.css ]; then
-            echo "::warning file=docs/slides/style.css::style.css is missing; the deck will use the default Slidev theme."
-          fi
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
