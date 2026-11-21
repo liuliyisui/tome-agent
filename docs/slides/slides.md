@@ -34,7 +34,6 @@ class: cover
     </div>
   </div>
   <div class="cover-side">
-    <div class="seal">卷</div>
     <div class="cover-side-rule"></div>
     <div class="cover-vertical">ONE IDEA · ONE NOVEL</div>
   </div>
