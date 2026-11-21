@@ -13,5 +13,9 @@
       ]
     }
   },
-  "terminal.integrated.defaultProfile.windows": "PowerShell (UTF-8)"
+  "terminal.integrated.defaultProfile.windows": "PowerShell (UTF-8)",
+  "VSCodeCounter.useGitignore": true,
+  "VSCodeCounter.useFilesExclude": true,
+  "VSCodeCounter.printNumberWithCommas": true,
+  "VSCodeCounter.ignoreUnsupportedFile": true
 }
