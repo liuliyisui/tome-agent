@@ -734,7 +734,7 @@ return function render(_ctx, _cache) {
           [_vShow, _ctx.state.notice]
         ]),
         _withDirectives(_createElementVNode("section", _hoisted_35, [
-          _cache[18] || (_cache[18] = _createStaticVNode("<div class=\"welcome-art\" aria-hidden=\"true\"><span class=\"orbit one\"></span><span class=\"orbit two\"></span><span class=\"book-art\">T<span>THE UNTOLD<br>STORIES</span></span><span class=\"spark\">✧</span></div>", 1)),
+          _cache[18] || (_cache[18] = _createStaticVNode("<div class=\"welcome-art\" aria-hidden=\"true\"><span class=\"orbit one\"></span><span class=\"orbit two\"></span><span class=\"book-scene\"><span class=\"book-art\"><span class=\"book-pages\"><span class=\"book-page-title\">故事继续</span><span class=\"book-page-text\">窗外天色渐明。<br>新的旅程，<br>正等待着她。</span></span><span class=\"book-leaf book-leaf-first\"><span class=\"book-leaf-front\">窗外的雨落下来，<br>一封信静静地躺在桌上。</span><span class=\"book-leaf-back\">她打开信，<br>读到了一个久违的名字。</span></span><span class=\"book-leaf book-leaf-second\"><span class=\"book-leaf-front\">故事的下一页，<br>从一个选择开始。</span><span class=\"book-leaf-back\">每一次启程，<br>都有未写完的故事。</span></span><span class=\"book-cover\"><span class=\"book-cover-front\">T<span>THE UNTOLD<br>STORIES</span></span><span class=\"book-cover-inside\"></span></span></span></span><span class=\"spark\">✧</span></div>", 1)),
           _createElementVNode("div", _hoisted_36, [
             _cache[15] || (_cache[15] = _createElementVNode("div", { class: "eyebrow" }, "从这里，写向远方", -1 /* CACHED */)),
             _cache[16] || (_cache[16] = _createElementVNode("h2", null, [
