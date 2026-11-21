@@ -1,0 +1,19 @@
+{
+  "story_review_enabled": false,
+  "story_review_usage": {
+    "attempted_calls": 0,
+    "successful_calls": 0,
+    "failed_calls": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cost_usd_estimate_not_bill": 0.0,
+    "elapsed_seconds": 0.0
+  },
+  "novel_sha256": "1849cb32fac564ec688317424096ddeb5a7b7c36b315f917d26121b01dd69c5a",
+  "policy": "Manually verify proposals against prose and separately record missed errors. Model confirmation is not a true-positive label.",
+  "proposals": [],
+  "missed_errors": [],
+  "full_text_review_completed": false,
+  "effectiveness": "NOT_YET_MEASURED",
+  "validated_true_findings": null
+}

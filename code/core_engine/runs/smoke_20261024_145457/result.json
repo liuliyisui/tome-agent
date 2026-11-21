@@ -1,0 +1,405 @@
+{
+  "scope": "USER_WRITING_NOT_COMPARATIVE_EXPERIMENT",
+  "chapters": 1,
+  "han_chars": 675,
+  "target_chapters": 1,
+  "target_han_chars": 600,
+  "length_target_met": true,
+  "draft_completed": true,
+  "stop_reason": null,
+  "checked_draft_chapters": 0,
+  "pending_draft_chapters": 1,
+  "quality_gate_passed": false,
+  "story_and_mechanical_checks_passed": null,
+  "prose_content_checks": "disabled",
+  "memory_projection_complete": false,
+  "memory_projection_omissions": {
+    "1": [
+      "event:c0001.a0001",
+      "facts:n0001r0001",
+      "facts:n0001r0002",
+      "event:c0001.a0002",
+      "facts:n0001r0003",
+      "facts:n0001r0004",
+      "event:c0001.a0003",
+      "facts:n0001r0005",
+      "facts:n0001r0006",
+      "event:c0001.a0004",
+      "facts:n0001r0001",
+      "facts:n0001r0003",
+      "event:c0001.a0005",
+      "facts:n0001r0005",
+      "facts:n0001r0006",
+      "event:c0001.a0006",
+      "facts:n0001r0001",
+      "facts:n0001r0003",
+      "event:c0001.a0007",
+      "facts:n0001r0005",
+      "facts:n0001r0007",
+      "facts:n0001r0008"
+    ]
+  },
+  "event_alignment_complete": false,
+  "unprojected_chapters": [],
+  "generation_warning_count": 0,
+  "memory_processing_complete": true,
+  "prose_memory_complete": true,
+  "prose_excerpt_count": 19,
+  "review_mode": "tiered_memory",
+  "memory_semantic_review": "canonical_event_projection",
+  "writing_mode": "event_first",
+  "canonical_event_chapters": 1,
+  "prepared_event_chapters": [],
+  "story_review_failure_policy": "DEFERRED_CONTINUE_WRITING",
+  "story_review_enabled": false,
+  "story_review_usage": {
+    "attempted_calls": 0,
+    "successful_calls": 0,
+    "failed_calls": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cost_usd_estimate_not_bill": 0.0,
+    "elapsed_seconds": 0.0
+  },
+  "story_review_effectiveness": "DISABLED",
+  "story_review_failure_count": 0,
+  "pending_story_review_chapters": [],
+  "time_calculation_count": 0,
+  "time_calculation_scope": "Optional declared formulas only; no prose arithmetic inspection",
+  "writing_state_scope": "Simulated event plan state; prose alignment is unchecked; memory only projects sources present in saved prose",
+  "memory_processed_through": 1,
+  "memory_complete": true,
+  "pending_memory_chapters": [],
+  "memory_layers_complete": true,
+  "pending_layer_ids": [],
+  "memory_failure_count": 0,
+  "memory_failure_policy": "DEFERRED_CONTINUE_WRITING",
+  "story_review_counts": {
+    "proposed": 0,
+    "confirmed": 0,
+    "unresolved": 0,
+    "suggestions": 0
+  },
+  "memory_counts": {
+    "working": 10,
+    "recent": 9,
+    "long": 0
+  },
+  "withheld_mutations": 0,
+  "active_facts": 19,
+  "archived_versions": 11,
+  "budget_limits": null,
+  "calls": 6,
+  "gateway_attempts": 6,
+  "input_tokens": 25970,
+  "output_tokens": 6036,
+  "cost_usd_estimate_not_bill": 0.015034200000000001,
+  "cost_scope": "This invocation successful metered replies only; excludes parent runs; failed delivery may incur unknown charges",
+  "resume_checkpoint": "D:\\workspace\\tome-agent\\code\\core_engine\\runs\\smoke_20261024_145457\\working\\checkpoint_0003.json",
+  "elapsed_seconds": 31.29599999999982,
+  "outcomes": [
+    {
+      "chapter_number": 1,
+      "status": "DRAFT_UNCHECKED",
+      "errors": [],
+      "issues": [],
+      "suggestions": [],
+      "memory_promoted": true,
+      "memory_update_status": "APPLIED",
+      "stop_reason": null,
+      "writing_invariants": "EVENT_DATA_COMMITTED_PROSE_UNCHECKED",
+      "event_commit_sha256": "d542f0f9bee288e5519aa7e250f87d70363064c31b36b4f17a4677ad1f91ec1f",
+      "story_review_status": "DISABLED",
+      "memory_report": {
+        "chapter": 1,
+        "layers": {
+          "status": "APPLIED",
+          "moves": [
+            {
+              "op": "demote",
+              "id": "m_be539a9e99aa88c2c17dc88e",
+              "expected_revision": 1,
+              "reason": "工作输入超预算，暂存近期，保留完整内容与来源供剧情调度"
+            },
+            {
+              "op": "demote",
+              "id": "m_c3ab8fac97a70d6391dd105a",
+              "expected_revision": 1,
+              "reason": "工作输入超预算，暂存近期，保留完整内容与来源供剧情调度"
+            },
+            {
+              "op": "demote",
+              "id": "m_e8b6a7d4e6a46e9c4b601216",
+              "expected_revision": 1,
+              "reason": "工作输入超预算，暂存近期，保留完整内容与来源供剧情调度"
+            },
+            {
+              "op": "demote",
+              "id": "m_e9c42841e40f2a4630c821fc",
+              "expected_revision": 1,
+              "reason": "工作输入超预算，暂存近期，保留完整内容与来源供剧情调度"
+            },
+            {
+              "op": "demote",
+              "id": "m_0f1c34aa70c31d82f41d845d",
+              "expected_revision": 1,
+              "reason": "礼节性短句，非当前关键行动"
+            },
+            {
+              "op": "demote",
+              "id": "m_1d7526accb77e8f1bfdea414",
+              "expected_revision": 1,
+              "reason": "已完成的结账动作，可检索"
+            },
+            {
+              "op": "demote",
+              "id": "m_440893497c6807f7b694f60c",
+              "expected_revision": 1,
+              "reason": "环境铺垫，已在场景中建立"
+            },
+            {
+              "op": "demote",
+              "id": "m_44e9d7aad67ccc2a2689df40",
+              "expected_revision": 1,
+              "reason": "极短回应，无独立关键信息"
+            },
+            {
+              "op": "demote",
+              "id": "m_69b9061e6cf3824ca3a0963a",
+              "expected_revision": 1,
+              "reason": "已完成离店动作，非当前任务"
+            },
+            {
+              "op": "demote",
+              "id": "m_bc3d4961d0f4a843e0beca4b",
+              "expected_revision": 1,
+              "reason": "追赶时的瞬间画面，可检索"
+            },
+            {
+              "op": "recall",
+              "id": "m_e9c42841e40f2a4630c821fc",
+              "expected_revision": 2,
+              "reason": "谅解回应，收束当前人际互动"
+            }
+          ],
+          "decisions": [
+            {
+              "id": "m_07d57147e517beaf6a99b962",
+              "from_tier": "working",
+              "requested_tier": "working",
+              "to_tier": "working",
+              "priority": 4,
+              "reason": "核心冲突中归还伞并道歉，延续当前场景"
+            },
+            {
+              "id": "m_0f1c34aa70c31d82f41d845d",
+              "from_tier": "working",
+              "requested_tier": "recent",
+              "to_tier": "recent",
+              "priority": 1,
+              "reason": "礼节性短句，非当前关键行动"
+            },
+            {
+              "id": "m_1d7526accb77e8f1bfdea414",
+              "from_tier": "working",
+              "requested_tier": "recent",
+              "to_tier": "recent",
+              "priority": 1,
+              "reason": "已完成的结账动作，可检索"
+            },
+            {
+              "id": "m_2f0e44ed36a694fe8e3bf698",
+              "from_tier": "working",
+              "requested_tier": "working",
+              "to_tier": "working",
+              "priority": 5,
+              "reason": "错拿伞冲突的起点，当前核心事件"
+            },
+            {
+              "id": "m_30596743296bef580edd24ce",
+              "from_tier": "working",
+              "requested_tier": "working",
+              "to_tier": "working",
+              "priority": 4,
+              "reason": "当前场景收束，身份关系与小周动作"
+            },
+            {
+              "id": "m_440893497c6807f7b694f60c",
+              "from_tier": "working",
+              "requested_tier": "recent",
+              "to_tier": "recent",
+              "priority": 2,
+              "reason": "环境铺垫，已在场景中建立"
+            },
+            {
+              "id": "m_44e9d7aad67ccc2a2689df40",
+              "from_tier": "working",
+              "requested_tier": "recent",
+              "to_tier": "recent",
+              "priority": 1,
+              "reason": "极短回应，无独立关键信息"
+            },
+            {
+              "id": "m_645dcca2577becfeabfb6305",
+              "from_tier": "working",
+              "requested_tier": "working",
+              "to_tier": "working",
+              "priority": 5,
+              "reason": "发现伞被错拿的触发点，核心证据"
+            },
+            {
+              "id": "m_69b9061e6cf3824ca3a0963a",
+              "from_tier": "working",
+              "requested_tier": "recent",
+              "to_tier": "recent",
+              "priority": 1,
+              "reason": "已完成离店动作，非当前任务"
+            },
+            {
+              "id": "m_8198c7889d52bad30fd9f232",
+              "from_tier": "working",
+              "requested_tier": "working",
+              "to_tier": "working",
+              "priority": 4,
+              "reason": "冲突化解与关系缓和的关键对话"
+            },
+            {
+              "id": "m_8af7013af0987bdedc2f2242",
+              "from_tier": "working",
+              "requested_tier": "working",
+              "to_tier": "working",
+              "priority": 3,
+              "reason": "借伞关系中的接受回应"
+            },
+            {
+              "id": "m_91911e4e5801770e03992af6",
+              "from_tier": "working",
+              "requested_tier": "working",
+              "to_tier": "working",
+              "priority": 5,
+              "reason": "当面说明伞归属，当前核心冲突高潮"
+            },
+            {
+              "id": "m_9ef2224c666675f6d4155934",
+              "from_tier": "working",
+              "requested_tier": "working",
+              "to_tier": "working",
+              "priority": 5,
+              "reason": "借出备用伞及明日归还约定，未完成行动"
+            },
+            {
+              "id": "m_a2aad20cba6b791371338f00",
+              "from_tier": "working",
+              "requested_tier": "working",
+              "to_tier": "working",
+              "priority": 3,
+              "reason": "误会化解的身份关系反应"
+            },
+            {
+              "id": "m_bc3d4961d0f4a843e0beca4b",
+              "from_tier": "working",
+              "requested_tier": "recent",
+              "to_tier": "recent",
+              "priority": 2,
+              "reason": "追赶时的瞬间画面，可检索"
+            },
+            {
+              "id": "m_be539a9e99aa88c2c17dc88e",
+              "from_tier": "recent",
+              "requested_tier": "recent",
+              "to_tier": "recent",
+              "priority": 2,
+              "reason": "入场与购物背景，冲突前铺垫"
+            },
+            {
+              "id": "m_c3ab8fac97a70d6391dd105a",
+              "from_tier": "recent",
+              "requested_tier": "recent",
+              "to_tier": "recent",
+              "priority": 1,
+              "reason": "结账时的日常提醒，非当前关键"
+            },
+            {
+              "id": "m_e8b6a7d4e6a46e9c4b601216",
+              "from_tier": "recent",
+              "requested_tier": "recent",
+              "to_tier": "recent",
+              "priority": 3,
+              "reason": "追出店门的过渡动作，已发生"
+            },
+            {
+              "id": "m_e9c42841e40f2a4630c821fc",
+              "from_tier": "recent",
+              "requested_tier": "working",
+              "to_tier": "working",
+              "priority": 3,
+              "reason": "谅解回应，收束当前人际互动"
+            }
+          ],
+          "deferred_ids": [],
+          "budget_deferred": [],
+          "working_bytes": 11393,
+          "omitted_ids": [],
+          "selection_ids": [
+            "m_07d57147e517beaf6a99b962",
+            "m_0f1c34aa70c31d82f41d845d",
+            "m_1d7526accb77e8f1bfdea414",
+            "m_2f0e44ed36a694fe8e3bf698",
+            "m_30596743296bef580edd24ce",
+            "m_440893497c6807f7b694f60c",
+            "m_44e9d7aad67ccc2a2689df40",
+            "m_645dcca2577becfeabfb6305",
+            "m_69b9061e6cf3824ca3a0963a",
+            "m_8198c7889d52bad30fd9f232",
+            "m_8af7013af0987bdedc2f2242",
+            "m_91911e4e5801770e03992af6",
+            "m_9ef2224c666675f6d4155934",
+            "m_a2aad20cba6b791371338f00",
+            "m_bc3d4961d0f4a843e0beca4b",
+            "m_be539a9e99aa88c2c17dc88e",
+            "m_c3ab8fac97a70d6391dd105a",
+            "m_e8b6a7d4e6a46e9c4b601216",
+            "m_e9c42841e40f2a4630c821fc"
+          ],
+          "intake_moves": [
+            {
+              "op": "demote",
+              "id": "m_be539a9e99aa88c2c17dc88e",
+              "expected_revision": 1,
+              "reason": "工作输入超预算，暂存近期，保留完整内容与来源供剧情调度"
+            },
+            {
+              "op": "demote",
+              "id": "m_c3ab8fac97a70d6391dd105a",
+              "expected_revision": 1,
+              "reason": "工作输入超预算，暂存近期，保留完整内容与来源供剧情调度"
+            },
+            {
+              "op": "demote",
+              "id": "m_e8b6a7d4e6a46e9c4b601216",
+              "expected_revision": 1,
+              "reason": "工作输入超预算，暂存近期，保留完整内容与来源供剧情调度"
+            },
+            {
+              "op": "demote",
+              "id": "m_e9c42841e40f2a4630c821fc",
+              "expected_revision": 1,
+              "reason": "工作输入超预算，暂存近期，保留完整内容与来源供剧情调度"
+            }
+          ]
+        },
+        "selection_ids": [],
+        "withheld_mutations": 0,
+        "temporal_omitted_ids": [],
+        "temporal_coverage": "Canonical events own state changes; memory only chooses storage tiers",
+        "extraction_transforms": [],
+        "canonical_projection": true
+      },
+      "withheld_mutations": 0,
+      "memory_semantic_review": "canonical_event_projection"
+    }
+  ],
+  "story_sha256": "1849cb32fac564ec688317424096ddeb5a7b7c36b315f917d26121b01dd69c5a",
+  "quality_checked": false,
+  "mechanical_checks_passed": true
+}

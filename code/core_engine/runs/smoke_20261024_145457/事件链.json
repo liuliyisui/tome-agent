@@ -1,0 +1,1227 @@
+{
+  "scope": "Canonical events simulated before prose; not a semantic correctness certificate",
+  "commits": [
+    {
+      "version": 1,
+      "chapter": 1,
+      "base_state_sha256": "e69371b0e2d5f9e97539b957a286efd098b49a8e63384489df51a32d680f9f12",
+      "state_sha256": "43c3b0d613919b3ba0b19c4d4ff46bddc394a60447dfdb62052f6abd14afd78e",
+      "proposal_sha256": "ba3fa335569c3cbfc81c9275781b1a5df4bfffc969de0ac92a6b1fba1b44e89b",
+      "scenes": [
+        {
+          "id": "s0001",
+          "purpose": "建立雨夜便利店场景，交代小周值夜班的日常，并引入匆忙进店的林晚。",
+          "participants": [
+            "小周",
+            "林晚"
+          ],
+          "beats": [
+            {
+              "id": "a0001",
+              "event_id": "c0001.a0001",
+              "statement": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。",
+              "mode": "actual",
+              "requires": [],
+              "changes": [
+                {
+                  "subject": "小周",
+                  "value": "在便利店值夜班，正在整理货架",
+                  "type": "fact",
+                  "id": "n0001r0001",
+                  "attribute": "当前状态",
+                  "kind": "state",
+                  "quote": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。"
+                },
+                {
+                  "subject": "便利店",
+                  "value": "雨夜，店内没有其他顾客",
+                  "type": "fact",
+                  "id": "n0001r0002",
+                  "attribute": "环境状态",
+                  "kind": "state",
+                  "quote": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。"
+                }
+              ],
+              "token_id": "slot_001"
+            },
+            {
+              "id": "a0002",
+              "event_id": "c0001.a0002",
+              "statement": "林晚推门进店，在门边收好湿伞，快速拿了一瓶水和一包饼干到柜台结账。小周扫码时提醒她雨大路滑，林晚点头道谢。",
+              "mode": "actual",
+              "requires": [],
+              "changes": [
+                {
+                  "subject": "林晚",
+                  "value": "在便利店购物，携带一把湿伞，已结账一瓶水和一包饼干",
+                  "type": "fact",
+                  "id": "n0001r0003",
+                  "attribute": "当前状态",
+                  "kind": "state",
+                  "quote": "林晚推门进店，在门边收好湿伞，快速拿了一瓶水和一包饼干到柜台结账。小周扫码时提醒她雨大路滑，林晚点头道谢。"
+                },
+                {
+                  "subject": "便利店门边",
+                  "value": "小周靠在门边的伞，以及林晚收好的湿伞",
+                  "type": "fact",
+                  "id": "n0001r0004",
+                  "attribute": "遗留物品",
+                  "kind": "state",
+                  "quote": "林晚推门进店，在门边收好湿伞，快速拿了一瓶水和一包饼干到柜台结账。小周扫码时提醒她雨大路滑，林晚点头道谢。"
+                }
+              ],
+              "token_id": "slot_002"
+            }
+          ]
+        },
+        {
+          "id": "s0002",
+          "purpose": "林晚匆忙离开时误拿小周的伞；小周发现后追出喊住她，引发初步误会。",
+          "participants": [
+            "小周",
+            "林晚"
+          ],
+          "beats": [
+            {
+              "id": "a0003",
+              "event_id": "c0001.a0003",
+              "statement": "林晚拎着东西匆匆出门，顺手从门边拿起一把伞撑开走进雨中。小周随后发现自己的伞不见了，门边只剩林晚那把湿伞。",
+              "mode": "actual",
+              "requires": [],
+              "changes": [
+                {
+                  "subject": "林晚",
+                  "value": "误拿了小周放在门边的伞，自己的湿伞留在便利店门边",
+                  "type": "fact",
+                  "id": "n0001r0005",
+                  "attribute": "持有物品",
+                  "kind": "state",
+                  "quote": "林晚拎着东西匆匆出门，顺手从门边拿起一把伞撑开走进雨中。小周随后发现自己的伞不见了，门边只剩林晚那把湿伞。"
+                },
+                {
+                  "subject": "小周",
+                  "value": "自己的伞被林晚误拿，手里拿着林晚遗留的湿伞",
+                  "type": "fact",
+                  "id": "n0001r0006",
+                  "attribute": "持有物品",
+                  "kind": "state",
+                  "quote": "林晚拎着东西匆匆出门，顺手从门边拿起一把伞撑开走进雨中。小周随后发现自己的伞不见了，门边只剩林晚那把湿伞。"
+                }
+              ],
+              "token_id": "slot_003"
+            },
+            {
+              "id": "a0004",
+              "event_id": "c0001.a0004",
+              "statement": "小周抓起门边的湿伞追出门，喊住林晚，语气急促地问她为什么拿自己的伞。林晚回头，一脸茫然。",
+              "mode": "actual",
+              "requires": [],
+              "changes": [
+                {
+                  "type": "transition",
+                  "fact_id": "n0001r0001",
+                  "to_value": "追出店门，怀疑林晚拿错伞，语气急促",
+                  "id": "op_dd13edd5cd41024e37975606434d753a",
+                  "quote": "小周抓起门边的湿伞追出门，喊住林晚，语气急促地问她为什么拿自己的伞。林晚回头，一脸茫然。",
+                  "expected_revision": 1,
+                  "from_value": "在便利店值夜班，正在整理货架"
+                },
+                {
+                  "type": "transition",
+                  "fact_id": "n0001r0003",
+                  "to_value": "被小周喊住，对伞的归属感到茫然",
+                  "id": "op_bfed7eae837b40beeb31f68768d1771a",
+                  "quote": "小周抓起门边的湿伞追出门，喊住林晚，语气急促地问她为什么拿自己的伞。林晚回头，一脸茫然。",
+                  "expected_revision": 1,
+                  "from_value": "在便利店购物，携带一把湿伞，已结账一瓶水和一包饼干"
+                }
+              ],
+              "token_id": "slot_004"
+            }
+          ]
+        },
+        {
+          "id": "s0003",
+          "purpose": "误会澄清：林晚认错归还，小周道歉并借出备用伞，两人和解。",
+          "participants": [
+            "小周",
+            "林晚"
+          ],
+          "beats": [
+            {
+              "id": "a0005",
+              "event_id": "c0001.a0005",
+              "statement": "林晚低头看了看手中的伞，又看了看小周手里的湿伞，恍然大悟，连声说对不起，把伞递还给小周，小周把自己的湿伞还给她。",
+              "mode": "actual",
+              "requires": [],
+              "changes": [
+                {
+                  "type": "transition",
+                  "fact_id": "n0001r0005",
+                  "to_value": "已归还小周的伞，取回自己的湿伞",
+                  "id": "op_20e5d91b20ce0230e39d109a103dfb8d",
+                  "quote": "林晚低头看了看手中的伞，又看了看小周手里的湿伞，恍然大悟，连声说对不起，把伞递还给小周，小周把自己的湿伞还给她。",
+                  "expected_revision": 1,
+                  "from_value": "误拿了小周放在门边的伞，自己的湿伞留在便利店门边"
+                },
+                {
+                  "type": "transition",
+                  "fact_id": "n0001r0006",
+                  "to_value": "拿回自己的伞，已把林晚的湿伞还给她",
+                  "id": "op_acf229af6e9ca77f0be4f1cc9cf66a89",
+                  "quote": "林晚低头看了看手中的伞，又看了看小周手里的湿伞，恍然大悟，连声说对不起，把伞递还给小周，小周把自己的湿伞还给她。",
+                  "expected_revision": 1,
+                  "from_value": "自己的伞被林晚误拿，手里拿着林晚遗留的湿伞"
+                }
+              ],
+              "token_id": "slot_005"
+            },
+            {
+              "id": "a0006",
+              "event_id": "c0001.a0006",
+              "statement": "小周有些不好意思，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。",
+              "mode": "actual",
+              "requires": [],
+              "changes": [
+                {
+                  "type": "transition",
+                  "fact_id": "n0001r0001",
+                  "to_value": "向林晚道歉，承认自己太着急，误会已解除",
+                  "id": "op_828a36277ac822d730230dc1ad8d1e72",
+                  "quote": "小周有些不好意思，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。",
+                  "expected_revision": 2,
+                  "from_value": "追出店门，怀疑林晚拿错伞，语气急促"
+                },
+                {
+                  "type": "transition",
+                  "fact_id": "n0001r0003",
+                  "to_value": "接受道歉，表示理解，误会已解除",
+                  "id": "op_b3f51d762d0704bec9c60f09558a5574",
+                  "quote": "小周有些不好意思，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。",
+                  "expected_revision": 2,
+                  "from_value": "被小周喊住，对伞的归属感到茫然"
+                }
+              ],
+              "token_id": "slot_006"
+            },
+            {
+              "id": "a0007",
+              "event_id": "c0001.a0007",
+              "statement": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。",
+              "mode": "actual",
+              "requires": [],
+              "changes": [
+                {
+                  "type": "transition",
+                  "fact_id": "n0001r0005",
+                  "to_value": "借得小周的备用伞，自己的湿伞也已在手",
+                  "id": "op_fef44b0f0fae69e85b7628b548b7fe95",
+                  "quote": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。",
+                  "expected_revision": 2,
+                  "from_value": "已归还小周的伞，取回自己的湿伞"
+                },
+                {
+                  "subject": "小周",
+                  "value": "已借给林晚",
+                  "type": "fact",
+                  "id": "n0001r0007",
+                  "attribute": "备用伞",
+                  "kind": "state",
+                  "quote": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。"
+                },
+                {
+                  "subject": "林晚",
+                  "value": "误会解除，友好告别",
+                  "type": "fact",
+                  "id": "n0001r0008",
+                  "attribute": "与店员的关系",
+                  "kind": "state",
+                  "quote": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。"
+                }
+              ],
+              "token_id": "slot_007"
+            }
+          ]
+        }
+      ],
+      "computed_times": [],
+      "memory_projection": [
+        {
+          "ref": "event:c0001.a0001",
+          "subject": "event:c0001.a0001",
+          "attribute": "occurrence",
+          "kind": "event",
+          "status": "active",
+          "claim": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。",
+          "beat_id": "a0001"
+        },
+        {
+          "ref": "facts:n0001r0001",
+          "subject": "小周",
+          "attribute": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+          "kind": "state",
+          "claim": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。",
+          "beat_id": "a0001",
+          "canonical_record": {
+            "subject": "小周",
+            "value": "在便利店值夜班，正在整理货架",
+            "type": "fact",
+            "id": "n0001r0001",
+            "attribute": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+            "kind": "state",
+            "quote": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。",
+            "chapter": 1,
+            "source_sha256": "ea0bf04be1cf2f0c5d809c6b428f2579e773d117d201da116508f9706e19e080",
+            "revision": 1,
+            "attribute_label": "当前状态",
+            "source_event": "c0001.a0001",
+            "source_stage": "canonical_event"
+          }
+        },
+        {
+          "ref": "facts:n0001r0002",
+          "subject": "便利店",
+          "attribute": "field_6054b3301928191164db05fda7d916ff",
+          "kind": "state",
+          "claim": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。",
+          "beat_id": "a0001",
+          "canonical_record": {
+            "subject": "便利店",
+            "value": "雨夜，店内没有其他顾客",
+            "type": "fact",
+            "id": "n0001r0002",
+            "attribute": "field_6054b3301928191164db05fda7d916ff",
+            "kind": "state",
+            "quote": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。",
+            "chapter": 1,
+            "source_sha256": "ea0bf04be1cf2f0c5d809c6b428f2579e773d117d201da116508f9706e19e080",
+            "revision": 1,
+            "attribute_label": "环境状态",
+            "source_event": "c0001.a0001",
+            "source_stage": "canonical_event"
+          }
+        },
+        {
+          "ref": "event:c0001.a0002",
+          "subject": "event:c0001.a0002",
+          "attribute": "occurrence",
+          "kind": "event",
+          "status": "active",
+          "claim": "林晚推门进店，在门边收好湿伞，快速拿了一瓶水和一包饼干到柜台结账。小周扫码时提醒她雨大路滑，林晚点头道谢。",
+          "beat_id": "a0002"
+        },
+        {
+          "ref": "facts:n0001r0003",
+          "subject": "林晚",
+          "attribute": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+          "kind": "state",
+          "claim": "林晚推门进店，在门边收好湿伞，快速拿了一瓶水和一包饼干到柜台结账。小周扫码时提醒她雨大路滑，林晚点头道谢。",
+          "beat_id": "a0002",
+          "canonical_record": {
+            "subject": "林晚",
+            "value": "在便利店购物，携带一把湿伞，已结账一瓶水和一包饼干",
+            "type": "fact",
+            "id": "n0001r0003",
+            "attribute": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+            "kind": "state",
+            "quote": "林晚推门进店，在门边收好湿伞，快速拿了一瓶水和一包饼干到柜台结账。小周扫码时提醒她雨大路滑，林晚点头道谢。",
+            "chapter": 1,
+            "source_sha256": "1448e1c75740485f23f1185ca8eac43912947e93abc1d4d99d388bafd4503799",
+            "revision": 1,
+            "attribute_label": "当前状态",
+            "source_event": "c0001.a0002",
+            "source_stage": "canonical_event"
+          }
+        },
+        {
+          "ref": "facts:n0001r0004",
+          "subject": "便利店门边",
+          "attribute": "field_05e237b00db409faf9754e403244bf37",
+          "kind": "state",
+          "claim": "林晚推门进店，在门边收好湿伞，快速拿了一瓶水和一包饼干到柜台结账。小周扫码时提醒她雨大路滑，林晚点头道谢。",
+          "beat_id": "a0002",
+          "canonical_record": {
+            "subject": "便利店门边",
+            "value": "小周靠在门边的伞，以及林晚收好的湿伞",
+            "type": "fact",
+            "id": "n0001r0004",
+            "attribute": "field_05e237b00db409faf9754e403244bf37",
+            "kind": "state",
+            "quote": "林晚推门进店，在门边收好湿伞，快速拿了一瓶水和一包饼干到柜台结账。小周扫码时提醒她雨大路滑，林晚点头道谢。",
+            "chapter": 1,
+            "source_sha256": "1448e1c75740485f23f1185ca8eac43912947e93abc1d4d99d388bafd4503799",
+            "revision": 1,
+            "attribute_label": "遗留物品",
+            "source_event": "c0001.a0002",
+            "source_stage": "canonical_event"
+          }
+        },
+        {
+          "ref": "event:c0001.a0003",
+          "subject": "event:c0001.a0003",
+          "attribute": "occurrence",
+          "kind": "event",
+          "status": "active",
+          "claim": "林晚拎着东西匆匆出门，顺手从门边拿起一把伞撑开走进雨中。小周随后发现自己的伞不见了，门边只剩林晚那把湿伞。",
+          "beat_id": "a0003"
+        },
+        {
+          "ref": "facts:n0001r0005",
+          "subject": "林晚",
+          "attribute": "field_8d2052b42b309654dbc9973742af68bc",
+          "kind": "state",
+          "claim": "林晚拎着东西匆匆出门，顺手从门边拿起一把伞撑开走进雨中。小周随后发现自己的伞不见了，门边只剩林晚那把湿伞。",
+          "beat_id": "a0003",
+          "canonical_record": {
+            "subject": "林晚",
+            "value": "误拿了小周放在门边的伞，自己的湿伞留在便利店门边",
+            "type": "fact",
+            "id": "n0001r0005",
+            "attribute": "field_8d2052b42b309654dbc9973742af68bc",
+            "kind": "state",
+            "quote": "林晚拎着东西匆匆出门，顺手从门边拿起一把伞撑开走进雨中。小周随后发现自己的伞不见了，门边只剩林晚那把湿伞。",
+            "chapter": 1,
+            "source_sha256": "84b6ee9767d52c9421f970830b31afa0935140e2e6f4814a2708c075c31615be",
+            "revision": 1,
+            "attribute_label": "持有物品",
+            "source_event": "c0001.a0003",
+            "source_stage": "canonical_event"
+          }
+        },
+        {
+          "ref": "facts:n0001r0006",
+          "subject": "小周",
+          "attribute": "field_8d2052b42b309654dbc9973742af68bc",
+          "kind": "state",
+          "claim": "林晚拎着东西匆匆出门，顺手从门边拿起一把伞撑开走进雨中。小周随后发现自己的伞不见了，门边只剩林晚那把湿伞。",
+          "beat_id": "a0003",
+          "canonical_record": {
+            "subject": "小周",
+            "value": "自己的伞被林晚误拿，手里拿着林晚遗留的湿伞",
+            "type": "fact",
+            "id": "n0001r0006",
+            "attribute": "field_8d2052b42b309654dbc9973742af68bc",
+            "kind": "state",
+            "quote": "林晚拎着东西匆匆出门，顺手从门边拿起一把伞撑开走进雨中。小周随后发现自己的伞不见了，门边只剩林晚那把湿伞。",
+            "chapter": 1,
+            "source_sha256": "84b6ee9767d52c9421f970830b31afa0935140e2e6f4814a2708c075c31615be",
+            "revision": 1,
+            "attribute_label": "持有物品",
+            "source_event": "c0001.a0003",
+            "source_stage": "canonical_event"
+          }
+        },
+        {
+          "ref": "event:c0001.a0004",
+          "subject": "event:c0001.a0004",
+          "attribute": "occurrence",
+          "kind": "event",
+          "status": "active",
+          "claim": "小周抓起门边的湿伞追出门，喊住林晚，语气急促地问她为什么拿自己的伞。林晚回头，一脸茫然。",
+          "beat_id": "a0004"
+        },
+        {
+          "ref": "facts:n0001r0001",
+          "subject": "小周",
+          "attribute": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+          "kind": "state",
+          "claim": "小周抓起门边的湿伞追出门，喊住林晚，语气急促地问她为什么拿自己的伞。林晚回头，一脸茫然。",
+          "beat_id": "a0004",
+          "canonical_record": {
+            "subject": "小周",
+            "value": "追出店门，怀疑林晚拿错伞，语气急促",
+            "type": "fact",
+            "id": "n0001r0001",
+            "attribute": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+            "kind": "state",
+            "quote": "小周抓起门边的湿伞追出门，喊住林晚，语气急促地问她为什么拿自己的伞。林晚回头，一脸茫然。",
+            "chapter": 1,
+            "source_sha256": "972a3b2afd9dfb053e85477e005f6d275e1cd21b07530992a00c568d8206cfa4",
+            "revision": 2,
+            "attribute_label": "当前状态",
+            "source_event": "c0001.a0004",
+            "source_stage": "canonical_event"
+          }
+        },
+        {
+          "ref": "facts:n0001r0003",
+          "subject": "林晚",
+          "attribute": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+          "kind": "state",
+          "claim": "小周抓起门边的湿伞追出门，喊住林晚，语气急促地问她为什么拿自己的伞。林晚回头，一脸茫然。",
+          "beat_id": "a0004",
+          "canonical_record": {
+            "subject": "林晚",
+            "value": "被小周喊住，对伞的归属感到茫然",
+            "type": "fact",
+            "id": "n0001r0003",
+            "attribute": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+            "kind": "state",
+            "quote": "小周抓起门边的湿伞追出门，喊住林晚，语气急促地问她为什么拿自己的伞。林晚回头，一脸茫然。",
+            "chapter": 1,
+            "source_sha256": "972a3b2afd9dfb053e85477e005f6d275e1cd21b07530992a00c568d8206cfa4",
+            "revision": 2,
+            "attribute_label": "当前状态",
+            "source_event": "c0001.a0004",
+            "source_stage": "canonical_event"
+          }
+        },
+        {
+          "ref": "event:c0001.a0005",
+          "subject": "event:c0001.a0005",
+          "attribute": "occurrence",
+          "kind": "event",
+          "status": "active",
+          "claim": "林晚低头看了看手中的伞，又看了看小周手里的湿伞，恍然大悟，连声说对不起，把伞递还给小周，小周把自己的湿伞还给她。",
+          "beat_id": "a0005"
+        },
+        {
+          "ref": "facts:n0001r0005",
+          "subject": "林晚",
+          "attribute": "field_8d2052b42b309654dbc9973742af68bc",
+          "kind": "state",
+          "claim": "林晚低头看了看手中的伞，又看了看小周手里的湿伞，恍然大悟，连声说对不起，把伞递还给小周，小周把自己的湿伞还给她。",
+          "beat_id": "a0005",
+          "canonical_record": {
+            "subject": "林晚",
+            "value": "已归还小周的伞，取回自己的湿伞",
+            "type": "fact",
+            "id": "n0001r0005",
+            "attribute": "field_8d2052b42b309654dbc9973742af68bc",
+            "kind": "state",
+            "quote": "林晚低头看了看手中的伞，又看了看小周手里的湿伞，恍然大悟，连声说对不起，把伞递还给小周，小周把自己的湿伞还给她。",
+            "chapter": 1,
+            "source_sha256": "781853e9de0b04773540e2483f7dbccc64846c0af6709073567b655275822340",
+            "revision": 2,
+            "attribute_label": "持有物品",
+            "source_event": "c0001.a0005",
+            "source_stage": "canonical_event"
+          }
+        },
+        {
+          "ref": "facts:n0001r0006",
+          "subject": "小周",
+          "attribute": "field_8d2052b42b309654dbc9973742af68bc",
+          "kind": "state",
+          "claim": "林晚低头看了看手中的伞，又看了看小周手里的湿伞，恍然大悟，连声说对不起，把伞递还给小周，小周把自己的湿伞还给她。",
+          "beat_id": "a0005",
+          "canonical_record": {
+            "subject": "小周",
+            "value": "拿回自己的伞，已把林晚的湿伞还给她",
+            "type": "fact",
+            "id": "n0001r0006",
+            "attribute": "field_8d2052b42b309654dbc9973742af68bc",
+            "kind": "state",
+            "quote": "林晚低头看了看手中的伞，又看了看小周手里的湿伞，恍然大悟，连声说对不起，把伞递还给小周，小周把自己的湿伞还给她。",
+            "chapter": 1,
+            "source_sha256": "781853e9de0b04773540e2483f7dbccc64846c0af6709073567b655275822340",
+            "revision": 2,
+            "attribute_label": "持有物品",
+            "source_event": "c0001.a0005",
+            "source_stage": "canonical_event"
+          }
+        },
+        {
+          "ref": "event:c0001.a0006",
+          "subject": "event:c0001.a0006",
+          "attribute": "occurrence",
+          "kind": "event",
+          "status": "active",
+          "claim": "小周有些不好意思，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。",
+          "beat_id": "a0006"
+        },
+        {
+          "ref": "facts:n0001r0001",
+          "subject": "小周",
+          "attribute": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+          "kind": "state",
+          "claim": "小周有些不好意思，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。",
+          "beat_id": "a0006",
+          "canonical_record": {
+            "subject": "小周",
+            "value": "向林晚道歉，承认自己太着急，误会已解除",
+            "type": "fact",
+            "id": "n0001r0001",
+            "attribute": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+            "kind": "state",
+            "quote": "小周有些不好意思，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。",
+            "chapter": 1,
+            "source_sha256": "f000fac430abb9e63c0bb665529bbd739383200d4780c62a7825775fc8354b98",
+            "revision": 3,
+            "attribute_label": "当前状态",
+            "source_event": "c0001.a0006",
+            "source_stage": "canonical_event"
+          }
+        },
+        {
+          "ref": "facts:n0001r0003",
+          "subject": "林晚",
+          "attribute": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+          "kind": "state",
+          "claim": "小周有些不好意思，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。",
+          "beat_id": "a0006",
+          "canonical_record": {
+            "subject": "林晚",
+            "value": "接受道歉，表示理解，误会已解除",
+            "type": "fact",
+            "id": "n0001r0003",
+            "attribute": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+            "kind": "state",
+            "quote": "小周有些不好意思，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。",
+            "chapter": 1,
+            "source_sha256": "f000fac430abb9e63c0bb665529bbd739383200d4780c62a7825775fc8354b98",
+            "revision": 3,
+            "attribute_label": "当前状态",
+            "source_event": "c0001.a0006",
+            "source_stage": "canonical_event"
+          }
+        },
+        {
+          "ref": "event:c0001.a0007",
+          "subject": "event:c0001.a0007",
+          "attribute": "occurrence",
+          "kind": "event",
+          "status": "active",
+          "claim": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。",
+          "beat_id": "a0007"
+        },
+        {
+          "ref": "facts:n0001r0005",
+          "subject": "林晚",
+          "attribute": "field_8d2052b42b309654dbc9973742af68bc",
+          "kind": "state",
+          "claim": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。",
+          "beat_id": "a0007",
+          "canonical_record": {
+            "subject": "林晚",
+            "value": "借得小周的备用伞，自己的湿伞也已在手",
+            "type": "fact",
+            "id": "n0001r0005",
+            "attribute": "field_8d2052b42b309654dbc9973742af68bc",
+            "kind": "state",
+            "quote": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。",
+            "chapter": 1,
+            "source_sha256": "e779a3b18ded7c86f717114a0bde65216cf9d889e6c11d625dca307eb1d098ad",
+            "revision": 3,
+            "attribute_label": "持有物品",
+            "source_event": "c0001.a0007",
+            "source_stage": "canonical_event"
+          }
+        },
+        {
+          "ref": "facts:n0001r0007",
+          "subject": "小周",
+          "attribute": "field_253ef30f3ce2b66ecd15873f65e8291b",
+          "kind": "state",
+          "claim": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。",
+          "beat_id": "a0007",
+          "canonical_record": {
+            "subject": "小周",
+            "value": "已借给林晚",
+            "type": "fact",
+            "id": "n0001r0007",
+            "attribute": "field_253ef30f3ce2b66ecd15873f65e8291b",
+            "kind": "state",
+            "quote": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。",
+            "chapter": 1,
+            "source_sha256": "e779a3b18ded7c86f717114a0bde65216cf9d889e6c11d625dca307eb1d098ad",
+            "revision": 1,
+            "attribute_label": "备用伞",
+            "source_event": "c0001.a0007",
+            "source_stage": "canonical_event"
+          }
+        },
+        {
+          "ref": "facts:n0001r0008",
+          "subject": "林晚",
+          "attribute": "field_dfe205ddbffd74fb253bbb08658a4dc0",
+          "kind": "state",
+          "claim": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。",
+          "beat_id": "a0007",
+          "canonical_record": {
+            "subject": "林晚",
+            "value": "误会解除，友好告别",
+            "type": "fact",
+            "id": "n0001r0008",
+            "attribute": "field_dfe205ddbffd74fb253bbb08658a4dc0",
+            "kind": "state",
+            "quote": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。",
+            "chapter": 1,
+            "source_sha256": "e779a3b18ded7c86f717114a0bde65216cf9d889e6c11d625dca307eb1d098ad",
+            "revision": 1,
+            "attribute_label": "与店员的关系",
+            "source_event": "c0001.a0007",
+            "source_stage": "canonical_event"
+          }
+        }
+      ],
+      "identifier_normalizations": [
+        {
+          "path": "scenes[0].beats[0].assertion_scope",
+          "storage_field": "mode",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[0].beats[0].changes[0].operation",
+          "original": "establish_fact",
+          "storage_id": "fact",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[0].beats[0].changes[0].record_id",
+          "storage_field": "id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[0].beats[0].changes[0].property_name",
+          "storage_field": "attribute",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[0].beats[0].changes[0].fact_class",
+          "storage_field": "kind",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[0].beats[0].changes[1].operation",
+          "original": "establish_fact",
+          "storage_id": "fact",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[0].beats[0].changes[1].record_id",
+          "storage_field": "id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[0].beats[0].changes[1].property_name",
+          "storage_field": "attribute",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[0].beats[0].changes[1].fact_class",
+          "storage_field": "kind",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[0].beats[1].assertion_scope",
+          "storage_field": "mode",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[0].beats[1].changes[0].operation",
+          "original": "establish_fact",
+          "storage_id": "fact",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[0].beats[1].changes[0].record_id",
+          "storage_field": "id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[0].beats[1].changes[0].property_name",
+          "storage_field": "attribute",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[0].beats[1].changes[0].fact_class",
+          "storage_field": "kind",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[0].beats[1].changes[1].operation",
+          "original": "establish_fact",
+          "storage_id": "fact",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[0].beats[1].changes[1].record_id",
+          "storage_field": "id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[0].beats[1].changes[1].property_name",
+          "storage_field": "attribute",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[0].beats[1].changes[1].fact_class",
+          "storage_field": "kind",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[1].beats[0].assertion_scope",
+          "storage_field": "mode",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[1].beats[0].changes[0].operation",
+          "original": "establish_fact",
+          "storage_id": "fact",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[1].beats[0].changes[0].record_id",
+          "storage_field": "id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[1].beats[0].changes[0].property_name",
+          "storage_field": "attribute",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[1].beats[0].changes[0].fact_class",
+          "storage_field": "kind",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[1].beats[0].changes[1].operation",
+          "original": "establish_fact",
+          "storage_id": "fact",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[1].beats[0].changes[1].record_id",
+          "storage_field": "id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[1].beats[0].changes[1].property_name",
+          "storage_field": "attribute",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[1].beats[0].changes[1].fact_class",
+          "storage_field": "kind",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[1].beats[1].assertion_scope",
+          "storage_field": "mode",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[1].beats[1].changes[0].operation",
+          "original": "change_fact_value",
+          "storage_id": "transition",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[1].beats[1].changes[0].fact_ref",
+          "storage_field": "fact_id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[1].beats[1].changes[0].new_value",
+          "storage_field": "to_value",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[1].beats[1].changes[1].operation",
+          "original": "change_fact_value",
+          "storage_id": "transition",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[1].beats[1].changes[1].fact_ref",
+          "storage_field": "fact_id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[1].beats[1].changes[1].new_value",
+          "storage_field": "to_value",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[0].assertion_scope",
+          "storage_field": "mode",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[0].changes[0].operation",
+          "original": "change_fact_value",
+          "storage_id": "transition",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[2].beats[0].changes[0].fact_ref",
+          "storage_field": "fact_id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[0].changes[0].new_value",
+          "storage_field": "to_value",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[0].changes[1].operation",
+          "original": "change_fact_value",
+          "storage_id": "transition",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[2].beats[0].changes[1].fact_ref",
+          "storage_field": "fact_id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[0].changes[1].new_value",
+          "storage_field": "to_value",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[1].assertion_scope",
+          "storage_field": "mode",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[1].changes[0].operation",
+          "original": "change_fact_value",
+          "storage_id": "transition",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[2].beats[1].changes[0].fact_ref",
+          "storage_field": "fact_id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[1].changes[0].new_value",
+          "storage_field": "to_value",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[1].changes[1].operation",
+          "original": "change_fact_value",
+          "storage_id": "transition",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[2].beats[1].changes[1].fact_ref",
+          "storage_field": "fact_id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[1].changes[1].new_value",
+          "storage_field": "to_value",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[2].assertion_scope",
+          "storage_field": "mode",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[2].changes[0].operation",
+          "original": "change_fact_value",
+          "storage_id": "transition",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[2].beats[2].changes[0].fact_ref",
+          "storage_field": "fact_id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[2].changes[0].new_value",
+          "storage_field": "to_value",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[2].changes[1].operation",
+          "original": "establish_fact",
+          "storage_id": "fact",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[2].beats[2].changes[1].record_id",
+          "storage_field": "id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[2].changes[1].property_name",
+          "storage_field": "attribute",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[2].changes[1].fact_class",
+          "storage_field": "kind",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[2].changes[2].operation",
+          "original": "establish_fact",
+          "storage_id": "fact",
+          "rule": "operation_name"
+        },
+        {
+          "path": "scenes[2].beats[2].changes[2].record_id",
+          "storage_field": "id",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[2].changes[2].property_name",
+          "storage_field": "attribute",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[2].beats[2].changes[2].fact_class",
+          "storage_field": "kind",
+          "rule": "public_field_name"
+        },
+        {
+          "path": "scenes[1].beats[1].changes[0].id",
+          "original": null,
+          "storage_id": "op_dd13edd5cd41024e37975606434d753a",
+          "rule": "generated_operation_id"
+        },
+        {
+          "path": "scenes[1].beats[1].changes[1].id",
+          "original": null,
+          "storage_id": "op_bfed7eae837b40beeb31f68768d1771a",
+          "rule": "generated_operation_id"
+        },
+        {
+          "path": "scenes[2].beats[0].changes[0].id",
+          "original": null,
+          "storage_id": "op_20e5d91b20ce0230e39d109a103dfb8d",
+          "rule": "generated_operation_id"
+        },
+        {
+          "path": "scenes[2].beats[0].changes[1].id",
+          "original": null,
+          "storage_id": "op_acf229af6e9ca77f0be4f1cc9cf66a89",
+          "rule": "generated_operation_id"
+        },
+        {
+          "path": "scenes[2].beats[1].changes[0].id",
+          "original": null,
+          "storage_id": "op_828a36277ac822d730230dc1ad8d1e72",
+          "rule": "generated_operation_id"
+        },
+        {
+          "path": "scenes[2].beats[1].changes[1].id",
+          "original": null,
+          "storage_id": "op_b3f51d762d0704bec9c60f09558a5574",
+          "rule": "generated_operation_id"
+        },
+        {
+          "path": "scenes[2].beats[2].changes[0].id",
+          "original": null,
+          "storage_id": "op_fef44b0f0fae69e85b7628b548b7fe95",
+          "rule": "generated_operation_id"
+        }
+      ],
+      "reference_catalogue_sha256": "c7b8946967aba4d8379bc189924432d4dd162d78e7021d91e090fca92cf1e8f8",
+      "sha256": "d542f0f9bee288e5519aa7e250f87d70363064c31b36b4f17a4677ad1f91ec1f"
+    }
+  ],
+  "current_state": {
+    "version": 1,
+    "events": {},
+    "objects": {},
+    "observations": {},
+    "handoffs": {},
+    "identities": {},
+    "progress": {},
+    "facts": {
+      "n0001r0001": {
+        "subject": "小周",
+        "value": "向林晚道歉，承认自己太着急，误会已解除",
+        "type": "fact",
+        "id": "n0001r0001",
+        "attribute": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+        "kind": "state",
+        "quote": "小周有些不好意思，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。",
+        "chapter": 1,
+        "source_sha256": "f000fac430abb9e63c0bb665529bbd739383200d4780c62a7825775fc8354b98",
+        "revision": 3,
+        "attribute_label": "当前状态",
+        "source_event": "c0001.a0006",
+        "source_stage": "canonical_event"
+      },
+      "n0001r0002": {
+        "subject": "便利店",
+        "value": "雨夜，店内没有其他顾客",
+        "type": "fact",
+        "id": "n0001r0002",
+        "attribute": "field_6054b3301928191164db05fda7d916ff",
+        "kind": "state",
+        "quote": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。",
+        "chapter": 1,
+        "source_sha256": "ea0bf04be1cf2f0c5d809c6b428f2579e773d117d201da116508f9706e19e080",
+        "revision": 1,
+        "attribute_label": "环境状态",
+        "source_event": "c0001.a0001",
+        "source_stage": "canonical_event"
+      },
+      "n0001r0003": {
+        "subject": "林晚",
+        "value": "接受道歉，表示理解，误会已解除",
+        "type": "fact",
+        "id": "n0001r0003",
+        "attribute": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+        "kind": "state",
+        "quote": "小周有些不好意思，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。",
+        "chapter": 1,
+        "source_sha256": "f000fac430abb9e63c0bb665529bbd739383200d4780c62a7825775fc8354b98",
+        "revision": 3,
+        "attribute_label": "当前状态",
+        "source_event": "c0001.a0006",
+        "source_stage": "canonical_event"
+      },
+      "n0001r0004": {
+        "subject": "便利店门边",
+        "value": "小周靠在门边的伞，以及林晚收好的湿伞",
+        "type": "fact",
+        "id": "n0001r0004",
+        "attribute": "field_05e237b00db409faf9754e403244bf37",
+        "kind": "state",
+        "quote": "林晚推门进店，在门边收好湿伞，快速拿了一瓶水和一包饼干到柜台结账。小周扫码时提醒她雨大路滑，林晚点头道谢。",
+        "chapter": 1,
+        "source_sha256": "1448e1c75740485f23f1185ca8eac43912947e93abc1d4d99d388bafd4503799",
+        "revision": 1,
+        "attribute_label": "遗留物品",
+        "source_event": "c0001.a0002",
+        "source_stage": "canonical_event"
+      },
+      "n0001r0005": {
+        "subject": "林晚",
+        "value": "借得小周的备用伞，自己的湿伞也已在手",
+        "type": "fact",
+        "id": "n0001r0005",
+        "attribute": "field_8d2052b42b309654dbc9973742af68bc",
+        "kind": "state",
+        "quote": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。",
+        "chapter": 1,
+        "source_sha256": "e779a3b18ded7c86f717114a0bde65216cf9d889e6c11d625dca307eb1d098ad",
+        "revision": 3,
+        "attribute_label": "持有物品",
+        "source_event": "c0001.a0007",
+        "source_stage": "canonical_event"
+      },
+      "n0001r0006": {
+        "subject": "小周",
+        "value": "拿回自己的伞，已把林晚的湿伞还给她",
+        "type": "fact",
+        "id": "n0001r0006",
+        "attribute": "field_8d2052b42b309654dbc9973742af68bc",
+        "kind": "state",
+        "quote": "林晚低头看了看手中的伞，又看了看小周手里的湿伞，恍然大悟，连声说对不起，把伞递还给小周，小周把自己的湿伞还给她。",
+        "chapter": 1,
+        "source_sha256": "781853e9de0b04773540e2483f7dbccc64846c0af6709073567b655275822340",
+        "revision": 2,
+        "attribute_label": "持有物品",
+        "source_event": "c0001.a0005",
+        "source_stage": "canonical_event"
+      },
+      "n0001r0007": {
+        "subject": "小周",
+        "value": "已借给林晚",
+        "type": "fact",
+        "id": "n0001r0007",
+        "attribute": "field_253ef30f3ce2b66ecd15873f65e8291b",
+        "kind": "state",
+        "quote": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。",
+        "chapter": 1,
+        "source_sha256": "e779a3b18ded7c86f717114a0bde65216cf9d889e6c11d625dca307eb1d098ad",
+        "revision": 1,
+        "attribute_label": "备用伞",
+        "source_event": "c0001.a0007",
+        "source_stage": "canonical_event"
+      },
+      "n0001r0008": {
+        "subject": "林晚",
+        "value": "误会解除，友好告别",
+        "type": "fact",
+        "id": "n0001r0008",
+        "attribute": "field_dfe205ddbffd74fb253bbb08658a4dc0",
+        "kind": "state",
+        "quote": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。",
+        "chapter": 1,
+        "source_sha256": "e779a3b18ded7c86f717114a0bde65216cf9d889e6c11d625dca307eb1d098ad",
+        "revision": 1,
+        "attribute_label": "与店员的关系",
+        "source_event": "c0001.a0007",
+        "source_stage": "canonical_event"
+      }
+    },
+    "knowledge": {},
+    "event_log": {
+      "c0001.a0001": {
+        "id": "c0001.a0001",
+        "chapter": 1,
+        "statement": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。",
+        "participants": [
+          "小周",
+          "林晚"
+        ],
+        "mode": "actual"
+      },
+      "c0001.a0002": {
+        "id": "c0001.a0002",
+        "chapter": 1,
+        "statement": "林晚推门进店，在门边收好湿伞，快速拿了一瓶水和一包饼干到柜台结账。小周扫码时提醒她雨大路滑，林晚点头道谢。",
+        "participants": [
+          "小周",
+          "林晚"
+        ],
+        "mode": "actual"
+      },
+      "c0001.a0003": {
+        "id": "c0001.a0003",
+        "chapter": 1,
+        "statement": "林晚拎着东西匆匆出门，顺手从门边拿起一把伞撑开走进雨中。小周随后发现自己的伞不见了，门边只剩林晚那把湿伞。",
+        "participants": [
+          "小周",
+          "林晚"
+        ],
+        "mode": "actual"
+      },
+      "c0001.a0004": {
+        "id": "c0001.a0004",
+        "chapter": 1,
+        "statement": "小周抓起门边的湿伞追出门，喊住林晚，语气急促地问她为什么拿自己的伞。林晚回头，一脸茫然。",
+        "participants": [
+          "小周",
+          "林晚"
+        ],
+        "mode": "actual"
+      },
+      "c0001.a0005": {
+        "id": "c0001.a0005",
+        "chapter": 1,
+        "statement": "林晚低头看了看手中的伞，又看了看小周手里的湿伞，恍然大悟，连声说对不起，把伞递还给小周，小周把自己的湿伞还给她。",
+        "participants": [
+          "小周",
+          "林晚"
+        ],
+        "mode": "actual"
+      },
+      "c0001.a0006": {
+        "id": "c0001.a0006",
+        "chapter": 1,
+        "statement": "小周有些不好意思，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。",
+        "participants": [
+          "小周",
+          "林晚"
+        ],
+        "mode": "actual"
+      },
+      "c0001.a0007": {
+        "id": "c0001.a0007",
+        "chapter": 1,
+        "statement": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。",
+        "participants": [
+          "小周",
+          "林晚"
+        ],
+        "mode": "actual"
+      }
+    },
+    "present_cursor": null
+  },
+  "prepared_not_committed": []
+}
