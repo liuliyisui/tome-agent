@@ -26,10 +26,9 @@ class: cover
   <div class="text-[62px] font-extrabold leading-none tracking-tight text-[#1D2B3A]">Tome Agent</div>
   <div class="text-[21px] font-bold mt-5 text-[#1B3B5F]">让一个点子，变成一部自洽的长篇小说</div>
   <div class="w-[160px] h-[3px] bg-[#B4472E] mt-6"></div>
-  <div class="text-[12px] mt-5 text-[#3B4959]">第一部分 · 产品介绍 ｜ 1. 产品设计（1.1–1.2）　2. 产品设计应用的原则</div>
 </div>
 
-<div class="absolute left-[52px] right-[52px] bottom-[38px]">
+<div class="absolute left-[52px] right-[52px] bottom-[76px]">
   <div class="tag mb-2">汇报人</div>
   <div class="flex gap-10">
     <div>
@@ -56,6 +55,63 @@ class: cover
 </div>
 
 <!-- 开场：我们做的是 Tome Agent，一个部署在云服务器上的长篇小说生成助手。这 8 分钟我负责第一部分：它是什么，以及为什么这么设计。 -->
+---
+layout: default
+---
+
+<div class="eyebrow">汇报目录</div>
+
+# 三个部分、23 页：8 分钟讲完设计与实现
+
+<div class="hr-line"></div>
+
+<div class="grid grid-cols-2 gap-6">
+
+<div>
+
+<div class="text-[12.5px] font-bold text-[#1B3B5F]">1 · 产品设计</div>
+<div class="mt-1">
+  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.1.1 使命 · 1.1.2 口号</div><div class="text-[11px] font-bold text-[#1B3B5F]">P3</div></div>
+  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.1.3 目标用户 · 1.1.4 如何获得用户</div><div class="text-[11px] font-bold text-[#1B3B5F]">P4</div></div>
+  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.1.5 团队优势 · 1.1.6 差异化</div><div class="text-[11px] font-bold text-[#1B3B5F]">P5</div></div>
+  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.2 产品定义 · 1.2.1 五个症状</div><div class="text-[11px] font-bold text-[#1B3B5F]">P6</div></div>
+  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.2.2 对客户的价值（用户故事）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P7</div></div>
+  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.2.3 解决方案（形态 + 机制）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P8</div></div>
+</div>
+
+<div class="text-[12.5px] font-bold text-[#1B3B5F] mt-5">2 · 产品设计应用的原则</div>
+<div class="mt-1">
+  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">十二条原则：四组，每组三条</div><div class="text-[11px] font-bold text-[#1B3B5F]">P9</div></div>
+<div class="text-[10.5px] mt-1 leading-[1.7]" style="color:#8A8072">需求 / 信息 / 创新 · 系统 / 收敛 / 优化 · 继承 / 效益 / 时间 · 定量 / 简化 / 审核</div>
+</div>
+
+</div>
+
+<div>
+
+<div class="text-[12.5px] font-bold text-[#1B3B5F]">3 · 产品实现</div>
+<div class="mt-1">
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.1 用户体验设计考虑的因素</div><div class="text-[11px] font-bold text-[#1B3B5F]">P10</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.2 编程语言 / IDE / 平台 / 框架</div><div class="text-[11px] font-bold text-[#1B3B5F]">P11</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.3 代码仓库链接与提交历史</div><div class="text-[11px] font-bold text-[#1B3B5F]">P12</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.4 全生命周期问题与解决方法</div><div class="text-[11px] font-bold text-[#1B3B5F]">P13</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.1 系统架构图</div><div class="text-[11px] font-bold text-[#1B3B5F]">P14</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.2 基础设施与部署形态</div><div class="text-[11px] font-bold text-[#1B3B5F]">P15</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.3 智能体技术设计（编排 / 记忆 / 护栏）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P16–17</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.4 数据库设计（E-R）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P18</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.5 接口设计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P19</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.6 前端设计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P20</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.6 软件质量（方法与工具）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P21</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.7 代码统计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P22</div></div>
+</div>
+
+</div>
+
+</div>
+
+<div class="absolute left-[52px] bottom-[16px] text-[9px] text-[#A99C88]">合计 23 页（含封面与小结）；页码为放映顺序，与任务书 1.1–3.7 的条目一一对应。</div>
+
+<!-- 目录页：把封面上的范围说明搬到这里并补全到每个小节。 -->
 ---
 layout: default
 ---
