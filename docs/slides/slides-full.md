@@ -104,8 +104,8 @@ layout: default
 
 <div class="hr-line"></div>
 
-<div class="card-dk px-6 py-5">
-  <div class="text-[14px] font-bold leading-[1.75]">使命：把「创作一部长篇」的门槛，从「会不会写」降到「说不说得清一个想法」；把「记得住」交给系统，而不是交给更长的提示词。</div>
+<div class="card px-6 py-5">
+  <div class="text-[14px] font-bold leading-[1.75]"><span style="color:#B4472E">使命：</span>把「创作一部长篇」的门槛，从「会不会写」降到「说不说得清一个想法」；把「记得住」交给系统，而不是交给更长的提示词。</div>
 </div>
 
 <div class="grid grid-cols-3 gap-3 mt-4">
@@ -214,7 +214,7 @@ layout: default
 
 </div>
 
-<div class="card-dk px-4 py-3 mt-4 flex items-center">
+<div class="card px-4 py-3 mt-4 flex items-center">
   <div class="text-[12px]"><span class="tag text-[11px]">用户判据：</span>一个没写过小说的人，10 分钟内能不能拿到一部属于自己口味的第一章？</div>
 </div>
 
@@ -354,8 +354,8 @@ layout: default
 | 承诺边界 | 不承诺篇幅 | 不承诺篇幅 | — | 只承诺验证过的篇幅（1 万字 / 8–10 章起） |
 | 成本与归属 | 订阅 | 订阅 + 云端 | 平台内阅读 | 云端托管、自带 Key、作品可导出 |
 
-<div class="card-dk px-5 py-3 mt-4">
-  <div class="text-[11.5px]"><span class="tag text-[11px]">一句话差异化：</span>通用 AI 卖「会写」，写作工具卖「作者的效率」，Tome Agent 卖「读者零门槛写出一部自洽的长篇」。</div>
+<div class="card px-5 py-3 mt-4">
+  <div class="text-[11.5px]"><span class="tag text-[11px]"><span style="color:#B4472E">一句话差异化：</span></span>通用 AI 卖「会写」，写作工具卖「作者的效率」，Tome Agent 卖「读者零门槛写出一部自洽的长篇」。</div>
 </div>
 
 <div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">竞品信息：公开产品页与第三方横评（2026-04），属市场观察，不是严格测评。</div>
@@ -446,10 +446,10 @@ layout: default
 </div>
 
 <div>
-  <div class="card-dk px-5 py-4">
+  <div class="card px-5 py-4">
     <div class="tag">根因判断</div>
     <div class="text-[16px] font-extrabold mt-2 leading-snug">「记忆能力」≠「上下文长度」</div>
-    <div class="text-[11px] mt-3 leading-[1.75] text-[#E6DFD2]">模型不是不想记。是「把前文再喂一遍」这种记忆方式，撑不起一部书——越往后越贵、越模糊。</div>
+    <div class="text-[11px] mt-3 leading-[1.75] text-[#6C7784]">模型不是不想记。是「把前文再喂一遍」这种记忆方式，撑不起一部书——越往后越贵、越模糊。</div>
     <div class="text-[11px] font-bold mt-3 leading-[1.75]">所以我们不从「再写一段更长的提示词」入手，而从「怎么让故事状态可查、可验、可恢复」入手。</div>
   </div>
   <div class="mt-4 text-[10.5px] leading-[1.7] text-[#6C7784]">「状态记忆能减少跨章矛盾」目前是待验证假设：用同输入、同模型、有 / 无记忆的对照实验来证明。</div>
@@ -582,7 +582,7 @@ layout: default
 
 </div>
 
-<div class="card-dk px-5 py-3 mt-4">
+<div class="card px-5 py-3 mt-4">
   <div class="text-[11.5px]">一次生成 = 「规划 → 写作 → 记忆 → 审核 → 提交」；服务端托管、作品存于账号空间、按 token 透明计费。</div>
 </div>
 
@@ -1442,9 +1442,9 @@ layout: default
   </div>
 </div>
 
-<div class="card-dk px-5 py-5 flex flex-col justify-center">
+<div class="card px-5 py-5 flex flex-col justify-center">
   <div class="text-[22px] font-extrabold">谢谢观看 · 欢迎提问</div>
-  <div class="text-[11px] mt-3 leading-[1.9]" style="color:#E8E0D2">第一部分 1、2、3 三节合并完成：<br>产品设计（1.1–1.2）· 十二条设计原则（2）· 产品实现（3.1–3.7）</div>
+  <div class="text-[11px] mt-3 leading-[1.9]" style="color:#6C7784">第一部分 1、2、3 三节合并完成：<br>产品设计（1.1–1.2）· 十二条设计原则（2）· 产品实现（3.1–3.7）</div>
 </div>
 
 </div>

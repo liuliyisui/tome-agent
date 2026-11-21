@@ -121,8 +121,8 @@ layout: default
 
 <div class="hr-line"></div>
 
-<div class="card-dk px-6 py-4">
-  <div class="text-[13.5px] font-bold leading-[1.7]">使命：把「创作一部长篇」的门槛，从「会不会写」降到「说不说得清一个想法」；把「记得住」交给系统，而不是交给更长的提示词。</div>
+<div class="card px-6 py-4">
+  <div class="text-[13.5px] font-bold leading-[1.7]"><span style="color:#B4472E">使命：</span>把「创作一部长篇」的门槛，从「会不会写」降到「说不说得清一个想法」；把「记得住」交给系统，而不是交给更长的提示词。</div>
 </div>
 
 <div class="grid grid-cols-3 gap-3 mt-4">
@@ -221,7 +221,7 @@ layout: default
   </div>
 </div>
 
-<div class="card-dk px-4 py-2.5 mt-3">
+<div class="card px-4 py-2.5 mt-3">
   <div class="text-[11px]">通用 AI 卖「会写」，写作工具卖「作者的效率」，Tome Agent 卖「读者零门槛写出一部自洽的长篇」；承诺边界只到验证过的篇幅（1 万字 / 8–10 章起）。</div>
 </div>
 
@@ -256,8 +256,8 @@ layout: default
     <div class="flex gap-2 items-baseline"><div class="num text-[12px] w-[18px]">04</div><div class="text-[11px]">上下文不可持续——塞全文贵且衰减，摘要丢细节</div></div>
     <div class="flex gap-2 items-baseline"><div class="num text-[12px] w-[18px]">05</div><div class="text-[11px]">生成过程不可恢复——一次失败，成本与进度一起损失</div></div>
   </div>
-  <div class="card-dk px-4 py-3 mt-3">
-    <div class="text-[11px] font-bold leading-[1.7]">根因：「记忆能力」≠「上下文长度」——所以从「让状态可查、可验、可恢复」入手，而不是写更长的提示词。</div>
+  <div class="card px-4 py-3 mt-3">
+    <div class="text-[11px] font-bold leading-[1.7]"><span style="color:#B4472E">根因：</span>「记忆能力」≠「上下文长度」——所以从「让状态可查、可验、可恢复」入手，而不是写更长的提示词。</div>
   </div>
 </div>
 
@@ -336,7 +336,7 @@ layout: default
   <div class="card-soft p-3"><div class="tag">可恢复</div><div class="body-text mt-1">副本校验后整章提交；失败不改正式快照，中断从检查点继续。</div></div>
 </div>
 
-<div class="card-dk px-4 py-2.5 mt-3">
+<div class="card px-4 py-2.5 mt-3">
   <div class="text-[11px]">用户可见的三件事：生成前看得到预估 token 与费用；生成中逐章存检查点；生成后可读章、导出排版 Markdown。</div>
 </div>
 
@@ -937,9 +937,9 @@ layout: default
   </div>
 </div>
 
-<div class="card-dk px-5 py-5 flex flex-col justify-center">
+<div class="card px-5 py-5 flex flex-col justify-center">
   <div class="text-[22px] font-extrabold">谢谢观看 · 欢迎提问</div>
-  <div class="text-[11px] mt-3 leading-[1.9]" style="color:#E8E0D2">第一部分 1、2、3 三节合并完成：<br>产品设计（1.1–1.2）· 十二条设计原则（2）· 产品实现（3.1–3.7）</div>
+  <div class="text-[11px] mt-3 leading-[1.9]" style="color:#6C7784">第一部分 1、2、3 三节合并完成：<br>产品设计（1.1–1.2）· 十二条设计原则（2）· 产品实现（3.1–3.7）</div>
 </div>
 
 </div>
