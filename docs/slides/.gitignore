@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dist-local/
+dist-full/
+.tmp-png/
+.pnpm-store/
+*.local
+*.log
+.DS_Store
+
+# Office lock files
+~$*

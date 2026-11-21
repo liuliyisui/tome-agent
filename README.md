@@ -81,6 +81,18 @@ README.md                        项目说明
 
 代码质量检查配置位于 `code/backend/pyproject.toml`。从项目根目录运行 `ruff check --config code/backend/pyproject.toml --no-cache .`；预提交钩子配置及用法见[代码质量说明](docs/software/CODE_QUALITY_FIXES.md)。
 
+## 项目汇报幻灯片
+
+幻灯片使用 [Slidev](https://cn.sli.dev/) 编写，源文件在 [`docs/slides`](docs/slides/)：
+
+- 部署后在线演示：<https://liuliyisui.github.io/tome-agent/>
+- 源文件：[`docs/slides/slides.md`](docs/slides/slides.md)；主题：[`docs/slides/style.css`](docs/slides/style.css)
+- 本地预览：`cd docs/slides && npm ci && npm run dev`
+- 部署：GitHub Actions 工作流 [`.github/workflows/slides-pages.yml`](.github/workflows/slides-pages.yml)；首次使用需在仓库 **Settings → Pages → Source** 选择 **GitHub Actions**
+- PDF：Actions 中手动运行 **Slides / Export PDF**，在 Artifacts 下载
+
+幻灯片包含 23 页，覆盖产品设计、十二条设计原则、架构与 LangGraph 编排、三层记忆、数据接口和质量证据；架构图与状态图使用 Mermaid 绘制。详细说明见 [`docs/slides/README.md`](docs/slides/README.md)。
+
 ## 快速验证（Windows）
 
 可以先使用文件模式。运行 `setup.cmd` 后，将 `code/backend/.env` 中的 `DATABASE_URL` 留空，再启动本地工作室：
