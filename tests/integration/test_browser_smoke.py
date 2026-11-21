@@ -422,15 +422,15 @@ class BrowserSmokeTests(unittest.TestCase):
         page.locator("#edit-chapter").click()
         editor = page.locator("#chapter-edit-text")
         editor.fill("他迫不急待地走出武馆。")
-        page.click("#proofread-chapter")
+        page.get_by_role("button", name="本地复查", exact=True).click()
         page.get_by_role("button", name="采用建议：迫不及待", exact=True).click()
-        self.assertEqual(editor.input_value(), "他迫不及待地走出武馆。")
+        self.assertEqual(editor.input_value().strip(), "他迫不及待地走出武馆。")
         page.reload()
         page.click("#my-works")
         page.locator("[data-book]").first.click()
         page.click("#edit-chapter")
-        self.assertEqual(editor.input_value(), "他迫不及待地走出武馆。")
-        page.click("#save-chapter-edit")
+        self.assertEqual(editor.input_value().strip(), "他迫不及待地走出武馆。")
+        page.get_by_role("button", name="复查并保存", exact=True).click()
         page.locator("#chapter-editor").wait_for(state="detached")
         self.assertIn("他迫不及待地走出武馆。", page.inner_text("#chapter-body"))
         page.click("#export")
@@ -462,14 +462,16 @@ class BrowserSmokeTests(unittest.TestCase):
             + "\n他迫不急待地出发。"
         )
         editor.evaluate("el => {el.setSelectionRange(0,0);el.scrollTop=0}")
-        page.click("#proofread-chapter")
-        page.locator("#chapter-editor .proofreading-results").get_by_role(
+        page.get_by_role("button", name="本地复查", exact=True).click()
+        page.locator(".editor-workspace .proofreading-results").get_by_role(
             "button", name="定位修改", exact=True
         ).click()
-        self.assertGreater(editor.evaluate("el => el.scrollTop"), 0)
+        self.assertGreater(
+            page.locator(".editor-scroll").evaluate("el => el.scrollTop"), 0
+        )
         editor.fill("😀开场。\n电话 13800138000。")
-        page.click("#proofread-chapter")
-        panel = page.locator("#chapter-editor .proofreading-results")
+        page.get_by_role("button", name="本地复查", exact=True).click()
+        panel = page.locator(".editor-workspace .proofreading-results")
         panel.wait_for()
         self.assertNotIn("13800138000", panel.inner_text())
         panel.get_by_role("button", name="定位修改", exact=True).click()
@@ -477,13 +479,19 @@ class BrowserSmokeTests(unittest.TestCase):
             editor.evaluate("el => el.value.slice(el.selectionStart,el.selectionEnd)"),
             "13800138000",
         )
-        self.assertTrue(page.locator("#save-chapter-edit").is_disabled())
+        self.assertTrue(
+            page.get_by_role("button", name="复查并保存", exact=True).is_disabled()
+        )
         panel.get_by_role("checkbox").check()
-        self.assertTrue(page.locator("#save-chapter-edit").is_enabled())
+        self.assertTrue(
+            page.get_by_role("button", name="复查并保存", exact=True).is_enabled()
+        )
         editor.fill("误贴 sk-FAKE_SECRET_FOR_LOCAL_REVIEW_1234567890")
-        page.click("#proofread-chapter")
-        page.locator("#chapter-editor .message-danger").wait_for()
-        self.assertTrue(page.locator("#save-chapter-edit").is_disabled())
+        page.get_by_role("button", name="本地复查", exact=True).click()
+        page.locator(".editor-workspace .message-danger").wait_for()
+        self.assertTrue(
+            page.get_by_role("button", name="复查并保存", exact=True).is_disabled()
+        )
         page.set_viewport_size({"width": 375, "height": 812})
         self.assertFalse(
             page.evaluate("() => document.documentElement.scrollWidth > innerWidth")

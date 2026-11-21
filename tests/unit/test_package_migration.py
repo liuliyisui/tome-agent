@@ -10,7 +10,14 @@ from check_memory import _migration_manifest, reviewed_package_sources, source_h
 class PackageMigrationTests(unittest.TestCase):
     def test_profile_restores_prior_layout_and_rejects_tampering(self):
         manifest = _migration_manifest()
-        current = source_hashes()
+        actual = source_hashes()
+        # The migration profile describes a historical reviewed target, not
+        # the newer writer. Keep testing the pinned pair without approving the
+        # newer runtime for automatic migration.
+        current = {
+            name.replace("src/@package/", "src/tome_writer/"): values["new"][0]
+            for name, values in manifest["sources"].items()
+        }
         profile = manifest["profiles"][0]["sources"]
         previous = {}
         for name, values in profile.items():
@@ -19,6 +26,7 @@ class PackageMigrationTests(unittest.TestCase):
             key = name.replace("src/@package/", "src/previous_package/")
             previous[key] = values[0]
         self.assertTrue(reviewed_package_sources(previous, current))
+        self.assertFalse(reviewed_package_sources(previous, actual))
         changed = copy.deepcopy(previous)
         changed["writing.py"] = "0" * 64
         self.assertFalse(reviewed_package_sources(changed, current))

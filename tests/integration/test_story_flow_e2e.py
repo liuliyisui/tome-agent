@@ -64,7 +64,9 @@ class StoryFlowEndToEndTests(unittest.TestCase):
         self._patches = [
             patch.object(service, "BOOKS", self.books),
             patch.object(service.database, "enabled", return_value=False),
-            patch.object(service, "StoryClosure", **{"return_value.instruction.return_value": ""}),
+            patch.object(
+                service, "StoryClosure", **{"return_value.instruction.return_value": ""}
+            ),
         ]
         for item in self._patches:
             item.start()
@@ -140,16 +142,19 @@ class StoryFlowEndToEndTests(unittest.TestCase):
             patch.object(service, "WritingSession", SuccessfulSession),
             patch.object(service, "StoryClosure", Closure),
         ):
-            result = service.generate(self.book_id, count=2, gateway=object(), settings=self.settings)
+            result = service.generate(
+                self.book_id, count=2, gateway=object(), settings=self.settings
+            )
 
         self.assertEqual(result["state"]["story_closure"]["observed"], [1, 2])
         self.assertEqual(self.checkpoint()["story_closure"]["observed"], [1, 2])
 
     def test_real_session_uses_closure_and_resumes_saved_state(self):
+        from tools.testing.archived_plan_fixture import compile_archived_plan
+
         from memory_runtime.story_closure import StoryClosure
         from memory_runtime.test_event_first import EventLocal
         from memory_runtime.test_story_closure import ClosureLocal
-        from tools.testing.archived_plan_fixture import compile_archived_plan
 
         class EventClosure(ClosureLocal, EventLocal):
             pass
@@ -158,14 +163,23 @@ class StoryFlowEndToEndTests(unittest.TestCase):
         provider = EventClosure()
         with (
             patch.object(service, "StoryClosure", StoryClosure),
-            patch("memory_runtime.reference_choices.compile_plan", side_effect=compile_archived_plan),
+            patch(
+                "memory_runtime.reference_choices.compile_plan",
+                side_effect=compile_archived_plan,
+            ),
         ):
-            first = service.generate(self.book_id, gateway=provider, settings=self.settings)
-            second = service.generate(self.book_id, gateway=provider, settings=self.settings)
+            first = service.generate(
+                self.book_id, gateway=provider, settings=self.settings
+            )
+            second = service.generate(
+                self.book_id, gateway=provider, settings=self.settings
+            )
 
         self.assertEqual(len(second["state"]["chapters"]), 2)
         self.assertTrue(first["state"]["story_closure"]["obligations"])
-        self.assertEqual(len([r for r in provider.requests if r.role == "closure_planner"]), 1)
+        self.assertEqual(
+            len([r for r in provider.requests if r.role == "closure_planner"]), 1
+        )
         self.assertFalse(any(r.role == "reviewer" for r in provider.requests))
         self.assertEqual(
             service.load_longform(self.book_id)["state"]["story_closure"],

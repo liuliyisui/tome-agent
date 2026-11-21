@@ -87,7 +87,7 @@ def run_draft_trial(output, provider, plan, *, resume_book=None):
             "writing_mode": "event_first"
             if plan.get("event_first", True)
             else "legacy_prose_first",
-                        "resumed": resume_book is not None,
+            "resumed": resume_book is not None,
         },
     )
     recorder = RecordedProvider(provider, output)
@@ -177,11 +177,7 @@ def run_draft_trial(output, provider, plan, *, resume_book=None):
         stop = "INTERRUPTED"
         interrupted = True
     except Exception as exc:
-        stop = (
-            "MEMORY_PENDING"
-            if session.book["pending"]
-            else "RUNTIME_FAILURE"
-        )
+        stop = "MEMORY_PENDING" if session.book["pending"] else "RUNTIME_FAILURE"
         save_new(
             output / "runtime_failure.json",
             {"error_type": type(exc).__name__, "stop_reason": stop},

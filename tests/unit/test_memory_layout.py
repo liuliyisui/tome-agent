@@ -59,6 +59,11 @@ class MemoryLayoutTests(unittest.TestCase):
 
     def test_reviewed_previous_fingerprints_and_tampering(self):
         current = source_hashes()
+        # Exercise the reviewed historical layout pair explicitly.  The
+        # current writer has changed behavior and is not in that allowlist.
+        current["writing.py"] = (
+            "5b3e1a6bdab21d8330a134d0e25eace13fcd9995f586fd1eed66294b2dbf04c7"
+        )
         previous = copy.deepcopy(current)
         previous["__init__.py"] = (
             "975bd3f06cd496a8bd99d99467758577b900f26dbeedaa777540bf6a5cf7033e"

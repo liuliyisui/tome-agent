@@ -180,7 +180,6 @@ class Local:
 
 
 class WritingIntegration(unittest.TestCase):
-
     def test_story_reference_alias_never_guesses_unknown_id_or_fabricates_quote(self):
         payload = {
             "review_mode": "light_memory",
@@ -320,10 +319,6 @@ class WritingIntegration(unittest.TestCase):
             self.read(self.root / "resumed/final_state.json")["chapters"], old
         )
         self.assertTrue(result["memory_complete"])
-
-
-
-
 
     def test_unbound_time_failure_never_enters_memory_or_review(self):
         class BrokenTime(Local):
@@ -478,7 +473,6 @@ class WritingIntegration(unittest.TestCase):
             all(r["story_review_status"] == "DISABLED" for r in result["outcomes"])
         )
 
-
     def test_writing_state_is_committed_with_prose_and_used_by_next_writer(self):
         class WithLedger(Local):
             def complete(self, request):
@@ -582,7 +576,6 @@ class WritingIntegration(unittest.TestCase):
                 "active_facts"
             ]
         )
-
 
     def test_withheld_mutations_remain_explicit_without_false_quality_pass(self):
         result = self.launch(Local(withhold=True), cfg=config(1))

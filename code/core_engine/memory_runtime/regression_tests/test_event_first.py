@@ -134,7 +134,14 @@ class EventLocal(Local):
 
 
 class EventFirstTests(unittest.TestCase):
-    @unittest.skipUnless(any((ROOT / 'runs/event_first_50000_20261022_u/working').glob("checkpoint_*.json")), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        any(
+            (ROOT / "runs/event_first_50000_20261022_u/working").glob(
+                "checkpoint_*.json"
+            )
+        ),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_u_semantic_repair_uses_reserved_headroom_without_truncation(self):
         from memory_runtime.writing import WritingSession
 
@@ -200,7 +207,14 @@ class EventFirstTests(unittest.TestCase):
             [96000, 120000],
         )
 
-    @unittest.skipUnless(any((ROOT / 'runs/event_first_50000_20261022_t/working').glob("checkpoint_*.json")), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        any(
+            (ROOT / "runs/event_first_50000_20261022_t/working").glob(
+                "checkpoint_*.json"
+            )
+        ),
+        "历史运行文件未随仓库提供",
+    )
     def test_unique_local_event_requirements_bind_but_ambiguous_future_and_stale_do_not(
         self,
     ):
@@ -251,7 +265,14 @@ class EventFirstTests(unittest.TestCase):
             self.assertTrue(packet["candidate_state"]["event_log"])
             self.assertEqual(value, original)
 
-    @unittest.skipUnless(any((ROOT / 'runs/event_first_50000_20261022_r/working').glob("checkpoint_*.json")), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        any(
+            (ROOT / "runs/event_first_50000_20261022_r/working").glob(
+                "checkpoint_*.json"
+            )
+        ),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_r_prepared_chapter_fits_writer_budget_without_losing_events(self):
         from memory_runtime.event_first import writer_view
         from memory_runtime.writing import WritingSession
@@ -311,7 +332,14 @@ class EventFirstTests(unittest.TestCase):
         self.assertTrue(realize(template, prepared["commit"]))
         self.assertEqual(prepared, original)
 
-    @unittest.skipUnless(any((ROOT / 'runs/event_first_50000_20261022_q/working').glob("checkpoint_*.json")), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        any(
+            (ROOT / "runs/event_first_50000_20261022_q/working").glob(
+                "checkpoint_*.json"
+            )
+        ),
+        "历史运行文件未随仓库提供",
+    )
     def test_transition_target_diagnostics_and_sequential_binding(self):
         first = fact()
         move = {"type": "transition", "fact_id": "location", "to_value": "屋内"}
@@ -344,7 +372,14 @@ class EventFirstTests(unittest.TestCase):
         self.assertIn("separate fact", issue["cause_details"]["instruction"])
         self.assertEqual(raw, original)
 
-    @unittest.skipUnless(any((ROOT / 'runs/event_first_50000_20261022_p/working').glob("checkpoint_*.json")), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        any(
+            (ROOT / "runs/event_first_50000_20261022_p/working").glob(
+                "checkpoint_*.json"
+            )
+        ),
+        "历史运行文件未随仓库提供",
+    )
     def test_circular_dependency_reports_introduction_and_examples_execute(self):
         from memory_runtime.event_first import CONTRACT
 
@@ -496,7 +531,14 @@ class EventFirstTests(unittest.TestCase):
                 self.assertFalse(recovered["layer_deferred_ids"])
                 self.assertEqual(next_report["status"], "APPLIED")
 
-    @unittest.skipUnless(any((ROOT / 'runs/event_first_50000_20261022_o/working').glob("checkpoint_*.json")), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        any(
+            (ROOT / "runs/event_first_50000_20261022_o/working").glob(
+                "checkpoint_*.json"
+            )
+        ),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_o_layer_replies_retain_correct_rows_without_losing_memory(self):
         from memory_runtime.pipeline import LayerAgent
 
@@ -968,7 +1010,12 @@ class EventFirstTests(unittest.TestCase):
         self.assertTrue(result["draft_completed"])
         self.assertGreater(result["generation_warning_count"], 0)
 
-    @unittest.skipUnless((ROOT / 'runs/event_first_50000_20261022_a/working/checkpoint_0001.json').is_file(), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        (
+            ROOT / "runs/event_first_50000_20261022_a/working/checkpoint_0001.json"
+        ).is_file(),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_first_run_replies_replay_with_all_facts_and_bound_knowledge(self):
         from memory_runtime.identifiers import attribute_identifier
 
@@ -1072,7 +1119,12 @@ class EventFirstTests(unittest.TestCase):
         self.assertEqual(locator["scene_id"], "scene")
         self.assertEqual(locator["beat_id"], "arrival")
 
-    @unittest.skipUnless((ROOT / 'runs/event_first_50000_20261022_b/working/checkpoint_0001.json').is_file(), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        (
+            ROOT / "runs/event_first_50000_20261022_b/working/checkpoint_0001.json"
+        ).is_file(),
+        "历史运行文件未随仓库提供",
+    )
     def test_second_run_real_replies_preserve_identifiers_and_bind_local_initial_revisions(
         self,
     ):
@@ -1119,7 +1171,12 @@ class EventFirstTests(unittest.TestCase):
             1,
         )
 
-    @unittest.skipUnless((ROOT / 'runs/event_first_50000_20261022_c/working/checkpoint_0018.json').is_file(), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        (
+            ROOT / "runs/event_first_50000_20261022_c/working/checkpoint_0018.json"
+        ).is_file(),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_clause_replies_get_precise_contract_feedback_not_silent_conversion(
         self,
     ):
@@ -1190,7 +1247,12 @@ class EventFirstTests(unittest.TestCase):
         self.assertIn("state_record_contract", repair)
         self.assertNotIn("state_record_contract", writer)
 
-    @unittest.skipUnless((ROOT / 'runs/event_first_50000_20261022_d/working/checkpoint_0001.json').is_file(), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        (
+            ROOT / "runs/event_first_50000_20261022_d/working/checkpoint_0001.json"
+        ).is_file(),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_object_origins_bind_to_actual_canonical_beats(self):
         saved = self.read(
             ROOT / "runs/event_first_50000_20261022_d/working/checkpoint_0001.json"
@@ -1245,7 +1307,12 @@ class EventFirstTests(unittest.TestCase):
         with self.assertRaises(ContractError):
             prepare(state, proposal([bad], 2), 2)
 
-    @unittest.skipUnless((ROOT / 'runs/event_first_50000_20261022_e/working/checkpoint_0005.json').is_file(), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        (
+            ROOT / "runs/event_first_50000_20261022_e/working/checkpoint_0005.json"
+        ).is_file(),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_namespaced_person_and_all_preflight_errors_are_handled_together(self):
         saved = self.read(
             ROOT / "runs/event_first_50000_20261022_e/working/checkpoint_0005.json"
@@ -1298,7 +1365,12 @@ class EventFirstTests(unittest.TestCase):
         )
         self.assertEqual(state, empty())
 
-    @unittest.skipUnless((ROOT / 'runs/event_first_50000_20261022_f/working/checkpoint_0034.json').is_file(), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        (
+            ROOT / "runs/event_first_50000_20261022_f/working/checkpoint_0034.json"
+        ).is_file(),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_phone_participant_replies_preserve_learning_and_channel(self):
         saved = self.read(
             ROOT / "runs/event_first_50000_20261022_f/working/checkpoint_0034.json"
@@ -1355,7 +1427,12 @@ class EventFirstTests(unittest.TestCase):
         self.assertEqual(issue["expected_participants"], ["乙"])
         self.assertEqual(issue["source_event"]["id"], "c0001.arrival")
 
-    @unittest.skipUnless((ROOT / 'runs/event_first_50000_20261022_g/working/checkpoint_0005.json').is_file(), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        (
+            ROOT / "runs/event_first_50000_20261022_g/working/checkpoint_0005.json"
+        ).is_file(),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_reported_beliefs_can_be_heard_without_becoming_truth(self):
         saved = self.read(
             ROOT / "runs/event_first_50000_20261022_g/working/checkpoint_0005.json"
@@ -1501,7 +1578,12 @@ class EventFirstTests(unittest.TestCase):
             self.assertEqual(details["locator"]["path"], "scenes[0].participants[0]")
             self.assertEqual(details["submitted_participant"], value)
 
-    @unittest.skipUnless((ROOT / 'runs/event_first_50000_20261022_h/working/checkpoint_0009.json').is_file(), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        (
+            ROOT / "runs/event_first_50000_20261022_h/working/checkpoint_0009.json"
+        ).is_file(),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_id_only_participants_replay_without_inventing_people(self):
         saved = self.read(
             ROOT / "runs/event_first_50000_20261022_h/working/checkpoint_0009.json"
@@ -1546,7 +1628,12 @@ class EventFirstTests(unittest.TestCase):
             {"evidence_object", "fact_record"},
         )
 
-    @unittest.skipUnless((ROOT / 'runs/event_first_50000_20261022_i/working/checkpoint_0017.json').is_file(), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        (
+            ROOT / "runs/event_first_50000_20261022_i/working/checkpoint_0017.json"
+        ).is_file(),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_composite_channel_does_not_block_a_correct_state_transition(self):
         saved = self.read(
             ROOT / "runs/event_first_50000_20261022_i/working/checkpoint_0017.json"
@@ -1585,7 +1672,12 @@ class EventFirstTests(unittest.TestCase):
         self.assertIn("scenes[0].beats[0].changes[0].kind", paths)
         self.assertEqual(state, empty())
 
-    @unittest.skipUnless((ROOT / 'runs/event_first_50000_20261022_j/working/checkpoint_0001.json').is_file(), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        (
+            ROOT / "runs/event_first_50000_20261022_j/working/checkpoint_0001.json"
+        ).is_file(),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_planned_fact_in_actual_conversation_projects_only_as_task(self):
         from memory_runtime.engine import MemoryEngine
 
@@ -1778,7 +1870,12 @@ class EventFirstTests(unittest.TestCase):
             1,
         )
 
-    @unittest.skipUnless((ROOT / 'runs/event_first_50000_20261022_k/working/checkpoint_0005.json').is_file(), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        (
+            ROOT / "runs/event_first_50000_20261022_k/working/checkpoint_0005.json"
+        ).is_file(),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_memory_ids_bind_to_plan_and_fact_without_promoting_the_plan(self):
         from memory_runtime.event_references import catalogue
 
@@ -1887,7 +1984,12 @@ class EventFirstTests(unittest.TestCase):
         with self.assertRaises(ContractError):
             prepare(state, proposal([now], 2), 2)
 
-    @unittest.skipUnless((ROOT / 'runs/event_first_50000_20261022_l/working/checkpoint_0025.json').is_file(), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        (
+            ROOT / "runs/event_first_50000_20261022_l/working/checkpoint_0025.json"
+        ).is_file(),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_object_provenance_and_knowledge_replay_without_inventing_history(
         self,
     ):
@@ -2024,7 +2126,12 @@ class EventFirstTests(unittest.TestCase):
         ]
         self.assertEqual(world["knowledge"]["heard"]["epistemic_status"], "belief")
 
-    @unittest.skipUnless((ROOT / 'runs/event_first_50000_20261022_m/working/checkpoint_0006.json').is_file(), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        (
+            ROOT / "runs/event_first_50000_20261022_m/working/checkpoint_0006.json"
+        ).is_file(),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_literal_event_prose_is_preserved_and_missing_event_stays_rejected(
         self,
     ):
@@ -2068,7 +2175,14 @@ class EventFirstTests(unittest.TestCase):
             with self.assertRaises(ContractError):
                 compile_realization(text, c)
 
-    @unittest.skipUnless(any((ROOT / 'runs/event_first_50000_20261022_s/working').glob("checkpoint_*.json")), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        any(
+            (ROOT / "runs/event_first_50000_20261022_s/working").glob(
+                "checkpoint_*.json"
+            )
+        ),
+        "历史运行文件未随仓库提供",
+    )
     def test_unique_adjacent_marker_annotations_compile_without_dropping_prose(self):
         c = prepare(
             empty(),
@@ -2168,7 +2282,12 @@ class EventFirstTests(unittest.TestCase):
             self.assertEqual(c["prose_policy"], "unchecked")
             self.assertEqual(c["realization_template"], c["text"])
 
-    @unittest.skipUnless((ROOT / 'runs/event_first_50000_20261022_n/working/checkpoint_0005.json').is_file(), "历史运行文件未随仓库提供")
+    @unittest.skipUnless(
+        (
+            ROOT / "runs/event_first_50000_20261022_n/working/checkpoint_0005.json"
+        ).is_file(),
+        "历史运行文件未随仓库提供",
+    )
     def test_real_transition_operation_ids_are_generated_without_changing_record_ids(
         self,
     ):

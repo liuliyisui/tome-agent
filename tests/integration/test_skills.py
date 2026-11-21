@@ -126,7 +126,9 @@ class SkillTests(unittest.TestCase):
             patch.object(service, "_longform_plan", return_value={}),
             patch.object(service, "_load_longform_book", return_value=None),
             patch.object(service, "WritingSession", FakeSession),
-            patch.object(service, "StoryClosure", **{"return_value.instruction.return_value": ""}),
+            patch.object(
+                service, "StoryClosure", **{"return_value.instruction.return_value": ""}
+            ),
         ):
             service.generate_longform("book-a", gateway=captured, settings=config)
         forwarded = captured.complete.call_args.args[0]

@@ -226,7 +226,9 @@ class PostgreSQLTests(unittest.TestCase):
         cfg = Settings(api_key="FAKE")
         with (
             patch.object(service, "WritingSession", Session),
-            patch.object(service, "StoryClosure", **{"return_value.instruction.return_value": ""}),
+            patch.object(
+                service, "StoryClosure", **{"return_value.instruction.return_value": ""}
+            ),
             patch.object(service, "_gateway", return_value=(object(), budget)),
         ):
             service.generate("pg-book", count=1, settings=cfg)

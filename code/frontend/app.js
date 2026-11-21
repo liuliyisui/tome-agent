@@ -1199,8 +1199,16 @@ const app = createApp({
         marker.textContent = input.value.slice(item.start, item.end) || "\u200b";
         mirror.append(document.createTextNode(input.value.slice(0, item.start)), marker);
         document.body.append(mirror);
-        input.scrollTop = Math.max(0, marker.getBoundingClientRect().top - mirror.getBoundingClientRect().top - input.clientHeight / 2);
+        const offset = marker.getBoundingClientRect().top - mirror.getBoundingClientRect().top;
+        const scroller = input.closest(".editor-scroll");
+        if (scroller) {
+          const top = input.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop + offset;
+          scroller.scrollTop = Math.max(0, top - scroller.clientHeight / 2);
+        } else {
+          input.scrollTop = Math.max(0, offset - input.clientHeight / 2);
+        }
         mirror.remove();
+        return;
       }
       input?.scrollIntoView({ block: "center", behavior: "smooth" });
     }

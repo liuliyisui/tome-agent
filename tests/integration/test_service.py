@@ -85,7 +85,11 @@ class ServiceIntegrationTests(unittest.TestCase):
 
             with (
                 patch.object(service, "WritingSession", FakeSession),
-                patch.object(service, "StoryClosure", **{"return_value.instruction.return_value": ""}),
+                patch.object(
+                    service,
+                    "StoryClosure",
+                    **{"return_value.instruction.return_value": ""},
+                ),
             ):
                 with self.assertRaisesRegex(RuntimeError, "第2章"):
                     service.generate(

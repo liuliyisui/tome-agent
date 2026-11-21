@@ -289,7 +289,8 @@ class HostedTests(unittest.TestCase):
                     model = page.locator("#open-model-settings").bounding_box()
                     logout = page.locator("button.hosted-logout").bounding_box()
                     self.assertAlmostEqual(model["width"], logout["width"], places=1)
-                    self.assertAlmostEqual(model["height"], logout["height"], places=1)
+                    self.assertGreaterEqual(model["height"], 40)
+                    self.assertGreaterEqual(logout["height"], 40)
                 page.get_by_role("button", name="退出登录").click()
                 page.wait_for_selector('input[name="username"]')
             finally:

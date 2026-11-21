@@ -16,8 +16,8 @@ from dataclasses import replace
 from pathlib import Path
 from uuid import uuid4
 
-from memory_runtime.writing import WritingSession, load_resume
 from memory_runtime.story_closure import StoryClosure
+from memory_runtime.writing import WritingSession, load_resume
 from tome_writer.chat_provider import ChatCompletionProvider
 from tome_writer.domain import (
     ContractError,
