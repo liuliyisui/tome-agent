@@ -1181,10 +1181,15 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 9px;
+  margin-top: 42px;
 }
 
 .principle-col {
-  padding: 10px 11px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-height: 370px;
+  padding: 15px 14px;
   border: 1px solid var(--line);
   border-top: 2px solid var(--pine);
   background: rgba(255, 255, 255, 0.42);

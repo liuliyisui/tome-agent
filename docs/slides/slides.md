@@ -421,10 +421,6 @@ layout: default
   </div>
 </div>
 
-<div class="overview-note">
-  <div class="overview-mark">“</div>
-</div>
-
 <div class="bottom-note">结构对应：需求与信息 → 系统与迭代 → 继承与效益 → 定量、简化与审核</div>
 
 <!-- 四组原则，从方向到系统，再到取舍和质量。 -->
