@@ -2000,6 +2000,118 @@
   max-width: 100%;
 }
 
+/* 3.1 UX factors */
+.ux-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.ux-card {
+  min-height: 96px;
+  padding: 11px 13px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.44);
+  box-shadow: 0 10px 26px rgba(31, 48, 38, 0.04);
+}
+
+.ux-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ux-no {
+  font-family: var(--mono);
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--sage);
+}
+
+.ux-title {
+  margin-top: 6px;
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.ux-text {
+  margin-top: 4px;
+  font-size: 9.1px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.ux-foot {
+  margin-top: 11px;
+  padding: 8px 12px;
+  border-left: 2px solid var(--gold);
+  background: var(--paper-2);
+  font-size: 9.6px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.ux-foot b {
+  color: var(--ink);
+}
+
+/* 3.2 Technology stack */
+.tech-table {
+  font-size: 9px;
+}
+
+.tech-table th:first-child {
+  width: 16%;
+}
+
+.tech-table th:nth-child(2) {
+  width: 25%;
+}
+
+.tech-table th:nth-child(3) {
+  width: 18%;
+}
+
+.tech-table td {
+  padding: 5px 7px;
+  line-height: 1.42;
+}
+
+.tech-table td:nth-child(2) {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.slidev-layout .tech-table code {
+  padding: 0;
+  font-size: 8px;
+  color: var(--pine);
+  background: transparent;
+}
+
+.tech-note {
+  margin-top: 9px;
+  padding: 7px 11px;
+  border-left: 2px solid var(--gold);
+  background: var(--paper-2);
+  font-size: 8.5px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.slidev-layout .tech-note code {
+  padding: 0;
+  font-size: 8px;
+  color: var(--pine);
+  background: transparent;
+}
+
+
 /* =========================================================
    Tome Agent light theme (ivory + pine + sage + muted gold)
    ========================================================= */

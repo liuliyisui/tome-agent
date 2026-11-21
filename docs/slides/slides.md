@@ -698,7 +698,7 @@ class: section
   <div class="section-body">
     <div class="kicker light">Product implementation</div>
     <h1>产品实现</h1>
-    <p>从状态图到可运行的服务。<br>把设计原则变成代码、测试和部署记录。</p>
+    <p>从体验与选型，到架构、状态与质量。<br>把设计原则变成代码、测试和部署记录。</p>
   </div>
 </div>
 
@@ -710,7 +710,88 @@ class: section
 layout: default
 ---
 
-<div class="kicker">3.1 架构 / ARCHITECTURE</div>
+<div class="kicker">3.1 用户体验 / UX</div>
+
+# 写作工具先要让人敢一直用。
+
+<div class="rule"></div>
+
+<div class="ux-grid">
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">01</span><span class="tag">可用性</span></div>
+    <div class="ux-title">打开浏览器就能写</div>
+    <div class="ux-text">登录后进入自己的作品空间，账号之间数据隔离，无需安装客户端。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">02</span><span class="tag">连续性</span></div>
+    <div class="ux-title">中断后还能接着写</div>
+    <div class="ux-text">每个阶段保存检查点，保留已完成章节和待处理任务，恢复后继续下一步。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">03</span><span class="tag">成本</span></div>
+    <div class="ux-title">调用前知道大概花多少</div>
+    <div class="ux-text">生成前给出费用预估，生成后记录 token 与用量，避免越写越不敢调用。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">04</span><span class="tag">容错</span></div>
+    <div class="ux-title">失败时保住已有正文</div>
+    <div class="ux-text">超时、截断、坏 JSON 对用户可见；局部失败时保留有效内容并标记待处理。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">05</span><span class="tag">可控</span></div>
+    <div class="ux-title">写作流程由作者掌握</div>
+    <div class="ux-text">创建作品、配置文风、逐章或批量生成、修改、复查，最后导出 Markdown。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">06</span><span class="tag">安全</span></div>
+    <div class="ux-title">技能只作文本，密钥留在服务端</div>
+    <div class="ux-text">写作 Skill 只注入模型文本；敏感信息在本地检查，模型密钥不回传网页。</div>
+  </div>
+</div>
+
+<div class="ux-foot">六个因素围绕同一个目标：<b>让作者把注意力留在故事上。</b></div>
+
+<div class="bottom-note">来源：README「核心功能」 · docs/software/USER_GUIDE.md · code/backend/inf_backend/web.py</div>
+
+<!-- 3.1 用户体验：可用、连续、成本、容错、可控、安全。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.2 技术选型 / STACK</div>
+
+# 够用、可验证，避免过度设计。
+
+<div class="rule"></div>
+
+<table class="compare tech-table">
+  <thead>
+    <tr><th>条目</th><th>选型</th><th>版本</th><th>选型原因</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>程序设计语言</td><td>Python</td><td>3.11（CI 3.11）</td><td>复用写作引擎与标准库测试，部署简单</td></tr>
+    <tr><td>智能体编排</td><td>LangGraph</td><td>1.2.17</td><td>状态图表达规划、写作、记忆、审核与条件边</td></tr>
+    <tr><td>前端</td><td>Vue runtime-only + 原生 HTML/CSS/JS</td><td>Vue 3.5.44</td><td>仓库内置运行时，无前端构建链</td></tr>
+    <tr><td>Web 服务</td><td>Python 标准库 <code>http.server</code></td><td>随 Python 3.11</td><td>单机与单服务够用，不额外引入 ASGI</td></tr>
+    <tr><td>运行平台</td><td>Windows 本地 / Linux 托管</td><td>Python 3.11</td><td>同一套服务代码，CI 覆盖 Ubuntu</td></tr>
+    <tr><td>数据库</td><td>PostgreSQL + Psycopg</td><td>PG 17（CI 17/18）· Psycopg 3.3.3</td><td>持久化作品、章节与任务；未配置时降级文件模式</td></tr>
+    <tr><td>模型服务</td><td>DeepSeek / OpenAI 兼容</td><td>Chat Completions</td><td>复用已接入接口、计费预估与故障处理</td></tr>
+    <tr><td>开发工具</td><td>VS Code + Ruff</td><td>Ruff 0.17.4</td><td>编辑、格式化与静态检查共用一套规则</td></tr>
+  </tbody>
+</table>
+
+<div class="tech-note">版本与选型理由同步写在 <code>README.md</code>「技术选型」；依赖版本见 <code>requirements.txt</code> 与 <code>pyproject.toml</code>。</div>
+
+<div class="bottom-note">来源：README「技术选型」 · code/backend/requirements.txt · code/backend/pyproject.toml · docs/software/LANGGRAPH_MIGRATION.md</div>
+
+<!-- 3.2 技术选型：语言、IDE、平台、框架与版本。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.5.1 架构 / ARCHITECTURE</div>
 
 # 四层边界：界面不碰模型，模型不碰存储。
 
