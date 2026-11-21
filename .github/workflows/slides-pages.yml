@@ -18,7 +18,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: slides-pages-${{ github.ref }}
+  group: pages
   cancel-in-progress: false
 
 jobs:
@@ -31,14 +31,22 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22"
           cache: npm
           cache-dependency-path: docs/slides/package-lock.json
+
+      - name: Check slide sources
+        run: |
+          test -f slides.md
+          test -f package-lock.json
+          if [ ! -f style.css ]; then
+            echo "::warning file=docs/slides/style.css::style.css is missing; the deck will use the default Slidev theme."
+          fi
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
@@ -48,28 +56,35 @@ jobs:
           PAGES_BASE: /${{ github.event.repository.name }}/
         run: npm run build -- --base "$PAGES_BASE"
 
+      # Keep this check self-contained: it must not depend on optional local scripts.
       - name: Verify build output
-        env:
-          PAGES_BASE: /${{ github.event.repository.name }}/
-        run: npm run check
-
-      - name: Disable Jekyll processing
-        run: touch dist/.nojekyll
+        run: |
+          test -f dist/index.html
+          test -d dist/assets
+          grep -Fq "/${{ github.event.repository.name }}/" dist/index.html
+          test -n "$(find dist/assets -type f -name '*.js' -print -quit)"
+          test -n "$(find dist/assets -type f -name '*.css' -print -quit)"
+          echo "Build output OK"
 
       - name: Upload site artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: slides-site
           path: docs/slides/dist
           retention-days: 14
 
+      # enablement: true asks GitHub to create the Pages site when it is missing.
+      # If repository policy forbids this, set Settings -> Pages -> Source to
+      # "GitHub Actions" once and rerun.
       - name: Configure Pages
         if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: docs/slides/dist
 
@@ -84,4 +99,4 @@ jobs:
     steps:
       - name: Deploy
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
