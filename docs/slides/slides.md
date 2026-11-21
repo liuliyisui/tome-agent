@@ -949,8 +949,6 @@ flowchart LR
 
 <div class="arch-foot"><span>请求路径</span> 界面动作 → 服务层校验 → 引擎编排 → 检查点 / 数据库提交 → 结果回传。</div>
 
-<div class="arch-quote">好的架构让<b>每一层都能被替换、被测试、被解释</b>。</div>
-
 <div class="bottom-note">来源：docs/software/architecture.md · code/backend/inf_backend/service.py · code/core_engine/</div>
 
 <!-- 四层架构，重点是边界。 -->
