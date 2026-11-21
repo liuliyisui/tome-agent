@@ -1123,7 +1123,7 @@ layout: default
 
 <div class="kicker">3.7 代码统计 / CODE</div>
 
-# 代码量不是成绩，<br>是维护的起点。
+# 代码规模要看清，<br>维护成本才估得准。
 
 <div class="rule"></div>
 
