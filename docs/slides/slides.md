@@ -1167,41 +1167,6 @@ layout: default
 layout: default
 ---
 
-<div class="kicker">3.5.4 数据库 / DATABASE</div>
-
-# 六张表把作品、任务和成本分开记。
-
-<div class="rule"></div>
-
-```mermaid {theme: 'base', themeCSS: '.node rect{fill:#F6F3E9 !important;stroke:#1E4A36 !important;rx:4px;ry:4px}.node polygon{fill:#F6F3E9 !important;stroke:#1E4A36 !important}.nodeLabel{fill:#1F3026 !important;font-family:Noto Sans SC,Microsoft YaHei,sans-serif !important;font-size:12px !important}.edgePath .path{stroke:#7D9274 !important;stroke-width:1.4px !important}.marker{fill:#7D9274 !important;stroke:#7D9274 !important}.labelBkg{background:#F6F3E9 !important;color:#5D7355 !important}.labelBkg p{background:transparent !important;color:#5D7355 !important}', scale: 0.8}
-flowchart LR
-  BOOKS["tome_books<br/>作品"] -->|1:N| CHAPTERS["tome_chapters<br/>章节"]
-  CHAPTERS -->|1:N| VERSIONS["tome_chapter_versions<br/>版本"]
-  BOOKS -->|1:N| JOBS["tome_jobs<br/>任务"]
-  BOOKS -->|1:N| USAGE["tome_usage<br/>用量"]
-```
-
-<div class="cols cols-2 gap-lg data-layout">
-  <div>
-    <div class="subhead">聚合关系</div>
-    <div class="data-note">作品是聚合根：章节、版本、任务和用量都按 <code>book_id</code> 归属。版本表保留章节历史；任务表记录进度；用量表保留 token 与费用。</div>
-    <div class="data-note"><code>tome_schema_version</code> 独立维护迁移版本，不参与作品聚合。</div>
-  </div>
-  <div>
-    <div class="subhead">存储与降级</div>
-    <div class="data-note">PostgreSQL 可选；未配置时降级为文件模式，两种存储共享同一套领域语义。</div>
-    <div class="data-note">数据库保存作品、章节、版本、任务和用量；文件模式保存检查点与作品文件，便于本地运行和迁移。</div>
-  </div>
-</div>
-
-<div class="bottom-note">来源：code/backend/inf_backend/schema.sql · docs/software/POSTGRESQL.md · code/backend/inf_backend/database.py</div>
-
-<!-- 3.5.4 数据库：6 张表、关系与两种存储模式。 -->
-
----
-layout: default
----
-
 <div class="kicker">3.5.5 接口 / API</div>
 
 # 生成、编辑、复查、导出都有固定入口。
