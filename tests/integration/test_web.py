@@ -815,6 +815,7 @@ class WebIntegrationTests(unittest.TestCase):
             },
         }
         with (
+            patch("inf_backend.web._view_fingerprint", return_value=None),
             patch.object(
                 service,
                 "load_book",

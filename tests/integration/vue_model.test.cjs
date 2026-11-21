@@ -46,7 +46,7 @@ async function fixture({ configured = true, theme = null, darkSystem = false, bl
   };
   const context = vm.createContext({
     console,
-    window: { TomeRender: () => {}, matchMedia: () => media },
+    window: { TomeRender: () => {}, matchMedia: () => media, addEventListener() {}, removeEventListener() {} },
     history: {},
     localStorage: {
       getItem(key) { if (blockStorage) throw new Error("Storage unavailable"); return storage.get(key) ?? null; },
@@ -58,6 +58,7 @@ async function fixture({ configured = true, theme = null, darkSystem = false, bl
       return timers.length;
     },
     clearTimeout() {},
+    requestAnimationFrame: () => 1,
     fetch: async (url, options) => {
       const payload = options?.body ? JSON.parse(options.body) : undefined;
       calls.push({ url, payload });
@@ -105,7 +106,12 @@ async function fixture({ configured = true, theme = null, darkSystem = false, bl
     fs.readFileSync(path.join(frontend, "vue.runtime.global.prod.js"), "utf8"),
     context,
   );
-  context.document = { documentElement: root };
+  context.document = {
+    documentElement: root,
+    body: { classList: { toggle() {} } },
+    addEventListener() {},
+    removeEventListener() {},
+  };
   context.Vue = {
     ...context.Vue,
     onMounted: (callback) => mounted.push(callback),
@@ -444,7 +450,7 @@ test("local manuscript drafts survive reopening and block generation while editi
   assert.equal(JSON.parse(f.storage.get("tome-chapter-draft:a:1")).text, "作者修改后的正文。");
   f.model.closeEditor();
   f.model.openEditor();
-  assert.equal(f.model.state.editor.text, "作者修改后的正文。");
+  assert.equal(f.model.state.editor.text, "　　作者修改后的正文。");
   assert.equal(f.model.state.editor.base_revision, "revision-a");
   f.model.discardDraft();
   assert.equal(f.storage.has("tome-chapter-draft:a:1"), false);
