@@ -1,0 +1,21 @@
+{
+  "name": "tome-agent-slides",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "slidev slides.md --open",
+    "build": "slidev build slides.md --out dist",
+    "build:local": "slidev build slides.md --out dist-local --base /",
+    "check": "node scripts/check-build.mjs",
+    "export": "node scripts/export-pdf.mjs"
+  },
+  "dependencies": {
+    "@slidev/cli": "53.1.0",
+    "@slidev/theme-default": "0.25.0",
+    "vue": "3.5.46"
+  },
+  "devDependencies": {
+    "pdf-lib": "1.17.1"
+  }
+}
