@@ -1396,14 +1396,14 @@ layout: default
   <table>
     <thead><tr><th>模块</th><th>文件数</th><th>行数</th></tr></thead>
     <tbody>
-      <tr><td>code/core_engine（Python，写作与记忆引擎）</td><td>105</td><td>35,359</td></tr>
-      <tr><td>code/backend（Python，后端服务）</td><td>24</td><td>5,270</td></tr>
-      <tr><td>tests（Python，单元 + 集成）</td><td>43</td><td>6,671</td></tr>
+      <tr><td>code/core_engine（Python，写作与记忆引擎）</td><td>105</td><td>35,126</td></tr>
+      <tr><td>code/backend（Python，后端服务）</td><td>24</td><td>5,213</td></tr>
+      <tr><td>tests（Python，单元 + 集成）</td><td>43</td><td>6,624</td></tr>
       <tr><td>code/frontend（JS / HTML / CSS）</td><td>5</td><td>4,996</td></tr>
-      <tr><td>合计</td><td>177</td><td>52,296</td></tr>
+      <tr><td>合计</td><td>177</td><td>51,959</td></tr>
     </tbody>
   </table>
-  <div class="small mt-2">统计口径：git 跟踪的 code/ 与 tests/ 下 .py / .js / .html / .css 的代码行（不含注释与空行；另含注释 414 行、空行 3,779 行），提交 2431b7c；答辩前用 VS Code Counter 重跑并附截图。</div>
+  <div class="small mt-2">统计口径：git 跟踪的 code/ 与 tests/ 下 .py / .js / .html / .css 的代码行（不含注释与空行；另含注释 751 行、空行 3,779 行），提交 2431b7c；口径自检：python docs/slides/count_lines.py --scope code。</div>
 </div>
 
 <div>
