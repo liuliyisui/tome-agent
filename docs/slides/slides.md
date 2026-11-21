@@ -887,16 +887,16 @@ layout: default
 
 <div>
   <table>
-    <thead><tr><th>模块</th><th>文件数</th><th>行数</th></tr></thead>
+    <thead><tr><th>语言</th><th>文件</th><th>代码</th><th>注释</th><th>空行</th></tr></thead>
     <tbody>
-      <tr><td>code/core_engine（Python，写作与记忆引擎）</td><td>105</td><td>35,126</td></tr>
-      <tr><td>code/backend（Python，后端服务）</td><td>24</td><td>5,213</td></tr>
-      <tr><td>tests（Python，单元 + 集成）</td><td>43</td><td>6,624</td></tr>
-      <tr><td>code/frontend（JS / HTML / CSS）</td><td>5</td><td>4,996</td></tr>
-      <tr><td>合计</td><td>177</td><td>51,959</td></tr>
+      <tr><td>Python（.py）</td><td>176</td><td>49,359</td><td>754</td><td>4,000</td></tr>
+      <tr><td>JavaScript（.js）</td><td>7</td><td>5,589</td><td>25</td><td>15</td></tr>
+      <tr><td>HTML（.html）</td><td>2</td><td>2,033</td><td>0</td><td>0</td></tr>
+      <tr><td>CSS（.css）</td><td>3</td><td>586</td><td>62</td><td>79</td></tr>
+      <tr><td>合计</td><td>188</td><td>57,567</td><td>841</td><td>4,094</td></tr>
     </tbody>
   </table>
-  <div class="small mt-2">统计口径：git 跟踪的 code/ 与 tests/ 下 .py / .js / .html / .css 的代码行（不含注释与空行；另含注释 751 行、空行 3,779 行），提交 2431b7c；口径自检：python docs/slides/count_lines.py --scope code。</div>
+  <div class="small mt-2 leading-[1.7]">模块（目录 / 包）：<b>code/core_engine</b>、<b>code/backend</b>、<b>code/frontend</b>、<b>tests</b>、<b>docs/slides</b> 共 5 个。<br>口径：git 跟踪的 .py / .js / .html / .css，排除依赖与构建产物，提交 2431b7c；自检脚本 <b>docs/slides/count_lines.py</b>。</div>
 </div>
 
 <div>
