@@ -58,10 +58,9 @@ class: cover
 ---
 layout: default
 ---
-
 <div class="eyebrow">汇报目录</div>
 
-# 三个部分、24 页：8 分钟讲完设计与实现
+# 三个部分、28 页：8 分钟讲完设计与实现
 
 <div class="hr-line"></div>
 
@@ -71,18 +70,12 @@ layout: default
 
 <div class="text-[12.5px] font-bold text-[#1B3B5F]">1 · 产品设计</div>
 <div class="mt-1">
-  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.1.1 使命 · 1.1.2 口号</div><div class="text-[11px] font-bold text-[#1B3B5F]">P3</div></div>
-  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.1.3 目标用户 · 1.1.4 如何获得用户</div><div class="text-[11px] font-bold text-[#1B3B5F]">P4</div></div>
-  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.1.5 团队优势 · 1.1.6 差异化</div><div class="text-[11px] font-bold text-[#1B3B5F]">P5</div></div>
-  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.2 产品定义 · 1.2.1 五个症状</div><div class="text-[11px] font-bold text-[#1B3B5F]">P6</div></div>
-  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.2.2 对客户的价值（用户故事）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P7</div></div>
-  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.2.3 解决方案（形态 + 机制）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P8</div></div>
+<div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.1.1 使命</div><div class="text-[11px] font-bold text-[#1B3B5F]">P3</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.1.2 口号</div><div class="text-[11px] font-bold text-[#1B3B5F]">P4</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.1.3 目标用户</div><div class="text-[11px] font-bold text-[#1B3B5F]">P5</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.1.4 如何获得用户</div><div class="text-[11px] font-bold text-[#1B3B5F]">P6</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.1.5 团队优势</div><div class="text-[11px] font-bold text-[#1B3B5F]">P7</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.1.6 如何做到差异化</div><div class="text-[11px] font-bold text-[#1B3B5F]">P8</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.2 产品定义</div><div class="text-[11px] font-bold text-[#1B3B5F]">P9</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.2.1 解决的问题</div><div class="text-[11px] font-bold text-[#1B3B5F]">P10</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.2.2 对客户的价值</div><div class="text-[11px] font-bold text-[#1B3B5F]">P11</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">1.2.3 解决方案</div><div class="text-[11px] font-bold text-[#1B3B5F]">P12</div></div>
 </div>
 
-<div class="text-[12.5px] font-bold text-[#1B3B5F] mt-5">2 · 产品设计应用的原则</div>
+<div class="text-[12.5px] font-bold text-[#1B3B5F] mt-4">2 · 产品设计应用的原则</div>
 <div class="mt-1">
-  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">十二条原则：四组，每组三条</div><div class="text-[11px] font-bold text-[#1B3B5F]">P9–10</div></div>
-<div class="text-[10.5px] mt-1 leading-[1.7]" style="color:#8A8072">需求 / 信息 / 创新 · 系统 / 收敛 / 优化 · 继承 / 效益 / 时间 · 定量 / 简化 / 审核</div>
+<div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">十二条原则：四组，每组三条</div><div class="text-[11px] font-bold text-[#1B3B5F]">P13–14</div></div>
 </div>
 
 </div>
@@ -91,31 +84,20 @@ layout: default
 
 <div class="text-[12.5px] font-bold text-[#1B3B5F]">3 · 产品实现</div>
 <div class="mt-1">
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.1 用户体验设计考虑的因素</div><div class="text-[11px] font-bold text-[#1B3B5F]">P11</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.2 编程语言 / IDE / 平台 / 框架</div><div class="text-[11px] font-bold text-[#1B3B5F]">P12</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.3 代码仓库链接与提交历史</div><div class="text-[11px] font-bold text-[#1B3B5F]">P13</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.4 全生命周期问题与解决方法</div><div class="text-[11px] font-bold text-[#1B3B5F]">P14</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.1 系统架构图</div><div class="text-[11px] font-bold text-[#1B3B5F]">P15</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.2 基础设施与部署形态</div><div class="text-[11px] font-bold text-[#1B3B5F]">P16</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.3 智能体技术设计（编排 / 记忆 / 护栏）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P17–18</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.4 数据库设计（E-R）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P19</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.5 接口设计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P20</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.6 前端设计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P21</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.6 软件质量（方法与工具）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P22</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.7 代码统计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P23</div></div>
+<div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.1 体验设计考虑的因素</div><div class="text-[11px] font-bold text-[#1B3B5F]">P15</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.2 语言 / IDE / 平台 / 框架</div><div class="text-[11px] font-bold text-[#1B3B5F]">P16</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.3 代码仓库与提交历史</div><div class="text-[11px] font-bold text-[#1B3B5F]">P17</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.4 全生命周期问题</div><div class="text-[11px] font-bold text-[#1B3B5F]">P18</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.1 系统架构图</div><div class="text-[11px] font-bold text-[#1B3B5F]">P19</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.2 基础设施与部署</div><div class="text-[11px] font-bold text-[#1B3B5F]">P20</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.3 智能体技术设计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P21–22</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.4 数据库设计（E-R）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P23</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.5 接口设计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P24</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.6 前端设计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P25</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.6 软件质量（方法 + 工具）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P26</div></div><div class="flex items-baseline justify-between py-[5px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.7 代码统计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P27</div></div>
 </div>
 
 </div>
 
 </div>
 
-<!-- 目录页：把封面上的范围说明搬到这里并补全到每个小节。 -->
+<!-- 目录按实际放映顺序生成，页码由分页脚本计算。 -->
 ---
 layout: default
 ---
-<div class="eyebrow">1.1.1 使命 · 1.1.2 口号</div>
+<div class="eyebrow">1.1.1 使命</div>
 
-# 让心里有故事的人，写出一部属于自己的自洽长篇
+# 把「创作一部长篇」的门槛，降到「说得清一个想法」
 
 <div class="hr-line"></div>
 
@@ -139,16 +121,53 @@ layout: default
 </div>
 
 <div class="card px-4 py-3 mt-4">
-  <div class="text-[11.5px] leading-[1.8]"><span class="tag text-[11px]">主口号（对外）：</span>一个点子，一部自洽的长篇。<span class="tag text-[11px]">　副口号（对内）：</span>先把「记得住」做对，再谈「写得好」。</div>
+  <div class="text-[11.5px] leading-[1.8]"><span class="tag text-[11px]">使命的三条判据：</span>读者不必会写、不必学提示词；每条设定都查得到出处与版本；成稿随时能整本带走。</div>
 </div>
 
-<!-- 1.1.1 + 1.1.2 合并：使命三件事 + 口号。 -->
+<!-- 1.1.1 使命：一句话 + 门槛/质量/归属三条判据。 -->
 ---
 layout: default
 ---
-<div class="eyebrow">1.1.3 目标用户 · 1.1.4 如何获得用户</div>
+<div class="eyebrow">1.1.2 口号</div>
 
-# 想创作却不会写的读者：三类画像，三步获客
+# 一个点子，一部自洽的长篇
+
+<div class="hr-line"></div>
+
+<div class="card px-6 py-5">
+  <div class="tag text-[11px]">主口号（对外）</div>
+  <div class="text-[26px] font-extrabold mt-2 text-[#1B3B5F]">一个点子，一部自洽的长篇。</div>
+  <div class="text-[11.5px] mt-2 leading-[1.75]" style="color:#6C7784">对读者说的一句话：输入是一个想法，输出是一整部前后一致的长篇——中间不需要写作技巧，也不需要提示词工程。</div>
+</div>
+
+<div class="card px-6 py-4 mt-3">
+  <div class="tag text-[11px]">副口号（对内）</div>
+  <div class="text-[17px] font-bold mt-1.5">先把「记得住」做对，再谈「写得好」。</div>
+  <div class="text-[11.5px] mt-2 leading-[1.75]" style="color:#6C7784">对团队说的取舍：优先级是状态一致性与可恢复，辞藻与风格放在其后。这条决定了功能排序，也决定了我们放弃做「文笔润色工具」。</div>
+</div>
+
+<div class="grid grid-cols-3 gap-3 mt-3">
+  <div class="card-soft px-4 py-3">
+    <div class="tag">用在哪</div>
+    <div class="body-text mt-1.5">README 首屏、答辩开场第一句、界面空状态文案，三处同一句话，不另起说法。</div>
+  </div>
+  <div class="card-soft px-4 py-3">
+    <div class="tag">不承诺什么</div>
+    <div class="body-text mt-1.5">不说「一键成神作」，不说「无限长度」；篇幅承诺只到验证过的 1 万字 / 8–10 章。</div>
+  </div>
+  <div class="card-soft px-4 py-3">
+    <div class="tag">和使命的关系</div>
+    <div class="body-text mt-1.5">使命讲「我们能做多大」，口号讲「凭什么选我们」；副口号把使命落到开发优先级上。</div>
+  </div>
+</div>
+
+<!-- 1.1.2 口号：主口号对外 + 副口号对内 + 使用边界。 -->
+---
+layout: default
+---
+<div class="eyebrow">1.1.3 目标用户</div>
+
+# 想创作却不会写的读者：三类画像
 
 <div class="hr-line"></div>
 
@@ -170,26 +189,59 @@ layout: default
   </div>
 </div>
 
-<div class="grid grid-cols-[1.5fr_1fr] gap-3 mt-3">
-  <div class="card-soft px-4 py-3">
-    <div class="tag">获客三步</div>
-    <div class="body-text mt-1 leading-[1.8]">0→100 种子：课程 / 社群内测 +「同题材对照生成」演示　｜　100→1000 内容：把「吃设定」做成可复现案例，README 作信任入口　｜　1000→ 口碑：作品可导出、可分享首章</div>
-  </div>
-  <div class="card px-4 py-3">
-    <div class="tag">三个转化点</div>
-    <div class="body-text mt-1 leading-[1.8]">费用可见<br>失败能续（检查点恢复）<br>首章就能判断合不合口味</div>
-  </div>
+<div class="card px-5 py-4 mt-3">
+  <div class="tag text-[11px]">为什么是这三类</div>
+  <div class="body-text mt-1.5">三类人共同点：<b>有想法、缺写作能力、对前后一致敏感</b>。他们的痛点不是「写得好不好」，而是「写不长、写不一致」，正好落在我们的能力范围里。</div>
 </div>
 
 <div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">这一版不服务：专业作者的量产工具 ｜ 移动端 App 与多人协作编辑（在线账号已支持）。市场口径（估算）：网文读者 5.75 亿，SAM 290 万–1150 万。</div>
 
-<!-- 1.1.3 + 1.1.4 合并。 -->
+<!-- 1.1.3 目标用户：三类画像 + 不服务谁 + 市场口径。 -->
 ---
 layout: default
 ---
-<div class="eyebrow">1.1.5 团队优势 · 1.1.6 如何做到差异化</div>
+<div class="eyebrow">1.1.4 如何获得用户</div>
 
-# 四个人的链条，和「不比谁更会写」的差异化
+# 从种子到口碑：三步获客
+
+<div class="hr-line"></div>
+
+<div class="grid grid-cols-3 gap-3">
+  <div class="card-soft p-4">
+    <div class="tag">第一步 · 0 → 100</div>
+    <div class="text-[12.5px] font-bold mt-1">种子内测</div>
+    <div class="body-text mt-2">课程与社群内能直接接触到的读者，用「同题材对照生成」现场演示：同一设定下，通用聊天 vs Tome Agent，看谁不吃设定。</div>
+  </div>
+  <div class="card-soft p-4">
+    <div class="tag">第二步 · 100 → 1000</div>
+    <div class="text-[12.5px] font-bold mt-1">内容与信任</div>
+    <div class="body-text mt-2">把「吃设定」做成可复现的案例（同一提示词跑三章），README 与仓库作为可核验的信任入口，不靠口号。</div>
+  </div>
+  <div class="card-soft p-4">
+    <div class="tag">第三步 · 1000 →</div>
+    <div class="text-[12.5px] font-bold mt-1">口碑与自传播</div>
+    <div class="body-text mt-2">作品可导出、可分享首章；读者拿到成品后，下一个点子会自己回来用。</div>
+  </div>
+</div>
+
+<div class="grid grid-cols-2 gap-3 mt-3">
+  <div class="card px-4 py-3">
+    <div class="tag">三个转化点</div>
+    <div class="body-text mt-1.5 leading-[1.8]">费用可见（生成前预估并确认）<br>失败能续（检查点恢复，不丢半成品）<br>首章就能判断合不合口味</div>
+  </div>
+  <div class="card px-4 py-3">
+    <div class="tag">为什么先做内测而不是投放</div>
+    <div class="body-text mt-1.5 leading-[1.8]">产品还在验证期，投放会放大「承诺-交付」的差距；先在小范围把首章通过率与续写完成率跑出来，再谈渠道。</div>
+  </div>
+</div>
+
+<!-- 1.1.4 如何获得用户：三步获客 + 三个转化点 + 渠道节奏。 -->
+---
+layout: default
+---
+<div class="eyebrow">1.1.5 团队优势</div>
+
+# 四个人的链条：开发和验证在同一条线上
 
 <div class="hr-line"></div>
 
@@ -201,7 +253,39 @@ layout: default
 </div>
 <div class="small mt-2">开发 → 创作评估 → 测试 → 体验文档，每项交付至少一名非负责人复核；计算机专业背景，从「数据一致性、事务、可恢复」切入。</div>
 
-<div class="grid grid-cols-3 gap-3 mt-3">
+<div class="grid grid-cols-3 gap-3 mt-4">
+  <div class="card-soft p-4">
+    <div class="tag">优势一</div>
+    <div class="text-[12.5px] font-bold mt-1">评估的人写测试</div>
+    <div class="body-text mt-2">负责「写得对不对」的成员同时维护质量评估口径，标准由评估者自己落地成用例，不靠口头对齐。</div>
+  </div>
+  <div class="card-soft p-4">
+    <div class="tag">优势二</div>
+    <div class="text-[12.5px] font-bold mt-1">测试的人管环境</div>
+    <div class="body-text mt-2">同一人负责本机、容器与云服务器三种跑法，问题在环境差异上第一次出现时就有人接手。</div>
+  </div>
+  <div class="card-soft p-4">
+    <div class="tag">优势三</div>
+    <div class="text-[12.5px] font-bold mt-1">文档的人盯体验</div>
+    <div class="body-text mt-2">成果文档与体验走查同一个人做，写不出人话的地方就是界面需要改的地方。</div>
+  </div>
+</div>
+
+<div class="card px-4 py-3 mt-3">
+  <div class="text-[11px] leading-[1.7]"><span style="color:#B4472E">复核机制：</span>PR 必须由非作者本人复核；关键路径（记忆、提交、部署）改动要求附一条可复现的验证命令。</div>
+</div>
+
+<!-- 1.1.5 团队优势：四人链条 + 三条结构性优势 + 复核机制。 -->
+---
+layout: default
+---
+<div class="eyebrow">1.1.6 如何做到差异化</div>
+
+# 不比谁更会写，比谁记得住
+
+<div class="hr-line"></div>
+
+<div class="grid grid-cols-3 gap-3">
   <div class="card-soft p-4">
     <div class="tag">差异一</div>
     <div class="text-[12.5px] font-bold mt-1">面向读者，不是作者</div>
@@ -219,49 +303,64 @@ layout: default
   </div>
 </div>
 
+<div class="card px-5 py-4 mt-3">
+  <div class="tag text-[11px]">差异化怎么被验证</div>
+  <div class="body-text mt-1.5">三条都能落到可对照的实验：同一设定分别用通用聊天与 Tome Agent 写三章，统计设定冲突次数、伏笔回收率与单章费用；数值放在第三部分。</div>
+</div>
+
 <div class="card px-4 py-2.5 mt-3">
   <div class="text-[11px]">通用 AI 卖「会写」，写作工具卖「作者的效率」，Tome Agent 卖「读者零门槛写出一部自洽的长篇」；承诺边界只到验证过的篇幅（1 万字 / 8–10 章起）。</div>
 </div>
 
-<!-- 1.1.5 + 1.1.6 合并。 -->
+<!-- 1.1.6 差异化：三条差异 + 验证方式 + 承诺边界。 -->
 ---
 layout: default
 ---
-<div class="eyebrow">1.2 产品定义 · 1.2.1 解决的问题</div>
+<div class="eyebrow">1.2 产品定义</div>
 
-# 一个点子出一部自洽长篇，要解决的五个症状
+# 一句话讲清：给谁、做什么、不同于谁
 
 <div class="hr-line"></div>
 
-<div class="grid grid-cols-[1.02fr_1fr] gap-4">
-
-<div>
-  <div class="grid grid-cols-[78px_1fr] gap-x-3 gap-y-2 items-baseline">
-    <div class="tag text-[10.5px]">对于</div><div class="text-[11px]">心里有想看的题材、却不会写小说的普通读者</div>
-    <div class="tag text-[10.5px]">他们</div><div class="text-[11px]">想让 AI 写成前后连贯的长篇，但一写长就「吃设定」</div>
-    <div class="tag text-[10.5px]">它是一个</div><div class="text-[11px]">部署在云服务器上的长篇小说生成助手</div>
-    <div class="tag text-[10.5px]">它能够</div><div class="text-[11px]">用「规划 → 正文 → 事实变更 → 审核 → 提交」维护带出处与版本的记忆</div>
-    <div class="tag text-[10.5px]">不同于</div><div class="text-[11px]">面向作者的复杂工作台，也不同于记不住设定的通用聊天</div>
-    <div class="tag text-[10.5px]">我们的产品</div><div class="text-[11px]">让不会写小说的人，也能写出一部设定自洽、属于自己的长篇</div>
-  </div>
+<div class="grid grid-cols-[92px_1fr] gap-x-4 gap-y-3 items-baseline">
+  <div class="tag text-[11px]">对于</div><div class="text-[12.5px]">心里有想看的题材、却不会写小说的普通读者</div>
+  <div class="tag text-[11px]">他们</div><div class="text-[12.5px]">想让 AI 写成前后连贯的长篇，但一写长就「吃设定」</div>
+  <div class="tag text-[11px]">它是一个</div><div class="text-[12.5px]">部署在云服务器上的长篇小说生成助手</div>
+  <div class="tag text-[11px]">它能够</div><div class="text-[12.5px]">用「规划 → 正文 → 事实变更 → 审核 → 提交」维护带出处与版本的记忆</div>
+  <div class="tag text-[11px]">不同于</div><div class="text-[12.5px]">面向作者的复杂工作台，也不同于记不住设定的通用聊天</div>
+  <div class="tag text-[11px]">我们的产品</div><div class="text-[12.5px]">让不会写小说的人，也能写出一部设定自洽、属于自己的长篇</div>
 </div>
 
-<div>
-  <div class="space-y-[6px]">
-    <div class="flex gap-2 items-baseline"><div class="num text-[12px] w-[18px]">01</div><div class="text-[11px]">记不住设定——年龄、关系、能力、地点前后矛盾</div></div>
-    <div class="flex gap-2 items-baseline"><div class="num text-[12px] w-[18px]">02</div><div class="text-[11px]">时间线与因果对不上——谁在场、先发生什么</div></div>
-    <div class="flex gap-2 items-baseline"><div class="num text-[12px] w-[18px]">03</div><div class="text-[11px]">伏笔与义务不回收——前面埋的线后面忘了</div></div>
-    <div class="flex gap-2 items-baseline"><div class="num text-[12px] w-[18px]">04</div><div class="text-[11px]">上下文不可持续——塞全文贵且衰减，摘要丢细节</div></div>
-    <div class="flex gap-2 items-baseline"><div class="num text-[12px] w-[18px]">05</div><div class="text-[11px]">生成过程不可恢复——一次失败，成本与进度一起损失</div></div>
-  </div>
-  <div class="card px-4 py-3 mt-3">
-    <div class="text-[11px] font-bold leading-[1.7]"><span style="color:#B4472E">根因：</span>「记忆能力」≠「上下文长度」——所以从「让状态可查、可验、可恢复」入手，而不是写更长的提示词。</div>
-  </div>
+<div class="card px-5 py-4 mt-4">
+  <div class="text-[11.5px] leading-[1.75]"><span style="color:#B4472E">为什么这样定义：</span>把「不会写」和「吃设定」两个约束写进定义里，后面所有设计决定（事实账本、事务提交、费用确认）都是这两条的推论；定义之外的功能一律进「不做清单」。</div>
 </div>
 
+<!-- 1.2 产品定义：模板六行单独成页。 -->
+---
+layout: default
+---
+<div class="eyebrow">1.2.1 解决的问题</div>
+
+# 五个症状，一个根因
+
+<div class="hr-line"></div>
+
+<div class="grid grid-cols-2 gap-3">
+  <div class="card-soft px-4 py-3"><div class="tag text-[10.5px]">01 记不住设定</div><div class="body-text mt-1">年龄、关系、能力、地点前后矛盾。</div></div>
+  <div class="card-soft px-4 py-3"><div class="tag text-[10.5px]">02 时间线与因果</div><div class="body-text mt-1">谁在场、先发生什么，前后对不上。</div></div>
+  <div class="card-soft px-4 py-3"><div class="tag text-[10.5px]">03 伏笔与义务</div><div class="body-text mt-1">前面埋的线后面忘了回收。</div></div>
+  <div class="card-soft px-4 py-3"><div class="tag text-[10.5px]">04 上下文不可持续</div><div class="body-text mt-1">塞全文贵且衰减，摘要丢细节。</div></div>
+  <div class="card-soft px-4 py-3"><div class="tag text-[10.5px]">05 过程不可恢复</div><div class="body-text mt-1">一次失败，成本与进度一起损失。</div></div>
+  <div class="card px-4 py-3"><div class="tag text-[10.5px]">共同点</div><div class="body-text mt-1">都不是「文笔」问题，而是<b>状态管理</b>问题。</div></div>
 </div>
 
-<!-- 1.2 + 1.2.1 合并：模板六行 + 五个症状 + 根因。 -->
+<div class="card px-5 py-4 mt-3">
+  <div class="text-[11.5px] font-bold leading-[1.75]"><span style="color:#B4472E">根因：</span>「记忆能力」≠「上下文长度」——所以从「让状态可查、可验、可恢复」入手，而不是写更长的提示词。</div>
+</div>
+
+<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">这五个症状在第三部分的架构与记忆设计里逐条对应到机制：事实账本、审计记录、检查点、费用预估。</div>
+
+<!-- 1.2.1 解决的问题：五个症状 + 根因，单独成页。 -->
 ---
 layout: default
 ---
