@@ -55,7 +55,7 @@ class: cover
   </div>
 </div>
 
-<!-- 开场：我们做的是 Tome Agent，一个本地运行的长篇小说生成助手。这 8 分钟我负责第一部分：它是什么，以及为什么这么设计。 -->
+<!-- 开场：我们做的是 Tome Agent，一个部署在云服务器上的长篇小说生成助手。这 8 分钟我负责第一部分：它是什么，以及为什么这么设计。 -->
 
 ---
 layout: default
@@ -122,7 +122,7 @@ layout: default
 
 <div class="card-soft p-4">
   <div class="tag">归属</div>
-  <div class="body-text mt-2">作品文件存在本机，可以导出；不为平台锁定，也不为订阅付费。</div>
+  <div class="body-text mt-2">作品存在账号空间，随时可导出 Markdown；数据可迁移、服务端定期备份，不锁定平台。</div>
 </div>
 
 </div>
@@ -200,7 +200,7 @@ layout: default
 
 <div class="card px-4 py-3">
   <div class="tag">这一版明确不服务谁</div>
-  <div class="body-text mt-1">专业作者的量产工具（AI 文笔还撑不起量产质量）｜ 多人协作团队 ｜ 移动端与在线账号（首版单用户、本地运行）</div>
+  <div class="body-text mt-1">专业作者的量产工具（AI 文笔还撑不起量产质量）｜ 多人协作团队 ｜ 移动端 App 与多人协作编辑（在线账号已支持）</div>
 </div>
 
 <div>
@@ -253,7 +253,7 @@ layout: default
     <div>· B 站 / 知乎 / 小红书 + README 作信任入口</div>
     <div>· 开源仓库即试用入口，一条命令跑通</div>
   </div>
-  <div class="small mt-3"><span class="font-bold text-[#1B3B5F]">看板指标：</span>仓库访问 → 本地跑通率</div>
+  <div class="small mt-3"><span class="font-bold text-[#1B3B5F]">看板指标：</span>站点访问 → 注册转化率</div>
 </div>
 
 <div class="card-soft p-4 flex flex-col">
@@ -352,7 +352,7 @@ layout: default
 | 生成单位 | 一次回答 | 一段 / 一章 | — | 一章一事务，校验后提交 |
 | 失败处理 | 重新生成一遍 | 手工修改 | — | 检查点恢复，正式稿不被污染 |
 | 承诺边界 | 不承诺篇幅 | 不承诺篇幅 | — | 只承诺验证过的篇幅（1 万字 / 8–10 章起） |
-| 成本与归属 | 订阅 | 订阅 + 云端 | 平台内阅读 | 本地运行、自带 Key、作品留本机 |
+| 成本与归属 | 订阅 | 订阅 + 云端 | 平台内阅读 | 云端托管、自带 Key、作品可导出 |
 
 <div class="card-dk px-5 py-3 mt-4">
   <div class="text-[11.5px]"><span class="tag text-[11px]">一句话差异化：</span>通用 AI 卖「会写」，写作工具卖「作者的效率」，Tome Agent 卖「读者零门槛写出一部自洽的长篇」。</div>
@@ -360,7 +360,7 @@ layout: default
 
 <div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">竞品信息：公开产品页与第三方横评（2026-04），属市场观察，不是严格测评。</div>
 
-<!-- 差异化四层：面向读者而非作者、事实级记忆而非摘要、提交是事务而非覆盖、本地归属。最后一列只承诺验证过的篇幅。 -->
+<!-- 差异化四层：面向读者而非作者、事实级记忆而非摘要、提交是事务而非覆盖、数据可迁移。最后一列只承诺验证过的篇幅。 -->
 
 ---
 layout: default
@@ -386,7 +386,7 @@ layout: default
 
 <div class="grid grid-cols-[150px_1fr] gap-x-5 items-baseline py-[9px] border-b border-[#E8E1D5]">
   <div class="tag text-[11px]">Tome Agent 是一个</div>
-  <div class="text-[12.5px]">本地运行的长篇小说生成助手</div>
+  <div class="text-[12.5px]">部署在云服务器上的长篇小说生成助手</div>
 </div>
 
 <div class="grid grid-cols-[150px_1fr] gap-x-5 items-baseline py-[9px] border-b border-[#E8E1D5]">
@@ -511,20 +511,20 @@ layout: default
 
 <div class="eyebrow">1.2.3 解决方案</div>
 
-# 形态选「本地网站」：作品和密钥留在本机，浏览器打开就能用
+# 形态选「云端 Web 服务」：浏览器访问域名，登录账号即可写作
 
 <div class="hr-line"></div>
 
-<div class="text-[11.5px] leading-[1.7]"><span class="tag text-[11px]">为什么是网站，不是小程序 / App：</span>作品文件与 API Key 必须留在本机、成本按 token 透明、不经过上架审核；本地网页用浏览器即可打开，不需要账号、不需要装客户端。</div>
+<div class="text-[11.5px] leading-[1.7]"><span class="tag text-[11px]">为什么是云端 Web 服务，不是小程序 / App：</span>用户不必安装客户端，浏览器打开域名即可用；服务端统一升级、备份与限流；账号体系隔离各自作品；成本按 token 透明计费，不需要应用商店上架审核。</div>
 
 <div class="grid grid-cols-[1.05fr_1fr] gap-5 mt-6">
 
 <div>
   <div class="tag">技术组成（版本见 README）</div>
   <div class="mt-2 space-y-[7px]">
-    <div class="grid grid-cols-[52px_1fr] gap-2 items-baseline"><div class="text-[11px] font-bold text-[#1B3B5F]">界面</div><div class="small">Vue 3.5.44 内置运行时，无前端构建；本地服务 <span class="mono">http://127.0.0.1:8765</span></div></div>
+    <div class="grid grid-cols-[52px_1fr] gap-2 items-baseline"><div class="text-[11px] font-bold text-[#1B3B5F]">界面</div><div class="small">Vue 3.5.44 内置运行时，无前端构建；服务端 <span class="mono">127.0.0.1:8765</span> 经 Nginx 443 对外</div></div>
     <div class="grid grid-cols-[52px_1fr] gap-2 items-baseline"><div class="text-[11px] font-bold text-[#1B3B5F]">编排</div><div class="small">LangGraph 1.2.17 把五个阶段建成状态图，支持条件分支与重规划</div></div>
-    <div class="grid grid-cols-[52px_1fr] gap-2 items-baseline"><div class="text-[11px] font-bold text-[#1B3B5F]">存储</div><div class="small">文件模式零配置即可跑；需要持久化时用 PostgreSQL 17 + Psycopg 3.3.3</div></div>
+    <div class="grid grid-cols-[52px_1fr] gap-2 items-baseline"><div class="text-[11px] font-bold text-[#1B3B5F]">存储</div><div class="small">默认文件存储，零外部依赖；需要时切 PostgreSQL 17 + Psycopg 3.3.3</div></div>
     <div class="grid grid-cols-[52px_1fr] gap-2 items-baseline"><div class="text-[11px] font-bold text-[#1B3B5F]">模型</div><div class="small">Chat Completions 兼容接口：DeepSeek、OpenAI 及其他兼容服务</div></div>
   </div>
 </div>
@@ -583,7 +583,7 @@ layout: default
 </div>
 
 <div class="card-dk px-5 py-3 mt-4">
-  <div class="text-[11.5px]">一次生成 = 「规划 → 写作 → 记忆 → 审核 → 提交」；本地运行、作品留在本机、按 token 透明计费。</div>
+  <div class="text-[11.5px]">一次生成 = 「规划 → 写作 → 记忆 → 审核 → 提交」；服务端托管、作品存于账号空间、按 token 透明计费。</div>
 </div>
 
 <!-- 这一页专讲机制：五段一串，核心是提交是事务、失败不动正式稿。功能细节不放在封面，放到这里。 -->
@@ -646,7 +646,7 @@ layout: default
   <div class="tag mt-3">本产品的做法</div>
   <div class="body-text mt-1 leading-[1.75]">
     <div>· 需求从「不会写」和「吃设定」出发，不是从「模型能干什么」出发</div>
-    <div>· 先冻结 MVP：单用户、本地、中文、顺序逐章；多人协作 / 移动端 / 自动出版明确不做</div>
+    <div>· 先冻结 MVP：单用户账号、中文、顺序逐章；多人协作 / 移动端 / 自动出版明确不做</div>
     <div>· 显需求 = 把想法变成第 1 章；隐需求 = 设定可查、失败可续</div>
   </div>
 </div>
@@ -762,8 +762,8 @@ layout: default
   <div class="text-[10.5px] text-[#6C7784] mt-1 leading-relaxed">既讲技术经济效益，也讲社会效益。</div>
   <div class="tag mt-3">本产品的做法</div>
   <div class="body-text mt-1 leading-[1.75]">
-    <div>· 本地运行 + 自带 Key + 按 token 计费，生成前显示预估人民币费用</div>
-    <div>· 单用户本地存档，省掉服务器与运维成本；换机器只要拷作品目录</div>
+    <div>· 单台云服务器托管，用户各自配置模型 Key，按 token 计费；生成前显示预估人民币费用</div>
+    <div>· 一台机器 + 进程池即可服务多用户（上限可调），省掉集群与运维复杂度；数据目录可整体备份迁移</div>
     <div>· 社会效益：降低创作门槛，作品留在作者手里，可导出、不被平台锁定</div>
   </div>
 </div>
@@ -880,7 +880,7 @@ layout: default
 | 3.3 代码仓库链接与提交历史 | 仓库地址、每人提交次数、看板与缺陷追踪 |
 | 3.4 全生命周期问题与解决方法汇总 | 六类问题表 + 仓库内 `docs/software/ISSUES_SUMMARY.md` |
 | 3.5.1 系统架构图 | 自底向上四层架构（界面 / 服务 / 引擎 / 存储） |
-| 3.5.2 基础设施图 | 单机本地部署形态（从架构图说明理由） |
+| 3.5.2 基础设施图 | 云服务器部署拓扑（Nginx + systemd + HTTPS） |
 | 3.5.3 智能体技术设计 | 任务编排状态图、事件先行与三层记忆、护栏、写作 Skill 知识库、参考文献 |
 | 3.5.4 数据库设计 | 由 `schema.sql` 逆向生成的 E-R 图与设计要点 |
 | 3.5.5 接口设计 | 真实 HTTP 路由表（取自 `web.py`）与方法描述 |
@@ -906,8 +906,8 @@ layout: default
 
 <div class="card-soft p-4">
   <div class="num text-[15px]">01</div>
-  <div class="text-[12.5px] font-bold mt-1">本地即用，零部署门槛</div>
-  <div class="body-text mt-2">浏览器打开 <span class="mono">127.0.0.1:8765</span> 即进入工作室；本机单用户定位，无需注册、无需公网服务。</div>
+  <div class="text-[12.5px] font-bold mt-1">打开即用，账号隔离</div>
+  <div class="body-text mt-2">浏览器访问站点域名，注册登录即进入工作室；每位用户独立数据目录，互不可见。</div>
 </div>
 
 <div class="card-soft p-4">
@@ -961,8 +961,8 @@ layout: default
 | 程序设计语言 | Python | 3.11+（CI 固定 3.11） | 写作引擎、模型接口与后端服务；复用既有引擎与标准库测试 |
 | 智能体编排 | LangGraph | 1.2.17 | 用状态图表达规划 / 写作 / 记忆 / 审核，支持条件边与重规划 |
 | 前端框架 | Vue（runtime-only） | 3.5.44 | 仓库内置运行时组织交互组件，无需前端构建步骤 |
-| 前端语言 | HTML / CSS / JavaScript | 浏览器原生 | 原生技术实现本地工作室，降低构建与部署复杂度 |
-| Web 服务 | Python 标准库 `http.server` | 随 Python 版本 | 为本地单用户提供 HTTP 接口，避免再叠一层 Web 框架 |
+| 前端语言 | HTML / CSS / JavaScript | 浏览器原生 | 原生技术实现工作室界面，降低构建与部署复杂度 |
+| Web 服务 | Python 标准库 `http.server` | 随 Python 版本 | 为服务端进程提供 HTTP 接口，避免再叠一层 Web 框架 |
 | 数据库（可选） | PostgreSQL + Psycopg | PG 17（CI 覆盖 17/18）；Psycopg 3.3.3 | 持久化作品、章节与任务；未配置时降级为文件模式 |
 | 模型服务 | DeepSeek / OpenAI 兼容接口 | Chat Completions | 沿用已接入接口，复用配置、计费预估与故障测试逻辑 |
 | 开发工具 | VS Code 等 Python 编辑器 | 未锁定 | 编辑调试；Ruff + Pylance 方案 A，规则集中在仓库配置文件 |
@@ -1103,46 +1103,56 @@ layout: default
 
 <div class="eyebrow">3.5.2 基础设施图</div>
 
-# 部署形态：单机本地
+# 部署形态：单台云服务器，Nginx 前置 HTTPS
 
 <div class="hr-line"></div>
 
-<div class="grid grid-cols-3 gap-3">
+<div class="flex items-stretch gap-2 mt-3">
+  <div class="card-soft px-3 py-4 flex-1">
+    <div class="tag">用户</div>
+    <div class="body-text mt-2">浏览器访问 <span class="mono">https://域名</span><br>注册 / 登录后进入工作室</div>
+  </div>
+  <div class="flex items-center text-[14px]" style="color:#A99C88">→</div>
+  <div class="card-soft px-3 py-4 flex-1">
+    <div class="tag">Nginx（443）</div>
+    <div class="body-text mt-2">TLS 终止、反向代理<br>登录 / 注册接口限流</div>
+  </div>
+  <div class="flex items-center text-[14px]" style="color:#A99C88">→</div>
+  <div class="card-soft px-3 py-4 flex-1">
+    <div class="tag">应用（127.0.0.1:8765）</div>
+    <div class="body-text mt-2">systemd 守护、只监听本机<br>进程池按用户隔离</div>
+  </div>
+  <div class="flex items-center text-[14px]" style="color:#A99C88">→</div>
+  <div class="card-soft px-3 py-4 flex-1">
+    <div class="tag">数据</div>
+    <div class="body-text mt-2"><span class="mono">/var/lib/tome-agent</span><br>账号 · 作品 · Skill · 配置</div>
+  </div>
+</div>
+
+<div class="grid grid-cols-3 gap-3 mt-4">
 
 <div class="card-soft p-4">
-  <div class="tag">本地单机</div>
-  <div class="body-text mt-2">本机单用户工作室定位，不以公网多租户服务为设计目标；无多节点、无负载均衡，故按参考文档「只有一台服务器可不画」从略。</div>
+  <div class="tag">只开必要端口</div>
+  <div class="body-text mt-2">8765 不对外暴露，防火墙仅放行 80 / 443；SSH 限定可信来源。代码在 <span class="mono">/opt/tome-agent</span>，数据在 <span class="mono">/var/lib</span>，不写入代码目录。</div>
 </div>
 
 <div class="card-soft p-4">
-  <div class="tag">存储可切换</div>
-  <div class="body-text mt-2">默认文件模式：作品存于 <span class="mono">code/backend/data/inf_books/</span>；配置 <span class="mono">DATABASE_URL</span> 后切换 PostgreSQL，引擎检查点仍留在本地文件。</div>
+  <div class="tag">隔离与并发</div>
+  <div class="body-text mt-2">每位用户独立数据目录与进程；<span class="mono">TOME_WORKER_LIMIT</span> 控制常驻进程数（1–8，默认 3），空闲 5 分钟回收，超限时新请求排队重试。</div>
 </div>
 
 <div class="card-soft p-4">
-  <div class="tag">启动方式</div>
-  <div class="body-text mt-2">Windows：<span class="mono">setup.cmd</span> + <span class="mono">run-web.cmd</span>；另提供便携版与 Linux 托管部署说明（DEPLOY.md、WINDOWS_PORTABLE.md、LINUX_HOSTED.md）。</div>
-</div>
-
-<div class="card-soft p-4">
-  <div class="tag">容器与 CI</div>
-  <div class="body-text mt-2">Compose 文件描述本地 PostgreSQL 服务、健康检查与数据卷；GitHub Actions 覆盖 PostgreSQL 17/18 版本矩阵与托管 Linux 运行。</div>
-</div>
-
-<div class="card-soft p-4">
-  <div class="tag">运行时版本</div>
-  <div class="body-text mt-2">Python 3.11+（CI 固定 3.11）；依赖锁定 <span class="mono">requirements.txt</span>：psycopg[binary]==3.3.3、langgraph==1.2.17。</div>
-</div>
-
-<div class="card-soft p-4">
-  <div class="tag">密钥与数据</div>
-  <div class="body-text mt-2">模型密钥写入本机 <span class="mono">.env</span>，不提交 Git；<span class="mono">.env.example</span> 为配置模板，作品数据与技能文件留在本机目录。</div>
+  <div class="tag">备份与恢复</div>
+  <div class="body-text mt-2">备份覆盖账号、作品与模型配置（含密钥，需加密保存并限制访问），上线前必须做恢复演练；无自助改密，管理员可重置密码。</div>
 </div>
 
 </div>
 
-<!-- 单机本地：为什么没有基础设施图（只有一台机器），以及存储/启动/密钥怎么放。 -->
+<div class="card px-4 py-3 mt-3">
+  <div class="text-[10.5px] leading-[1.75]"><span class="tag text-[10px]">已知边界与合规：</span>中国内地服务器对外提供域名服务需完成备案；单机方案不支持多实例共享同一数据目录；公开注册前需补滥用防护、监控、容量与恢复流程；服务重启可能中断生成，需按检查点续写。来源：<span class="mono">docs/software/LINUX_HOSTED.md</span>。</div>
+</div>
 
+<!-- 云部署：Nginx 443 → 应用仅本机 8765 → 数据目录；只开必要端口、进程池隔离、备份含密钥。 -->
 ---
 layout: default
 ---
@@ -1314,7 +1324,7 @@ layout: default
 
 <div class="eyebrow">3.5.6 前端设计</div>
 
-# 前端：渐进式 Vue 3 与本地资源
+# 前端：渐进式 Vue 3，零构建、无 CDN
 
 <div class="hr-line"></div>
 
