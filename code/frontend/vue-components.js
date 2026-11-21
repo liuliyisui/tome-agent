@@ -1247,7 +1247,7 @@ return function render(_ctx, _cache) {
                       _createElementVNode("h3", null, "创作台"),
                       _createElementVNode("span", { class: "tiny-label" }, "INF")
                     ], -1 /* CACHED */)),
-                    _createElementVNode("p", _hoisted_130, _toDisplayString(_ctx.state.current.mode==='legacy'?'旧版正文可阅读和导出。请新建作品使用新版引擎，保留旧存档。':`使用 ${_ctx.meta.model.model}，先规划事件，再生成正文并维护三层记忆。每次生成一章，可能需要数分钟；已保存正文仍需人工检查。`), 1 /* TEXT */),
+                    _createElementVNode("p", _hoisted_130, _toDisplayString(_ctx.state.current.mode==='legacy'?'旧版正文可阅读和导出。请新建作品使用新版引擎，保留旧存档。':`使用 ${_ctx.state.model}，先规划事件，再生成正文并维护三层记忆。每次生成一章，可能需要数分钟；已保存正文仍需人工检查。`), 1 /* TEXT */),
                     _createElementVNode("div", _hoisted_131, [
                       _createElementVNode("label", _hoisted_132, [
                         _withDirectives(_createElementVNode("input", {
