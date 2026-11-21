@@ -62,46 +62,38 @@ class: cover
 layout: default
 ---
 
-<div class="eyebrow">本篇范围</div>
+<div class="mt-[54px] space-y-5">
 
-# 这一段要回答两个问题：这个产品是什么，为什么这样设计
-
-<div class="hr-line"></div>
-
-<div class="space-y-3 mt-4">
-
-<div class="card-soft flex items-center gap-5 px-5 py-4 bar-top">
-  <div class="num">01</div>
+<div class="card-soft flex items-center gap-6 px-7 py-9 bar-top">
+  <div class="num text-[22px]">01</div>
   <div class="flex-1">
-    <div class="text-[14px] font-bold">1.1 产品使命、口号和策略</div>
-    <div class="small mt-1">使命 · 口号 · 目标用户 · 如何获得用户 · 团队优势 · 差异化</div>
+    <div class="text-[17px] font-extrabold">1.1 产品使命、口号和策略</div>
+    <div class="small mt-2">使命 · 口号 · 目标用户 · 如何获得用户 · 团队优势 · 差异化</div>
   </div>
-  <div class="text-[12px] font-bold text-[#1B3B5F]">6 项</div>
+  <div class="text-[13px] font-bold text-[#1B3B5F]">6 项</div>
 </div>
 
-<div class="card-soft flex items-center gap-5 px-5 py-4 bar-top">
-  <div class="num">02</div>
+<div class="card-soft flex items-center gap-6 px-7 py-9 bar-top">
+  <div class="num text-[22px]">02</div>
   <div class="flex-1">
-    <div class="text-[14px] font-bold">1.2 产品定义</div>
-    <div class="small mt-1">定位模板 · 解决的问题 · 用户故事（价值）· 解决方案形态</div>
+    <div class="text-[17px] font-extrabold">1.2 产品定义</div>
+    <div class="small mt-2">定位模板 · 解决的问题 · 用户故事（价值）· 解决方案形态</div>
   </div>
-  <div class="text-[12px] font-bold text-[#1B3B5F]">4 项</div>
+  <div class="text-[13px] font-bold text-[#1B3B5F]">4 项</div>
 </div>
 
-<div class="card-soft flex items-center gap-5 px-5 py-4 bar-top">
-  <div class="num">03</div>
+<div class="card-soft flex items-center gap-6 px-7 py-9 bar-top">
+  <div class="num text-[22px]">03</div>
   <div class="flex-1">
-    <div class="text-[14px] font-bold">2. 产品设计应用的原则</div>
-    <div class="small mt-1">需求·信息·创新 / 系统·收敛·优化 / 继承·效益·时间 / 定量·简化·审核</div>
+    <div class="text-[17px] font-extrabold">2. 产品设计应用的原则</div>
+    <div class="small mt-2">需求·信息·创新 / 系统·收敛·优化 / 继承·效益·时间 / 定量·简化·审核</div>
   </div>
-  <div class="text-[12px] font-bold text-[#1B3B5F]">12 条</div>
+  <div class="text-[13px] font-bold text-[#1B3B5F]">12 条</div>
 </div>
 
 </div>
 
-<div class="mt-5 text-[10.5px] text-[#6C7784]"><span class="font-bold text-[#1D2B3A]">下一篇（第二部分）：</span>3. 产品实现——技术选型与版本、仓库与提交历史、架构与数据库、接口、质量工具、代码统计。</div>
-
-<!-- 先用一页交代结构：1.1 策略六项，1.2 定义，2 十二条原则；3 产品实现放在后面。 -->
+<!-- 只放结构，不写“这一段要讲什么”“下一篇是什么”这类过渡语。 -->
 
 ---
 layout: default
