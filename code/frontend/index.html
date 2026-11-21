@@ -46,10 +46,11 @@
               <button
                 class="book-item"
                 :data-book="book.id"
+                :aria-current="id===book.id ? 'page' : undefined"
                 :disabled="state.pending.has(book.id)"
                 @click="selectBook(book.id)"
               >
-                <span class="mini-book" aria-hidden="true"><img v-if="book.cover_version" :src="`${bookUrl(book.id)}/cover?v=${book.cover_version}`" alt="" /></span
+                <span class="mini-book" aria-hidden="true"><img v-if="book.cover_version" :src="`${bookUrl(book.id)}/cover?v=${book.cover_version}`" alt="" /><svg v-else class="cover-placeholder" viewBox="0 0 24 32" aria-hidden="true"><path d="M5 2h15a2 2 0 0 1 2 2v25H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3Z"></path><path d="M7 2v22M22 24H5a3 3 0 0 0 0 6h17M11 9h7M11 13h5"></path></svg></span
                 ><span
                   ><strong>{{titleOf(book)}}</strong
                   ><small
@@ -62,11 +63,15 @@
                 <summary
                   :aria-label="`管理《${titleOf(book)}》`"
                   title="管理作品"
+                  :id="`book-menu-trigger-${book.id}`"
+                  :aria-expanded="state.menuId===book.id"
+                  :aria-controls="`book-actions-${book.id}`"
                   @click.prevent="state.menuId=state.menuId===book.id?null:book.id"
                 >
                   ⋯
                 </summary>
-                <div class="book-menu-options">
+                <teleport to="body">
+                <div v-if="state.menuId===book.id" class="book-menu-options" :id="`book-actions-${book.id}`" popover="manual" role="group" v-floating-menu="{anchorId:`book-menu-trigger-${book.id}`,close:closeBookMenu}" :aria-label="`管理《${titleOf(book)}》`">
                   <button
                     type="button"
                     :data-pin="book.id"
@@ -84,6 +89,7 @@
                     删除作品
                   </button>
                 </div>
+                </teleport>
               </details>
             </div>
             <p v-if="!state.books.length" class="empty-library">
@@ -175,11 +181,12 @@
             <div
               id="notice"
               ref="noticePanel"
-              class="notice"
-              role="status"
+              class="notice status-message"
+              :class="`message-${state.noticeType}`"
+              :role="['error','danger'].includes(state.noticeType)?'alert':'status'"
               v-show="state.notice"
             >
-              {{state.notice}}
+              <strong class="message-label">{{messageLabels[state.noticeType]}}</strong><span>{{state.notice}}</span>
             </div>
             <section id="welcome" class="welcome" v-show="state.view==='home'">
               <div class="welcome-art" aria-hidden="true">
@@ -238,7 +245,7 @@
                   :disabled="state.pending.has(book.id)"
                   @click="selectBook(book.id)"
                 >
-                  <span class="work-card-cover" aria-hidden="true"><img v-if="book.cover_version" :src="`${bookUrl(book.id)}/cover?v=${book.cover_version}`" alt="" /><span v-else>T</span></span><span class="work-card-info"
+                  <span class="work-card-cover" aria-hidden="true"><img v-if="book.cover_version" :src="`${bookUrl(book.id)}/cover?v=${book.cover_version}`" alt="" /><svg v-else class="cover-placeholder" viewBox="0 0 24 32" aria-hidden="true"><path d="M5 2h15a2 2 0 0 1 2 2v25H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3Z"></path><path d="M7 2v22M22 24H5a3 3 0 0 0 0 6h17M11 9h7M11 13h5"></path></svg></span><span class="work-card-info"
                     ><strong>{{titleOf(book)}}</strong
                     ><small
                       >{{book.error || `${book.chapters} / ${book.metadata.target_chapters} 章`}}</small
@@ -270,7 +277,9 @@
                   class="outline"
                   :href="`/api/books/${encodeURIComponent(id)}/export`"
                   download
-                  >↓ 导出作品</a
+                  @click.prevent="reviewForExport"
+                  :aria-disabled="state.busy.review||Boolean(state.editor)"
+                  >{{state.busy.review ? '正在复查…' : '↓ 复查并导出'}}</a
                 >
                 </div>
               </div>
@@ -373,29 +382,71 @@
                 <section class="manuscript panel">
                   <div class="panel-heading">
                     <h3>故事正文</h3>
-                    <span id="revision"
-                      >存档版本 {{state.current.state.revision}}</span
-                    >
+                    <div class="manuscript-actions">
+                      <span id="revision">存档版本 {{state.current.state.revision}}<span v-if="chapter?.author_edited"> · 本地修订稿</span></span>
+                      <button v-if="chapter&&!state.editor" id="edit-chapter" class="outline" type="button" :disabled="running" @click="openEditor()">本地修改</button>
+                    </div>
                   </div>
                   <div id="chapter-tabs" class="chapter-picker" v-if="chapters.length" aria-label="章节导航">
-                    <button type="button" class="chapter-step" :disabled="state.chapterIndex === 0" @click="state.chapterIndex--" aria-label="上一章">← 上一章</button>
+                    <button type="button" class="chapter-step" :disabled="state.chapterIndex === 0||Boolean(state.editor)" @click="state.chapterIndex--" aria-label="上一章">← 上一章</button>
                     <label class="chapter-select-label">
                       <span>选择章节</span>
-                      <select v-model.number="state.chapterIndex" aria-label="选择章节">
+                      <select v-model.number="state.chapterIndex" aria-label="选择章节" :disabled="Boolean(state.editor)">
                         <option v-for="(item, index) in chapters" :key="item.number" :value="index">第 {{item.number}} 章 · {{item.title}}</option>
                       </select>
                     </label>
                     <span class="chapter-position">{{state.chapterIndex + 1}} / {{chapters.length}}</span>
-                    <button type="button" class="chapter-step" :disabled="state.chapterIndex >= chapters.length - 1" @click="state.chapterIndex++" aria-label="下一章">下一章 →</button>
+                    <button type="button" class="chapter-step" :disabled="state.chapterIndex >= chapters.length - 1||Boolean(state.editor)" @click="state.chapterIndex++" aria-label="下一章">下一章 →</button>
                   </div>
-                  <article id="chapter-body">
+                  <teleport to="body">
+                    <div v-if="state.editor" class="editor-workspace" role="dialog" aria-modal="true" aria-labelledby="editor-workspace-title">
+                      <header class="editor-bar">
+                        <div class="editor-bar-title">
+                          <span class="editor-kicker">本地修改</span>
+                          <h2 id="editor-workspace-title">第 {{state.editor.number}} 章 · 写作工作台</h2>
+                        </div>
+                        <div class="editor-bar-actions">
+                          <button type="button" class="text-button" :disabled="state.busy.edit||state.busy.proofread" @click="discardDraft">丢弃草稿</button>
+                          <button type="button" class="outline" :disabled="state.busy.edit||state.busy.proofread" @click="proofreadDraft">{{state.busy.proofread?'复查中…':'本地复查'}}</button>
+                          <button type="button" class="outline" :disabled="state.busy.edit||state.busy.proofread" @click="closeEditor">收起，保留草稿</button>
+                          <button type="submit" form="chapter-editor" class="primary" :disabled="state.busy.edit||state.busy.proofread||state.editor.report?.blocked||(state.editor.report?.total&&!state.editor.acknowledged)">{{state.busy.edit?'正在保存并同步…':'复查并保存'}}</button>
+                        </div>
+                      </header>
+                      <div class="editor-scroll">
+                        <div class="editor-layout">
+                          <form id="chapter-editor" class="editor-main" @submit.prevent="saveEditedChapter">
+                            <p class="form-hint">保存后会同步正文与记忆，后续续写使用新稿；原稿存档会保留，不额外调用模型。改动剧情后请核对后续章节的一致性。</p>
+                            <label for="chapter-edit-title">章节标题</label>
+                            <input id="chapter-edit-title" v-model="state.editor.title" maxlength="100" required :disabled="state.busy.edit||state.busy.proofread" />
+                            <label for="chapter-edit-text">正文</label>
+                            <textarea id="chapter-edit-text" v-model="state.editor.text" rows="12" maxlength="200000" required :disabled="state.busy.edit||state.busy.proofread" spellcheck="false"></textarea>
+                            <p class="form-hint" role="status">{{state.draftStatus}}</p>
+                          </form>
+                          <aside class="editor-side">
+                            <proofreading-results :report="state.editor.report" :editable="true" v-model:acknowledged="state.editor.acknowledged" @locate="locateFinding" @apply="applyProofreading"></proofreading-results>
+                            <p class="error" role="alert" v-if="state.editError">{{state.editError}}</p>
+                            <div class="editor-tips">
+                              <h4>提交前检查</h4>
+                              <ul>
+                                <li>标题与正文一起保存，原稿存档保留。</li>
+                                <li>改动剧情后，后续章节的事件与记忆可能不再匹配。</li>
+                                <li>草稿保存在当前浏览器，提交后才同步到正文。</li>
+                              </ul>
+                            </div>
+                          </aside>
+                        </div>
+                      </div>
+                    </div>
+                  </teleport>
+                  <article id="chapter-body" v-show="!state.editor">
                     <chapter-reader :chapter="chapter"></chapter-reader>
                   </article>
+                  <writing-notes v-if="chapter&&!state.editor" :key="`${id}:${chapter.number}`" :notes="state.current.writing_notes?.[chapter.number]"></writing-notes>
                   <nav v-if="chapters.length" class="chapter-end-nav" aria-label="正文末尾章节导航">
-                    <button type="button" class="chapter-step" :disabled="state.chapterIndex === 0" @click="turnChapter(-1)">← 上一章</button>
+                    <button type="button" class="chapter-step" :disabled="state.chapterIndex === 0||Boolean(state.editor)" @click="turnChapter(-1)">← 上一章</button>
                     <span class="chapter-position">{{state.chapterIndex + 1}} / {{chapters.length}}</span>
-                    <button type="button" class="chapter-step" :disabled="state.chapterIndex >= chapters.length - 1" @click="turnChapter(1)">下一章 →</button>
-                    <button type="button" class="chapter-step" :disabled="running || state.current.mode==='legacy' || !chapters.length" @click="openRegeneration">↻ 重新生成本章</button>
+                    <button type="button" class="chapter-step" :disabled="state.chapterIndex >= chapters.length - 1||Boolean(state.editor)" @click="turnChapter(1)">下一章 →</button>
+                    <button type="button" class="chapter-step" :disabled="running || Boolean(state.editor) || state.current.mode==='legacy' || !chapters.length" @click="openRegeneration">↻ 重新生成本章</button>
                   </nav>
                 </section>
                 <aside class="writing-aside">
@@ -440,11 +491,12 @@
                     </button>
                     <p
                       id="job-status"
-                      class="job-status"
-                      role="status"
-                      :class="{error:state.jobErrors[id]}"
+                      class="job-status status-message"
+                      v-show="jobStatus"
+                      :role="jobLevel==='error'?'alert':'status'"
+                      :class="`message-${jobLevel}`"
                     >
-                      {{jobStatus}}
+                      <strong class="message-label">{{messageLabels[jobLevel]}}</strong><span>{{jobStatus}}</span>
                     </p>
                   </section>
                   <section class="panel">
@@ -527,19 +579,36 @@
             </footer>
           </div>
         </main>
+        <dialog id="export-review-dialog" v-dialog="state.dialogs.review" aria-labelledby="export-review-title" @cancel.prevent="closeDialog('review')">
+          <div class="dialog-heading"><h2 id="export-review-title">提交前复查</h2><button class="icon-button" type="button" aria-label="关闭导出复查" :disabled="state.busy.export" @click="closeDialog('review')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button></div>
+          <template v-if="state.exportReview">
+            <p class="form-hint">复查整本已保存作品。导出前会再次核对正文版本；发现问题可定位到工作台修改。</p>
+            <proofreading-results :report="state.exportReview.report" v-model:acknowledged="state.exportReview.acknowledged" @locate="locateFinding"></proofreading-results>
+            <p class="error" role="alert" v-if="state.reviewError">{{state.reviewError}}</p>
+            <div class="confirm-actions">
+              <button class="outline" type="button" :disabled="state.busy.export" @click="closeDialog('review')">返回</button>
+              <button id="confirm-reviewed-export" class="primary" type="button" :disabled="state.busy.export||state.exportReview.report.blocked||(state.exportReview.report.total&&!state.exportReview.acknowledged)" @click="exportReviewed">{{state.busy.export?'正在导出…':'确认导出 Markdown'}}</button>
+            </div>
+          </template>
+        </dialog>
         <dialog id="settings-dialog" v-dialog="state.dialogs.settings" aria-labelledby="settings-title" @cancel.prevent="closeDialog('settings')">
           <div class="dialog-heading">
-            <h2 id="settings-title">Tome 设置</h2>
-            <button class="icon-button" type="button" aria-label="关闭设置" @click="closeDialog('settings')">×</button>
+            <h2 id="settings-title">设置</h2>
+            <button class="icon-button" type="button" aria-label="关闭设置" @click="closeDialog('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button>
           </div>
           <fieldset class="theme-options" aria-describedby="theme-hint">
             <legend>外观主题</legend>
-            <label><input type="radio" name="theme" value="light" v-model="state.theme" /><span>浅色<small>明亮的纸张与柔和的墨色</small></span></label>
-            <label><input type="radio" name="theme" value="dark" v-model="state.theme" /><span>深色<small>深色背景，适合夜间阅读</small></span></label>
-            <label><input type="radio" name="theme" value="system" v-model="state.theme" /><span>跟随系统<small>随设备的外观设置自动切换</small></span></label>
+            <div class="theme-segments">
+              <label><input type="radio" name="theme" value="light" v-model="state.theme" /><span>浅色</span></label>
+              <label><input type="radio" name="theme" value="dark" v-model="state.theme" /><span>深色</span></label>
+              <label><input type="radio" name="theme" value="system" v-model="state.theme" /><span>跟随系统</span></label>
+            </div>
           </fieldset>
-          <p id="theme-hint" class="form-hint">选择后立即生效，偏好保存在当前浏览器。</p>
-          <button id="open-model-settings" class="outline" type="button" @click="openApiConfig">配置模型服务</button>
+          <p id="theme-hint" class="form-hint">立即生效，保存在当前浏览器。</p>
+          <button id="open-model-settings" class="settings-model-row" type="button" aria-label="配置模型服务" @click="openApiConfig">
+            <span><strong>模型服务</strong><small>{{state.configured ? state.model : '尚未配置'}}</small></span>
+            <span class="settings-model-arrow" aria-hidden="true">→</span>
+          </button>
         </dialog>
         <dialog
           id="api-key-dialog"
@@ -549,7 +618,7 @@
         >
           <div class="model-settings-heading">
             <div><div class="eyebrow">MODEL SETTINGS</div><h2 id="api-key-title">模型服务</h2></div>
-            <button class="icon-button" type="button" aria-label="关闭模型服务设置" :disabled="state.busy.api" @click="closeDialog('api')">×</button>
+            <button class="icon-button" type="button" aria-label="关闭模型服务设置" :disabled="state.busy.api" @click="closeDialog('api')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button>
           </div>
           <div class="model-settings-layout">
             <nav class="provider-list" aria-label="模型供应商">
@@ -628,9 +697,7 @@
             aria-label="关闭"
             :disabled="state.busy.create"
             @click="closeDialog('create')"
-          >
-            ×
-          </button>
+          ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button>
           <form id="create-form" @submit.prevent="createBook">
             <div class="dialog-heading">
               <div>
@@ -741,9 +808,7 @@
               type="button"
               :disabled="state.busy.start"
               @click="closeDialog('estimate')"
-            >
-              ×
-            </button>
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button>
           </div>
           <template v-if="state.estimate"
             ><p id="estimate-scope">
@@ -771,6 +836,7 @@
                 >
               </div>
             </div>
+            <local-safety-review :report="state.estimate.safety" v-model:confirmed="state.privacyConfirmed"></local-safety-review>
             <p id="estimate-basis" class="muted">{{state.estimate.basis}}</p>
             <p class="form-hint">本次使用模型：{{state.estimate.pricing.requested_model}}</p>
             <div class="official-price-panel">
@@ -805,10 +871,10 @@
               >
               <p
                 id="estimate-price-warning"
-                class="error"
+                class="warning status-message message-warning"
                 v-show="state.estimate.pricing.warning"
               >
-                {{state.estimate.pricing.warning}}
+                <strong class="message-label">警告</strong>{{state.estimate.pricing.warning}}
               </p>
             </div>
             <p class="estimate-cost">
@@ -844,7 +910,7 @@
               id="estimate-continue"
               type="button"
               class="primary"
-              :disabled="state.busy.start||!state.estimate"
+              :disabled="state.busy.start||!state.estimate||state.estimate.safety?.blocked||(state.estimate.safety?.requires_confirmation&&!state.privacyConfirmed)"
               @click="confirmGeneration"
             >
               继续生成
@@ -903,9 +969,7 @@
               class="icon-button"
               aria-label="关闭废案箱"
               @click="closeDialog('trash')"
-            >
-              ×
-            </button>
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button>
           </div>
           <p class="muted">
             暂时放下的故事，也可以重新开始。作品正文、文风和存档都保留在这里。
@@ -965,16 +1029,18 @@
             <textarea
               id="regenerate-feedback"
               v-model="state.regeneration.feedback"
+              @input="state.regeneration.safety=null; state.regeneration.privacyConfirmed=false"
               rows="4"
               required
               maxlength="2000"
               placeholder="例如：保留结尾的线索，减少背景解释，用两人的对话推进冲突。"
               :disabled="state.busy.regenerate"
             ></textarea>
+            <local-safety-review :report="state.regeneration.safety" v-model:confirmed="state.regeneration.privacyConfirmed"></local-safety-review>
             <p class="error" role="alert" v-if="state.errors.regenerate">{{state.errors.regenerate}}</p>
             <div class="confirm-actions">
               <button class="outline" type="button" :disabled="state.busy.regenerate" @click="closeDialog('regenerate')">取消</button>
-              <button id="regenerate-submit" class="primary" type="submit" :disabled="state.busy.regenerate || running || !state.regeneration.feedback.trim()">
+              <button id="regenerate-submit" class="primary" type="submit" :disabled="state.busy.regenerate || running || !state.regeneration.feedback.trim() || state.regeneration.safety?.blocked || (state.regeneration.safety?.requires_confirmation&&!state.regeneration.privacyConfirmed)">
                 {{state.busy.regenerate ? '正在提交…' : '按意见重新生成'}}
               </button>
             </div>
@@ -989,8 +1055,8 @@
           <div class="eyebrow">PERMANENT DELETION</div>
           <h2 id="purge-title">彻底删除这部作品？</h2>
           <p id="purge-book-title">《{{titleOf(state.purgeBook)}}》</p>
-          <p class="purge-warning">
-            将永久删除全部正文、文风设定和存档，无法恢复。
+          <p class="purge-warning status-message message-danger" role="alert">
+            <strong class="message-label">危险</strong>将永久删除全部正文、文风设定和存档，无法恢复。
           </p>
           <label for="purge-title-input">输入完整作品名称以确认</label
           ><input

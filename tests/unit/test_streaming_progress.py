@@ -334,8 +334,16 @@ class StreamingProgressTests(unittest.TestCase):
 
         def check_session(_path, wrapped, _plan, book=None):
             self.assertIsInstance(
-                wrapped.gateway.gateway.provider, ProseProgressProvider
+                wrapped.gateway.gateway.gateway.provider, ProseProgressProvider
             )
+            with self.assertRaises(service.privacy.SensitiveInformationError):
+                wrapped.complete(
+                    ModelRequest(
+                        "writer",
+                        "写作",
+                        {"text": "sk-" + "SYNTHETIC_SECRET_1234567890"},
+                    )
+                )
             raise RuntimeError("provider checked")
 
         with (

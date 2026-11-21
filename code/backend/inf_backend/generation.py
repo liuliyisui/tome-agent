@@ -4,7 +4,7 @@ import math
 
 from tome_writer.domain import canonical, digest
 
-from . import official_pricing, service
+from . import official_pricing, privacy, service
 from .settings import Settings
 
 CALLS_PER_CHAPTER = 10
@@ -34,16 +34,17 @@ def price_for(config):
 def signature(book_id, book=None, model_config=None):
     book = book or service.load_book(book_id)
     state = book["state"]
-    chapters = state["chapters"] if isinstance(state, dict) else state.chapters
+    state = state if isinstance(state, dict) else state.to_dict()
+    selected = set(service.load_book_skills(book_id))
     return digest(
         canonical(
             {
                 "metadata": book["metadata"],
                 "active_model": model_config
                 or Settings.load(require_key=False).public_config(),
-                "chapters": chapters,
+                "context": state,
                 "style": service.load_writing_style(book_id),
-                "skills": service.load_book_skills(book_id),
+                "skills": [s for s in service.list_skills() if s["id"] in selected],
             }
         )
     )
@@ -121,6 +122,7 @@ def estimate(book_id, count=1, approved_first=False):
         else None
     )
     return {
+        "safety": privacy.inspect_book(book, style, skills),
         "book_id": book_id,
         "count": count,
         "first_chapter": len(chapters) + 1,
@@ -138,3 +140,14 @@ def estimate(book_id, count=1, approved_first=False):
         else "按输入未命中缓存估算；缓存优惠可能降低费用。按当前时段报价，长任务跨时段时可能变化。实际用量和费用以服务商账单为准，不按估算值强制截断。",
         "signature": signature(book_id, book, model_config),
     }
+
+
+def privacy_report(book_id, author_feedback=""):
+    selected = set(service.load_book_skills(book_id))
+    skills = [s for s in service.list_skills() if s["id"] in selected]
+    return privacy.inspect_book(
+        service.load_book(book_id),
+        service.load_writing_style(book_id),
+        skills,
+        author_feedback,
+    )

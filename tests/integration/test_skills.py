@@ -1,3 +1,4 @@
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -89,6 +90,7 @@ class SkillTests(unittest.TestCase):
         service.save_book_skills("book-a", [item["id"]])
         captured = Mock()
         config = Mock()
+        config.model = "demo"
         config.public_config.return_value = {"model": "demo"}
         meta = {
             "title": "测试",
@@ -127,6 +129,13 @@ class SkillTests(unittest.TestCase):
         )
         self.assertEqual(len(runs), 1)
         self.assertIn(item["id"], runs[0].read_text(encoding="utf-8"))
+        note = json.loads(
+            (service.book_path("book-a") / "writing-notes.json").read_text(
+                encoding="utf-8"
+            )
+        )["chapters"]["1"]
+        self.assertEqual(note["context"]["skills"], ["悬疑"])
+        self.assertEqual(note["context"]["model"], "demo")
 
 
 if __name__ == "__main__":

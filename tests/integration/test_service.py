@@ -93,6 +93,31 @@ class ServiceIntegrationTests(unittest.TestCase):
                         progress=progress,
                     )
             self.assertTrue(saved_progress)
+            notes = json.loads(
+                (service.book_path("batch-book") / "writing-notes.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual(set(notes["chapters"]), {"1"})
+            self.assertEqual(notes["chapters"]["1"]["context"]["model"], cfg.model)
+
+    def test_note_write_failure_is_logged_without_affecting_saved_chapter(self):
+        with (
+            tempfile.TemporaryDirectory() as folder,
+            patch.object(service, "BOOKS", Path(folder)),
+        ):
+            book = {
+                "chapters": [{"number": 1, "title": "首章", "text": "已保存的正文。"}]
+            }
+            with (
+                patch.object(
+                    service, "_atomic_json", side_effect=OSError("disk issue")
+                ),
+                self.assertLogs("tome", level="ERROR") as logs,
+            ):
+                service._save_writing_note("note-book", book, 1, {"model": "test"})
+            self.assertIn("Writing note failed", " ".join(logs.output))
+            self.assertEqual(book["chapters"][0]["text"], "已保存的正文。")
 
     def test_markdown_export_indents_each_paragraph_without_mutating_saved_prose(self):
         original = "第一段。\r\n\r\n    第二段。\n\u3000\u3000第三段。\u2028第四段。"
