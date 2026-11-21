@@ -1072,6 +1072,14 @@ layout: default
   </div>
 </div>
 
+<div class="subhead assert-title">把症状写成断言</div>
+<div class="assert-band">
+  <div><b>设定过期</b><span>过期修订与旧事实直接拒绝</span><em>test_event_consistency</em></div>
+  <div><b>中断即重来</b><span>进度不能无证据回退</span><em>test_core_boundaries</em></div>
+  <div><b>成本黑箱</b><span>缺少 usage 不得标记完成</span><em>test_streaming_progress</em></div>
+  <div><b>凭证泄漏</b><span>失败日志自动脱敏</span><em>test_logging</em></div>
+</div>
+
 <div class="quality-note">复现：<code>ruff check .</code> · <code>ruff format --check .</code> · <code>pylint --rcfile code/backend/pyproject.toml</code>。Pylint 的 30 处导入误报来自 memory_runtime 动态扩展 <code>__path__</code>，已单独排除。</div>
 
 <div class="bottom-note">来源：code/backend/pyproject.toml · .github/workflows/tests.yml · Ruff 0.17.4 / Pylint 4.1.4 本地实测</div>
