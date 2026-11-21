@@ -1806,6 +1806,128 @@
   color: var(--ink-soft);
 }
 
+.code-ledger {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 14px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.code-ledger > div {
+  padding: 9px 14px;
+  border-left: 1px solid var(--line-soft);
+}
+
+.code-ledger > div:first-child {
+  padding-left: 0;
+  border-left: none;
+}
+
+.code-ledger b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--pine);
+}
+
+.code-ledger span {
+  font-size: 8.4px;
+  color: var(--muted);
+}
+
+.code-lang {
+  display: flex;
+  flex-direction: column;
+}
+
+.code-lang > div {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 46px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-top: 1px solid var(--line-soft);
+}
+
+.code-lang b {
+  font-family: var(--mono);
+  font-size: 7.5px;
+  font-weight: 700;
+  color: var(--pine);
+}
+
+.code-lang em {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 7.5px;
+  text-align: right;
+  color: var(--muted);
+}
+
+.code-lang .bar {
+  display: block;
+  height: 5px;
+  background: rgba(125, 146, 116, 0.16);
+}
+
+.code-lang .bar i {
+  display: block;
+  height: 100%;
+  background: var(--sage);
+}
+
+.ai-split {
+  margin-top: 12px;
+}
+
+.ai-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ai-head b {
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--pine);
+}
+
+.ai-head span {
+  font-size: 8.6px;
+  color: var(--muted);
+}
+
+.ai-bar {
+  display: flex;
+  height: 10px;
+  margin-top: 5px;
+  background: var(--paper-2);
+}
+
+.ai-bar i {
+  display: block;
+  height: 100%;
+  background: var(--pine);
+}
+
+.ai-bar em {
+  display: block;
+  height: 100%;
+  background: var(--sage);
+}
+
+.ai-note {
+  margin-top: 5px;
+  font-size: 7.8px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
 /* section 21 */
 
 .summary-grid {

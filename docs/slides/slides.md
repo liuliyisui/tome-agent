@@ -1049,6 +1049,89 @@ layout: default
 layout: default
 ---
 
+<div class="kicker">3.6.1–3.6.2 质量控制 / TOOLS</div>
+
+# 规矩写成工具，<br>才不会靠人记得。
+
+<div class="rule"></div>
+
+<div class="cols cols-2 gap-lg quality-layout">
+  <div>
+    <div class="subhead">静态检查：提交前拦下</div>
+    <div class="quality-row"><b>Ruff format</b><span>191 个文件符合 PEP8，本地与 CI 跑同一条命令</span></div>
+    <div class="quality-row"><b>Ruff check</b><span>0 违规；规则集中在 pyproject.toml，例外要写明理由</span></div>
+    <div class="quality-row"><b>Pylint</b><span>9.62 / 10 · 0 error · 0 fatal（pylint 4.1.4）</span></div>
+    <div class="quality-row"><b>McCabe</b><span>复杂度阈值 10；14 个超阈函数列入重构清单</span></div>
+  </div>
+  <div>
+    <div class="subhead">运行时：失败也要留下证据</div>
+    <div class="quality-row"><b>日志</b><span>统一 logger 输出；生成进度同时写入 tome_jobs</span></div>
+    <div class="quality-row"><b>异常</b><span>后端 69 个 try 块 / 219 个函数；引擎 138 个 / 1,196 个</span></div>
+    <div class="quality-row"><b>抛出</b><span>1,054 处 raise，区分可重试与不可重试</span></div>
+    <div class="quality-row"><b>降级</b><span>失败保留已完成正文；错误详情脱敏后回传</span></div>
+  </div>
+</div>
+
+<div class="quality-note">复现：<code>ruff check .</code> · <code>ruff format --check .</code> · <code>pylint --rcfile code/backend/pyproject.toml</code>。Pylint 的 30 处导入误报来自 memory_runtime 动态扩展 <code>__path__</code>，已单独排除。</div>
+
+<div class="bottom-note">来源：code/backend/pyproject.toml · .github/workflows/tests.yml · Ruff 0.17.4 / Pylint 4.1.4 本地实测</div>
+
+<!-- 质量工具只列仓库里真实启用的检查，不把“打算上”的工具写成“已经用”。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.7 代码统计 / CODE</div>
+
+# 代码量不是成绩，<br>是维护的起点。
+
+<div class="rule"></div>
+
+<div class="code-ledger">
+  <div><b>214</b><span>次提交</span></div>
+  <div><b>129</b><span>个生产文件</span></div>
+  <div><b>43,962</b><span>行 Python 生产代码</span></div>
+  <div><b>5.4 : 1</b><span>生产代码 : 测试代码</span></div>
+</div>
+
+<div class="cols cols-2 gap-lg">
+  <div>
+    <div class="subhead">语言分布（行）</div>
+    <div class="code-lang">
+      <div><b>Python</b><span class="bar"><i style="width:100%"></i></span><em>52,414</em></div>
+      <div><b>Markdown</b><span class="bar"><i style="width:14%"></i></span><em>7,423</em></div>
+      <div><b>JavaScript</b><span class="bar"><i style="width:13%"></i></span><em>6,750</em></div>
+      <div><b>HTML / CSS</b><span class="bar"><i style="width:9%"></i></span><em>4,948</em></div>
+      <div><b>其他</b><span class="bar"><i style="width:2%"></i></span><em>613</em></div>
+    </div>
+    <div class="data-note">Python 含测试与脚本；其他为 SQL / YAML / TOML。统计排除 <code>.venv</code>、<code>node_modules</code>、<code>dist</code> 与运行数据。</div>
+  </div>
+
+  <div>
+    <div class="subhead">结构</div>
+    <div class="quality-row"><b>模块</b><span>3 个 Python 包 · 11 个子模块</span></div>
+    <div class="quality-row"><b>后端</b><span>24 文件 · 5,809 行</span></div>
+    <div class="quality-row"><b>引擎</b><span>105 文件 · 38,153 行</span></div>
+    <div class="quality-row"><b>测试</b><span>44 文件 · 8,145 行 · 256 项用例</span></div>
+    <div class="quality-row"><b>前端</b><span>5,815 行 JS / HTML / CSS</span></div>
+  </div>
+</div>
+
+<div class="ai-split">
+  <div class="ai-head"><b>AI 辅助 ≈ 80%</b><span>团队手写 ≈ 20%</span></div>
+  <div class="ai-bar"><i style="width:80%"></i><em style="width:20%"></em></div>
+  <div class="ai-note">团队自评区间 70–90%；AI 产出经人工审查、测试与代码复核后合入。</div>
+</div>
+
+<div class="bottom-note">来源：仓库文件统计（Python 3.12）· git log · tests/TEST_REPORT.md</div>
+
+<!-- 代码量按真实仓库统计，AI 比例为团队自评区间，不伪装成精确测量。 -->
+
+---
+layout: default
+---
+
 <div class="kicker">小结 / SUMMARY</div>
 
 # 把复杂留给系统，<br>把简单留给作者。
