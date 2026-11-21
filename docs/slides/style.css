@@ -2798,6 +2798,8 @@
 }
 
 .ui-shot {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -2808,13 +2810,16 @@
 .ui-shot img {
   display: block;
   width: 100%;
-  height: 210px;
-  object-fit: contain;
-  object-position: top center;
+  height: 220px;
+  margin: 0;
+  object-fit: cover;
+  object-position: left top;
   background: var(--paper-2);
 }
 
 .ui-shot-cap {
+  min-height: 52px;
+  margin: 0;
   padding: 8px 11px 9px;
   border-top: 1px solid var(--line-soft);
 }
