@@ -323,23 +323,28 @@ button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: no
   border-color: #656f82;
 }
 :root[data-theme="dark"] .skill-option input { accent-color: #8998b3; }
-:root[data-theme="dark"] :is(.style-panel, .create-style) input[type="file"] {
+:is(.style-panel, .create-style) input[type="file"] {
+  padding: 7px;
   color: var(--text-secondary);
-}
-:root[data-theme="dark"] :is(.style-panel, .create-style) input[type="file"]::file-selector-button {
-  padding: 4px 8px;
-  margin-inline-end: 8px;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  background: var(--well-background);
-  color: var(--ink);
-  font: inherit;
-}
-:root[data-theme="dark"] :is(.style-panel, .create-style) input[type="file"]:enabled:hover::file-selector-button {
-  background: var(--hover-background);
-  border-color: var(--control-border);
   cursor: pointer;
 }
+:is(.style-panel, .create-style) input[type="file"]::file-selector-button {
+  padding: 7px 14px;
+  margin-inline-end: 12px;
+  border: 1px solid var(--green);
+  border-radius: 5px;
+  background: var(--green);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+  transition: background .18s, border-color .18s;
+}
+:is(.style-panel, .create-style) input[type="file"]:enabled:hover::file-selector-button {
+  background: #1f4538;
+  border-color: #1f4538;
+}
+:is(.style-panel, .create-style) input[type="file"]:disabled,
+:is(.style-panel, .create-style) input[type="file"]:disabled::file-selector-button { cursor: not-allowed; }
 .form-hint, .muted, .chapter-position, .fact small, .fact-source summary, #fact-topic-summary { font-size: 12px; }
 .book-item small, .connection { font-size: 12px; }
 .eyebrow, .section-label span, .tiny-label { font-size: 11px !important; }
