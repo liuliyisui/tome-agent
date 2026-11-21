@@ -51,33 +51,80 @@ const valueOf = (fact) =>
     : String(fact.value ?? "");
 const isEventFact = (fact) =>
   fact.kind === "event" || String(fact.subject || "").startsWith("event:");
+// Literal matching preserves source offsets, including emoji and mixed-case text.
+const literalPattern = (query) => new RegExp(query.replace(/[\^$\\.*+?()[\]{}|]/g, "\\$&"), "giu");
+const MEMORY_CATEGORIES = [
+  { key: "characters", label: "人物卡" },
+  { key: "relations", label: "人物关系" },
+  { key: "chapters", label: "章节事实" },
+  { key: "settings", label: "其他设定" },
+];
+function memoryCategory(fact) {
+  const subject = String(fact.subject || ""), attribute = String(fact.attribute || "");
+  if (fact.kind === "prose_excerpt" || subject.startsWith("prose:")) return "chapters";
+  if (/关系|亲属|师徒|父子|母子|夫妻|兄弟|姐妹|恋人|盟友|敌对|relationship|relation/i.test(subject + " " + attribute)) return "relations";
+  if (/地点|位置|地理|建筑|场所|道具|物品|兵器|组织|门派|世界观|规则|location|artifact/i.test(attribute) ||
+      /武馆|客栈|城池|村庄|宗门|长剑|令牌|秘籍/.test(subject)) return "settings";
+  if (/姓名|年龄|身份|性格|外貌|职业|称呼|性别|人物|角色|person|character/i.test(attribute) ||
+      /主角|配角|小厮|掌柜|师父|师傅|老爷/.test(subject) ||
+      /^[赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜谢邹苏潘葛范彭鲁韦马苗方俞任袁柳鲍史唐费薛雷贺倪汤殷罗毕郝邬安常于傅齐康伍余元顾孟平黄穆萧尹姚邵湛汪祁毛禹狄米贝明臧计伏成戴谈宋茅庞熊纪舒屈项祝董梁杜阮蓝闵席季麻强贾路娄危江童颜郭梅盛林钟徐邱骆高夏蔡田胡凌霍虞万卢莫房解应宗丁宣邓洪包左石崔吉龚程陆欧阳司徒上官诸葛][\p{Script=Han}]{1,3}$/u.test(subject)) return "characters";
+  return "settings";
+}
+function searchChapters(chapters, query) {
+  const term = query.trim();
+  if (!term) return { items: [], total: 0 };
+  const items = [], pattern = literalPattern(term);
+  let total = 0;
+  chapters.forEach((chapter, index) => {
+    for (const field of ["title", "text"]) {
+      const text = String(chapter[field] || "");
+      pattern.lastIndex = 0;
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        total++;
+        if (items.length < 100) {
+          const start = match.index, end = start + match[0].length;
+          items.push({ index, number: chapter.number, title: chapter.title, field, start, end,
+            match: match[0], before: (start > 35 ? "…" : "") + text.slice(Math.max(0, start - 35), start),
+            after: text.slice(end, end + 55) + (end + 55 < text.length ? "…" : "") });
+        }
+      }
+    }
+  });
+  return { items, total };
+}
+function highlightedText(text, start, match, field) {
+  if (!match || match.field !== field) return text;
+  const from = Math.max(0, match.start - start), to = Math.min(text.length, match.end - start);
+  if (to <= from) return text;
+  return [text.slice(0, from), h("mark", { class: "search-hit-active" }, text.slice(from, to)), text.slice(to)];
+}
 const ChapterReader = {
   name: "ChapterReader",
-  props: ["chapter"],
+  props: ["chapter", "match"],
   setup(props) {
-    return () =>
-      props.chapter
-        ? [
-            h("h3", `第${props.chapter.number}章 · ${props.chapter.title}`),
-            ...props.chapter.text
-              .split(/\r\n|[\n\r\u2028\u2029]/)
-              .map((p) => p.trim())
-              .filter(Boolean)
-              .map((text, key) =>
-                h("p", { key, class: "prose-paragraph" }, text),
-              ),
-          ]
-        : h("div", { class: "chapter-empty" }, [
-            h("span", "✧"),
-            h("h3", "故事，正待落笔。"),
-            h("p", "点击「生成下一章」，让你的构想变成正文。"),
-          ]);
+    return () => {
+      if (!props.chapter) return h("div", { class: "chapter-empty" }, [
+        h("span", "✧"), h("h3", "故事，正待落笔。"),
+        h("p", "点击「生成下一章」，让你的构想变成正文。"),
+      ]);
+      const chapter = props.chapter;
+      return [
+        h("h3", ["第" + chapter.number + "章 · ", ...[highlightedText(chapter.title, 0, props.match, "title")].flat()]),
+        ...Array.from(chapter.text.matchAll(/[^\r\n\u2028\u2029]+/g)).filter(row => row[0].trim()).map(row => {
+          const text = row[0].trim(), start = row.index + row[0].indexOf(text);
+          return h("p", { key: row.index, class: "prose-paragraph" },
+            highlightedText(text, start, props.match, "text"));
+        }),
+      ];
+    };
   },
 };
 const FactMemory = {
   name: "FactMemory",
   props: ["fact"],
-  setup(props) {
+  emits: ["locate"],
+  setup(props, { emit }) {
     return () => {
       const f = props.fact,
         value = valueOf(f),
@@ -94,6 +141,9 @@ const FactMemory = {
           "small",
           `第 ${f.source?.chapter_number || "—"} 章 · 版本 ${f.revision}${f.tier ? " · " + (tiers[f.tier] || f.tier) : ""}`,
         ),
+        Number(f.source?.chapter_number) > 0
+          ? h("button", { type: "button", class: "fact-locate text-button", onClick: () => emit("locate", f) }, "定位到正文 ↗")
+          : null,
         quote && quote !== value
           ? h("details", { class: "fact-source" }, [
               h("summary", "查看正文依据"),
@@ -327,6 +377,13 @@ const app = createApp({
       skills: [],
       batches: {},
       factChoices: {},
+      memoryFilter: "",
+      memoryFolders: { characters: false, relations: false, chapters: true, settings: false },
+      chapterPickerOpen: false,
+      chapterFilter: "",
+      searchQuery: "",
+      searchTerm: "",
+      searchMatch: null,
       jobs: {},
       jobErrors: {},
       estimate: null,
@@ -336,6 +393,8 @@ const app = createApp({
       purgeBook: null,
       purgeTitle: "",
       trashMessage: "",
+      trashLoading: false,
+      trashError: "",
     });
     const draftKey = (key, number) => `tome-chapter-draft:${key}:${number}`;
     function sizeEditor() {
@@ -437,6 +496,7 @@ const app = createApp({
 
     let navigationVersion = 0,
       libraryVersion = 0,
+      trashVersion = 0,
       disposed = false;
     const timers = new Map(),
       polling = new Set(),
@@ -486,33 +546,30 @@ const app = createApp({
     const factGroups = computed(() => {
       const groups = new Map();
       for (const fact of facts.value) {
-        const excerpt =
-            fact.kind === "prose_excerpt" ||
-            String(fact.subject).startsWith("prose:"),
-          number = fact.source?.chapter_number,
-          sourceChapter = chapters.value.find((c) => c.number === number),
-          key = excerpt ? `chapter:${number}` : `subject:${fact.subject}`,
-          label = excerpt
-            ? `第${number}章 · ${concise(sourceChapter?.title || valueOf(fact), 12)}`
-            : concise(fact.subject, 12);
-        if (!groups.has(key))
-          groups.set(key, {
-            key,
-            label,
-            facts: [],
-            number: excerpt ? Number(number) || 0 : null,
-          });
+        const category = memoryCategory(fact), number = Number(fact.source?.chapter_number) || 0;
+        const excerpt = category === "chapters";
+        const key = excerpt ? "chapter:" + number : category + ":" + fact.subject;
+        const source = chapters.value.find(c => Number(c.number) === number);
+        if (!groups.has(key)) groups.set(key, { key, category, number: excerpt ? number : null,
+          label: excerpt ? "第" + (number || "—") + "章 · " + (source?.title || "章节摘录") : String(fact.subject || "未命名主题"), facts: [] });
         groups.get(key).facts.push(fact);
       }
-      return [...groups.values()].sort((a, b) =>
-        a.number !== null && b.number !== null
-          ? b.number - a.number
-          : a.number === null
-            ? b.number === null
-              ? a.label.localeCompare(b.label, "zh-CN")
-              : -1
-            : 1,
-      );
+      return [...groups.values()].sort((a, b) => a.category === "chapters" && b.category === "chapters"
+        ? a.number - b.number : a.label.localeCompare(b.label, "zh-CN"));
+    });
+    const memoryCategories = computed(() => MEMORY_CATEGORIES.map(category => ({
+      ...category,
+      groups: factGroups.value.filter(group => group.category === category.key),
+      visible: factGroups.value.filter(group => group.category === category.key &&
+        group.label.toLocaleLowerCase().includes(state.memoryFilter.trim().toLocaleLowerCase())),
+    })));
+    const filteredChapters = computed(() => chapters.value.map((item, index) => ({ ...item, index }))
+      .filter(item => (item.number + " " + item.title).toLocaleLowerCase().includes(state.chapterFilter.trim().toLocaleLowerCase())));
+    const searchResults = computed(() => searchChapters(chapters.value, state.searchTerm));
+    const readerMatch = computed(() => {
+      const match = state.searchMatch, current = chapter.value;
+      return current && match && Number(current.number) === Number(match.number) &&
+        String(current[match.field] || "").slice(match.start, match.end) === match.match ? match : null;
     });
     const factTopic = computed({
       get() {
@@ -762,16 +819,30 @@ const app = createApp({
     }
     async function refreshBooks() {
       const version = ++libraryVersion;
-      const [books, trash] = await Promise.all([
-        api("/api/books"),
-        api("/api/books/trash"),
-      ]);
+      const [books] = await Promise.all([api("/api/books"), refreshTrash()]);
       if (disposed || version !== libraryVersion) return;
       state.books = books.books;
-      state.trash = trash.books;
+    }
+    async function refreshTrash() {
+      const version = ++trashVersion;
+      state.trashLoading = true;
+      state.trashError = "";
+      try {
+        const result = await api("/api/books/trash");
+        if (!disposed && version === trashVersion) state.trash = result.books;
+      } catch (e) {
+        if (!disposed && version === trashVersion) state.trashError = e.message || "请稍后重试。";
+      } finally {
+        if (!disposed && version === trashVersion) state.trashLoading = false;
+      }
     }
     function acceptBook(book, latest = false) {
       const same = id.value === book.state.project_id;
+      if (!same) {
+        clearBookSearch();
+        state.memoryFilter = "";
+        state.chapterPickerOpen = false;
+      }
       state.chapterIndex = latest
         ? Math.max(0, book.state.chapters.length - 1)
         : same
@@ -903,14 +974,10 @@ const app = createApp({
         state.busy.delete = false;
       }
     }
-    async function openTrash() {
+    function openTrash() {
       state.trashMessage = "";
-      try {
-        await refreshBooks();
-        state.dialogs.trash = true;
-      } catch (e) {
-        notify(e.message, "error");
-      }
+      state.dialogs.trash = true;
+      if (!state.trashLoading) refreshTrash();
     }
     async function restoreBook(book) {
       const key = book.restore_token;
@@ -965,13 +1032,45 @@ const app = createApp({
         ? Math.max(1, remaining.value)
         : 1;
     }
-    function turnChapter(direction) {
-      const next = state.chapterIndex + direction;
-      if (next < 0 || next >= chapters.value.length) return;
-      state.chapterIndex = next;
-      requestAnimationFrame(() => {
-        document.getElementById("chapter-body")?.scrollIntoView({ block: "start" });
-      });
+    function closeChapterPicker() { state.chapterPickerOpen = false; }
+    async function toggleChapterPicker() {
+      state.chapterPickerOpen = !state.chapterPickerOpen;
+      if (state.chapterPickerOpen) {
+        state.chapterFilter = "";
+        await nextTick();
+        document.getElementById("chapter-filter")?.focus();
+      }
+    }
+    async function chooseChapter(index, match = null) {
+      if (!Number.isInteger(index) || index < 0 || index >= chapters.value.length || !leaveEditor()) return;
+      state.chapterIndex = index;
+      state.searchMatch = match;
+      closeChapterPicker();
+      await nextTick();
+      const body = document.getElementById("chapter-body");
+      const target = match ? body?.querySelector(".search-hit-active") || body : body;
+      target?.scrollIntoView({ block: match ? "center" : "start" });
+      body?.focus({ preventScroll: true });
+    }
+    function turnChapter(direction) { return chooseChapter(state.chapterIndex + direction); }
+    function submitBookSearch() {
+      state.searchTerm = state.searchQuery.trim();
+      state.searchMatch = null;
+    }
+    function clearBookSearch() {
+      state.searchQuery = "";
+      state.searchTerm = "";
+      state.searchMatch = null;
+    }
+    function jumpToSearch(item) { return chooseChapter(item.index, item); }
+    function jumpToFact(fact) {
+      const index = chapters.value.findIndex(c => Number(c.number) === Number(fact.source?.chapter_number));
+      if (index < 0) { notify("该条记忆的来源章节暂不可用。", "warning"); return; }
+      const text = chapters.value[index].text, quote = fact.source?.quote || valueOf(fact);
+      const start = quote ? text.indexOf(quote) : -1;
+      return chooseChapter(index, start >= 0 ? {
+        number: chapters.value[index].number, field: "text", start, end: start + quote.length, match: quote,
+      } : null);
     }
 
     async function uploadCover(event) {
@@ -1436,6 +1535,8 @@ const app = createApp({
       styleStatus,
       facts,
       factGroups,
+      memoryCategories, filteredChapters, searchResults, readerMatch,
+      toggleChapterPicker, closeChapterPicker, chooseChapter, submitBookSearch, clearBookSearch, jumpToSearch, jumpToFact,
       factTopic,
       selectedFacts,
       units,
@@ -1474,6 +1575,7 @@ const app = createApp({
       requestDelete,
       deleteBook,
       openTrash,
+      refreshTrash,
       restoreBook,
       requestPurge,
       purgeBook,
@@ -1544,6 +1646,7 @@ app.directive("floating-menu", {
     window.addEventListener("resize", place);
     const observer = typeof ResizeObserver === "function" ? new ResizeObserver(place) : null;
     observer?.observe(anchor);
+    observer?.observe(el);
     floatingMenuCleanup.set(el, () => {
       document.removeEventListener("pointerdown", outside);
       document.removeEventListener("keydown", keyboard);

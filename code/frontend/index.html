@@ -100,6 +100,8 @@
             id="trash-open"
             class="trash-entry"
             type="button"
+            aria-haspopup="dialog"
+            aria-controls="trash-dialog"
             @click="openTrash"
           >
             <span aria-hidden="true">▱</span><span>废案箱</span
@@ -283,6 +285,28 @@
                 >
                 </div>
               </div>
+              <details class="book-search panel">
+                <summary>全书搜索 <span>查找人物、线索或原文</span></summary>
+                <form class="book-search-form" role="search" @submit.prevent="submitBookSearch">
+                  <label for="book-search-query">搜索《{{meta.title}}》的全部已保存章节</label>
+                  <div class="book-search-controls">
+                    <input id="book-search-query" type="search" v-model="state.searchQuery" maxlength="200" placeholder="输入关键词，按 Enter 搜索" />
+                    <button type="submit" class="primary" :disabled="!state.searchQuery.trim()">搜索</button>
+                    <button type="button" class="outline" @click="clearBookSearch" :disabled="!state.searchQuery&&!state.searchTerm">清空</button>
+                  </div>
+                </form>
+                <p class="search-summary muted" role="status" v-if="state.searchTerm">
+                  “{{state.searchTerm}}” · {{searchResults.total}} 处匹配<span v-if="searchResults.total>100">，展示前 100 处，请缩小搜索范围</span>
+                  <span v-if="state.searchQuery.trim()!==state.searchTerm"> · 输入已更改，按 Enter 重新搜索</span>
+                </p>
+                <div class="book-search-results" v-if="state.searchTerm" aria-label="全书搜索结果">
+                  <button v-for="(item,index) in searchResults.items" :key="index" class="search-result" type="button" @click="jumpToSearch(item)">
+                    <strong>第 {{item.number}} 章 · {{item.title}} <small>{{item.field==='title'?'标题':'正文'}}</small></strong>
+                    <span>{{item.before}}<mark>{{item.match}}</mark>{{item.after}}</span>
+                  </button>
+                  <p v-if="!searchResults.total" class="muted">没有找到匹配文字，试试更短的关键词。</p>
+                </div>
+              </details>
               <div class="stats">
                 <div>
                   <span>已完成章节</span
@@ -388,16 +412,29 @@
                     </div>
                   </div>
                   <div id="chapter-tabs" class="chapter-picker" v-if="chapters.length" aria-label="章节导航">
-                    <button type="button" class="chapter-step" :disabled="state.chapterIndex === 0||Boolean(state.editor)" @click="state.chapterIndex--" aria-label="上一章">← 上一章</button>
-                    <label class="chapter-select-label">
-                      <span>选择章节</span>
-                      <select v-model.number="state.chapterIndex" aria-label="选择章节" :disabled="Boolean(state.editor)">
-                        <option v-for="(item, index) in chapters" :key="item.number" :value="index">第 {{item.number}} 章 · {{item.title}}</option>
-                      </select>
-                    </label>
-                    <span class="chapter-position">{{state.chapterIndex + 1}} / {{chapters.length}}</span>
-                    <button type="button" class="chapter-step" :disabled="state.chapterIndex >= chapters.length - 1||Boolean(state.editor)" @click="state.chapterIndex++" aria-label="下一章">下一章 →</button>
+                    <button type="button" class="chapter-step" :disabled="state.chapterIndex===0||Boolean(state.editor)" @click="turnChapter(-1)" aria-label="上一章">← 上一章</button>
+                    <button id="chapter-picker-trigger" type="button" class="chapter-picker-trigger" :disabled="Boolean(state.editor)"
+                      :aria-expanded="state.chapterPickerOpen" aria-controls="chapter-directory" @click="toggleChapterPicker">
+                      <span><small>章节目录 · {{state.chapterIndex+1}} / {{chapters.length}}</small><strong>第 {{chapter.number}} 章 · {{chapter.title}}</strong></span>
+                      <span aria-hidden="true">⌄</span>
+                    </button>
+                    <button type="button" class="chapter-step" :disabled="state.chapterIndex>=chapters.length-1||Boolean(state.editor)" @click="turnChapter(1)" aria-label="下一章">下一章 →</button>
                   </div>
+                  <teleport to="body">
+                    <div id="chapter-directory" v-if="state.chapterPickerOpen" class="chapter-directory" popover="manual"
+                      role="region" aria-label="章节目录" v-floating-menu="{anchorId:'chapter-picker-trigger',close:closeChapterPicker}">
+                      <label for="chapter-filter">跳转章节 <span>{{chapters.length}} 章</span></label>
+                      <input id="chapter-filter" type="search" v-model="state.chapterFilter" placeholder="输入章号或章节名称" maxlength="100" @keydown.down.prevent="$event.target.parentElement.querySelector('.chapter-directory-list button')?.focus()" />
+                      <div class="chapter-directory-list">
+                        <button v-for="item in filteredChapters" :key="item.number" type="button"
+                          :class="{current:item.index===state.chapterIndex}" :aria-current="item.index===state.chapterIndex?'location':undefined"
+                          @click="chooseChapter(item.index)">
+                          <span class="chapter-number">第 {{item.number}} 章</span><span class="chapter-name">{{item.title}}</span><small v-if="item.index===state.chapterIndex">正在阅读</small>
+                        </button>
+                        <p v-if="!filteredChapters.length" class="muted">没有找到这个章节。</p>
+                      </div>
+                    </div>
+                  </teleport>
                   <teleport to="body">
                     <div v-if="state.editor" class="editor-workspace" role="dialog" aria-modal="true" aria-labelledby="editor-workspace-title">
                       <header class="editor-bar">
@@ -438,8 +475,8 @@
                       </div>
                     </div>
                   </teleport>
-                  <article id="chapter-body" v-show="!state.editor">
-                    <chapter-reader :chapter="chapter"></chapter-reader>
+                  <article id="chapter-body" tabindex="-1" v-show="!state.editor">
+                    <chapter-reader :chapter="chapter" :match="readerMatch"></chapter-reader>
                   </article>
                   <writing-notes v-if="chapter&&!state.editor" :key="`${id}:${chapter.number}`" :notes="state.current.writing_notes?.[chapter.number]"></writing-notes>
                   <nav v-if="chapters.length" class="chapter-end-nav" aria-label="正文末尾章节导航">
@@ -470,6 +507,7 @@
                       ><label
                         >本次输出章节数<input
                           id="generation-count"
+                          :aria-describedby="Number(batch.count)>3?'batch-hint batch-size-warning':'batch-hint'"
                           type="number"
                           min="1"
                           :max="Math.max(1,remaining)"
@@ -477,6 +515,10 @@
                           :disabled="running||!batch.approved||complete"
                           required
                       /></label>
+                      <p v-if="Number(batch.count)>3" id="batch-size-warning" class="status-message message-warning" role="status">
+                        <strong class="message-label">提醒</strong>
+                        <span>本次计划连续生成 {{batch.count}} 章，章节数较多，生成效果可能不够理想。建议每次生成 1～3 章，并逐章检查后再续写。</span>
+                      </p>
                       <p id="batch-hint" class="muted">
                         {{!chapters.length?'先生成第一章，阅读确认后再自动续写。':`剩余 ${remaining} 章。勾选确认后自动填入剩余章节数，可修改；提交前会显示用量和费用预估。`}}
                       </p>
@@ -511,33 +553,30 @@
                       <h3>事实记忆</h3>
                       <span class="tiny-label">MEMORY</span>
                     </div>
-                    <label class="fact-topic-label" for="fact-topic"
-                      >选择事实主题</label
-                    ><select
-                      id="fact-topic"
-                      aria-describedby="fact-topic-summary"
-                      v-model="factTopic"
-                      :disabled="!factGroups.length"
-                    >
-                      <option v-if="!factGroups.length" value="">
-                        暂无事实主题
-                      </option>
-                      <option
-                        v-for="group in factGroups"
-                        :key="group.key"
-                        :value="group.key"
-                      >
-                        {{group.label}}（{{group.facts.length}}）
-                      </option>
-                    </select>
-                    <p id="fact-topic-summary" class="muted">
-                      {{factGroups.length?`${factGroups.length} 个主题 · ${facts.length} 条记忆，选择标题查看。`:'生成章节后，将自动整理事实主题。'}}
-                    </p>
+                    <label class="memory-filter-label" for="memory-filter">记忆目录</label>
+                    <input id="memory-filter" type="search" v-model="state.memoryFilter" placeholder="筛选人物或章节主题" maxlength="100" />
+                    <nav class="memory-directory" aria-label="分类记忆目录">
+                      <details v-for="category in memoryCategories" :key="category.key" class="memory-folder"
+                        :open="state.memoryFolders[category.key]||Boolean(state.memoryFilter.trim())"
+                        @toggle="!state.memoryFilter.trim()&&(state.memoryFolders[category.key]=$event.target.open)">
+                        <summary><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 7V5h6l2 2h10v13H3z" /></svg><span>{{category.label}}</span><small>{{category.groups.length}}</small></summary>
+                        <div class="memory-topics">
+                          <button v-for="group in category.visible" :key="group.key" type="button"
+                            :class="{selected:factTopic===group.key}" :aria-current="factTopic===group.key?'true':undefined"
+                            @click="factTopic=group.key"><span>{{group.label}}</span><small>{{group.facts.length}}</small></button>
+                          <p v-if="!category.visible.length" class="muted">{{category.groups.length?'没有匹配的主题':'暂无此类记忆'}}</p>
+                        </div>
+                      </details>
+                    </nav>
+                    <p id="fact-topic-summary" class="muted">{{factGroups.length}} 个主题 · {{facts.length}} 条记忆</p>
+                    <p class="memory-category-hint muted">按主题名称与属性归类；正文摘录保留在“章节事实”中。</p>
+                    <h4 class="memory-selected-title" v-if="selectedFacts.length">{{factGroups.find(group=>group.key===factTopic)?.label}}</h4>
                     <div id="facts" class="fact-list">
                       <fact-memory
                         v-for="(fact,index) in selectedFacts"
                         :key="`${factTopic}:${index}`"
                         :fact="fact"
+                        @locate="jumpToFact"
                       ></fact-memory>
                       <p v-if="!selectedFacts.length" class="empty-facts">
                         暂时没有可查看的事实记忆。
@@ -816,6 +855,10 @@
               至 {{state.estimate.last_chapter}} 章，共 {{state.estimate.count}}
               章
             </p>
+            <p v-if="Number(state.estimate.count)>3" id="estimate-batch-warning" class="status-message message-warning" role="status">
+              <strong class="message-label">提醒</strong>
+              <span>本次将连续生成 {{state.estimate.count}} 章，章节数较多，生成效果可能不够理想。建议分批生成并检查内容。是否继续生成？</span>
+            </p>
             <div class="estimate-stats">
               <div>
                 <span>预计输入 token</span
@@ -905,7 +948,7 @@
               :disabled="state.busy.start"
               @click="closeDialog('estimate')"
             >
-              取消</button
+              {{Number(state.estimate?.count)>3?'返回调整':'取消'}}</button
             ><button
               id="estimate-continue"
               type="button"
@@ -960,7 +1003,6 @@
         >
           <div class="dialog-heading">
             <div>
-              <div class="eyebrow">STORIES CAN BEGIN AGAIN</div>
               <h2 id="trash-title">废案箱</h2>
             </div>
             <button
@@ -974,7 +1016,14 @@
           <p class="muted">
             暂时放下的故事，也可以重新开始。作品正文、文风和存档都保留在这里。
           </p>
-          <div id="trash-list">
+          <p v-if="state.trashLoading" id="trash-loading" class="muted" role="status">
+            {{state.trash.length?'正在更新废案箱…':'正在加载废案箱…'}}
+          </p>
+          <div v-else-if="state.trashError" class="trash-load-error status-message message-error">
+            <span role="alert">废案箱加载失败。{{state.trashError}}</span>
+            <button class="outline" type="button" @click="refreshTrash">重试</button>
+          </div>
+          <div id="trash-list" :aria-busy="state.trashLoading">
             <div
               v-for="book in state.trash"
               :key="book.restore_token"
@@ -1004,7 +1053,7 @@
                 </button>
               </div>
             </div>
-            <div v-if="!state.trash.length" class="trash-empty">
+            <div v-if="!state.trash.length&&!state.trashLoading&&!state.trashError" class="trash-empty">
               <span aria-hidden="true">◇</span>
               <h3>废案箱还是空的</h3>
               <p>从书架删除的作品会保存在这里，可随时恢复。</p>

@@ -313,6 +313,50 @@ class BrowserSmokeTests(unittest.TestCase):
         page.wait_for_selector(".works-empty")
         self.assertEqual(page.text_content("#book-count").strip(), "0")
 
+    def test_trash_opens_while_list_request_is_pending(self):
+        page = self.open_library()
+        page.wait_for_load_state("networkidle")
+        intercepted = []
+        shelf_requests = []
+        page.route("**/api/books/trash", lambda route: intercepted.append(route))
+
+        def track_shelf(route):
+            shelf_requests.append(route.request.url)
+            route.continue_()
+
+        page.route("**/api/books", track_shelf)
+        with page.expect_request("**/api/books/trash"):
+            page.click("#trash-open")
+        page.locator("#trash-dialog[open]").wait_for(timeout=2000)
+        page.locator("#trash-loading").wait_for()
+        self.assertEqual(page.locator(".trash-empty").count(), 0)
+        page.keyboard.press("Escape")
+        page.locator("#trash-dialog").wait_for(state="hidden")
+
+        # Reopening during an outstanding refresh reuses it.
+        page.click("#trash-open")
+        page.locator("#trash-loading").wait_for()
+        self.assertEqual(len(intercepted), 1)
+        intercepted.pop().fulfill(status=503, json={"error": "暂时不可用"})
+        page.locator(".trash-load-error").wait_for()
+        with page.expect_request("**/api/books/trash"):
+            page.get_by_role("button", name="重试", exact=True).click()
+        intercepted.pop().fulfill(
+            json={
+                "books": [
+                    {
+                        "title": "旧稿",
+                        "restore_token": "test-token",
+                        "deleted_at": "2026-11-21T00:00:00Z",
+                    }
+                ]
+            }
+        )
+        page.locator(".trash-book", has_text="旧稿").wait_for()
+        self.assertEqual(page.locator("#trash-loading").count(), 0)
+        self.assertEqual(page.text_content("#trash-count").strip(), "1")
+        self.assertEqual(shelf_requests, [])
+
     def test_book_menu_escapes_shelf_clipping_and_keeps_pin_keyboard_actions(self):
         self.page.set_viewport_size({"width": 1280, "height": 600})
         for number in range(8):
@@ -638,3 +682,229 @@ class BrowserSmokeTests(unittest.TestCase):
                 revision = request.payload["chapter_revision"]
                 self.assertEqual(revision["author_feedback"], "保留来信，删掉走廊描写")
                 self.assertIn("走廊", revision["previous_draft"])
+
+    def test_memory_folders_search_and_chapter_directory(self):
+        """Search/navigation is local, literal and keyboard usable under the page CSP."""
+        import json
+
+        service.create_book(
+            "directory-test",
+            "目录测试",
+            "测试",
+            12,
+            2000,
+            settings=settings.Settings(api_key="FAKE_TEST_KEY"),
+        )
+        rows = [
+            {
+                "number": n,
+                "title": "雷火武馆的退师之日" if n == 1 else f"归途与重逢{n}",
+                "text": "  🦊韩老三递出了[a+b]。\\n\\n  林渊说：<img src=x onerror=alert(1)>。"
+                if n == 4
+                else "韩老三在雷火武馆等候。",
+            }
+            for n in range(1, 9)
+        ]
+
+        def fact(subject, attribute, number=1, kind="state", quote="韩老三"):
+            return {
+                "subject": subject,
+                "attribute": attribute,
+                "value": quote,
+                "kind": kind,
+                "status": "active",
+                "revision": 1,
+                "source": {"chapter_number": number, "quote": quote},
+            }
+
+        data = {
+            "metadata": {
+                "title": "目录测试",
+                "prompt": "测试",
+                "target_chapters": 12,
+                "target_units": 2000,
+                "model": {"model": "offline-test"},
+            },
+            "mode": "longform",
+            "style": {},
+            "skills": [],
+            "edit_revision": "test",
+            "writing_notes": {},
+            "state": {
+                "project_id": "directory-test",
+                "chapters": rows,
+                "revision": 8,
+                "facts": {
+                    "person": fact("韩老三", "身份"),
+                    "relation": fact("林渊与夏老爷的关系", "关系"),
+                    "place": fact("雷火武馆", "地点"),
+                    "prose": fact(
+                        "prose:c0004.a", "excerpt", 4, "prose_excerpt", "林渊说"
+                    ),
+                    "event": fact("event:c0001.a", "event", kind="event"),
+                },
+            },
+        }
+        page = self.page
+        errors = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        page.route(
+            "**/api/books/directory-test",
+            lambda route: route.fulfill(
+                status=200,
+                content_type="application/json",
+                body=json.dumps(data, ensure_ascii=False),
+            ),
+        )
+        page.reload()
+        page.click("#my-works")
+        page.locator('[data-book="directory-test"]').first.click()
+        page.locator("#chapter-picker-trigger").wait_for()
+        self.assertEqual(page.locator("#chapter-tabs select").count(), 0)
+        self.assertEqual(page.locator(".memory-folder").count(), 4)
+        self.assertNotIn("event:", page.inner_text(".memory-directory"))
+        page.get_by_text("人物卡", exact=True).click()
+        page.locator(".memory-topics button", has_text="韩老三").click()
+        self.assertIn("韩老三", page.inner_text(".memory-selected-title"))
+        page.locator("#facts .fact-locate").click()
+        self.assertEqual(page.inner_text("#chapter-body mark"), "韩老三")
+
+        page.click("#chapter-picker-trigger")
+        page.locator("#chapter-filter").wait_for()
+        page.fill("#chapter-filter", "4")
+        self.assertEqual(page.locator(".chapter-directory-list button").count(), 1)
+        page.keyboard.press("ArrowDown")
+        page.keyboard.press("Enter")
+        page.wait_for_function(
+            "() => document.querySelector('#chapter-body h3').textContent.includes('第4章')"
+        )
+        self.assertEqual(page.locator("#chapter-directory").count(), 0)
+        self.assertEqual(page.locator("#chapter-body img").count(), 0)
+        self.assertIn("<img", page.inner_text("#chapter-body"))
+        page.click("#chapter-picker-trigger")
+        page.keyboard.press("Escape")
+        self.assertEqual(page.locator("#chapter-directory").count(), 0)
+        self.assertEqual(
+            page.evaluate("document.activeElement.id"), "chapter-picker-trigger"
+        )
+
+        page.locator(".book-search>summary").click()
+        page.fill("#book-search-query", "[a+b]")
+        page.press("#book-search-query", "Enter")
+        page.locator(".search-result").wait_for()
+        self.assertEqual(page.locator(".search-result").count(), 1)
+        page.click(".search-result")
+        self.assertEqual(page.inner_text("#chapter-body mark"), "[a+b]")
+        page.fill("#book-search-query", "重逢4")
+        page.press("#book-search-query", "Enter")
+        page.click(".search-result")
+        self.assertEqual(page.inner_text("#chapter-body h3 mark"), "重逢4")
+        page.fill("#book-search-query", "韩老三")
+        page.press("#book-search-query", "Enter")
+        self.assertEqual(page.locator(".search-result").count(), 8)
+        page.locator(".search-result").first.click()
+        self.assertIn("第1章", page.inner_text("#chapter-body h3"))
+        page.fill("#book-search-query", "没有这句话")
+        page.press("#book-search-query", "Enter")
+        self.assertIn("没有找到匹配文字", page.inner_text(".book-search-results"))
+        page.fill("#memory-filter", "林渊")
+        self.assertEqual(page.locator(".memory-topics button").count(), 1)
+        self.assertIn("人物关系", page.inner_text(".memory-directory"))
+        page.fill("#memory-filter", "")
+        page.screenshot(
+            path=str(Path(os.environ["TEMP"]) / "tome-memory-search-light.png"),
+            full_page=True,
+        )
+        page.emulate_media(color_scheme="dark")
+        page.set_viewport_size({"width": 390, "height": 844})
+        page.click("#chapter-picker-trigger")
+        picker = page.locator("#chapter-directory").bounding_box()
+        self.assertGreaterEqual(picker["x"], 0)
+        self.assertLessEqual(picker["x"] + picker["width"], 390)
+        page.fill("#chapter-filter", "重逢")
+        self.assertEqual(page.locator(".chapter-directory-list button").count(), 7)
+        page.screenshot(
+            path=str(Path(os.environ["TEMP"]) / "tome-chapter-directory-mobile.png")
+        )
+        page.keyboard.press("Escape")
+        self.assertFalse(
+            page.evaluate("document.documentElement.scrollWidth > innerWidth")
+        )
+        page.wait_for_load_state("networkidle")
+        self.assertEqual(errors, [])
+
+    def test_large_generation_batch_warns_and_can_be_cancelled_or_confirmed(self):
+        """Four chapters prompt for confirmation; three chapters remain unchanged."""
+        import json
+
+        service.create_book(
+            "batch-warning",
+            "批量提醒测试",
+            "测试",
+            6,
+            2000,
+            settings=settings.Settings(api_key="FAKE_TEST_KEY"),
+        )
+        from inf_backend.web import load_view
+
+        book = load_view("batch-warning")
+        book["state"]["chapters"] = [
+            {"number": 1, "title": "开始", "text": "已保存的正文。"}
+        ]
+        page = self.page
+        submitted = []
+        page.route("**/api/books/batch-warning", lambda route: route.fulfill(json=book))
+
+        def estimate(route):
+            count = route.request.post_data_json["count"]
+            route.fulfill(
+                json={
+                    "book_id": "batch-warning",
+                    "estimate_id": "test-estimate",
+                    "count": count,
+                    "first_chapter": 2,
+                    "last_chapter": count + 1,
+                    "pricing": {},
+                    "safety": {"blocked": False},
+                }
+            )
+
+        def generate(route):
+            submitted.append(json.loads(route.request.post_data))
+            route.fulfill(json={"job_id": "batch-test-job"})
+
+        page.route("**/api/books/batch-warning/estimate", estimate)
+        page.route("**/api/books/batch-warning/generate", generate)
+        page.route(
+            "**/api/jobs/batch-test-job",
+            lambda route: route.fulfill(
+                json={"status": "completed", "count": 4, "completed": 4}
+            ),
+        )
+        page.reload()
+        page.click("#my-works")
+        page.locator('[data-book="batch-warning"]').first.click()
+        page.check("#approve-first")
+        page.fill("#generation-count", "3")
+        self.assertEqual(page.locator("#batch-size-warning").count(), 0)
+        page.click("#generate")
+        page.locator("#estimate-dialog[open]").wait_for()
+        self.assertEqual(page.locator("#estimate-batch-warning").count(), 0)
+        page.click("#estimate-cancel")
+        page.fill("#generation-count", "4")
+        self.assertIn("章节数较多", page.inner_text("#batch-size-warning"))
+        page.click("#generate")
+        page.locator("#estimate-batch-warning").wait_for()
+        self.assertIn("是否继续生成", page.inner_text("#estimate-batch-warning"))
+        self.assertEqual(submitted, [])
+        self.assertEqual(page.inner_text("#estimate-cancel"), "返回调整")
+        page.click("#estimate-cancel")
+        self.assertEqual(page.input_value("#generation-count"), "4")
+        self.assertEqual(submitted, [])
+        page.click("#generate")
+        page.locator("#estimate-batch-warning").wait_for()
+        page.click("#estimate-continue")
+        page.locator("#estimate-dialog[open]").wait_for(state="hidden")
+        self.assertEqual(len(submitted), 1)
+        self.assertTrue(submitted[0]["confirmed"])
+        page.wait_for_load_state("networkidle")

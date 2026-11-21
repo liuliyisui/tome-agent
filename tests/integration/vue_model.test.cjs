@@ -111,6 +111,7 @@ async function fixture({ configured = true, theme = null, darkSystem = false, bl
     body: { classList: { toggle() {} } },
     addEventListener() {},
     removeEventListener() {},
+    getElementById() { return null; },
   };
   context.Vue = {
     ...context.Vue,
@@ -471,5 +472,101 @@ test("failed browser draft storage cannot silently discard manuscript edits", as
   f.model.discardDraft();
   f.model.showLibrary();
   assert.equal(f.model.state.view, "library");
+  f.dispose();
+});
+
+test("memory directory separates character cards, relations, chapter excerpts and settings", async () => {
+  const f = await fixture();
+  f.books.a.state.chapters.push({ number: 2, title: "重逢", text: "林渊在客栈重逢韩老三。" });
+  const fact = (subject, attribute, number = 1, kind = "state") =>
+    ({ subject, attribute, value: "原有记忆", kind, status: "active", source: { chapter_number: number } });
+  f.books.a.state.facts = {
+    person: fact("林渊", "身份"), relation: fact("林渊与夏老爷的关系", "关系"),
+    place: fact("雷火武馆", "地点"), prose2: fact("prose:c0002.a", "excerpt", "2", "prose_excerpt"),
+    prose1: fact("prose:c0001.a", "excerpt", 1, "prose_excerpt"),
+    event: fact("event:c0001.a", "event", 1, "event"),
+  };
+  await f.model.selectBook("a");
+  const categories = Object.fromEntries(f.model.memoryCategories.value.map(c => [c.key, c]));
+  assert.equal(categories.characters.groups[0].label, "林渊");
+  assert.equal(categories.relations.groups[0].label, "林渊与夏老爷的关系");
+  assert.equal(categories.settings.groups[0].label, "雷火武馆");
+  assert.deepEqual(Array.from(categories.chapters.groups, g => g.number), [1, 2]);
+  assert.match(categories.chapters.groups[1].label, /重逢/);
+  f.model.state.memoryFilter = "林渊";
+  assert.equal(f.model.memoryCategories.value.find(c => c.key === "chapters").visible.length, 0);
+  assert.equal(f.model.facts.value.length, 5);
+  assert.equal(Object.keys(f.books.a.state.facts).length, 6);
+  f.dispose();
+});
+
+test("whole-book search matches literals, titles and later chapters with intact Unicode offsets", async () => {
+  const f = await fixture();
+  f.books.a.state.chapters = [
+    { number: 1, title: "初见", text: "🦊韩老三找到了[a+b]，随后离开。" },
+    { number: 4, title: "韩老三归来", text: "他问韩老三：API 和 api 是否相同？" },
+  ];
+  await f.model.selectBook("a");
+  f.model.state.searchQuery = "[a+b]";
+  f.model.submitBookSearch();
+  assert.equal(f.model.searchResults.value.total, 1);
+  assert.equal(f.model.searchResults.value.items[0].start, 8);
+  f.model.state.searchQuery = "韩老三";
+  f.model.submitBookSearch();
+  assert.equal(f.model.searchResults.value.total, 3);
+  const last = f.model.searchResults.value.items.at(-1);
+  await f.model.jumpToSearch(last);
+  assert.equal(f.model.chapter.value.number, 4);
+  assert.equal(f.model.readerMatch.value.match, "韩老三");
+  f.model.state.searchQuery = "API";
+  f.model.submitBookSearch();
+  assert.equal(f.model.searchResults.value.total, 2);
+  f.model.clearBookSearch();
+  assert.equal(f.model.searchResults.value.total, 0);
+  assert.equal(f.model.readerMatch.value, null);
+  f.dispose();
+});
+
+test("search results are bounded while counting all occurrences and update after edits", async () => {
+  const f = await fixture();
+  f.books.a.state.chapters[0].text = "线索".repeat(150);
+  await f.model.selectBook("a");
+  f.model.state.searchQuery = "线索";
+  f.model.submitBookSearch();
+  assert.equal(f.model.searchResults.value.total, 150);
+  assert.equal(f.model.searchResults.value.items.length, 100);
+  f.model.state.current.state.chapters[0].text = "已改稿。";
+  assert.equal(f.model.searchResults.value.total, 0);
+  await f.model.selectBook("b");
+  assert.equal(f.model.state.searchQuery, "");
+  f.dispose();
+});
+
+test("chapter filtering preserves real indices and search cannot discard an unsaved draft", async () => {
+  const f = await fixture({ blockStorage: true });
+  f.books.a.state.chapters.push({ number: 4, title: "归途", text: "新线索。" });
+  await f.model.selectBook("a");
+  f.model.state.chapterFilter = "归途";
+  assert.equal(f.model.filteredChapters.value[0].index, 1);
+  f.model.openEditor();
+  f.model.state.editor.text = "尚未保存。";
+  await f.model.chooseChapter(1);
+  assert.equal(f.model.state.chapterIndex, 0);
+  assert.equal(f.model.state.editor.text, "尚未保存。");
+  f.model.discardDraft();
+  await f.model.chooseChapter(1);
+  assert.equal(f.model.chapter.value.number, 4);
+  f.dispose();
+});
+
+test("memory source navigation locates saved text and invalidates stale highlights", async () => {
+  const f = await fixture();
+  f.books.a.state.chapters.push({ number: 2, title: "再会", text: "开场。韩老三把信交给林渊。" });
+  await f.model.selectBook("a");
+  await f.model.jumpToFact({ source: { chapter_number: "2", quote: "韩老三把信交给林渊" } });
+  assert.equal(f.model.state.chapterIndex, 1);
+  assert.equal(f.model.readerMatch.value.start, 3);
+  f.model.state.current.state.chapters[1].text = "作者改了剧情。";
+  assert.equal(f.model.readerMatch.value, null);
   f.dispose();
 });
