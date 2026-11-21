@@ -40,6 +40,20 @@ class ModelSettingsTests(unittest.TestCase):
             (self.root / ".env").read_text(encoding="utf-8"),
         )
 
+    def test_output_token_limit_applies_to_compatible_api(self):
+        (self.root / ".env").write_text(
+            "DEEPSEEK_API_KEY=sk-old-test-key\n", encoding="utf-8"
+        )
+        cfg = settings.configure_model(
+            "compatible",
+            "qwen-max",
+            "https://example.com/v1/chat/completions",
+            "sk-qwen-test-key",
+        )
+        self.assertEqual(cfg.max_output_tokens, 8192)
+        gateway, _ = service._gateway(cfg)
+        self.assertEqual(gateway.provider.max_output_tokens, 8192)
+
     def test_custom_provider_name_is_persisted_and_validated(self):
         cfg = settings.configure_model(
             "compatible", "qwen-plus", "https://example.com/v1", "safe-key", "通义千问"

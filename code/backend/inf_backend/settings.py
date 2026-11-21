@@ -269,6 +269,7 @@ class Settings:
     output_usd_per_million: float = 0.0
     provider: str = "deepseek"
     provider_name: str = ""
+    max_output_tokens: int = 8192
 
     @classmethod
     def load(cls, path=None, require_key=True):
@@ -327,11 +328,14 @@ class Settings:
             output_usd_per_million=float(get("INF_OUTPUT_USD_PER_MILLION", "0"))
             if provider == "deepseek"
             else 0.0,
+            max_output_tokens=int(get("TOME_MAX_OUTPUT_TOKENS", "8192")),
         )
         if require_key and not result.api_key.strip():
             raise ValueError("请先配置对应模型服务的 API Key")
         if result.max_calls <= 0 or result.max_cost_usd < 0:
             raise ValueError("INF 预算必须为有效正数")
+        if result.max_output_tokens <= 0:
+            raise ValueError("模型输出 token 上限必须为正数")
         return result
 
     def public_config(self):

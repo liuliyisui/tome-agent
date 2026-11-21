@@ -129,6 +129,22 @@ class ChatProviderTests(unittest.TestCase):
             with self.subTest(endpoint=endpoint), self.assertRaises(ValueError):
                 self.provider(endpoint=endpoint, allow_remote=True)
 
+    def test_output_tokens_capped_to_configured_limit(self):
+        provider = self.provider(max_output_tokens=8192)
+        provider.complete(ModelRequest("writer", "输出JSON", {}, 16384))
+        self.assertEqual(self.requests[0][2]["max_tokens"], 8192)
+
+    def test_error_response_detail_is_surfaced(self):
+        type(self).status = 400
+        type(self).response = {
+            "error": {"message": "Range of max_tokens should be [1, 8192]"}
+        }
+        with self.assertRaises(ProviderError) as caught:
+            self.provider().complete(self.request())
+        message = str(caught.exception)
+        self.assertIn("HTTP 400", message)
+        self.assertIn("Range of max_tokens should be [1, 8192]", message)
+
     def test_secret_not_in_repr_or_error(self):
         provider = self.provider()
         self.assertNotIn("FAKE_LOCAL_KEY", repr(provider))

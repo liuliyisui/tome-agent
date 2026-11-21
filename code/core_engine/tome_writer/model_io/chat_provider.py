@@ -49,6 +49,7 @@ class ChatCompletionProvider:
     max_response_bytes: int = 1_048_576
     thinking_enabled: bool | None = None
     token_limit_field: str = "max_tokens"
+    max_output_tokens: int | None = None
 
     def __post_init__(self):
         url = urlsplit(self.endpoint)
@@ -93,6 +94,10 @@ class ChatCompletionProvider:
             raise ContractError("thinking_enabled must be boolean or None")
         if self.token_limit_field not in ("max_tokens", "max_completion_tokens"):
             raise ContractError("Unsupported output token limit field")
+        if self.max_output_tokens is not None:
+            integer(self.max_output_tokens, "max_output_tokens", 1)
+            if self.max_output_tokens > 1_000_000:
+                raise ContractError("Output token limit exceeds 1000000")
         if (
             not isinstance(self.api_key, str)
             or not self.api_key
@@ -106,6 +111,28 @@ class ChatCompletionProvider:
         except ValueError:
             raise ContractError("Invalid endpoint port") from None
 
+    def _response_detail(self, response):
+        try:
+            raw = response.read(min(self.max_response_bytes, 4096) + 1)
+        except (OSError, http.client.HTTPException):
+            return ""
+        payload = raw.decode("utf-8", "replace").replace(self.api_key, "[redacted]")
+        detail = payload
+        try:
+            data = strict_json(payload)
+        except (ValueError, TypeError):
+            data = None
+        if isinstance(data, dict):
+            error = data.get("error")
+            if isinstance(error, dict):
+                detail = str(error.get("message") or error.get("code") or "")
+            elif error:
+                detail = str(error)
+            elif data.get("message"):
+                detail = str(data["message"])
+        detail = " ".join(detail.split())[:300]
+        return f": {detail}" if detail else ""
+
     def complete(self, request: ModelRequest) -> ModelReply:
         integer(request.max_output_tokens, "max_output_tokens", 1)
         text(request.system, "system prompt")
@@ -115,7 +142,9 @@ class ChatCompletionProvider:
                 {"role": "system", "content": request.system},
                 {"role": "user", "content": canonical(request.payload)},
             ],
-            self.token_limit_field: request.max_output_tokens,
+            self.token_limit_field: request.max_output_tokens
+            if self.max_output_tokens is None
+            else min(request.max_output_tokens, self.max_output_tokens),
             "stream": False,
             "response_format": {"type": "json_object"},
         }
@@ -149,7 +178,8 @@ class ChatCompletionProvider:
             response = connection.getresponse()
             if response.status != 200:
                 raise ProviderError(
-                    f"Provider HTTP {response.status}; no retry or redirect",
+                    f"Provider HTTP {response.status}"
+                    f"{self._response_detail(response)}; no retry or redirect",
                     http_status=response.status,
                 )
             raw = response.read(self.max_response_bytes + 1)

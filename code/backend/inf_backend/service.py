@@ -462,6 +462,7 @@ def _gateway(settings):
         token_limit_field="max_completion_tokens"
         if settings.provider == "openai"
         else "max_tokens",
+        max_output_tokens=settings.max_output_tokens,
     )
     budget = Budget(
         max_calls=settings.max_calls,
