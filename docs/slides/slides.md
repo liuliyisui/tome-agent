@@ -423,7 +423,6 @@ layout: default
 
 <div class="overview-note">
   <div class="overview-mark">“</div>
-  <div>原则要能解释取舍：<b>为什么选这个、不选那个</b>。</div>
 </div>
 
 <div class="bottom-note">结构对应：需求与信息 → 系统与迭代 → 继承与效益 → 定量、简化与审核</div>
@@ -475,8 +474,6 @@ class: principle-page
 
 <div class="p-foot">判断标准：这个决定，能不能在仓库里找到对应文件与测试？</div>
 
-<div class="p-quote">先写清楚，再动手；先看证据，再下判断。</div>
-
 <!-- 第一组：方向。每条原则后面都跟证据，不空喊。 -->
 
 ---
@@ -523,8 +520,6 @@ class: principle-page
 </div>
 
 <div class="p-foot">系统视角：先定义状态，再定义操作；先保证正确，再追求好看。</div>
-
-<div class="p-quote">状态先于文本，结构先于生成。</div>
 
 <!-- 第二组：系统。先建模，再比较方案，最后按顺序优化。 -->
 
@@ -622,7 +617,6 @@ class: principle-page
 
 <div class="p-foot">质量是每次提交都在走的默认路径。</div>
 
-<div class="p-quote">每次提交都留下可复查的证据。</div>
 
 <!-- 第四组：质量。定量验收、简化、审核，三件事都变成默认动作。 -->
 
@@ -660,8 +654,6 @@ layout: default
     <div class="tradeoff-arrow">改做 → 标准库 + 渐进式 Vue</div>
   </div>
 </div>
-
-<div class="tradeoff-foot">取舍标准只有一个：<b>作者能不能一直用下去。</b></div>
 
 <div class="bottom-note">来源：README「技术选型」 · docs/software/architecture.md · docs/software/DEPLOY.md</div>
 
