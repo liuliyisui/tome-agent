@@ -439,7 +439,6 @@ class: principle-page
   <div class="principle-big">01</div>
   <div>
     <div class="kicker">原则组 I · 方向</div>
-    <h1>先问需求，再用信息校准</h1>
   </div>
 </div>
 
@@ -489,7 +488,6 @@ class: principle-page
   <div class="principle-big">02</div>
   <div>
     <div class="kicker">原则组 II · 系统</div>
-    <h1>把作品当系统，<br>人物、时间与事件分别建模。</h1>
   </div>
 </div>
 
@@ -539,7 +537,6 @@ class: principle-page
   <div class="principle-big">03</div>
   <div>
     <div class="kicker">原则组 III · 取舍</div>
-    <h1>用既有能力，<br>换确定性。</h1>
   </div>
 </div>
 
@@ -589,7 +586,6 @@ class: principle-page
   <div class="principle-big">04</div>
   <div>
     <div class="kicker">原则组 IV · 质量</div>
-    <h1>把质量做成<br>默认动作。</h1>
   </div>
 </div>
 
