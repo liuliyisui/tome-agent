@@ -564,8 +564,6 @@ class: principle-page
 
 <div class="p-foot">取舍标准：新增的每一层，都要能回答“它替作者解决了什么”。</div>
 
-<div class="p-quote">只造真正影响体验的能力。</div>
-
 <!-- 第三组：取舍。把工程资源花在确定性上。 -->
 
 ---
