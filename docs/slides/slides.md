@@ -18,7 +18,7 @@ class: cover
 ---
 
 <div class="cover-top">
-  <div class="cover-brand">TOME AGENT <span>/</span> 卷宗</div>
+    <div class="cover-brand">TOME AGENT <span>/</span> 项目汇报</div>
   <div class="cover-kicker">创新工程实践营 · 项目汇报 · 2026.11</div>
 </div>
 
