@@ -2689,3 +2689,56 @@
   line-height: 1.6;
   color: var(--ink-soft);
 }
+
+/* 3.5.3 Agent design and 3.5.5 API table */
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.agent-grid .ux-card {
+  min-height: 120px;
+}
+
+.slidev-layout .ux-text code {
+  padding: 0;
+  font-size: 8px;
+  color: var(--pine);
+  background: transparent;
+}
+
+.interface-table {
+  font-size: 8.7px;
+  table-layout: fixed;
+}
+
+.interface-table th:first-child {
+  width: 8%;
+}
+
+.interface-table th:nth-child(2) {
+  width: 37%;
+}
+
+.interface-table th:nth-child(3) {
+  width: 28%;
+}
+
+.interface-table th:nth-child(4) {
+  width: 27%;
+}
+
+.interface-table td {
+  padding: 6px 7px;
+  line-height: 1.45;
+}
+
+.slidev-layout .interface-table code {
+  padding: 0;
+  font-size: 7.8px;
+  color: var(--pine);
+  background: transparent;
+  word-break: break-all;
+}
+

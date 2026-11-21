@@ -1002,6 +1002,79 @@ flowchart LR
 layout: default
 ---
 
+<div class="kicker">3.5.2 基础设施 / INFRA</div>
+
+# 单机部署：入口、应用、数据三段就够。
+
+<div class="rule"></div>
+
+<div class="ux-grid">
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">01</span><span class="tag">入口</span></div>
+    <div class="ux-title">Nginx · 443 / TLS</div>
+    <div class="ux-text">负责 HTTPS、反向代理和请求限流；证书续期独立于应用。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">02</span><span class="tag">应用</span></div>
+    <div class="ux-title">systemd · Python 3.11</div>
+    <div class="ux-text">服务只监听 <code>127.0.0.1:8765</code>，崩溃自动重启，后台任务上限为 3。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">03</span><span class="tag">数据</span></div>
+    <div class="ux-title">/var/lib/tome-agent</div>
+    <div class="ux-text">保存作品、Skill、模型配置和检查点；定期备份，PostgreSQL 作为可选增强。</div>
+  </div>
+</div>
+
+<div class="ux-foot">部署边界只有三段：<b>Nginx、Python 服务、持久化目录。</b></div>
+
+<div class="bottom-note">来源：docs/software/LINUX_HOSTED.md · docs/software/DEPLOY.md · code/backend/compose.yaml</div>
+
+<!-- 3.5.2 基础设施：单机部署，入口、应用、数据三段。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.5.3 智能体设计 / AGENT</div>
+
+# 智能体设计：编排、记忆、护栏、工具各有边界。
+
+<div class="rule"></div>
+
+<div class="agent-grid">
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">01</span><span class="tag">编排</span></div>
+    <div class="ux-title">LangGraph 状态图</div>
+    <div class="ux-text">规划、写作、提交、记忆、审核五个节点；写作可条件边回到规划，最多一次。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">02</span><span class="tag">记忆</span></div>
+    <div class="ux-title">工作 / 近期 / 长期</div>
+    <div class="ux-text">当前章、最近章节、全书事实分层保存；长期事实带版本、变更理由和正文出处。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">03</span><span class="tag">护栏</span></div>
+    <div class="ux-title">结构、来源、失败与审核</div>
+    <div class="ux-text">JSON 结构校验、来源追踪、失败降级和提交前审核门共同约束输出。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">04</span><span class="tag">工具与知识</span></div>
+    <div class="ux-title">内部函数 + 文本 Skill</div>
+    <div class="ux-text">模型接口、文件/数据库读写和敏感信息检查由服务内部完成；写作 Skill 以文本注入。</div>
+  </div>
+</div>
+
+<div class="ux-foot">当前知识主要来自 Skill 文本和结构化记忆；<b>未引入向量库或知识图谱。</b></div>
+
+<div class="bottom-note">来源：docs/software/architecture.md · docs/software/LANGGRAPH_MIGRATION.md · code/core_engine/memory_runtime/ · code/core_engine/writing_skills/</div>
+
+<!-- 3.5.3 智能体设计：编排、记忆、护栏、工具与知识。 -->
+
+---
+layout: default
+---
+
 <div class="kicker">3.5.3 编排 / LANGGRAPH</div>
 
 # 事件先行：先改状态，再写正文。
@@ -1094,45 +1167,102 @@ layout: default
 layout: default
 ---
 
-<div class="kicker">3.5.4–3.5.5 数据与接口 / DATA</div>
+<div class="kicker">3.5.4 数据库 / DATABASE</div>
 
-# 一章一次事务，<br>正文、状态、用量一起落盘。
+# 六张表把作品、任务和成本分开记。
 
 <div class="rule"></div>
 
+```mermaid {theme: 'base', themeCSS: '.node rect{fill:#F6F3E9 !important;stroke:#1E4A36 !important;rx:4px;ry:4px}.node polygon{fill:#F6F3E9 !important;stroke:#1E4A36 !important}.nodeLabel{fill:#1F3026 !important;font-family:Noto Sans SC,Microsoft YaHei,sans-serif !important;font-size:12px !important}.edgePath .path{stroke:#7D9274 !important;stroke-width:1.4px !important}.marker{fill:#7D9274 !important;stroke:#7D9274 !important}.labelBkg{background:#F6F3E9 !important;color:#5D7355 !important}.labelBkg p{background:transparent !important;color:#5D7355 !important}', scale: 0.8}
+flowchart LR
+  BOOKS["tome_books<br/>作品"] -->|1:N| CHAPTERS["tome_chapters<br/>章节"]
+  CHAPTERS -->|1:N| VERSIONS["tome_chapter_versions<br/>版本"]
+  BOOKS -->|1:N| JOBS["tome_jobs<br/>任务"]
+  BOOKS -->|1:N| USAGE["tome_usage<br/>用量"]
+```
+
 <div class="cols cols-2 gap-lg data-layout">
   <div>
-    <div class="subhead">PostgreSQL 数据模型</div>
-    <div class="table-chips">
-      <div><code>tome_books</code><span>作品与元数据</span></div>
-      <div><code>tome_chapters</code><span>章节与当前状态</span></div>
-      <div><code>tome_chapter_versions</code><span>章节版本历史</span></div>
-      <div><code>tome_jobs</code><span>生成任务与进度</span></div>
-      <div><code>tome_usage</code><span>token 与费用记录</span></div>
-      <div><code>tome_schema_version</code><span>迁移版本</span></div>
-    </div>
-    <div class="data-note">PostgreSQL 可选；未配置时降级为文件模式。两种存储共享同一套领域语义。</div>
+    <div class="subhead">聚合关系</div>
+    <div class="data-note">作品是聚合根：章节、版本、任务和用量都按 <code>book_id</code> 归属。版本表保留章节历史；任务表记录进度；用量表保留 token 与费用。</div>
+    <div class="data-note"><code>tome_schema_version</code> 独立维护迁移版本，不参与作品聚合。</div>
   </div>
-
   <div>
-    <div class="subhead">真实 HTTP 路由</div>
-    <div class="route-table">
-      <div><span class="method get">GET</span><code>/api/books</code><em>书架</em></div>
-      <div><span class="method post">POST</span><code>/api/books/{id}/generate</code><em>生成</em></div>
-      <div><span class="method post">POST</span><code>/api/books/{id}/chapters/{n}/edit</code><em>编辑</em></div>
-      <div><span class="method post">POST</span><code>/api/books/{id}/chapters/{n}/review</code><em>复查</em></div>
-      <div><span class="method get">GET</span><code>/api/jobs/{id}</code><em>任务状态</em></div>
-      <div><span class="method get">GET</span><code>/api/books/{id}/export</code><em>导出</em></div>
-    </div>
-    <div class="data-note">后台任务通过 job id 查询；页面刷新不打断生成。</div>
+    <div class="subhead">存储与降级</div>
+    <div class="data-note">PostgreSQL 可选；未配置时降级为文件模式，两种存储共享同一套领域语义。</div>
+    <div class="data-note">数据库保存作品、章节、版本、任务和用量；文件模式保存检查点与作品文件，便于本地运行和迁移。</div>
   </div>
 </div>
 
+<div class="bottom-note">来源：code/backend/inf_backend/schema.sql · docs/software/POSTGRESQL.md · code/backend/inf_backend/database.py</div>
+
+<!-- 3.5.4 数据库：6 张表、关系与两种存储模式。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.5.5 接口 / API</div>
+
+# 生成、编辑、复查、导出都有固定入口。
+
+<div class="rule"></div>
+
+<table class="compare interface-table">
+  <thead>
+    <tr><th>方法</th><th>路径</th><th>输入</th><th>输出</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>GET</td><td><code>/api/books</code></td><td>—</td><td>作品列表</td></tr>
+    <tr><td>POST</td><td><code>/api/books/{id}/generate</code></td><td>生成选项 / 模型配置</td><td>job_id</td></tr>
+    <tr><td>POST</td><td><code>/api/books/{id}/chapters/{n}/edit</code></td><td>标题 / 正文 / base_revision</td><td>保存结果</td></tr>
+    <tr><td>POST</td><td><code>/api/books/{id}/chapters/{n}/review</code></td><td>检查项 / 作者确认</td><td>复查报告</td></tr>
+    <tr><td>GET</td><td><code>/api/jobs/{id}</code></td><td>—</td><td>进度 / 结果</td></tr>
+    <tr><td>GET</td><td><code>/api/books/{id}/export</code></td><td>—</td><td>Markdown</td></tr>
+  </tbody>
+</table>
+
 <div class="tx-line"><span>事务边界</span> 章节内容 + 版本记录 + 用量，同批提交；任务状态单独记录，失败保留已完成部分。</div>
 
-<div class="bottom-note">来源：code/backend/inf_backend/schema.sql · code/backend/inf_backend/web.py</div>
+<div class="data-note">后台任务通过 job id 查询；页面刷新不打断生成。导出使用复查后的正文版本。</div>
 
-<!-- 数据模型与接口只列真实存在的表和路由，不画不存在的架构。 -->
+<div class="bottom-note">来源：code/backend/inf_backend/web.py · code/backend/inf_backend/schema.sql · README「核心功能」</div>
+
+<!-- 3.5.5 接口：真实路由、输入输出和事务边界。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.5.6 前端 / FRONTEND</div>
+
+# 前端设计：零构建、同源、渐进增强。
+
+<div class="rule"></div>
+
+<div class="ux-grid">
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">01</span><span class="tag">技术</span></div>
+    <div class="ux-title">Vue runtime-only</div>
+    <div class="ux-text">Vue 3.5.44 + 原生 HTML/CSS/JS；仓库内置运行时，无 CDN、无前端构建链。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">02</span><span class="tag">页面</span></div>
+    <div class="ux-title">五个工作区</div>
+    <div class="ux-text">书架、文风与费用、生成、编辑与复查、导出；动作与用户故事一一对应。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">03</span><span class="tag">交互</span></div>
+    <div class="ux-title">任务可查询</div>
+    <div class="ux-text">生成任务通过 job id 查询；刷新不打断后台；错误详情可定位，导出 Markdown。</div>
+  </div>
+</div>
+
+<div class="ux-foot">与后端同源部署，静态文件由 Python 服务或 Nginx 提供。</div>
+
+<div class="bottom-note">来源：code/frontend/ · code/backend/inf_backend/web.py · README「核心功能」</div>
+
+<!-- 3.5.6 前端：Vue runtime-only、五个工作区与任务查询。 -->
 
 ---
 layout: default
