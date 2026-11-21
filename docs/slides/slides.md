@@ -100,7 +100,7 @@ layout: default
 
 <div class="kicker">问题 / 五个症状</div>
 
-# 读者不会说“状态漂移”，<br>只会说“看不下去了”。
+# 读者感受到的是“看不下去了”，<br>而非“写着写着跑偏”。
 
 <div class="rule"></div>
 
