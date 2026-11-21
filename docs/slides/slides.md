@@ -719,7 +719,7 @@ layout: default
 
 <div class="rule"></div>
 
-```mermaid {theme: 'neutral', scale: 0.9}
+```mermaid {theme: 'base', themeCSS: '.node rect{fill:#F6F3E9 !important;stroke:#1E4A36 !important;rx:4px;ry:4px}.node polygon{fill:#F6F3E9 !important;stroke:#1E4A36 !important}.nodeLabel{fill:#1F3026 !important;font-family:Noto Sans SC,Microsoft YaHei,sans-serif !important;font-size:13px !important}.edgePath .path{stroke:#7D9274 !important;stroke-width:1.5px !important}.marker{fill:#7D9274 !important;stroke:#7D9274 !important}.labelBkg{background:#F6F3E9 !important;color:#5D7355 !important}.labelBkg p{background:transparent !important;color:#5D7355 !important}.edgeLabel rect{fill:#F6F3E9 !important;opacity:1 !important}.edgeLabel{background:#F6F3E9 !important;color:#5D7355 !important}.edgeLabel span{color:#5D7355 !important}', scale: 0.9}
 flowchart LR
   UI["界面层"]
   API["服务层"]
@@ -766,7 +766,7 @@ layout: default
 
 <div class="rule"></div>
 
-```mermaid {theme: 'neutral', scale: 0.9}
+```mermaid {theme: 'base', themeCSS: '.node rect{fill:#F6F3E9 !important;stroke:#1E4A36 !important;rx:4px;ry:4px}.node polygon{fill:#F6F3E9 !important;stroke:#1E4A36 !important}.nodeLabel{fill:#1F3026 !important;font-family:Noto Sans SC,Microsoft YaHei,sans-serif !important;font-size:13px !important}.edgePath .path{stroke:#7D9274 !important;stroke-width:1.5px !important}.marker{fill:#7D9274 !important;stroke:#7D9274 !important}.labelBkg{background:#F6F3E9 !important;color:#5D7355 !important}.labelBkg p{background:transparent !important;color:#5D7355 !important}.edgeLabel rect{fill:#F6F3E9 !important;opacity:1 !important}.edgeLabel{background:#F6F3E9 !important;color:#5D7355 !important}.edgeLabel span{color:#5D7355 !important}', scale: 0.9}
 flowchart LR
   PLAN["规划"]
   WRITE["写作"]
