@@ -44,7 +44,7 @@ prs.slide_height = Inches(H)
 BLANK = prs.slide_layouts[6]
 
 FOOTER = "Tome Agent · 创新工程实践营项目汇报 · 第一部分"
-TOTAL = 17
+TOTAL = 18
 
 
 # ---------------------------------------------------------------- 基础工具
@@ -163,6 +163,17 @@ def header(slide, eyebrow, title, num, note=None):
         para(tf, note, size=8.5, color=MUTED, align=PP_ALIGN.RIGHT, first=True, space_after=0)
 
 
+def pager(slide, num, note=None):
+    """没有标题的页面：只画页码与页脚。"""
+    tf = tb(slide, W - MR - 1.0, H - 0.42, 1.0, 0.24)
+    para(tf, f"{num:02d} / {TOTAL}", size=9, color=MUTED, align=PP_ALIGN.RIGHT, first=True, space_after=0)
+    tf = tb(slide, ML, H - 0.42, 7.6, 0.24)
+    para(tf, FOOTER, size=9, color=MUTED, first=True, space_after=0)
+    if note:
+        tf = tb(slide, W - MR - 5.0, H - 0.42, 3.9, 0.24)
+        para(tf, note, size=8.5, color=MUTED, align=PP_ALIGN.RIGHT, first=True, space_after=0)
+
+
 def plain_table(slide, x, y, w, col_widths, rows, header_fill=PRIMARY,
                 size=9.5, header_size=9.5, row_h=0.5, header_h=0.42,
                 first_col_bold=True, zebra=CARD_SOFT):
@@ -224,66 +235,68 @@ def notes(slide, text):
 # ================================================================ 01 封面
 s = new_slide()
 bar(s, 0, 0, W, 0.16, PRIMARY)
-# 右侧信息面板
-card(s, 8.62, 0.16, W - 8.62, H - 0.16, fill=PRIMARY, radius=0.0)
-tf = tb(s, 9.15, 1.15, 3.6, 0.3)
-para(tf, "一句话说明", size=10, color=RGBColor(0xC9, 0xB9, 0x9F), bold=True, first=True, space_after=0)
-tf = tb(s, 9.15, 1.5, 3.6, 1.1)
-para(tf, "「规划 → 写作 → 记忆 → 审核 → 提交」", size=13, color=WHITE, bold=True,
-     first=True, space_after=0, line=1.4)
-steps = ["逐章规划：只改下一章", "事实记忆：带版本与出处", "独立审核：矛盾与遗漏", "原子提交：失败不改正式稿"]
-tf = tb(s, 9.15, 3.05, 3.55, 2.2)
-for i, t in enumerate(steps):
-    para(tf, t, size=10.5, color=RGBColor(0xE8, 0xE0, 0xD2), first=(i == 0), space_after=9)
-hairline(s, 9.15, 4.95, 3.2, RGBColor(0x54, 0x72, 0x92))
-tf = tb(s, 9.15, 5.15, 3.5, 1.2)
-para(tf, "本地运行 · 作品留在本机 · 按 token 透明计费", size=10, color=RGBColor(0xC9, 0xB9, 0x9F),
-     first=True, space_after=0, line=1.5)
 
-tf = tb(s, ML, 1.05, 7.2, 0.3)
-para(tf, "创新工程实践营 · 项目汇报（8 分钟）", size=11, color=ACCENT, bold=True, first=True, space_after=0)
-tf = tb(s, ML, 1.5, 7.4, 1.4)
-para(tf, "Tome Agent", size=52, color=INK, bold=True, first=True, space_after=0, line=1.0)
-tf = tb(s, ML, 2.72, 7.2, 0.9)
-para(tf, "让一个点子，变成一部自洽的长篇小说", size=21, color=PRIMARY, bold=True, first=True, space_after=0, line=1.3)
-hairline(s, ML, 3.72, 2.6, ACCENT)
-tf = tb(s, ML, 3.95, 7.2, 0.9)
-para(tf, "第一部分 · 产品介绍 ｜ 1. 产品设计（1.1–1.2）　2. 产品设计应用的原则", size=12.5,
-     color=INK_SOFT, first=True, space_after=0, line=1.5)
-tf = tb(s, ML, 5.55, 7.3, 1.0)
-para(tf, "汇报团队：宇宙无敌暴龙战士", size=11.5, color=INK, bold=True, first=True, space_after=3)
-para(tf, "查军益（开发）· 秦宗鑫（创作与评估）· 谭钧浩（测试）· 周涛（体验与文档）", size=9.5, color=MUTED, space_after=0)
-tf = tb(s, ML, 6.62, 4.0, 0.3)
-para(tf, "2026-11 · 产品名中文工作名：卷宗", size=9.5, color=MUTED, first=True, space_after=0)
+# 品牌标识（透明底，右侧居中）
+logo_path = HERE / "slidev" / "public" / "tome-logo-clean.png"
+logo_w = 3.0
+logo_h = logo_w * 63 / 242
+s.shapes.add_picture(
+    str(logo_path),
+    Inches(W - 0.9 - logo_w),
+    Inches((5.4 - logo_h) / 2 + 0.5),
+    width=Inches(logo_w),
+)
+
+tf = tb(s, ML, 1.0, 7.8, 1.2)
+para(tf, "Tome Agent", size=54, color=INK, bold=True, first=True, space_after=0, line=1.0)
+tf = tb(s, ML, 2.32, 7.6, 0.6)
+para(tf, "让一个点子，变成一部自洽的长篇小说", size=20, color=PRIMARY, bold=True, first=True, space_after=0)
+hairline(s, ML, 3.05, 1.6, ACCENT)
+tf = tb(s, ML, 3.25, 7.8, 0.4)
+para(tf, "第一部分 · 产品介绍 ｜ 1. 产品设计（1.1–1.2）　2. 产品设计应用的原则", size=12,
+     color=INK_SOFT, first=True, space_after=0)
+
+tf = tb(s, ML, 5.12, 1.6, 0.28)
+para(tf, "汇报人", size=9.5, color=ACCENT, bold=True, first=True, space_after=0)
+people = [("查军益", "开发 · 生成框架"), ("秦宗鑫", "创作与质量评估"),
+          ("谭钧浩", "环境与功能测试"), ("周涛", "体验与成果文档")]
+x = ML
+for name, role in people:
+    tf = tb(s, x, 5.42, 2.05, 0.8)
+    para(tf, name, size=16, color=INK, bold=True, first=True, space_after=3)
+    para(tf, role, size=9.5, color=MUTED, space_after=0)
+    x += 2.1
+hairline(s, ML, 6.3, CW)
+tf = tb(s, ML, 6.42, 8.6, 0.32)
+rich(para(tf, first=True, space_after=0),
+     [("汇报团队：", {"color": INK_SOFT, "size": 11}),
+      ("宇宙无敌暴龙战士", {"bold": True, "color": INK, "size": 11}),
+      ("　｜　苏州大学 计算机科学与技术 2025 级", {"color": INK_SOFT, "size": 11})])
+tf = tb(s, W - MR - 3.4, 6.42, 3.4, 0.32)
+para(tf, "2026-11 · 中文工作名：卷宗", size=9.5, color=MUTED, align=PP_ALIGN.RIGHT, first=True, space_after=0)
 notes(s, "开场：我们做的是 Tome Agent，一个本地运行的长篇小说生成助手。这 8 分钟里，我负责第一部分——它是什么，以及为什么这么设计。")
 
 # ================================================================ 02 汇报地图
 s = new_slide()
-header(s, "本篇范围", "这一段要回答两个问题：这个产品是什么，为什么这样设计", 2,
-       note="完整汇报 8 分钟；本篇约 4 分钟")
 cards = [
     ("01", "1.1 产品使命、口号和策略", "使命 · 口号 · 目标用户 · 如何获得用户 · 团队优势 · 差异化", "6 项"),
     ("02", "1.2 产品定义", "定位模板 · 解决的问题 · 用户故事（价值）· 解决方案形态", "4 项"),
     ("03", "2. 产品设计应用的原则", "需求·信息·创新 / 系统·收敛·优化 / 继承·效益·时间 / 定量·简化·审核", "12 条"),
 ]
-y = 1.88
+y = 0.95
 for num, title, body, cnt in cards:
-    card(s, ML, y, CW, 1.22, fill=CARD_SOFT)
-    bar(s, ML, y, 0.055, 1.22, PRIMARY)
-    tf = tb(s, ML + 0.32, y + 0.2, 0.7, 0.4)
-    para(tf, num, size=20, color=ACCENT, bold=True, first=True, space_after=0)
-    tf = tb(s, ML + 1.05, y + 0.18, 8.4, 0.9)
-    para(tf, title, size=14.5, color=INK, bold=True, first=True, space_after=3)
-    para(tf, body, size=10.5, color=MUTED, space_after=0)
-    tf = tb(s, W - MR - 1.2, y + 0.42, 1.0, 0.4)
+    card(s, ML, y, CW, 1.55, fill=CARD_SOFT)
+    bar(s, ML, y, 0.055, 1.55, PRIMARY)
+    tf = tb(s, ML + 0.32, y + 0.3, 0.8, 0.5)
+    para(tf, num, size=22, color=ACCENT, bold=True, first=True, space_after=0)
+    tf = tb(s, ML + 1.05, y + 0.34, 8.6, 0.9)
+    para(tf, title, size=16.5, color=INK, bold=True, first=True, space_after=4)
+    para(tf, body, size=11, color=MUTED, space_after=0)
+    tf = tb(s, W - MR - 1.2, y + 0.55, 1.0, 0.4)
     para(tf, cnt, size=13, color=PRIMARY, bold=True, align=PP_ALIGN.RIGHT, first=True, space_after=0)
-    y += 1.42
-
-tf = tb(s, ML, 6.28, CW, 0.4)
-rich(para(tf, first=True, space_after=0),
-     [("下一篇（第二部分）：", {"bold": True, "color": INK, "size": 10.5}),
-      ("3. 产品实现——技术选型与版本、仓库与提交历史、架构与数据库、接口、质量工具、代码统计。", {"color": MUTED, "size": 10.5})])
-notes(s, "先用一页交代结构：1.1 讲策略六项，1.2 讲定义，2 讲十二条设计原则；第 3 部分产品实现放在后面。")
+    y += 1.75
+pager(s, 2, note="完整汇报 8 分钟；本篇约 4 分钟")
+notes(s, "只放结构，不写过渡语：1.1 策略六项，1.2 定义四项，2 十二条原则。")
 
 # ================================================================ 03 使命
 s = new_slide()
@@ -308,13 +321,7 @@ for label, text in items:
     para(tf, text, size=10.5, color=INK_SOFT, first=True, space_after=0, line=1.45)
     x += (CW - 0.5) / 3 + 0.25
 
-tf = tb(s, ML, 5.32, CW, 0.95)
-rich(para(tf, first=True, space_after=6),
-     [("使命同时划掉两件事：", {"bold": True, "color": INK})])
-rich(para(tf, space_after=0),
-     [("× 不做「一键生成爆款」的流量工具——它奖励套路，不奖励自洽；", {"color": MUTED}),
-      ("　× 这一版也不做「作者量产」的效率工具——那是另一群用户、另一套需求。", {"color": MUTED})])
-tf = tb(s, ML, 6.6, CW, 0.3)
+tf = tb(s, ML, 5.35, CW, 0.35)
 para(tf, "依据：docs/requirements/problem_definition.md（问题定义与产品描述）", size=9, color=MUTED, first=True, space_after=0)
 notes(s, "使命一句话：让心里有故事的人把它写出来。注意两个着力点——门槛降到「说清一个想法」，一致性交给结构化事实。")
 
@@ -617,12 +624,43 @@ rich(para(tf, first=True, space_after=0, line=1.4),
       ("作品文件与 API Key 必须留在本机、成本按 token 透明、不经过上架审核；本地网页用浏览器即可打开，"
        "不需要账号、不需要装客户端。", {"size": 10.5, "color": INK_SOFT})])
 
+tf = tb(s, ML, 2.95, 5.6, 2.2)
+para(tf, "技术组成（版本见 README）", size=9.5, color=ACCENT, bold=True, first=True, space_after=7)
+tech = [
+    ("界面", "Vue 3.5.44 内置运行时，无前端构建步骤；本地 HTTP 服务 http://127.0.0.1:8765"),
+    ("编排", "LangGraph 1.2.17 把五个阶段建成状态图，支持条件分支与重规划"),
+    ("存储", "文件模式零配置即可跑；需要持久化时用 PostgreSQL 17 + Psycopg 3.3.3"),
+    ("模型", "Chat Completions 兼容接口：DeepSeek、OpenAI 及其他兼容服务"),
+]
+y = 3.24
+for k, v in tech:
+    tf2 = tb(s, ML, y, 0.72, 0.3)
+    para(tf2, k, size=10, color=PRIMARY, bold=True, first=True, space_after=0)
+    tf2 = tb(s, ML + 0.8, y, 4.9, 0.45)
+    para(tf2, v, size=9.5, color=INK_SOFT, first=True, space_after=0, line=1.4)
+    y += 0.52
+
+card(s, 6.86, 2.95, 5.62, 2.35, fill=CARD_SOFT)
+tf = tb(s, 7.14, 3.1, 5.1, 2.05)
+para(tf, "用户看到的三件事", size=9.5, color=ACCENT, bold=True, first=True, space_after=8)
+for t in ["生成前：显示本次预估输入/输出 token 与人民币费用，确认后才调用模型",
+          "生成中：逐章保存检查点，中断后从断点继续，正式稿只在整章校验通过后写入",
+          "生成后：在工作台读章、导出排版好的 Markdown，作品目录在本机随手可备份"]:
+    para(tf, "· " + t, size=9.8, color=INK_SOFT, space_after=7, line=1.45)
+tf = tb(s, 6.86, 6.32, 5.62, 0.4)
+para(tf, "对应课程要求「网站 / 微信小程序 / Android 应用」中的「网站」形态。", size=9, color=MUTED, first=True, space_after=0)
+notes(s, "形态选网站：作品和密钥留在本机。六个阶段一串，核心是提交是事务，失败不动正式稿。技术栈版本都在 README。")
+
+# ================================================================ 13 运行机制
+s = new_slide()
+header(s, "1.2.3 解决方案 · 运行机制", "一章是怎么生成的：五个阶段，一次事务提交", 13)
+
 steps = [("下一章规划", "只改下一章"), ("正文候选", "不能改存档"), ("事实变更候选", "带出处版本"),
          ("独立审核", "矛盾与遗漏"), ("整章提交", "失败不改正式稿"), ("导出 Markdown", "可改可投稿")]
 cw_chev = 1.98
 x = ML
 for i, (title, sub) in enumerate(steps):
-    shp = s.shapes.add_shape(MSO_SHAPE.CHEVRON, Inches(x), Inches(2.62), Inches(cw_chev), Inches(0.66))
+    shp = s.shapes.add_shape(MSO_SHAPE.CHEVRON, Inches(x), Inches(1.9), Inches(cw_chev), Inches(0.66))
     shp.fill.solid()
     shp.fill.fore_color.rgb = PRIMARY if i < 5 else ACCENT
     shp.line.fill.background()
@@ -643,40 +681,34 @@ for i, (title, sub) in enumerate(steps):
     ea = rPr.makeelement(qn("a:ea"), {})
     ea.set("typeface", FONT)
     rPr.append(ea)
-    tf3 = tb(s, x + 0.24, 3.36, cw_chev - 0.34, 0.3)
+    tf3 = tb(s, x + 0.24, 2.64, cw_chev - 0.34, 0.3)
     para(tf3, sub, size=8.2, color=MUTED, align=PP_ALIGN.CENTER, first=True, space_after=0)
     x += cw_chev - 0.22
 
-tf = tb(s, ML, 3.85, 5.6, 2.2)
-para(tf, "技术组成（版本见 README）", size=9.5, color=ACCENT, bold=True, first=True, space_after=7)
-tech = [
-    ("界面", "Vue 3.5.44 内置运行时，无前端构建步骤；本地 HTTP 服务 http://127.0.0.1:8765"),
-    ("编排", "LangGraph 1.2.17 把五个阶段建成状态图，支持条件分支与重规划"),
-    ("存储", "文件模式零配置即可跑；需要持久化时用 PostgreSQL 17 + Psycopg 3.3.3"),
-    ("模型", "Chat Completions 兼容接口：DeepSeek、OpenAI 及其他兼容服务"),
+mech = [
+    ("不越权", "规划只提下一章计划；写作角色不能直接改正式存档；审核角色只判不改。"),
+    ("可追溯", "每条事实带稳定属性名、版本、变更理由和正文原句，能查到某个设定从哪一章开始、又在哪一章改变。"),
+    ("可恢复", "先在副本上校验章节、计划与记忆，通过后整章提交；失败不改变正式快照，中断后从检查点继续。"),
 ]
-y = 4.14
-for k, v in tech:
-    tf2 = tb(s, ML, y, 0.72, 0.3)
-    para(tf2, k, size=10, color=PRIMARY, bold=True, first=True, space_after=0)
-    tf2 = tb(s, ML + 0.8, y, 4.9, 0.45)
-    para(tf2, v, size=9.5, color=INK_SOFT, first=True, space_after=0, line=1.4)
-    y += 0.52
+x = ML
+col_w = (CW - 0.5) / 3
+for tag, body in mech:
+    card(s, x, 3.1, col_w, 1.45, fill=CARD_SOFT)
+    tf = tb(s, x + 0.28, 3.26, col_w - 0.5, 0.3)
+    para(tf, tag, size=10.5, color=ACCENT, bold=True, first=True, space_after=0)
+    tf = tb(s, x + 0.28, 3.62, col_w - 0.5, 0.85)
+    para(tf, body, size=9.8, color=INK_SOFT, first=True, space_after=0, line=1.45)
+    x += col_w + 0.25
 
-card(s, 6.86, 3.85, 5.62, 2.35, fill=CARD_SOFT)
-tf = tb(s, 7.14, 4.0, 5.1, 2.05)
-para(tf, "用户看到的三件事", size=9.5, color=ACCENT, bold=True, first=True, space_after=8)
-for t in ["生成前：显示本次预估输入/输出 token 与人民币费用，确认后才调用模型",
-          "生成中：逐章保存检查点，中断后从断点继续，正式稿只在整章校验通过后写入",
-          "生成后：在工作台读章、导出排版好的 Markdown，作品目录在本机随手可备份"]:
-    para(tf, "· " + t, size=9.8, color=INK_SOFT, space_after=7, line=1.45)
-tf = tb(s, 6.86, 6.32, 5.62, 0.4)
-para(tf, "对应课程要求「网站 / 微信小程序 / Android 应用」中的「网站」形态。", size=9, color=MUTED, first=True, space_after=0)
-notes(s, "形态选网站：作品和密钥留在本机。六个阶段一串，核心是提交是事务，失败不动正式稿。技术栈版本都在 README。")
+card(s, ML, 4.95, CW, 0.8, fill=PRIMARY)
+tf = tb(s, ML + 0.32, 4.95, CW - 0.6, 0.8, anchor=MSO_ANCHOR.MIDDLE)
+para(tf, "一次生成 = 「规划 → 写作 → 记忆 → 审核 → 提交」；本地运行、作品留在本机、按 token 透明计费。",
+     size=11, color=WHITE, bold=True, first=True, space_after=0)
+notes(s, "这一页专讲机制：五段一串，核心是提交是事务、失败不动正式稿。封面不再放功能细节。")
 
-# ================================================================ 13 设计原则总览
+# ================================================================ 14 设计原则总览
 s = new_slide()
-header(s, "2. 产品设计应用的原则", "十二条原则，一条主线：每条都要能在仓库里找到证据", 13)
+header(s, "2. 产品设计应用的原则", "十二条原则，一条主线：每条都要能在仓库里找到证据", 14)
 groups = [
     ("组一", "需求 · 信息 · 创新", "先有真需求，再用信息校准，最后才谈创新", "01"),
     ("组二", "系统 · 收敛 · 优化", "把作品当系统，先发散后收敛，再逐项优化", "02"),
@@ -692,7 +724,7 @@ for (x, y), (g, names, motto, n) in zip(pos, groups):
     para(tf, names, size=14, color=INK, bold=True, first=True, space_after=4)
     para(tf, motto, size=9.8, color=MUTED, space_after=0, line=1.35)
     tf = tb(s, x + 0.95, y + 1.2, 4.2, 0.28)
-    para(tf, f"详见第 {13 + int(n)} 页", size=8.5, color=RGBColor(0x9A, 0x8F, 0x7E),
+    para(tf, f"详见第 {14 + int(n)} 页", size=8.5, color=RGBColor(0x9A, 0x8F, 0x7E),
          align=PP_ALIGN.RIGHT, first=True, space_after=0)
 
 tf = tb(s, ML, 5.45, CW, 0.55)
@@ -731,7 +763,7 @@ def principle_slide(num: int, eyebrow: str, base_title: str, cols, note_text: st
 
 
 principle_slide(
-    14, "2. 产品设计应用的原则 · 组一", "需求定方向，信息校准方向，创新才有落脚点",
+    15, "2. 产品设计应用的原则 · 组一", "需求定方向，信息校准方向，创新才有落脚点",
     [
         ("需求原则",
          "功能要求来自客观需求：显需求推动改进，隐需求催生创新。",
@@ -756,7 +788,7 @@ principle_slide(
 )
 
 principle_slide(
-    15, "2. 产品设计应用的原则 · 组二", "把作品当系统设计，先发散后收敛，再逐项优化",
+    16, "2. 产品设计应用的原则 · 组二", "把作品当系统设计，先发散后收敛，再逐项优化",
     [
         ("系统原则",
          "用系统论方法求功能结构，通过分析、综合与评价，达到综合最优。",
@@ -781,7 +813,7 @@ principle_slide(
 )
 
 principle_slide(
-    16, "2. 产品设计应用的原则 · 组三", "能继承的不重造，算清效益，抢住时间窗口",
+    17, "2. 产品设计应用的原则 · 组三", "能继承的不重造，算清效益，抢住时间窗口",
     [
         ("继承原则",
          "批判地吸收前人成果，推陈出新，为我所用。",
@@ -806,7 +838,7 @@ principle_slide(
 )
 
 principle_slide(
-    17, "2. 产品设计应用的原则 · 组四", "能测就测，能简就简，每一步都审",
+    18, "2. 产品设计应用的原则 · 组四", "能测就测，能简就简，每一步都审",
     [
         ("定量原则",
          "在方案选择、性能评价、效益评价上尽量采用科学的定量方法。",

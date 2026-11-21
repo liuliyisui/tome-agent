@@ -127,11 +127,6 @@ layout: default
 
 </div>
 
-<div class="mt-4 text-[11.5px] leading-[1.9] text-[#3B4959]">
-  <div class="font-bold text-[#1D2B3A] mb-1">使命同时划掉两件事：</div>
-  <div class="text-[#6C7784]">× 不做「一键生成爆款」的流量工具——它奖励套路，不奖励自洽；　× 这一版也不做「作者量产」的效率工具——那是另一群用户、另一套需求。</div>
-</div>
-
 <div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">依据：docs/requirements/problem_definition.md（问题定义与产品描述）</div>
 
 <!-- 使命一句话：让心里有故事的人把它写出来。两个着力点——门槛降到「说清一个想法」，一致性交给结构化事实。 -->
