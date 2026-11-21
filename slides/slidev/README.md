@@ -1,11 +1,11 @@
-﻿ Tome Agent 汇报幻灯片（Slidev 版）
+ Tome Agent 汇报幻灯片（Slidev 版）
 
 这套幻灯片用 [Slidev](https://sli.dev) 写成：**内容是一份 Markdown**，样式在一个 CSS 里，构建、发布、导出 PDF 全部交给 GitHub Actions。
 和 `../Tome-Agent_第一部分_产品设计与设计原则.pptx`（python-pptx 版）内容一致，两者可以互为备份。
 
 ```
 slides/slidev/
-├── slides.md                 # 全部 17 页内容（每页之间用 --- 分隔，<!-- --> 是演讲备注）
+├── slides.md                 # 全部 18 页内容（每页之间用 --- 分隔，<!-- --> 是演讲备注）
 ├── style.css                 # 视觉规范：墨蓝 / 朱砂 / 纸白，标题、卡片、表格样式
 ├── package.json              # 依赖与命令（dev / build / export）
 ├── pnpm-workspace.yaml       # pnpm 策略：扁平 node_modules、不自动装 optional peer

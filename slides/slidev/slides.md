@@ -17,32 +17,38 @@ class: cover
 ---
 
 <div class="absolute top-0 left-0 w-full h-[6px] bg-[#1B3B5F]"></div>
-<div class="absolute inset-y-0 right-0 w-[37%] bg-[#1B3B5F]"></div>
 
-<div class="absolute left-[52px] top-[52px] w-[54%]">
-  <div class="eyebrow">创新工程实践营 · 项目汇报（8 分钟）</div>
-  <div class="text-[56px] font-extrabold leading-none tracking-tight mt-1 text-[#1D2B3A]">Tome Agent</div>
-  <div class="text-[19px] font-bold mt-4 text-[#1B3B5F]">让一个点子，变成一部自洽的长篇小说</div>
-  <div class="w-[150px] h-[3px] bg-[#B4472E] mt-5"></div>
-  <div class="text-[11.5px] mt-5 text-[#3B4959]">第一部分 · 产品介绍 ｜ 1. 产品设计（1.1–1.2）　2. 产品设计应用的原则</div>
+<div class="absolute left-[52px] top-[60px]">
+  <div class="text-[62px] font-extrabold leading-none tracking-tight text-[#1D2B3A]">Tome Agent</div>
+  <div class="text-[21px] font-bold mt-5 text-[#1B3B5F]">让一个点子，变成一部自洽的长篇小说</div>
+  <div class="w-[160px] h-[3px] bg-[#B4472E] mt-6"></div>
+  <div class="text-[12px] mt-5 text-[#3B4959]">第一部分 · 产品介绍 ｜ 1. 产品设计（1.1–1.2）　2. 产品设计应用的原则</div>
 </div>
 
-<div class="absolute left-[52px] bottom-[46px] w-[54%]">
-  <div class="text-[12px] font-bold">汇报团队：宇宙无敌暴龙战士</div>
-  <div class="text-[10px] mt-1 text-[#6C7784]">查军益（开发）· 秦宗鑫（创作与评估）· 谭钧浩（测试）· 周涛（体验与文档）</div>
-  <div class="text-[10px] mt-2 text-[#6C7784]">2026-11 · 产品中文工作名：卷宗</div>
-</div>
-
-<div class="absolute right-[3.2%] top-[16%] w-[31%]">
-  <div class="text-[10px] font-bold text-[#C9B99F]">一句话说明</div>
-  <div class="text-[13px] font-bold text-white mt-2 leading-relaxed">「规划 → 写作 → 记忆 → 审核 → 提交」</div>
-  <div class="mt-7 text-[11px] leading-[2] text-[#E8E0D2]">
-    <div>逐章规划：只改下一章</div>
-    <div>事实记忆：带版本与出处</div>
-    <div>独立审核：矛盾与遗漏</div>
-    <div>原子提交：失败不改正式稿</div>
+<div class="absolute left-[52px] right-[52px] bottom-[38px]">
+  <div class="tag mb-2">汇报人</div>
+  <div class="flex gap-10">
+    <div>
+      <div class="text-[18px] font-extrabold text-[#1D2B3A]">查军益</div>
+      <div class="text-[10.5px] text-[#6C7784] mt-1">开发 · 生成框架</div>
+    </div>
+    <div>
+      <div class="text-[18px] font-extrabold text-[#1D2B3A]">秦宗鑫</div>
+      <div class="text-[10.5px] text-[#6C7784] mt-1">创作与质量评估</div>
+    </div>
+    <div>
+      <div class="text-[18px] font-extrabold text-[#1D2B3A]">谭钧浩</div>
+      <div class="text-[10.5px] text-[#6C7784] mt-1">环境与功能测试</div>
+    </div>
+    <div>
+      <div class="text-[18px] font-extrabold text-[#1D2B3A]">周涛</div>
+      <div class="text-[10.5px] text-[#6C7784] mt-1">体验与成果文档</div>
+    </div>
   </div>
-  <div class="mt-7 text-[10px] leading-relaxed text-[#C9B99F]">本地运行 · 作品留在本机 · 按 token 透明计费</div>
+  <div class="mt-4 pt-3 border-t border-[#DAD2C6] flex items-end justify-between">
+    <div class="text-[11.5px] text-[#3B4959]">汇报团队：<span class="font-bold text-[#1D2B3A]">宇宙无敌暴龙战士</span>　｜　苏州大学 计算机科学与技术 2025 级</div>
+    <div class="text-[10.5px] text-[#A99C88]">2026-11 · 中文工作名：卷宗</div>
+  </div>
 </div>
 
 <!-- 开场：我们做的是 Tome Agent，一个本地运行的长篇小说生成助手。这 8 分钟我负责第一部分：它是什么，以及为什么这么设计。 -->
@@ -533,16 +539,7 @@ layout: default
 
 <div class="text-[11.5px] leading-[1.7]"><span class="tag text-[11px]">为什么是网站，不是小程序 / App：</span>作品文件与 API Key 必须留在本机、成本按 token 透明、不经过上架审核；本地网页用浏览器即可打开，不需要账号、不需要装客户端。</div>
 
-<div class="flex gap-1 mt-5">
-  <div class="flex-1"><div class="step">下一章规划</div><div class="stepnote">只改下一章</div></div>
-  <div class="flex-1"><div class="step">正文候选</div><div class="stepnote">不能改存档</div></div>
-  <div class="flex-1"><div class="step">事实变更候选</div><div class="stepnote">带出处与版本</div></div>
-  <div class="flex-1"><div class="step">独立审核</div><div class="stepnote">矛盾与遗漏</div></div>
-  <div class="flex-1"><div class="step">整章事务提交</div><div class="stepnote">失败不改正式稿</div></div>
-  <div class="flex-1"><div class="step step-alt">导出 Markdown</div><div class="stepnote">可改可投稿</div></div>
-</div>
-
-<div class="grid grid-cols-[1.05fr_1fr] gap-5 mt-5">
+<div class="grid grid-cols-[1.05fr_1fr] gap-5 mt-6">
 
 <div>
   <div class="tag">技术组成（版本见 README）</div>
@@ -567,7 +564,51 @@ layout: default
 
 <div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">对应课程要求「网站 / 微信小程序 / Android 应用」中的「网站」形态。</div>
 
-<!-- 形态选网站：作品和密钥留在本机。六个阶段一串，核心是提交是事务，失败不动正式稿。技术栈版本都在 README。 -->
+<!-- 形态选网站：作品和密钥留在本机。技术栈版本都在 README。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">1.2.3 解决方案 · 运行机制</div>
+
+# 一章是怎么生成的：五个阶段，一次事务提交
+
+<div class="hr-line"></div>
+
+<div class="flex gap-1 mt-4">
+  <div class="flex-1"><div class="step">下一章规划</div><div class="stepnote">只改下一章</div></div>
+  <div class="flex-1"><div class="step">正文候选</div><div class="stepnote">不能改存档</div></div>
+  <div class="flex-1"><div class="step">事实变更候选</div><div class="stepnote">带出处与版本</div></div>
+  <div class="flex-1"><div class="step">独立审核</div><div class="stepnote">矛盾与遗漏</div></div>
+  <div class="flex-1"><div class="step">整章事务提交</div><div class="stepnote">失败不改正式稿</div></div>
+  <div class="flex-1"><div class="step step-alt">导出 Markdown</div><div class="stepnote">可改可投稿</div></div>
+</div>
+
+<div class="grid grid-cols-3 gap-3 mt-6">
+
+<div class="card-soft p-4">
+  <div class="tag">不越权</div>
+  <div class="body-text mt-1">规划只提下一章计划；写作角色不能直接改正式存档；审核角色只判不改。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">可追溯</div>
+  <div class="body-text mt-1">每条事实带稳定属性名、版本、变更理由和正文原句，能查到某个设定从哪一章开始、又在哪一章改变。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">可恢复</div>
+  <div class="body-text mt-1">先在副本上校验章节、计划与记忆，通过后整章提交；失败不改变正式快照，中断后从检查点继续。</div>
+</div>
+
+</div>
+
+<div class="card-dk px-5 py-3 mt-4">
+  <div class="text-[11.5px]">一次生成 = 「规划 → 写作 → 记忆 → 审核 → 提交」；本地运行、作品留在本机、按 token 透明计费。</div>
+</div>
+
+<!-- 这一页专讲机制：五段一串，核心是提交是事务、失败不动正式稿。功能细节不放在封面，放到这里。 -->
 
 ---
 layout: default
