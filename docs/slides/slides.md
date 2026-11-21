@@ -1221,7 +1221,7 @@ layout: default
 
 <div class="kicker">3.7 代码统计 / CODE</div>
 
-# 代码规模要看清，<br>维护成本才估得准。
+# 代码行数只是中间产物，<br>真正的考验在于持续维护。
 
 <div class="rule"></div>
 
