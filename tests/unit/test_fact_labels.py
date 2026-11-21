@@ -31,9 +31,7 @@ class FactLabelTests(unittest.TestCase):
                             "status": "active",
                             "revision": 1,
                             "tier": "recent",
-                            "sources": [
-                                {"chapter_number": 3, "quote": "一张照片"}
-                            ],
+                            "sources": [{"chapter_number": 3, "quote": "一张照片"}],
                         }
                     }
                 },
