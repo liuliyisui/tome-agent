@@ -2790,4 +2790,63 @@
   color: var(--ink-soft);
 }
 
+/* 3.5.6 Frontend screenshots */
+.ui-shot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ui-shot {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.44);
+  box-shadow: 0 10px 26px rgba(31, 48, 38, 0.04);
+}
+
+.ui-shot img {
+  display: block;
+  width: 100%;
+  height: 210px;
+  object-fit: contain;
+  object-position: top center;
+  background: var(--paper-2);
+}
+
+.ui-shot-cap {
+  padding: 8px 11px 9px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.ui-shot-cap b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.ui-shot-cap span {
+  display: block;
+  margin-top: 2px;
+  font-size: 8.5px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.ui-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 11px;
+  padding: 8px 12px;
+  border-left: 2px solid var(--gold);
+  background: var(--paper-2);
+  font-family: var(--mono);
+  font-size: 8.4px;
+  color: var(--sage-deep);
+}
+
+
 

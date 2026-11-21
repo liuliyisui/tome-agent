@@ -1205,29 +1205,31 @@ layout: default
 
 <div class="rule"></div>
 
-<div class="ux-grid">
-  <div class="ux-card">
-    <div class="ux-top"><span class="ux-no">01</span><span class="tag">技术</span></div>
-    <div class="ux-title">Vue runtime-only</div>
-    <div class="ux-text">Vue 3.5.44 + 原生 HTML/CSS/JS；仓库内置运行时，无 CDN、无前端构建链。</div>
+<div class="ui-shot-grid">
+  <div class="ui-shot">
+    <img src="/frontend-home.png" alt="首页">
+    <div class="ui-shot-cap"><b>首页</b><span>品牌入口与开始写作</span></div>
   </div>
-  <div class="ux-card">
-    <div class="ux-top"><span class="ux-no">02</span><span class="tag">页面</span></div>
-    <div class="ux-title">五个工作区</div>
-    <div class="ux-text">书架、文风与费用、生成、编辑与复查、导出；动作与用户故事一一对应。</div>
+  <div class="ui-shot">
+    <img src="/frontend-library.png" alt="书架">
+    <div class="ui-shot-cap"><b>书架</b><span>作品列表、空状态与新建入口</span></div>
   </div>
-  <div class="ux-card">
-    <div class="ux-top"><span class="ux-no">03</span><span class="tag">交互</span></div>
-    <div class="ux-title">任务可查询</div>
-    <div class="ux-text">生成任务通过 job id 查询；刷新不打断后台；错误详情可定位，导出 Markdown。</div>
+  <div class="ui-shot">
+    <img src="/frontend-login.png" alt="登录">
+    <div class="ui-shot-cap"><b>登录</b><span>账号进入工作区，Key 登录后配置</span></div>
   </div>
 </div>
 
-<div class="ux-foot">与后端同源部署，静态文件由 Python 服务或 Nginx 提供。</div>
+<div class="ui-facts">
+  <span>Vue 3.5.44 runtime-only</span>
+  <span>无前端构建链</span>
+  <span>同源部署</span>
+  <span>job id 查询任务</span>
+</div>
 
 <div class="bottom-note">来源：code/frontend/ · code/backend/inf_backend/web.py · README「核心功能」</div>
 
-<!-- 3.5.6 前端：Vue runtime-only、五个工作区与任务查询。 -->
+<!-- 3.5.6 前端：首页、书架、登录三张实拍图。 -->
 
 ---
 layout: default
@@ -1242,7 +1244,7 @@ layout: default
 <div class="quality-stats">
   <div class="q-stat"><div class="q-num">256</div><div class="q-label">测试通过</div></div>
   <div class="q-stat"><div class="q-num">0</div><div class="q-label">失败 / 跳过</div></div>
-  <div class="q-stat"><div class="q-num">61.01%</div><div class="q-label">核心逻辑覆盖率</div></div>
+  <div class="q-stat"><div class="q-num">67.52%</div><div class="q-label">核心 8 模块覆盖率</div></div>
   <div class="q-stat"><div class="q-num">4</div><div class="q-label">类 CI job</div></div>
 </div>
 
@@ -1263,7 +1265,7 @@ layout: default
   </div>
 </div>
 
-<div class="quality-note">最近一次完整记录：tests/TEST_REPORT.md（2026-10-24）——256 项通过、0 失败、0 跳过；含真实模型端到端生成与真实 PostgreSQL 验证。</div>
+<div class="quality-note">最近一次完整记录：tests/TEST_REPORT.md（2026-10-24）——256 项通过、0 失败、0 跳过；含真实模型端到端生成与真实 PostgreSQL 验证。覆盖率采用“单元 + 引擎回归”口径：核心 8 模块 67.52%，语句 71.26% / 分支 59.05%，高于 60% 门禁。</div>
 
 <div class="bottom-note">来源：tests/TEST_REPORT.md · .github/workflows/tests.yml · docs/software/CODE_QUALITY_FIXES.md</div>
 
