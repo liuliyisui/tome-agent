@@ -309,9 +309,37 @@ button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: no
 .provider-item:enabled:hover, .work-card:enabled:hover { background: var(--hover-background); border-color: var(--focus-ring); box-shadow: var(--interaction-shadow); }
 .provider-item.active:enabled:hover { background: var(--active-background); box-shadow: inset 3px 0 0 var(--green); }
 .skill-option { min-height: 36px; padding: 6px 9px; border: 1px solid transparent; border-radius: 5px; margin-bottom: 4px; color: var(--ink); }
-.skill-option:hover, .theme-options label:hover { background: var(--hover-background); border-color: var(--control-border); }
-.skill-option:has(input:checked), .theme-options label:has(input:checked) { background: var(--active-background); border-color: var(--focus-ring); color: var(--selected-ink); }
-.skill-option:focus-within, .theme-options label:focus-within { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.skill-option:hover { border-color: var(--control-border); }
+.theme-options label:hover { background: var(--hover-background); border-color: var(--control-border); }
+.skill-option:has(input:checked) { border-color: var(--focus-ring); color: var(--selected-ink); }
+.theme-options label:has(input:checked) { background: var(--active-background); border-color: var(--focus-ring); color: var(--selected-ink); }
+.skill-option:has(input:focus-visible), .theme-options label:focus-within { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.skill-option input:focus { outline: none; box-shadow: none; }
+:root[data-theme="dark"] .skill-option:has(input:checked) {
+  border-color: #515865;
+  color: var(--ink);
+}
+:root[data-theme="dark"] .skill-option:hover:has(input:checked:enabled) {
+  border-color: #656f82;
+}
+:root[data-theme="dark"] .skill-option input { accent-color: #8998b3; }
+:root[data-theme="dark"] :is(.style-panel, .create-style) input[type="file"] {
+  color: var(--text-secondary);
+}
+:root[data-theme="dark"] :is(.style-panel, .create-style) input[type="file"]::file-selector-button {
+  padding: 4px 8px;
+  margin-inline-end: 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--well-background);
+  color: var(--ink);
+  font: inherit;
+}
+:root[data-theme="dark"] :is(.style-panel, .create-style) input[type="file"]:enabled:hover::file-selector-button {
+  background: var(--hover-background);
+  border-color: var(--control-border);
+  cursor: pointer;
+}
 .form-hint, .muted, .chapter-position, .fact small, .fact-source summary, #fact-topic-summary { font-size: 12px; }
 .book-item small, .connection { font-size: 12px; }
 .eyebrow, .section-label span, .tiny-label { font-size: 11px !important; }
@@ -408,11 +436,16 @@ button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: no
 }
 .message-info{--message-text:var(--info-text);--message-background:var(--info-background);--message-border:var(--info-border)}
 .message-success{--message-text:var(--success-text);--message-background:var(--success-background);--message-border:var(--success-border)}
+.message-progress{--message-text:#4d4640;--message-background:#f1eee8;--message-border:#baafa1}
+:root[data-theme="dark"] .message-progress{--message-text:var(--ink);--message-background:var(--well-background);--message-border:var(--control-border)}
 .message-warning{--message-text:var(--warning-text);--message-background:var(--warning-message-background);--message-border:var(--warning-border)}
 .message-danger,.message-error{--message-text:var(--danger-text);--message-background:var(--danger-background);--message-border:var(--danger-border)}
 .status-message{padding:11px 14px;border:1px solid var(--message-border);border-left:3px solid var(--message-border);border-radius:6px;background:var(--message-background);color:var(--message-text);font-size:13px;line-height:1.75;overflow-wrap:anywhere}
 .message-label{display:inline-block;margin-right:8px;font-weight:600;color:inherit}
 .job-status.status-message{white-space:normal}
+#chapter-body.generation-placeholder{display:grid;place-items:center}
+#generation-progress{width:min(100%,34rem);margin:0 auto 18px;text-align:center}
+.generation-placeholder #generation-progress{margin:0}
 .privacy-review.status-message h3{color:var(--message-text)}
 .official-price-panel p.warning{color:var(--warning-text)}
 .warning{color:var(--warning-text)}
@@ -490,9 +523,9 @@ body.editor-open{overflow:hidden}
 .chapter-picker-chevron{flex-shrink:0;color:var(--text-secondary);transition:transform .15s ease}
 .chapter-picker-trigger[aria-expanded=true] .chapter-picker-chevron{transform:rotate(180deg)}
 .chapter-picker .chapter-step{padding:8px;font-size:12px}
-.chapter-directory{position:fixed;inset:auto;margin:0;z-index:1000;width:480px;max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:14px;color:var(--ink);background:var(--panel-background);border:1px solid var(--control-border);border-radius:10px;box-shadow:0 10px 32px #0003;overflow:auto}
+.chapter-directory{position:fixed;inset:auto;margin:0;z-index:1000;width:480px;max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:14px;color:var(--ink);background:var(--panel-background, #fcfbf7);border:1px solid var(--control-border);border-radius:10px;box-shadow:0 10px 32px #0003;overflow:auto}
 .chapter-directory>label{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;font-weight:600;font-size:13px}.chapter-directory>label span{font-size:12px;color:var(--text-secondary);font-weight:400}
-.chapter-directory input,#memory-filter{width:100%;box-sizing:border-box;padding:9px 11px;font:inherit;font-size:12px;background:var(--field-background);color:var(--ink);border:1px solid var(--control-border);border-radius:5px}
+.chapter-directory input,#memory-filter{width:100%;box-sizing:border-box;padding:9px 11px;font:inherit;font-size:12px;background:var(--field-background, #fdfcf8);color:var(--ink);border:1px solid var(--control-border);border-radius:5px}
 .chapter-directory-list{max-height:min(340px,45dvh);overflow:auto;margin-top:10px;overscroll-behavior:contain}
 .chapter-directory-list button{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:10px;text-align:left;color:var(--ink);background:transparent;border:1px solid transparent;border-radius:5px;font-size:13px}
 .chapter-number{flex-shrink:0;min-width:50px;color:var(--text-secondary);font-size:12px}.chapter-name{flex:1;min-width:0;overflow-wrap:anywhere}

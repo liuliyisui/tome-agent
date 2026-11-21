@@ -1,0 +1,17 @@
+{
+  "title": "雨夜便利店",
+  "goal": "写一个约600字的中文现实短篇：雨夜便利店，店员与迟到的顾客因为一把伞产生短暂误会，最后和解。只写一个完整场景，不展开长篇。",
+  "constraints": [
+    "现实背景，无超自然。",
+    "用完整场景和对话推进，避免梗概。",
+    "人物、时间与物品状态前后一致。"
+  ],
+  "chapters": 1,
+  "max_chapters": 1,
+  "target_han_chars": 600,
+  "endpoint": "https://api.deepseek.com/chat/completions",
+  "model": "deepseek-flash",
+  "input_usd_per_million": 0.3,
+  "output_usd_per_million": 1.2,
+  "thinking_enabled": false
+}

@@ -1,0 +1,948 @@
+{
+  "at": "2026-10-24T14:55:05.800527+08:00",
+  "role": "planner",
+  "system": "你是INF规划智能体。根据总纲、约束和已有状态，只规划下一章；future_updates只能局部修改尚未写作的后续章节。输出JSON：number,title,brief,future_updates（每项number,title,brief）。不要把计划当已发生事实。当前事实的详细来源保存在本地记忆库，输入保留完整当前值，不把来源省略当作事实缺失。格式修复时仅修输出契约，不重写正文或剧情。先输出scenes事件方案并声明前提与状态变化，不写章节正文。遵循event_first_contract；event_plan_state是事件方案状态，retrieved_memory是来源记忆。使用operation目录；引用只用reference_selection_contract选择器，不编写编号。",
+  "payload": {
+    "goal": "写一个约600字的中文现实短篇：雨夜便利店，店员与迟到的顾客因为一把伞产生短暂误会，最后和解。只写一个完整场景，不展开长篇。",
+    "constraints": [
+      "现实背景，无超自然。",
+      "用完整场景和对话推进，避免梗概。",
+      "人物、时间与物品状态前后一致。"
+    ],
+    "chapter_number": 1,
+    "instruction": "连续草稿目标600汉字，名义1章，现在第1章。已写0汉字，剩余篇幅600汉字，须分配给剩余1章。本章约600汉字，用完整场景、对话推进，不用梗概，不重复凑字数。根据已写事实局部调整后续计划，保持人物和世界因果一致；待修章节不假称已通过。名义最后一章解决主要冲突；如需补章，补与结局相容的场景，不推翻前文。",
+    "recent_chapters": [],
+    "planned_next_chapters": [],
+    "historical_memory": {
+      "items": [],
+      "omitted_ids": [],
+      "bytes": 2,
+      "budget_bytes": 4000,
+      "use_rule": "Historical context, never current factual authority"
+    },
+    "source_evidence": [],
+    "memory_coverage": {
+      "processed_through": 0,
+      "selected_ids": [],
+      "omitted_ids": [],
+      "source_evidence_omitted": [],
+      "pending_chapters": [],
+      "processing_complete": true,
+      "prose_storage_complete": true,
+      "event_alignment_complete": true
+    },
+    "calculation_contract": {
+      "version": 1,
+      "instruction": "时间运算由程序完成，不心算。调用方可输出可选time_calculations数组，具体角色权限由写作流程规定。每项id(英文标识)、kind(interval/duration/advance)，interval用start/end，duration用opened/closed，advance用actual/scheduled；时间为HH:MM或YYYY-MM-DDTHH:MM。纯钟点跨日必须显式day_offset=1，否则不猜次日；同日可省略。不要输出计算结果。正文计算所得分钟数使用[[time:标识]]，程序替换成准确的“几分钟”。可用[[time:标识.start]]和[[time:标识.end]]引用程序绑定的起止时刻。已提供computed_times的输入不得改动；修改时间需用新id重新计算。明确的相隔、间隔、耗时、合计分钟数及“这几分钟”等回指须使用绑定，不要把接电间隔当提前量，提前量必须另给scheduled，持续时间必须有closed。独立的计划等待时长、文书引述中的数字不是自动推算出的结果；不宣称本工具验证其真实性。模糊或相对约定（如后天傍晚、天黑前）直接保留在事件statement及计划value中，不是计算请求。没有精确起止输入时time_calculations留空，不猜钟点，不造新kind，不提交expression/result。 Only planner declares time_calculations before event freeze. Writer can use frozen tokens but cannot add or change calculation inputs.",
+      "request_schemas": {
+        "interval": {
+          "required": [
+            "id",
+            "kind",
+            "start",
+            "end"
+          ],
+          "optional": [
+            "day_offset"
+          ],
+          "kind": "interval",
+          "input_format": "HH:MM or YYYY-MM-DDTHH:MM",
+          "example": {
+            "id": "example_time",
+            "kind": "interval",
+            "start": "16:41",
+            "end": "16:45"
+          }
+        },
+        "duration": {
+          "required": [
+            "id",
+            "kind",
+            "opened",
+            "closed"
+          ],
+          "optional": [
+            "day_offset"
+          ],
+          "kind": "duration",
+          "input_format": "HH:MM or YYYY-MM-DDTHH:MM",
+          "example": {
+            "id": "example_time",
+            "kind": "duration",
+            "opened": "16:41",
+            "closed": "16:45"
+          }
+        },
+        "advance": {
+          "required": [
+            "id",
+            "kind",
+            "actual",
+            "scheduled"
+          ],
+          "optional": [
+            "day_offset"
+          ],
+          "kind": "advance",
+          "input_format": "HH:MM or YYYY-MM-DDTHH:MM",
+          "example": {
+            "id": "example_time",
+            "kind": "advance",
+            "actual": "16:41",
+            "scheduled": "16:45"
+          }
+        }
+      }
+    },
+    "quantity_policy": "数值以quantity_sources为来源目录。复述同一数值时优先使用目录token，程序按原表述展开。目录保留来源、单位、近似和范围；“约四十分钟”只能仍作“约四十分钟”，不能自行细化成“三十八分钟”。不同来源的量不能合并成一次测量，不把传闻或计划的量写成已证实结果。目录没有所需精确数值时保持来源的模糊表述，或不写该数值；新计算应回到规划阶段提供精确输入。自由描写不补造关键日期、时长、金额、页数和人数。此目录用于生成，不是对已有资料真实性的认证。",
+    "unprojected_chapters": [],
+    "event_first_contract": {
+      "version": 2,
+      "instruction": "scenes每项必须purpose/participants/beats；beats每项必须statement/assertion_scope/requires/changes。requires和changes无内容填[]。不填id。引用遵循reference_selection_contract，changes用state_record_contract的operation及字段。",
+      "assertion_scopes": {
+        "performed_action": "实际动作",
+        "reported_claim": "人物转述或传闻",
+        "proposed_action": "提议或计划"
+      },
+      "scope_examples": [
+        "当场约定明天取件：动作performed_action，安排planned_intention；设想尚未执行的明天取件才是proposed_action。",
+        "说话/听到/展示实际发生用performed_action；内容未核实仍须character_belief。reported_claim不可建立客观事实。"
+      ]
+    },
+    "state_record_contract": {
+      "version": 2,
+      "instruction": "operation选操作，record_kind是只读类别；按目录字段填值。新编号由程序生成，引用仅用reference_selection_contract选择器，属性显示名自由。",
+      "schemas": {
+        "revise_intention": {
+          "required": [
+            "operation",
+            "intention_ref",
+            "new_value"
+          ],
+          "result_record_kind": "pending_intention",
+          "id_policy": "generated_operation"
+        },
+        "establish_fact": {
+          "required": [
+            "operation",
+            "subject",
+            "property_name",
+            "value",
+            "fact_class"
+          ],
+          "result_record_kind": "fact_record",
+          "operational_values": {
+            "fact_class": [
+              "current_state",
+              "fixed_fact",
+              "character_belief",
+              "planned_intention"
+            ]
+          }
+        },
+        "change_fact_value": {
+          "required": [
+            "operation",
+            "fact_ref",
+            "new_value"
+          ],
+          "result_record_kind": "fact_record",
+          "id_policy": "generated_operation",
+          "reference_contract": {
+            "fact_ref": {
+              "instruction": "Only a mutable fact value can transition. Object IDs identify evidence carriers, not location/custody fact records. Represent descriptive location/custody as a separate fact; do not change object form or provenance to express a move.",
+              "record_kinds": [
+                "fact_record"
+              ]
+            }
+          }
+        },
+        "record_character_knowledge": {
+          "required": [
+            "operation",
+            "character_id",
+            "learned_record_ref",
+            "source_action_ref"
+          ],
+          "result_record_kind": "character_knowledge"
+        },
+        "record_dated_event": {
+          "required": [
+            "operation",
+            "story_date",
+            "timeline_relation",
+            "involved_object_refs",
+            "follows_dated_event_refs"
+          ],
+          "result_record_kind": "dated_event_record",
+          "operational_values": {
+            "timeline_relation": [
+              "current_timeline",
+              "historical_timeline"
+            ]
+          }
+        },
+        "register_evidence_object": {
+          "required": [
+            "operation",
+            "label",
+            "carrier_form",
+            "availability"
+          ],
+          "optional": [
+            "created_by_action_ref",
+            "provenance_description",
+            "derived_from_object_ref",
+            "dated_event_ref"
+          ],
+          "result_record_kind": "evidence_object",
+          "operational_values": {
+            "carrier_form": [
+              "original",
+              "photo",
+              "film",
+              "index",
+              "copy"
+            ],
+            "availability": [
+              "missing",
+              "available"
+            ]
+          }
+        },
+        "record_observation": {
+          "required": [
+            "operation",
+            "observed_object_ref",
+            "observation_method",
+            "evidence_carrier_ref"
+          ],
+          "result_record_kind": "observation_record",
+          "operational_values": {
+            "observation_method": [
+              "direct",
+              "photo",
+              "film",
+              "index"
+            ]
+          },
+          "reference_contract": {
+            "evidence_carrier_ref": {
+              "instruction": "Directly viewing the named object (including a print/photo) uses null. Indirect viewing of another object requires a distinct carrier derived from that object.",
+              "record_kinds": [
+                "evidence_object"
+              ]
+            },
+            "observed_object_ref": {
+              "allowed_record_kinds": [
+                "evidence_object"
+              ]
+            }
+          }
+        },
+        "record_receipt": {
+          "required": [
+            "operation",
+            "signer_ids",
+            "attendee_without_signature_ids",
+            "attendee_ids"
+          ],
+          "result_record_kind": "receipt_record"
+        },
+        "resolve_person_identity": {
+          "required": [
+            "operation",
+            "unidentified_person_id",
+            "identified_person_id"
+          ],
+          "result_record_kind": "person_identity_record"
+        },
+        "record_check_progress": {
+          "required": [
+            "operation",
+            "check_pass_id",
+            "completed_count",
+            "total_count"
+          ],
+          "optional": [
+            "new_pass_reason_quote"
+          ],
+          "result_record_kind": "check_progress_record"
+        }
+      }
+    },
+    "interface_contract_version": 2,
+    "memory_bank_revision": 0,
+    "event_plan_state": {
+      "version": 1,
+      "present_cursor": null,
+      "records": [],
+      "omitted_count": 0,
+      "scope": "Selected typed writing constraints; not a fourth memory bank or complete semantic certification"
+    },
+    "reference_choices": [],
+    "reference_selection_contract": "编号由程序生成。scenes和beats不要填id，新建记录不要填record_id。已有引用选{record_choice:N}（reference_choices中从1开始的位置），或原样选该目录的一项；不得填写目录外编号。本章动作引用用{action_position:N}（所有场景动作按顺序从1计数）；source_action_ref用{current_action:true}指当前动作。本章新记录引用用{record_position:[场景序号,动作序号,变更序号]}，均从1开始。requires各项及所有_ref字段都用这些选择器，引用列表同样如此；null仍可用于无来源的直接观察。引用须符合schema指定的记录类别，对应索引见reference_choices_by_kind；没有物件时先register_evidence_object，用record_position引用，不能用事实记录代替物件。选择位置不会证明事件已发生，程序仍检查定义顺序、类型及版本。",
+    "reference_choices_by_kind": {},
+    "reference_protocol": "choices_v1",
+    "retrieved_memory": [],
+    "memory_context_status": "Memory committed through chapter 0; pending chapters []. Pending chapter changes may be absent from memory. Read recent prose for newer events; do not treat older memory or historical quotes as unconditionally current authority. event_plan_state is simulated plan state. prose_excerpt quotes saved text, not current-world fact declarations. Memory IDs are never state preconditions; select references via reference_selection_contract.",
+    "content_unchecked_chapters": [],
+    "event_preflight_error": {
+      "error": "Event preflight rejected 6 item(s): Fact identity already exists; reuse its ID and an explicit transition",
+      "details": {
+        "code": "EVENT_PREFLIGHT_ERRORS",
+        "issues": [
+          {
+            "scene_id": "s0002",
+            "beat_id": "a0005",
+            "change_index": 0,
+            "path": "scenes[1].beats[2].changes[0]",
+            "record_id": "n0001r0007",
+            "field": null,
+            "error": "Fact identity already exists; reuse its ID and an explicit transition",
+            "proposed": {
+              "subject": "小周",
+              "value": "追出店门，怀疑林晚拿错伞，语气急促",
+              "operation": "establish_fact",
+              "record_id": "n0001r0007",
+              "property_name": "当前状态",
+              "fact_class": "current_state",
+              "quote": "小周抓起门边的湿伞追出门，喊住林晚，语气急促地问她为什么拿自己的伞。林晚回头，一脸茫然。"
+            },
+            "prior": {
+              "subject": "小周",
+              "value": "在便利店值夜班，正在整理货架",
+              "record_kind": "fact_record",
+              "record_id": "n0001r0001",
+              "property_name": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+              "fact_class": "current_state",
+              "quote": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。",
+              "chapter": 1,
+              "source_sha256": "ea0bf04be1cf2f0c5d809c6b428f2579e773d117d201da116508f9706e19e080",
+              "record_revision": 1,
+              "attribute_label": "当前状态",
+              "recorded_by_action_ref": "c0001.a0001",
+              "source_stage": "canonical_event"
+            },
+            "cause_details": {
+              "code": "WRITING_CONTINUITY_CONFLICT",
+              "proposed": {
+                "subject": "小周",
+                "value": "追出店门，怀疑林晚拿错伞，语气急促",
+                "operation": "establish_fact",
+                "record_id": "n0001r0007",
+                "property_name": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+                "fact_class": "current_state",
+                "quote": "小周抓起门边的湿伞追出门，喊住林晚，语气急促地问她为什么拿自己的伞。林晚回头，一脸茫然。"
+              },
+              "prior": {
+                "subject": "小周",
+                "value": "在便利店值夜班，正在整理货架",
+                "record_kind": "fact_record",
+                "record_id": "n0001r0001",
+                "property_name": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+                "fact_class": "current_state",
+                "quote": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。",
+                "chapter": 1,
+                "source_sha256": "ea0bf04be1cf2f0c5d809c6b428f2579e773d117d201da116508f9706e19e080",
+                "record_revision": 1,
+                "attribute_label": "当前状态",
+                "recorded_by_action_ref": "c0001.a0001",
+                "source_stage": "canonical_event"
+              },
+              "instruction": "只修本章相关段落及结构化记录；不改既有事实，不删除无关正确内容。"
+            },
+            "source_event": null,
+            "learner": null,
+            "expected_participants": null,
+            "reference_candidates": null,
+            "replacement_operation_example": {
+              "operation": "change_fact_value",
+              "fact_ref": "fact_record:n0001r0001",
+              "new_value": "追出店门，怀疑林晚拿错伞，语气急促"
+            },
+            "repair_guidance": "同一主体同一属性已有稳定编号，替换本条新增操作为示例的change_fact_value。new_value须由你确认完整当前值；累计材料须保留仍持有的旧材料，不能把新增材料误当旧材料已丢失。更新后后续引用沿用fact_ref，不沿用被拒的新编号。程序不自动猜测累计或替换。"
+          },
+          {
+            "scene_id": "s0002",
+            "beat_id": "a0005",
+            "change_index": 1,
+            "path": "scenes[1].beats[2].changes[1]",
+            "record_id": "n0001r0008",
+            "field": null,
+            "error": "Fact identity already exists; reuse its ID and an explicit transition",
+            "proposed": {
+              "subject": "林晚",
+              "value": "被小周喊住，对伞的归属感到茫然",
+              "operation": "establish_fact",
+              "record_id": "n0001r0008",
+              "property_name": "当前状态",
+              "fact_class": "current_state",
+              "quote": "小周抓起门边的湿伞追出门，喊住林晚，语气急促地问她为什么拿自己的伞。林晚回头，一脸茫然。"
+            },
+            "prior": {
+              "subject": "林晚",
+              "value": "刚进便利店，携带一把湿伞，选购水和饼干",
+              "record_kind": "fact_record",
+              "record_id": "n0001r0003",
+              "property_name": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+              "fact_class": "current_state",
+              "quote": "林晚推门进店，收起湿漉漉的伞，在货架间快速拿了一瓶水和一包饼干。",
+              "chapter": 1,
+              "source_sha256": "496b9c30b67f0d1d7c7423d0b2dbee8f807eb3e3213742209c9b3a44ef733d47",
+              "record_revision": 1,
+              "attribute_label": "当前状态",
+              "recorded_by_action_ref": "c0001.a0002",
+              "source_stage": "canonical_event"
+            },
+            "cause_details": {
+              "code": "WRITING_CONTINUITY_CONFLICT",
+              "proposed": {
+                "subject": "林晚",
+                "value": "被小周喊住，对伞的归属感到茫然",
+                "operation": "establish_fact",
+                "record_id": "n0001r0008",
+                "property_name": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+                "fact_class": "current_state",
+                "quote": "小周抓起门边的湿伞追出门，喊住林晚，语气急促地问她为什么拿自己的伞。林晚回头，一脸茫然。"
+              },
+              "prior": {
+                "subject": "林晚",
+                "value": "刚进便利店，携带一把湿伞，选购水和饼干",
+                "record_kind": "fact_record",
+                "record_id": "n0001r0003",
+                "property_name": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+                "fact_class": "current_state",
+                "quote": "林晚推门进店，收起湿漉漉的伞，在货架间快速拿了一瓶水和一包饼干。",
+                "chapter": 1,
+                "source_sha256": "496b9c30b67f0d1d7c7423d0b2dbee8f807eb3e3213742209c9b3a44ef733d47",
+                "record_revision": 1,
+                "attribute_label": "当前状态",
+                "recorded_by_action_ref": "c0001.a0002",
+                "source_stage": "canonical_event"
+              },
+              "instruction": "只修本章相关段落及结构化记录；不改既有事实，不删除无关正确内容。"
+            },
+            "source_event": null,
+            "learner": null,
+            "expected_participants": null,
+            "reference_candidates": null,
+            "replacement_operation_example": {
+              "operation": "change_fact_value",
+              "fact_ref": "fact_record:n0001r0003",
+              "new_value": "被小周喊住，对伞的归属感到茫然"
+            },
+            "repair_guidance": "同一主体同一属性已有稳定编号，替换本条新增操作为示例的change_fact_value。new_value须由你确认完整当前值；累计材料须保留仍持有的旧材料，不能把新增材料误当旧材料已丢失。更新后后续引用沿用fact_ref，不沿用被拒的新编号。程序不自动猜测累计或替换。"
+          },
+          {
+            "scene_id": "s0003",
+            "beat_id": "a0006",
+            "change_index": 0,
+            "path": "scenes[2].beats[0].changes[0]",
+            "record_id": "n0001r0009",
+            "field": null,
+            "error": "Fact identity already exists; reuse its ID and an explicit transition",
+            "proposed": {
+              "subject": "林晚",
+              "value": "已归还小周的伞，自己的湿伞仍在小周手里",
+              "operation": "establish_fact",
+              "record_id": "n0001r0009",
+              "property_name": "持有物品",
+              "fact_class": "current_state",
+              "quote": "林晚低头看了看手中的伞，又看了看小周手里的湿伞，恍然大悟，连声说对不起，把伞递还给小周。"
+            },
+            "prior": {
+              "subject": "林晚",
+              "value": "误拿了一把不属于自己的伞（小周的伞），自己的湿伞留在便利店门边",
+              "record_kind": "fact_record",
+              "record_id": "n0001r0005",
+              "property_name": "field_8d2052b42b309654dbc9973742af68bc",
+              "fact_class": "current_state",
+              "quote": "林晚出门时顺手从门边拿起一把伞撑开，走进雨中。小周随后发现自己的伞不见了，门边只剩林晚那把湿伞。",
+              "chapter": 1,
+              "source_sha256": "8a69290127b6cb860f0c942c1e15be9c61c3330a70b74bb9eb57a174e9c2a79c",
+              "record_revision": 1,
+              "attribute_label": "持有物品",
+              "recorded_by_action_ref": "c0001.a0004",
+              "source_stage": "canonical_event"
+            },
+            "cause_details": {
+              "code": "WRITING_CONTINUITY_CONFLICT",
+              "proposed": {
+                "subject": "林晚",
+                "value": "已归还小周的伞，自己的湿伞仍在小周手里",
+                "operation": "establish_fact",
+                "record_id": "n0001r0009",
+                "property_name": "field_8d2052b42b309654dbc9973742af68bc",
+                "fact_class": "current_state",
+                "quote": "林晚低头看了看手中的伞，又看了看小周手里的湿伞，恍然大悟，连声说对不起，把伞递还给小周。"
+              },
+              "prior": {
+                "subject": "林晚",
+                "value": "误拿了一把不属于自己的伞（小周的伞），自己的湿伞留在便利店门边",
+                "record_kind": "fact_record",
+                "record_id": "n0001r0005",
+                "property_name": "field_8d2052b42b309654dbc9973742af68bc",
+                "fact_class": "current_state",
+                "quote": "林晚出门时顺手从门边拿起一把伞撑开，走进雨中。小周随后发现自己的伞不见了，门边只剩林晚那把湿伞。",
+                "chapter": 1,
+                "source_sha256": "8a69290127b6cb860f0c942c1e15be9c61c3330a70b74bb9eb57a174e9c2a79c",
+                "record_revision": 1,
+                "attribute_label": "持有物品",
+                "recorded_by_action_ref": "c0001.a0004",
+                "source_stage": "canonical_event"
+              },
+              "instruction": "只修本章相关段落及结构化记录；不改既有事实，不删除无关正确内容。"
+            },
+            "source_event": null,
+            "learner": null,
+            "expected_participants": null,
+            "reference_candidates": null,
+            "replacement_operation_example": {
+              "operation": "change_fact_value",
+              "fact_ref": "fact_record:n0001r0005",
+              "new_value": "已归还小周的伞，自己的湿伞仍在小周手里"
+            },
+            "repair_guidance": "同一主体同一属性已有稳定编号，替换本条新增操作为示例的change_fact_value。new_value须由你确认完整当前值；累计材料须保留仍持有的旧材料，不能把新增材料误当旧材料已丢失。更新后后续引用沿用fact_ref，不沿用被拒的新编号。程序不自动猜测累计或替换。"
+          },
+          {
+            "scene_id": "s0003",
+            "beat_id": "a0007",
+            "change_index": 0,
+            "path": "scenes[2].beats[1].changes[0]",
+            "record_id": "n0001r0011",
+            "field": null,
+            "error": "Fact identity already exists; reuse its ID and an explicit transition",
+            "proposed": {
+              "subject": "小周",
+              "value": "向林晚道歉，承认自己太着急",
+              "operation": "establish_fact",
+              "record_id": "n0001r0011",
+              "property_name": "当前状态",
+              "fact_class": "current_state",
+              "quote": "小周有些不好意思，把湿伞还给林晚，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。"
+            },
+            "prior": {
+              "subject": "小周",
+              "value": "在便利店值夜班，正在整理货架",
+              "record_kind": "fact_record",
+              "record_id": "n0001r0001",
+              "property_name": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+              "fact_class": "current_state",
+              "quote": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。",
+              "chapter": 1,
+              "source_sha256": "ea0bf04be1cf2f0c5d809c6b428f2579e773d117d201da116508f9706e19e080",
+              "record_revision": 1,
+              "attribute_label": "当前状态",
+              "recorded_by_action_ref": "c0001.a0001",
+              "source_stage": "canonical_event"
+            },
+            "cause_details": {
+              "code": "WRITING_CONTINUITY_CONFLICT",
+              "proposed": {
+                "subject": "小周",
+                "value": "向林晚道歉，承认自己太着急",
+                "operation": "establish_fact",
+                "record_id": "n0001r0011",
+                "property_name": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+                "fact_class": "current_state",
+                "quote": "小周有些不好意思，把湿伞还给林晚，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。"
+              },
+              "prior": {
+                "subject": "小周",
+                "value": "在便利店值夜班，正在整理货架",
+                "record_kind": "fact_record",
+                "record_id": "n0001r0001",
+                "property_name": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+                "fact_class": "current_state",
+                "quote": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。",
+                "chapter": 1,
+                "source_sha256": "ea0bf04be1cf2f0c5d809c6b428f2579e773d117d201da116508f9706e19e080",
+                "record_revision": 1,
+                "attribute_label": "当前状态",
+                "recorded_by_action_ref": "c0001.a0001",
+                "source_stage": "canonical_event"
+              },
+              "instruction": "只修本章相关段落及结构化记录；不改既有事实，不删除无关正确内容。"
+            },
+            "source_event": null,
+            "learner": null,
+            "expected_participants": null,
+            "reference_candidates": null,
+            "replacement_operation_example": {
+              "operation": "change_fact_value",
+              "fact_ref": "fact_record:n0001r0001",
+              "new_value": "向林晚道歉，承认自己太着急"
+            },
+            "repair_guidance": "同一主体同一属性已有稳定编号，替换本条新增操作为示例的change_fact_value。new_value须由你确认完整当前值；累计材料须保留仍持有的旧材料，不能把新增材料误当旧材料已丢失。更新后后续引用沿用fact_ref，不沿用被拒的新编号。程序不自动猜测累计或替换。"
+          },
+          {
+            "scene_id": "s0003",
+            "beat_id": "a0007",
+            "change_index": 1,
+            "path": "scenes[2].beats[1].changes[1]",
+            "record_id": "n0001r0012",
+            "field": null,
+            "error": "Fact identity already exists; reuse its ID and an explicit transition",
+            "proposed": {
+              "subject": "林晚",
+              "value": "接受道歉，表示理解",
+              "operation": "establish_fact",
+              "record_id": "n0001r0012",
+              "property_name": "当前状态",
+              "fact_class": "current_state",
+              "quote": "小周有些不好意思，把湿伞还给林晚，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。"
+            },
+            "prior": {
+              "subject": "林晚",
+              "value": "刚进便利店，携带一把湿伞，选购水和饼干",
+              "record_kind": "fact_record",
+              "record_id": "n0001r0003",
+              "property_name": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+              "fact_class": "current_state",
+              "quote": "林晚推门进店，收起湿漉漉的伞，在货架间快速拿了一瓶水和一包饼干。",
+              "chapter": 1,
+              "source_sha256": "496b9c30b67f0d1d7c7423d0b2dbee8f807eb3e3213742209c9b3a44ef733d47",
+              "record_revision": 1,
+              "attribute_label": "当前状态",
+              "recorded_by_action_ref": "c0001.a0002",
+              "source_stage": "canonical_event"
+            },
+            "cause_details": {
+              "code": "WRITING_CONTINUITY_CONFLICT",
+              "proposed": {
+                "subject": "林晚",
+                "value": "接受道歉，表示理解",
+                "operation": "establish_fact",
+                "record_id": "n0001r0012",
+                "property_name": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+                "fact_class": "current_state",
+                "quote": "小周有些不好意思，把湿伞还给林晚，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。"
+              },
+              "prior": {
+                "subject": "林晚",
+                "value": "刚进便利店，携带一把湿伞，选购水和饼干",
+                "record_kind": "fact_record",
+                "record_id": "n0001r0003",
+                "property_name": "field_82b7cf40b5e63d33ce89e23efe810b5f",
+                "fact_class": "current_state",
+                "quote": "林晚推门进店，收起湿漉漉的伞，在货架间快速拿了一瓶水和一包饼干。",
+                "chapter": 1,
+                "source_sha256": "496b9c30b67f0d1d7c7423d0b2dbee8f807eb3e3213742209c9b3a44ef733d47",
+                "record_revision": 1,
+                "attribute_label": "当前状态",
+                "recorded_by_action_ref": "c0001.a0002",
+                "source_stage": "canonical_event"
+              },
+              "instruction": "只修本章相关段落及结构化记录；不改既有事实，不删除无关正确内容。"
+            },
+            "source_event": null,
+            "learner": null,
+            "expected_participants": null,
+            "reference_candidates": null,
+            "replacement_operation_example": {
+              "operation": "change_fact_value",
+              "fact_ref": "fact_record:n0001r0003",
+              "new_value": "接受道歉，表示理解"
+            },
+            "repair_guidance": "同一主体同一属性已有稳定编号，替换本条新增操作为示例的change_fact_value。new_value须由你确认完整当前值；累计材料须保留仍持有的旧材料，不能把新增材料误当旧材料已丢失。更新后后续引用沿用fact_ref，不沿用被拒的新编号。程序不自动猜测累计或替换。"
+          },
+          {
+            "scene_id": "s0003",
+            "beat_id": "a0008",
+            "change_index": 0,
+            "path": "scenes[2].beats[2].changes[0]",
+            "record_id": "n0001r0013",
+            "field": null,
+            "error": "Fact identity already exists; reuse its ID and an explicit transition",
+            "proposed": {
+              "subject": "林晚",
+              "value": "借得小周的备用伞，自己的湿伞也已取回",
+              "operation": "establish_fact",
+              "record_id": "n0001r0013",
+              "property_name": "持有物品",
+              "fact_class": "current_state",
+              "quote": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。"
+            },
+            "prior": {
+              "subject": "林晚",
+              "value": "误拿了一把不属于自己的伞（小周的伞），自己的湿伞留在便利店门边",
+              "record_kind": "fact_record",
+              "record_id": "n0001r0005",
+              "property_name": "field_8d2052b42b309654dbc9973742af68bc",
+              "fact_class": "current_state",
+              "quote": "林晚出门时顺手从门边拿起一把伞撑开，走进雨中。小周随后发现自己的伞不见了，门边只剩林晚那把湿伞。",
+              "chapter": 1,
+              "source_sha256": "8a69290127b6cb860f0c942c1e15be9c61c3330a70b74bb9eb57a174e9c2a79c",
+              "record_revision": 1,
+              "attribute_label": "持有物品",
+              "recorded_by_action_ref": "c0001.a0004",
+              "source_stage": "canonical_event"
+            },
+            "cause_details": {
+              "code": "WRITING_CONTINUITY_CONFLICT",
+              "proposed": {
+                "subject": "林晚",
+                "value": "借得小周的备用伞，自己的湿伞也已取回",
+                "operation": "establish_fact",
+                "record_id": "n0001r0013",
+                "property_name": "field_8d2052b42b309654dbc9973742af68bc",
+                "fact_class": "current_state",
+                "quote": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。"
+              },
+              "prior": {
+                "subject": "林晚",
+                "value": "误拿了一把不属于自己的伞（小周的伞），自己的湿伞留在便利店门边",
+                "record_kind": "fact_record",
+                "record_id": "n0001r0005",
+                "property_name": "field_8d2052b42b309654dbc9973742af68bc",
+                "fact_class": "current_state",
+                "quote": "林晚出门时顺手从门边拿起一把伞撑开，走进雨中。小周随后发现自己的伞不见了，门边只剩林晚那把湿伞。",
+                "chapter": 1,
+                "source_sha256": "8a69290127b6cb860f0c942c1e15be9c61c3330a70b74bb9eb57a174e9c2a79c",
+                "record_revision": 1,
+                "attribute_label": "持有物品",
+                "recorded_by_action_ref": "c0001.a0004",
+                "source_stage": "canonical_event"
+              },
+              "instruction": "只修本章相关段落及结构化记录；不改既有事实，不删除无关正确内容。"
+            },
+            "source_event": null,
+            "learner": null,
+            "expected_participants": null,
+            "reference_candidates": null,
+            "replacement_operation_example": {
+              "operation": "change_fact_value",
+              "fact_ref": "fact_record:n0001r0005",
+              "new_value": "借得小周的备用伞，自己的湿伞也已取回"
+            },
+            "repair_guidance": "同一主体同一属性已有稳定编号，替换本条新增操作为示例的change_fact_value。new_value须由你确认完整当前值；累计材料须保留仍持有的旧材料，不能把新增材料误当旧材料已丢失。更新后后续引用沿用fact_ref，不沿用被拒的新编号。程序不自动猜测累计或替换。"
+          }
+        ],
+        "instruction": "按公开字段路径及其allowed_values修复；不同字段的枚举不可互换。保留其它正确事件、值和描述，不删除事实绕过检查。",
+        "locator": {
+          "chapter": 1,
+          "scene_id": "s0003",
+          "path": "scenes[2].beats[2]",
+          "beat_id": "a0008",
+          "field": "changes",
+          "change_index": 2
+        },
+        "interface_contract_version": 2
+      },
+      "previous_plan": {
+        "number": 1,
+        "title": "雨夜的伞",
+        "brief": "雨夜便利店，店员小周值班。顾客林晚因避雨迟归，误拿了小周的伞，小周追出误会她是偷伞，两人短暂争执；林晚解释、归还，小周道歉并借给她一把备用伞，和解。",
+        "future_updates": [],
+        "scenes": [
+          {
+            "purpose": "建立雨夜便利店场景，引入店员小周的日常状态与顾客林晚的仓促进店。",
+            "participants": [
+              "小周",
+              "林晚"
+            ],
+            "beats": [
+              {
+                "statement": "小周在便利店柜台后整理货架，窗外雨声密集，店里没有其他顾客。",
+                "assertion_scope": "performed_action",
+                "requires": [],
+                "changes": [
+                  {
+                    "operation": "establish_fact",
+                    "subject": "小周",
+                    "property_name": "当前状态",
+                    "value": "在便利店值夜班，正在整理货架",
+                    "fact_class": "current_state"
+                  },
+                  {
+                    "operation": "establish_fact",
+                    "subject": "便利店",
+                    "property_name": "环境状态",
+                    "value": "雨夜，店内没有其他顾客",
+                    "fact_class": "current_state"
+                  }
+                ]
+              },
+              {
+                "statement": "林晚推门进店，收起湿漉漉的伞，在货架间快速拿了一瓶水和一包饼干。",
+                "assertion_scope": "performed_action",
+                "requires": [],
+                "changes": [
+                  {
+                    "operation": "establish_fact",
+                    "subject": "林晚",
+                    "property_name": "当前状态",
+                    "value": "刚进便利店，携带一把湿伞，选购水和饼干",
+                    "fact_class": "current_state"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "purpose": "林晚结账后匆忙离开，误拿了小周放在门边的伞；小周察觉后追出，引发初步误会。",
+            "participants": [
+              "小周",
+              "林晚"
+            ],
+            "beats": [
+              {
+                "statement": "林晚在柜台结账，小周扫码时提醒她雨大路滑，林晚点头道谢，拎着东西匆匆出门。",
+                "assertion_scope": "performed_action",
+                "requires": [],
+                "changes": [
+                  {
+                    "operation": "establish_fact",
+                    "subject": "林晚",
+                    "property_name": "已购物品",
+                    "value": "一瓶水和一包饼干，已结账",
+                    "fact_class": "current_state"
+                  }
+                ]
+              },
+              {
+                "statement": "林晚出门时顺手从门边拿起一把伞撑开，走进雨中。小周随后发现自己的伞不见了，门边只剩林晚那把湿伞。",
+                "assertion_scope": "performed_action",
+                "requires": [],
+                "changes": [
+                  {
+                    "operation": "establish_fact",
+                    "subject": "林晚",
+                    "property_name": "持有物品",
+                    "value": "误拿了一把不属于自己的伞（小周的伞），自己的湿伞留在便利店门边",
+                    "fact_class": "current_state"
+                  },
+                  {
+                    "operation": "establish_fact",
+                    "subject": "便利店门边",
+                    "property_name": "遗留物品",
+                    "value": "林晚的湿伞",
+                    "fact_class": "current_state"
+                  }
+                ]
+              },
+              {
+                "statement": "小周抓起门边的湿伞追出门，喊住林晚，语气急促地问她为什么拿自己的伞。林晚回头，一脸茫然。",
+                "assertion_scope": "performed_action",
+                "requires": [],
+                "changes": [
+                  {
+                    "operation": "establish_fact",
+                    "subject": "小周",
+                    "property_name": "当前状态",
+                    "value": "追出店门，怀疑林晚拿错伞，语气急促",
+                    "fact_class": "current_state"
+                  },
+                  {
+                    "operation": "establish_fact",
+                    "subject": "林晚",
+                    "property_name": "当前状态",
+                    "value": "被小周喊住，对伞的归属感到茫然",
+                    "fact_class": "current_state"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "purpose": "误会澄清：林晚解释自己只是随手拿错，归还小周的伞；小周意识到错怪对方，道歉并借出备用伞，两人和解。",
+            "participants": [
+              "小周",
+              "林晚"
+            ],
+            "beats": [
+              {
+                "statement": "林晚低头看了看手中的伞，又看了看小周手里的湿伞，恍然大悟，连声说对不起，把伞递还给小周。",
+                "assertion_scope": "performed_action",
+                "requires": [],
+                "changes": [
+                  {
+                    "operation": "establish_fact",
+                    "subject": "林晚",
+                    "property_name": "持有物品",
+                    "value": "已归还小周的伞，自己的湿伞仍在小周手里",
+                    "fact_class": "current_state"
+                  },
+                  {
+                    "operation": "establish_fact",
+                    "subject": "小周",
+                    "property_name": "持有物品",
+                    "value": "拿回自己的伞，同时拿着林晚的湿伞",
+                    "fact_class": "current_state"
+                  }
+                ]
+              },
+              {
+                "statement": "小周有些不好意思，把湿伞还给林晚，说自己太着急，错怪了她。林晚笑笑说没关系，雨太大，谁都会急。",
+                "assertion_scope": "performed_action",
+                "requires": [],
+                "changes": [
+                  {
+                    "operation": "establish_fact",
+                    "subject": "小周",
+                    "property_name": "当前状态",
+                    "value": "向林晚道歉，承认自己太着急",
+                    "fact_class": "current_state"
+                  },
+                  {
+                    "operation": "establish_fact",
+                    "subject": "林晚",
+                    "property_name": "当前状态",
+                    "value": "接受道歉，表示理解",
+                    "fact_class": "current_state"
+                  }
+                ]
+              },
+              {
+                "statement": "小周想起柜台下还有一把备用伞，转身取来递给林晚，说雨一时停不了，这把先借她。林晚犹豫一下接过，道谢后撑伞离开。",
+                "assertion_scope": "performed_action",
+                "requires": [],
+                "changes": [
+                  {
+                    "operation": "establish_fact",
+                    "subject": "林晚",
+                    "property_name": "持有物品",
+                    "value": "借得小周的备用伞，自己的湿伞也已取回",
+                    "fact_class": "current_state"
+                  },
+                  {
+                    "operation": "establish_fact",
+                    "subject": "小周",
+                    "property_name": "备用伞",
+                    "value": "已借给林晚",
+                    "fact_class": "current_state"
+                  },
+                  {
+                    "operation": "establish_fact",
+                    "subject": "林晚",
+                    "property_name": "与店员的关系",
+                    "value": "误会解除，友好告别",
+                    "fact_class": "current_state"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "instruction": "Replan only unwritten events; resolve preconditions before any prose, preserve committed history. Keep the public fields; IDs are program-owned."
+    },
+    "output_contract": {
+      "required": [
+        "number",
+        "title",
+        "brief",
+        "future_updates",
+        "scenes"
+      ],
+      "optional": [
+        "time_calculations",
+        "type"
+      ],
+      "instruction": "输出一个完整JSON对象。future_updates没有变更也必须输出空数组；scenes是本章事件方案，不写正文。"
+    }
+  },
+  "max_output_tokens": 16384,
+  "input_bytes": 33526
+}

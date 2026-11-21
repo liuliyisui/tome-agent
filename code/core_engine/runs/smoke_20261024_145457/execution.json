@@ -1,0 +1,11 @@
+{
+  "execution_mode": "draft_first",
+  "budget_limits": null,
+  "authorization": "User-operated direct command",
+  "network_retries": 0,
+  "review_mode": "tiered_memory",
+  "memory_update_policy": "defer_failures_continue_writing",
+  "writing_mode": "event_first",
+  "story_review_failure_policy": "defer_failures_continue_writing",
+  "resumed": false
+}

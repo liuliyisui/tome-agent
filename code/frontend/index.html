@@ -422,7 +422,7 @@
                   </div>
                   <teleport to="body">
                     <div id="chapter-directory" v-if="state.chapterPickerOpen" class="chapter-directory" popover="manual"
-                      role="region" aria-label="章节目录" v-floating-menu="{anchorId:'chapter-picker-trigger',close:closeChapterPicker}">
+                      role="region" aria-label="章节目录" v-floating-menu="{anchorId:'chapter-picker-trigger',close:closeChapterPicker,matchAnchorWidth:true}">
                       <label for="chapter-filter">跳转章节 <span>{{chapters.length}} 章</span></label>
                       <input id="chapter-filter" type="search" v-model="state.chapterFilter" placeholder="输入章号或章节名称" maxlength="100" @keydown.down.prevent="$event.target.parentElement.querySelector('.chapter-directory-list button')?.focus()" />
                       <div class="chapter-directory-list">
@@ -475,8 +475,17 @@
                       </div>
                     </div>
                   </teleport>
-                  <article id="chapter-body" tabindex="-1" v-show="!state.editor">
-                    <chapter-reader :chapter="chapter" :match="readerMatch"></chapter-reader>
+                  <article id="chapter-body" tabindex="-1" v-show="!state.editor" :class="{'generation-placeholder':running&&!chapter}">
+                    <div
+                      v-if="running"
+                      id="generation-progress"
+                      class="status-message"
+                      :class="jobLevel==='info'?'message-progress':`message-${jobLevel}`"
+                      role="status"
+                    >
+                      <strong class="message-label">{{jobLevel==='info'?'生成中':messageLabels[jobLevel]}}</strong><span>{{jobStatus}}</span>
+                    </div>
+                    <chapter-reader v-if="chapter||!running" :chapter="chapter" :match="readerMatch"></chapter-reader>
                   </article>
                   <writing-notes v-if="chapter&&!state.editor" :key="`${id}:${chapter.number}`" :notes="state.current.writing_notes?.[chapter.number]"></writing-notes>
                   <nav v-if="chapters.length" class="chapter-end-nav" aria-label="正文末尾章节导航">
@@ -534,7 +543,7 @@
                     <p
                       id="job-status"
                       class="job-status status-message"
-                      v-show="jobStatus"
+                      v-show="!running&&jobStatus"
                       :role="jobLevel==='error'?'alert':'status'"
                       :class="`message-${jobLevel}`"
                     >

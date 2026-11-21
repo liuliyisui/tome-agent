@@ -1,0 +1,304 @@
+{
+  "at": "2026-10-24T14:55:26.170137+08:00",
+  "role": "memory",
+  "system": "你负责三层记忆调度。输出JSON placements数组，每项仅id、tier、priority、reason。必须为提供的每个条目恰好返回一次决定，id选所给短编号，tier选该条allowed_tiers。working是接下来需持续携带的工作记忆：当前调查、证据所在、未完成行动及相关身份关系。recent是近期剧情可能用、但不必持续携带的信息；long是更远历史、已结束支线、可检索的旧线索。保持原层也可以。降级一次只下一层；recent/long可按需要调回working。不能为凑三层而强行归档，也不要把全部旧条目永久留在working。priority是1到5的整数，5最重要；程序根据优先级精确分配working_budget_bytes，不要求你做字节加法。明确未完成任务和核心当前状态优先，背景与已完成事件可以检索。超预算的工作候选只退到近期或保留原层，不删除。降级不删除内容、不改变有效期，历史信息调回也不变成当前事实。只能决定层级，不改事实、状态或类别。给出简短具体理由，不输出其它字段。",
+  "payload": {
+    "completed_chapter": 1,
+    "current_focus": "雨夜的伞",
+    "items": [
+      {
+        "id": "t001",
+        "subject": "prose:c0001.e0013",
+        "attribute": "excerpt",
+        "claim": "“对不起对不起，我真没注意。”她赶忙把伞递还，“我自己的伞放门边，出来就顺手拿了，太急了，真对不起。”",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 1220
+      },
+      {
+        "id": "t002",
+        "subject": "prose:c0001.e0018",
+        "attribute": "excerpt",
+        "claim": "“路上小心。”",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 602
+      },
+      {
+        "id": "t003",
+        "subject": "prose:c0001.e0003",
+        "attribute": "excerpt",
+        "claim": "“就这些。”她把东西放上台面。",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 647
+      },
+      {
+        "id": "t004",
+        "subject": "prose:c0001.e0008",
+        "attribute": "excerpt",
+        "claim": "“喂！等一下！”他跑起来，声音被雨声撕碎，“你拿的是我的伞！”",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 982
+      },
+      {
+        "id": "t005",
+        "subject": "prose:c0001.e0019",
+        "attribute": "excerpt",
+        "claim": "她撑开伞，点了下头，转身走进雨里。小周站在门口看了一会儿，直到那伞影混进远处的灯光，才把湿伞收进门后，回到柜台继续码他那货架的泡面。",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 1248
+      },
+      {
+        "id": "t006",
+        "subject": "prose:c0001.e0001",
+        "attribute": "excerpt",
+        "claim": "雨从傍晚起就没歇，砸在便利店的玻璃门上，汇成水帘往下淌。小周站在柜台后，把被翻乱的泡面一盒盒码正，店里没别的顾客，只有冰柜低沉的嗡嗡声陪着雨响。",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 1284
+      },
+      {
+        "id": "t007",
+        "subject": "prose:c0001.e0010",
+        "attribute": "excerpt",
+        "claim": "“什么？”",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 590
+      },
+      {
+        "id": "t008",
+        "subject": "prose:c0001.e0006",
+        "attribute": "excerpt",
+        "claim": "小周低头理零钱，再抬头时，玻璃门外只剩雨。他忽然觉得不对，视线扫到门边，伞桶旁空空荡荡，只剩一把湿淋淋的旧折叠伞歪在那里，不是他的。",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 1307
+      },
+      {
+        "id": "t009",
+        "subject": "prose:c0001.e0005",
+        "attribute": "excerpt",
+        "claim": "“嗯，谢谢。”她点点头，拎起袋子转身就往门口去。",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 819
+      },
+      {
+        "id": "t010",
+        "subject": "prose:c0001.e0014",
+        "attribute": "excerpt",
+        "claim": "小周接过伞，也把手里的湿伞还给她，语气软下来：“我说话也冲了点，刚才有点着急，别介意。”",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 1060
+      },
+      {
+        "id": "t011",
+        "subject": "prose:c0001.e0017",
+        "attribute": "excerpt",
+        "claim": "她犹豫一下，接过来：“那……谢谢你了。”",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 739
+      },
+      {
+        "id": "t012",
+        "subject": "prose:c0001.e0011",
+        "attribute": "excerpt",
+        "claim": "“那把伞，是我的。”小周喘着气站定，把手里的湿伞往前举了举，“我的伞本来放在门边，你刚才走的时候拿走了。这是你的吧？”",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 1268
+      },
+      {
+        "id": "t013",
+        "subject": "prose:c0001.e0016",
+        "attribute": "excerpt",
+        "claim": "雨点还在路灯下斜斜落着，一时半会儿没有停的意思。小周忽然想起什么：“你等一下。”他转身跑回店里，从柜台底下抽出把备用黑伞，又跑出来递给她，“这雨看着还得下一阵，这把你先用，明天路过再还就行。”",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 1608
+      },
+      {
+        "id": "t014",
+        "subject": "prose:c0001.e0012",
+        "attribute": "excerpt",
+        "claim": "她低头看看自己手里的伞，又看看他递过来的那把，愣了一瞬，随即明白过来，脸一下红了。",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 980
+      },
+      {
+        "id": "t015",
+        "subject": "prose:c0001.e0009",
+        "attribute": "excerpt",
+        "claim": "那人回头，伞檐遮着脸，露出一双茫然的眼睛。",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "working",
+        "allowed_tiers": [
+          "working",
+          "recent"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 742
+      },
+      {
+        "id": "t016",
+        "subject": "prose:c0001.e0002",
+        "attribute": "excerpt",
+        "claim": "门被推开，风裹湿气涌进来。一个年轻女人侧身挤进，在门边收了伞，把伞尖朝下立在伞桶旁，水很快在她脚边洇出一小片深色。她径直从冷柜里拿了瓶水，又顺手抓了包饼干，快步走到柜台前。",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "recent",
+        "allowed_tiers": [
+          "recent",
+          "long",
+          "working"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 1485
+      },
+      {
+        "id": "t017",
+        "subject": "prose:c0001.e0004",
+        "attribute": "excerpt",
+        "claim": "小周扫了码，抬头看她一眼：“外面雨大，路滑，慢点走。”",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "recent",
+        "allowed_tiers": [
+          "recent",
+          "long",
+          "working"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 898
+      },
+      {
+        "id": "t018",
+        "subject": "prose:c0001.e0007",
+        "attribute": "excerpt",
+        "claim": "他绕过柜台，抓起那把湿伞推门追出去。雨一下子打在他肩上，凉得一激灵。路灯下，前面的人刚撑开伞，走出几步远。",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "recent",
+        "allowed_tiers": [
+          "recent",
+          "long",
+          "working"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 1169
+      },
+      {
+        "id": "t019",
+        "subject": "prose:c0001.e0015",
+        "attribute": "excerpt",
+        "claim": "“没事。”她笑了笑，把湿伞收好，“雨这么大，换谁都得急。”",
+        "kind": "prose_excerpt",
+        "status": "active",
+        "tier": "recent",
+        "allowed_tiers": [
+          "recent",
+          "long",
+          "working"
+        ],
+        "time_scope": "current",
+        "wire_bytes": 969
+      }
+    ],
+    "working_budget_bytes": 16000,
+    "instruction": "仅根据已完成章节及当前未完成事项判断，不知道未来正文。"
+  },
+  "max_output_tokens": 8192,
+  "input_bytes": 7832
+}

@@ -246,16 +246,15 @@ const LocalSafetyReview = {
   setup(props, { emit }) {
     return () => {
       const report = props.report;
-      if (!report) return null;
+      if (!report?.total) return null;
       return h("section", {
-        class: ["privacy-review", "status-message", `message-${report.blocked ? "danger" : report.total ? "warning" : "info"}`, { "privacy-blocked": report.blocked }],
+        class: ["privacy-review", "status-message", `message-${report.blocked ? "danger" : "warning"}`, { "privacy-blocked": report.blocked }],
         "aria-label": "本地敏感信息检查",
       }, [
-        h("h3", `${report.blocked ? "危险" : report.total ? "警告" : "提示"} · 本地敏感信息检查`),
+        h("h3", `${report.blocked ? "危险" : "警告"} · 本地敏感信息检查`),
         h("p", { role: report.blocked ? "alert" : "status" }, report.blocked
           ? "发现疑似密钥，请从创作内容中移除后再提交。"
-          : report.total ? "以下内容可能包含个人信息，发送前请核实。"
-          : "未命中当前检测规则。"),
+          : "以下内容可能包含个人信息，发送前请核实。"),
         report.findings?.length ? h("ul", report.findings.map((item, index) =>
           h("li", { key: index }, `${item.source}：${item.label}，${item.count} 处`))) : null,
         h("p", { class: "form-hint" }, "检查在本机完成，结果不显示敏感原文。规则可能漏检；请用虚构信息替换真实隐私。"),
@@ -1654,7 +1653,9 @@ app.directive("floating-menu", {
           rect.right <= Math.max(0, shelf.left) || rect.left >= Math.min(innerWidth, shelf.right))) {
         value.close(); return;
       }
-      const gap = 8, menu = el.getBoundingClientRect();
+      const gap = 8;
+      if (value.matchAnchorWidth) el.style.width = `${rect.width}px`;
+      const menu = el.getBoundingClientRect();
       const below = innerHeight - rect.bottom, above = rect.top;
       const top = below >= menu.height + gap || below >= above
         ? rect.bottom + 4 : rect.top - menu.height - 4;

@@ -380,6 +380,8 @@ class BrowserSmokeTests(unittest.TestCase):
 
         page.click("#generate")
         page.wait_for_selector("#estimate-dialog[open]", timeout=10000)
+        self.assertEqual(page.locator("#estimate-dialog .privacy-review").count(), 0)
+        self.assertTrue(page.locator("#estimate-continue").is_enabled())
         self.assertIn(TITLE, page.inner_text("#estimate-scope"))
         self.assertIn("¥", page.inner_text("#estimate-cost"))
         self.assertNotEqual(page.inner_text("#estimate-input").strip(), "")
@@ -862,6 +864,16 @@ class BrowserSmokeTests(unittest.TestCase):
 
         page.click("#chapter-picker-trigger")
         page.locator("#chapter-filter").wait_for()
+        self.assertNotEqual(
+            page.locator("#chapter-directory").evaluate(
+                "(menu) => getComputedStyle(menu).backgroundColor"
+            ),
+            "rgba(0, 0, 0, 0)",
+        )
+        trigger = page.locator("#chapter-picker-trigger").bounding_box()
+        menu = page.locator("#chapter-directory").bounding_box()
+        self.assertAlmostEqual(menu["x"], trigger["x"], delta=1)
+        self.assertAlmostEqual(menu["width"], trigger["width"], delta=1)
         page.fill("#chapter-filter", "4")
         self.assertEqual(page.locator(".chapter-directory-list button").count(), 1)
         page.keyboard.press("ArrowDown")
