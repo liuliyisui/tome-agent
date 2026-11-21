@@ -37,9 +37,13 @@ class BrowserSmokeTests(unittest.TestCase):
         self.page.locator('[data-book="home-link"]').click()
         self.page.get_by_role("heading", name="返回首页测试").wait_for()
         self.page.get_by_role("link", name="Tome 首页").click()
-        self.page.wait_for_function("() => document.querySelector('#tome-app > div')?.classList.contains('home-view')")
+        self.page.wait_for_function(
+            "() => document.querySelector('#tome-app > div')?.classList.contains('home-view')"
+        )
         self.page.reload()
-        self.page.wait_for_function("() => document.querySelector('#tome-app > div')?.classList.contains('home-view')")
+        self.page.wait_for_function(
+            "() => document.querySelector('#tome-app > div')?.classList.contains('home-view')"
+        )
         self.assertFalse(self.page.locator("#book-title").is_visible())
 
     def test_reload_restores_open_book(self):

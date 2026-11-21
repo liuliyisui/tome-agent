@@ -57,6 +57,8 @@ layout: default
 
 <div class="kicker">问题 / WHY</div>
 
+# 模型能写好一段，<br>却记不住一整部。
+
 <div class="rule"></div>
 
 <div class="cols cols-2 gap-lg">
