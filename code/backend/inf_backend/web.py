@@ -37,12 +37,13 @@ def serialize(book):
         mode = "legacy" if state["chapters"] else "longform"
     else:
         memory = raw.get("memory", {})
+        objects = raw.get("writing_state", {}).get("objects", {})
         facts = {}
         for key, item in memory.get("items", {}).items():
             if item.get("status") != "active" or not has_current_content(item):
                 continue
             sources = item.get("sources", [])
-            facts[key] = {
+            fact = {
                 "subject": item["subject"],
                 "attribute": item["attribute"],
                 "kind": item.get("kind"),
@@ -54,6 +55,11 @@ def serialize(book):
                 if sources
                 else {"chapter_number": "—", "quote": ""},
             }
+            if item["subject"].startswith("objects:"):
+                record = objects.get(item["subject"].split(":", 1)[1])
+                if isinstance(record, dict) and record.get("label"):
+                    fact["label"] = record["label"]
+            facts[key] = fact
         state = {
             "chapters": raw["chapters"],
             "revision": len(raw["chapters"]),

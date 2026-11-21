@@ -551,7 +551,7 @@ const app = createApp({
         const key = excerpt ? "chapter:" + number : category + ":" + fact.subject;
         const source = chapters.value.find(c => Number(c.number) === number);
         if (!groups.has(key)) groups.set(key, { key, category, number: excerpt ? number : null,
-          label: excerpt ? "第" + (number || "—") + "章 · " + (source?.title || "章节摘录") : String(fact.subject || "未命名主题"), facts: [] });
+          label: excerpt ? "第" + (number || "—") + "章 · " + (source?.title || "章节摘录") : String(fact.label || fact.subject || "未命名主题"), facts: [] });
         groups.get(key).facts.push(fact);
       }
       return [...groups.values()].sort((a, b) => a.category === "chapters" && b.category === "chapters"
