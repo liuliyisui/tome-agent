@@ -1399,6 +1399,55 @@ layout: default
 layout: default
 ---
 
+<div class="kicker">现场演示 / 2 MIN DEMO</div>
+
+# 现场演示：2 分钟从想法到第 1 章。
+
+<div class="rule"></div>
+
+<div class="demo-grid">
+  <div class="demo-card">
+    <div class="demo-no">01</div>
+    <div class="demo-title">书架</div>
+    <div class="demo-text">打开工作台，选中已有作品或新建一部作品。</div>
+  </div>
+  <div class="demo-card">
+    <div class="demo-no">02</div>
+    <div class="demo-title">设定</div>
+    <div class="demo-text">填题材、主角、走向和文风，确认费用预估。</div>
+  </div>
+  <div class="demo-card">
+    <div class="demo-no">03</div>
+    <div class="demo-title">生成</div>
+    <div class="demo-text">触发第 1 章，展示规划、事件推演与正文进度。</div>
+  </div>
+  <div class="demo-card">
+    <div class="demo-no">04</div>
+    <div class="demo-title">记忆</div>
+    <div class="demo-text">打开人物卡和事实来源，指出版本与正文出处。</div>
+  </div>
+  <div class="demo-card">
+    <div class="demo-no">05</div>
+    <div class="demo-title">恢复</div>
+    <div class="demo-text">刷新或重进，展示检查点、已完成正文和待处理任务。</div>
+  </div>
+  <div class="demo-card">
+    <div class="demo-no">06</div>
+    <div class="demo-title">导出</div>
+    <div class="demo-text">复查后导出 Markdown，回到书架，数据仍在。</div>
+  </div>
+</div>
+
+<div class="demo-note">演示路径固定，不切窗口；生成慢时直接看检查点和已保存正文。</div>
+
+<div class="bottom-note">来源：README「核心功能」 · docs/software/USER_GUIDE.md · tests/TEST_REPORT.md</div>
+
+<!-- 现场演示：2 分钟从想法到第 1 章，六步路径固定。 -->
+
+---
+layout: default
+---
+
 <div class="kicker">小结 / SUMMARY</div>
 
 # 把复杂留给系统，<br>把简单留给作者。

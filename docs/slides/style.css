@@ -2742,3 +2742,52 @@
   word-break: break-all;
 }
 
+/* Live demo flow */
+.demo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.demo-card {
+  min-height: 116px;
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.44);
+  box-shadow: 0 10px 26px rgba(31, 48, 38, 0.04);
+}
+
+.demo-no {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.demo-title {
+  margin-top: 7px;
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.demo-text {
+  margin-top: 5px;
+  font-size: 9.4px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.demo-note {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-left: 2px solid var(--gold);
+  background: var(--paper-2);
+  font-size: 9.5px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+
