@@ -2361,8 +2361,8 @@
 /* 3.3 Repository evidence: left stack + right summary */
 .repo-evidence-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 8px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.95fr);
+  gap: 10px;
   align-items: stretch;
 }
 
@@ -2371,40 +2371,6 @@
   flex-direction: column;
   gap: 10px;
   min-width: 0;
-}
-
-.repo-side {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
-}
-
-.repo-side-note {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  justify-content: center;
-  padding: 14px 15px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.44);
-  box-shadow: 0 10px 26px rgba(31, 48, 38, 0.04);
-}
-
-.repo-side-note b {
-  display: block;
-  font-family: var(--serif);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.repo-side-note p {
-  margin: 7px 0 0;
-  font-size: 9.2px;
-  line-height: 1.7;
-  color: var(--ink-soft);
 }
 
 .repo-shot {
@@ -2420,7 +2386,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 5px 9px;
+  padding: 6px 10px;
   border-bottom: 1px solid var(--line-soft);
 }
 
@@ -2444,7 +2410,7 @@
 .repo-info {
   display: flex;
   flex-direction: column;
-  padding: 12px 14px;
+  padding: 14px 15px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.44);
@@ -2465,13 +2431,13 @@
 }
 
 .repo-info .repo-note {
-  margin-top: 10px;
+  margin-top: 13px;
   font-size: 8.9px;
   line-height: 1.65;
 }
 
 .repo-info .repo-links {
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .repo-info .repo-links span {

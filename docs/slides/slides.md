@@ -772,34 +772,28 @@ layout: default
 
 <div class="repo-evidence-layout">
   <div class="repo-stack">
-    <div class="repo-info">
-      <div class="tag">仓库地址</div>
-      <a class="repo-url" href="https://github.com/liuliyisui/tome-agent">github.com/liuliyisui/tome-agent</a>
-      <div class="repo-stats">
-        <div><b>217</b><span>次提交</span></div>
-        <div><b>4</b><span>位贡献者</span></div>
-        <div><b>5</b><span>个模块</span></div>
-      </div>
-      <div class="repo-note">Pulse 看提交分布；任务、看板与路线图在 docs/mgmt/。</div>
-      <div class="repo-links">
-        <span>KANBAN.md</span><span>TEAM_PLAN.md</span><span>ROADMAP.md</span>
-      </div>
-    </div>
     <div class="repo-shot">
       <div class="repo-shot-head"><span class="tag">Pulse</span><span>提交分布</span></div>
       <img src="/pulse-committers.png" alt="Top committers">
     </div>
-  </div>
-  <div class="repo-side">
     <div class="repo-shot">
       <div class="repo-shot-head"><span class="tag">Agensi</span><span>主动联系</span></div>
       <img src="/agensi-email.jpg" alt="Agensi 邮件">
     </div>
-    <div class="repo-side-note">
-      <b>外部需求已经出现</b>
-      <p>Agensi 主动联系，建议把写作流程封装成 Skill 上架其市场；说明这套能力可以被外部平台接住。</p>
-      <p>可上架、可定价、可带 affiliate；对团队来说，这是一条现成的分发路径。</p>
+  </div>
+  <div class="repo-info">
+    <div class="tag">仓库地址</div>
+    <a class="repo-url" href="https://github.com/liuliyisui/tome-agent">github.com/liuliyisui/tome-agent</a>
+    <div class="repo-stats">
+      <div><b>217</b><span>次提交</span></div>
+      <div><b>4</b><span>位贡献者</span></div>
+      <div><b>5</b><span>个模块</span></div>
     </div>
+    <div class="repo-note">提交分布可在仓库 Insights → Pulse 复查；任务与缺陷以 GitHub Issues 记录，看板、分工和路线图保存在 docs/mgmt/。</div>
+    <div class="repo-links">
+      <span>KANBAN.md</span><span>TEAM_PLAN.md</span><span>ROADMAP.md</span>
+    </div>
+    <div class="repo-quote">Agensi 主动联系：可把写作流程封装成 Skill，上架其市场。</div>
   </div>
 </div>
 
