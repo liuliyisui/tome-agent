@@ -100,7 +100,7 @@ layout: default
 
 <div class="kicker">问题 / 五个症状</div>
 
-# 读者感受到的是“看不下去了”，<br>而非“写着写着跑偏”。
+# 读者先感到“看不下去了”，<br>问题通常已经积累了几章。
 
 <div class="rule"></div>
 
@@ -430,7 +430,7 @@ layout: default
   </div>
   <div class="principle-col">
     <div class="pg-head"><span>04</span>质量</div>
-    <div class="pg-item"><b>能测就测</b><span>单元、集成、数据库矩阵。</span></div>
+    <div class="pg-item"><b>量化验收</b><span>测试、覆盖率、用量都有数。</span></div>
     <div class="pg-item"><b>能简就简</b><span>少一个运行时变量。</span></div>
     <div class="pg-item"><b>每一步都审</b><span>规则、评审、CI 同源。</span></div>
   </div>
@@ -441,7 +441,7 @@ layout: default
   <div>原则要能解释取舍：<b>为什么选这个、不选那个</b>。</div>
 </div>
 
-<div class="bottom-note">结构对应：需求与信息 → 系统与迭代 → 继承与效益 → 测试与审查</div>
+<div class="bottom-note">结构对应：需求与信息 → 系统与迭代 → 继承与效益 → 定量、简化与审核</div>
 
 <!-- 四组原则，从方向到系统，再到取舍和质量。 -->
 
@@ -614,8 +614,8 @@ class: principle-page
   <div class="p-row">
     <div class="p-no">10</div>
     <div class="p-body">
-      <div class="p-title">能测就测</div>
-      <div class="p-text">单元测试、集成测试、真实 PostgreSQL 17/18 矩阵、Linux hosted 回归；失败路径和成功路径一样要测。</div>
+      <div class="p-title">量化验收</div>
+      <div class="p-text">单元测试、集成测试、PostgreSQL 17/18 矩阵、hosted 回归；测试数、覆盖率、失败率和 token 用量都有记录。</div>
     </div>
     <div class="p-ev"><span>证据</span><code>.github/workflows/tests.yml</code><em>tests/TEST_REPORT.md</em></div>
   </div>
@@ -643,7 +643,7 @@ class: principle-page
 
 <div class="p-quote">每次提交都留下可复查的证据。</div>
 
-<!-- 第四组：质量。测试、简化、审查，三件事都变成默认动作。 -->
+<!-- 第四组：质量。定量验收、简化、审核，三件事都变成默认动作。 -->
 
 ---
 layout: default
