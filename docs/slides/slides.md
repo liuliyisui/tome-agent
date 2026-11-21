@@ -926,7 +926,7 @@ layout: default
 
 <div class="card-soft p-4">
   <div class="tag">3.6.2 工具使用</div>
-  <div class="body-text mt-2"><b>Ruff 0.17.4</b>（Linter + Formatter 二合一，覆盖 PEP 8 风格与语义规则）：规则集 E、W、F、I、B、C4、UP，ignore = ["E501"]，line-length = 88，target-version = "py311"；规则集中于 code/backend/pyproject.toml，编辑器、预提交与 CI 共用同一份配置。</div>
+  <div class="body-text mt-2"><b>Ruff 0.17.4</b>（Linter + Formatter 二合一，覆盖 PEP 8 风格与语义规则）：规则集 E、W、F、I、B、C4、UP，ignore = ["E501"]，line-length = 88，target-version = "py311"；规则集中于 code/backend/pyproject.toml，编辑器、预提交与 CI 共用同一份配置。<br><b>扫描记录</b>：Ruff + Bandit，blocker（E9/F 级、Bandit HIGH）= <b>0</b>，见 docs/software/quality/SCAN_RECORD.md（课程示例的 p3c 对应 Python 的这套口径）。</div>
 </div>
 
 <div class="card-soft p-4">
