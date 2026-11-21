@@ -905,37 +905,37 @@ layout: default
 <div class="grid grid-cols-3 gap-3">
 
 <div class="card-soft p-4">
-  <div class="num text-[15px]">01</div>
+  <div class="tag">可用性</div>
   <div class="text-[12.5px] font-bold mt-1">打开即用，账号隔离</div>
   <div class="body-text mt-2">浏览器访问站点域名，注册登录即进入工作室；每位用户独立数据目录，互不可见。</div>
 </div>
 
 <div class="card-soft p-4">
-  <div class="num text-[15px]">02</div>
+  <div class="tag">连续性</div>
   <div class="text-[12.5px] font-bold mt-1">进度可续，不丢半成品</div>
   <div class="body-text mt-2">每个阶段保存检查点，中断后可恢复；保留已完成章节与待处理任务队列。</div>
 </div>
 
 <div class="card-soft p-4">
-  <div class="num text-[15px]">03</div>
+  <div class="tag">成本</div>
   <div class="text-[12.5px] font-bold mt-1">费用可见，调用前确认</div>
-  <div class="body-text mt-2">生成前给出费用预估并由用户确认；记录 token 与用量；API 密钥仅存本机 <span class="mono">.env</span>，不回传网页。</div>
+  <div class="body-text mt-2">生成前给出费用预估并由用户确认；记录 token 与用量；模型密钥存在服务端用户目录，不回传网页。</div>
 </div>
 
 <div class="card-soft p-4">
-  <div class="num text-[15px]">04</div>
+  <div class="tag">容错</div>
   <div class="text-[12.5px] font-bold mt-1">失败可见，降级保正文</div>
   <div class="body-text mt-2">超时、响应截断、坏 JSON 等错误对用户可见；局部规划或记忆处理失败时记录问题并保留有效正文。</div>
 </div>
 
 <div class="card-soft p-4">
-  <div class="num text-[15px]">05</div>
+  <div class="tag">可控</div>
   <div class="text-[12.5px] font-bold mt-1">创作流程可控</div>
   <div class="body-text mt-2">创建作品、配置文风、逐章或批量生成、导出排版后的 Markdown；章节可按作者反馈重新生成。</div>
 </div>
 
 <div class="card-soft p-4">
-  <div class="num text-[15px]">06</div>
+  <div class="tag">安全</div>
   <div class="text-[12.5px] font-bold mt-1">技能可控且安全</div>
   <div class="body-text mt-2">每部作品最多选择 5 个写作 Skill，仅以文本注入模型，不执行脚本、工具调用或文件操作。</div>
 </div>
@@ -968,7 +968,7 @@ layout: default
 | 开发工具 | VS Code 等 Python 编辑器 | 未锁定 | 编辑调试；Ruff + Pylance 方案 A，规则集中在仓库配置文件 |
 
 <div class="card px-4 py-3 mt-4">
-  <div class="text-[11px]"><span class="tag text-[11px]">选型原则：</span>「不要太重，也不要太轻」——不引入 ASGI 框架与前端构建链，把复杂度放在智能体编排与状态一致性上；代价是接口验证、错误转换与线程管理由项目自行维护。同一张表已写入仓库 <span class="mono">README.md</span>「技术选型」。</div>
+  <div class="text-[11px]"><span class="tag text-[11px]">选型原则：</span>「不要太重，也不要太轻」——不引入 ASGI 框架与前端构建链，把复杂度放在智能体编排与状态一致性上；代价是接口验证、错误转换与线程管理由项目自行维护。同一张表已写入仓库 README.md「技术选型」。</div>
 </div>
 
 <!-- 选型表：版本号 + 为什么这么选，一行都说清楚。 -->
@@ -988,18 +988,18 @@ layout: default
 <div>
   <div class="card-soft px-4 py-3">
     <div class="tag">仓库地址</div>
-    <div class="mono text-[11px] mt-1">https://github.com/liuliyisui/tome-agent</div>
+    <div class="text-[11px] mt-1">https://github.com/liuliyisui/tome-agent</div>
     <div class="small mt-2">提交历史：仓库页 Pulse → Insights → Pulse</div>
   </div>
   <div class="card-soft px-4 py-3 mt-3">
     <div class="tag">看板与缺陷追踪</div>
-    <div class="small mt-1 leading-[1.8]">任务与缺陷以 GitHub Issues 为正式记录，看板见 <span class="mono">docs/mgmt/KANBAN.md</span>（Issue #1–#6）；分工与分支策略见 <span class="mono">TEAM_PLAN.md</span>，路线图见 <span class="mono">ROADMAP.md</span>，风险与沟通见 <span class="mono">COMMUNICATION_AND_RISK_PLAN.md</span>。</div>
+    <div class="small mt-1 leading-[1.8]">任务与缺陷以 GitHub Issues 为正式记录，看板见 docs/mgmt/KANBAN.md（Issue #1–#6）；分工与分支策略见 TEAM_PLAN.md，路线图见 ROADMAP.md，风险与沟通见 COMMUNICATION_AND_RISK_PLAN.md。</div>
   </div>
 </div>
 
 <div>
   <div class="tag">每位成员的提交次数</div>
-  <div class="text-[10px] mt-1 mb-2" style="color:#8A8072">由 GitHub API <span class="mono">/contributors</span> 统计（截至本次汇报）</div>
+  <div class="text-[10px] mt-1 mb-2" style="color:#8A8072">由 GitHub API /contributors 统计（截至本次汇报）</div>
   <table>
     <thead><tr><th>贡献者</th><th>提交次数</th></tr></thead>
     <tbody>
@@ -1031,14 +1031,14 @@ layout: default
 
 | 问题类别 | 问题名称 | 发生原因 | 解决办法 |
 | --- | --- | --- | --- |
-| 分析 | 需求边界反复 | 长篇创作需求含糊，演示原型与真实生成混为一谈 | 区分 <span class="mono">docs/software/prototype</span>（模拟数据）与正式服务，原型不作为真实生成证据 |
+| 分析 | 需求边界反复 | 长篇创作需求含糊，演示原型与真实生成混为一谈 | 区分 docs/software/prototype（模拟数据）与正式服务，原型不作为真实生成证据 |
 | 设计 | 编排框架迁移 | LangGraph 迁移可能破坏已验证的领域逻辑 | 节点内复用既有模型适配、事件推演与记忆函数，控制迁移范围 |
 | 开发 | 模型调用失败 | 网络超时、响应截断、坏 JSON | 记录错误与用量；失败降级，保留已完成正文并区分「请求失败 / 可能已计费 / 内容未审核」 |
 | 开发 | 长篇生成中断 | 一次成稿需多次模型调用，耗时长 | 每阶段保存原子检查点，识别待处理任务与损坏检查点 |
 | 测试 | 文件与数据库双写 | 数据库记录与文件检查点并非原子事务 | 故障演练确认恢复行为，明确列出未覆盖边界，不过度承诺 |
 | 部署运维 | 旧版本无法续写 | 旧检查点运行时哈希与新版本源码不一致 | 禁止手改哈希绕过；升级前保留旧代码与作品 |
 
-<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">存储位置：本表已以 Markdown 存入项目仓库 <span class="mono">docs/software/ISSUES_SUMMARY.md</span>。来源：architecture.md、CODE_QUALITY_FIXES.md、retrospection/README.md。</div>
+<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">存储位置：本表已以 Markdown 存入项目仓库 docs/software/ISSUES_SUMMARY.md。来源：architecture.md、CODE_QUALITY_FIXES.md、retrospection/README.md。</div>
 
 <!-- 六类问题：分析、设计、开发×2、测试、部署运维。 -->
 
@@ -1070,14 +1070,14 @@ layout: default
 
 <div class="card-soft px-3 py-4 flex-1">
   <div class="tag">服务层</div>
-  <div class="body-text mt-2 leading-[1.7]">Python HTTP 服务<br><span class="mono">127.0.0.1:8765</span><br>WritingSession 会话入口</div>
+  <div class="body-text mt-2 leading-[1.7]">Python HTTP 服务<br>127.0.0.1:8765<br>WritingSession 会话入口</div>
 </div>
 
 <div class="flex items-center text-[14px]" style="color:#A99C88">→</div>
 
 <div class="card-soft px-3 py-4 flex-1">
   <div class="tag">界面层</div>
-  <div class="body-text mt-2 leading-[1.7]">正式 Vue 3 页面 <span class="mono">code/frontend</span><br>书架 / 文风 / 费用确认 / 生成 / 导出</div>
+  <div class="body-text mt-2 leading-[1.7]">正式 Vue 3 页面 code/frontend<br>书架 / 文风 / 费用确认 / 生成 / 导出</div>
 </div>
 
 </div>
@@ -1085,7 +1085,7 @@ layout: default
 <div class="grid grid-cols-[1fr_1fr] gap-4 mt-4">
   <div class="card px-4 py-3">
     <div class="tag">模型服务（服务层旁路调用）</div>
-    <div class="small mt-1 leading-[1.7]">DeepSeek / OpenAI 兼容接口；<span class="mono">chat_provider</span> 封装请求、超时与用量。</div>
+    <div class="small mt-1 leading-[1.7]">DeepSeek / OpenAI 兼容接口；chat_provider 封装请求、超时与用量。</div>
   </div>
   <div class="card px-4 py-3">
     <div class="tag">依赖方向</div>
@@ -1093,7 +1093,7 @@ layout: default
   </div>
 </div>
 
-<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">图源：<span class="mono">docs/software/architecture.md</span>、<span class="mono">docs/algorithm/LANGGRAPH.mmd</span>、<span class="mono">code/backend/inf_backend/</span>、<span class="mono">code/core_engine/memory_runtime/</span>。</div>
+<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">图源：docs/software/architecture.md、docs/algorithm/LANGGRAPH.mmd、code/backend/inf_backend/、code/core_engine/memory_runtime/。</div>
 
 <!-- 四层架构：存储→引擎→服务→界面，模型服务旁路。 -->
 
@@ -1110,7 +1110,7 @@ layout: default
 <div class="flex items-stretch gap-2 mt-3">
   <div class="card-soft px-3 py-4 flex-1">
     <div class="tag">用户</div>
-    <div class="body-text mt-2">浏览器访问 <span class="mono">https://域名</span><br>注册 / 登录后进入工作室</div>
+    <div class="body-text mt-2">浏览器访问 https://域名<br>注册 / 登录后进入工作室</div>
   </div>
   <div class="flex items-center text-[14px]" style="color:#A99C88">→</div>
   <div class="card-soft px-3 py-4 flex-1">
@@ -1125,7 +1125,7 @@ layout: default
   <div class="flex items-center text-[14px]" style="color:#A99C88">→</div>
   <div class="card-soft px-3 py-4 flex-1">
     <div class="tag">数据</div>
-    <div class="body-text mt-2"><span class="mono">/var/lib/tome-agent</span><br>账号 · 作品 · Skill · 配置</div>
+    <div class="body-text mt-2">/var/lib/tome-agent<br>账号 · 作品 · Skill · 配置</div>
   </div>
 </div>
 
@@ -1133,12 +1133,12 @@ layout: default
 
 <div class="card-soft p-4">
   <div class="tag">只开必要端口</div>
-  <div class="body-text mt-2">8765 不对外暴露，防火墙仅放行 80 / 443；SSH 限定可信来源。代码在 <span class="mono">/opt/tome-agent</span>，数据在 <span class="mono">/var/lib</span>，不写入代码目录。</div>
+  <div class="body-text mt-2">8765 不对外暴露，防火墙仅放行 80 / 443；SSH 限定可信来源。代码在 /opt/tome-agent，数据在 /var/lib，不写入代码目录。</div>
 </div>
 
 <div class="card-soft p-4">
   <div class="tag">隔离与并发</div>
-  <div class="body-text mt-2">每位用户独立数据目录与进程；<span class="mono">TOME_WORKER_LIMIT</span> 控制常驻进程数（1–8，默认 3），空闲 5 分钟回收，超限时新请求排队重试。</div>
+  <div class="body-text mt-2">每位用户独立数据目录与进程；TOME_WORKER_LIMIT 控制常驻进程数（1–8，默认 3），空闲 5 分钟回收，超限时新请求排队重试。</div>
 </div>
 
 <div class="card-soft p-4">
@@ -1149,7 +1149,7 @@ layout: default
 </div>
 
 <div class="card px-4 py-3 mt-3">
-  <div class="text-[10.5px] leading-[1.75]"><span class="tag text-[10px]">已知边界与合规：</span>中国内地服务器对外提供域名服务需完成备案；单机方案不支持多实例共享同一数据目录；公开注册前需补滥用防护、监控、容量与恢复流程；服务重启可能中断生成，需按检查点续写。来源：<span class="mono">docs/software/LINUX_HOSTED.md</span>。</div>
+  <div class="text-[10.5px] leading-[1.75]"><span class="tag text-[10px]">已知边界与合规：</span>中国内地服务器对外提供域名服务需完成备案；单机方案不支持多实例共享同一数据目录；公开注册前需补滥用防护、监控、容量与恢复流程；服务重启可能中断生成，需按检查点续写。来源：docs/software/LINUX_HOSTED.md。</div>
 </div>
 
 <!-- 云部署：Nginx 443 → 应用仅本机 8765 → 数据目录；只开必要端口、进程池隔离、备份含密钥。 -->
@@ -1179,7 +1179,7 @@ layout: default
   <div class="step step-alt flex-1">结束</div>
 </div>
 
-<div class="text-[9.5px] mt-2" style="color:#8A8072">event_writer → event_planner 之间存在 <span class="mono">revise</span> 修订回边；coordinator 亦由审核条件边选择提交或拒绝。</div>
+<div class="text-[9.5px] mt-2" style="color:#8A8072">event_writer → event_planner 之间存在 revise 修订回边；coordinator 亦由审核条件边选择提交或拒绝。</div>
 
 <div class="grid grid-cols-2 gap-4 mt-4">
   <div class="card-soft p-4">
@@ -1192,7 +1192,7 @@ layout: default
   </div>
 </div>
 
-<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">图源：<span class="mono">docs/algorithm/LANGGRAPH.mmd</span>（Mermaid 源文件，节点名与边标签与源码一致）。</div>
+<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">图源：docs/algorithm/LANGGRAPH.mmd（Mermaid 源文件，节点名与边标签与源码一致）。</div>
 
 <!-- 状态图五个节点加 revise 回边；事件先行是这一节的核心创新。 -->
 
@@ -1231,7 +1231,7 @@ layout: default
 </div>
 
 <div class="card px-4 py-3 mt-3">
-  <div class="text-[10px] leading-[1.8]"><span class="tag text-[10px]">开源框架与官方文档：</span><span class="mono">langchain.com/oss/python/langgraph</span> · DeepSeek API 文档 · PostgreSQL 事务 · Psycopg 3 事务管理 · Vue 渲染函数 · Python <span class="mono">http.server</span> · Docker Compose 文档 · GitHub Actions Python CI 指南。</div>
+  <div class="text-[10px] leading-[1.8]"><span class="tag text-[10px]">开源框架与官方文档：</span>langchain.com/oss/python/langgraph · DeepSeek API 文档 · PostgreSQL 事务 · Psycopg 3 事务管理 · Vue 渲染函数 · Python http.server · Docker Compose 文档 · GitHub Actions Python CI 指南。</div>
 </div>
 
 <!-- 记忆/护栏/知识库/模型边界，四块拼成智能体设计。 -->
@@ -1248,44 +1248,44 @@ layout: default
 
 <div class="card-soft px-4 py-3">
   <div class="tag">tome_books 作品主表</div>
-  <div class="small mono mt-1 leading-[1.7]">id (PK) · metadata jsonb · state jsonb · state_kind (snapshot/longform) · style jsonb · checkpoint · last_usage jsonb · pinned · deleted_at / restore_token</div>
+  <div class="small mt-1 leading-[1.7]">id (PK) · metadata jsonb · state jsonb · state_kind (snapshot/longform) · style jsonb · checkpoint · last_usage jsonb · pinned · deleted_at / restore_token</div>
 </div>
 
 <div class="grid grid-cols-3 gap-3 mt-3">
 
 <div class="card-soft p-3">
   <div class="tag">tome_chapters 章节（1:N）</div>
-  <div class="small mono mt-1 leading-[1.7]">book_id, number (PK, FK)<br>title · body · version</div>
+  <div class="small mt-1 leading-[1.7]">book_id, number (PK, FK)<br>title · body · version</div>
 </div>
 
 <div class="card-soft p-3">
   <div class="tag">tome_jobs 生成任务（1:N）</div>
-  <div class="small mono mt-1 leading-[1.7]">id (PK) · book_id (FK)<br>status(running/completed/failed/interrupted) · payload jsonb</div>
+  <div class="small mt-1 leading-[1.7]">id (PK) · book_id (FK)<br>status(running/completed/failed/interrupted) · payload jsonb</div>
 </div>
 
 <div class="card-soft p-3">
   <div class="tag">tome_usage 用量记录</div>
-  <div class="small mono mt-1 leading-[1.7]">book_id, checkpoint (PK)<br>payload jsonb · saved_at</div>
+  <div class="small mt-1 leading-[1.7]">book_id, checkpoint (PK)<br>payload jsonb · saved_at</div>
 </div>
 
 <div class="card-soft p-3">
   <div class="tag">tome_chapter_versions 章节版本</div>
-  <div class="small mono mt-1 leading-[1.7]">book_id, number, version (PK)<br>title · body · created_at</div>
+  <div class="small mt-1 leading-[1.7]">book_id, number, version (PK)<br>title · body · created_at</div>
 </div>
 
 <div class="card-soft p-3">
   <div class="tag">tome_schema_version 结构版本</div>
-  <div class="small mono mt-1 leading-[1.7]">version (PK) · applied_at<br>3 个索引 + 1 个唯一索引</div>
+  <div class="small mt-1 leading-[1.7]">version (PK) · applied_at<br>3 个索引 + 1 个唯一索引</div>
 </div>
 
 <div class="card px-3 py-2">
   <div class="tag">设计要点</div>
-  <div class="small mt-1 leading-[1.7]">JSONB 承载结构化状态；回收站用 <span class="mono">deleted_at</span> + <span class="mono">restore_token</span> 实现软删除与恢复；未配置数据库时降级为文件模式。</div>
+  <div class="small mt-1 leading-[1.7]">JSONB 承载结构化状态；回收站用 deleted_at + restore_token 实现软删除与恢复；未配置数据库时降级为文件模式。</div>
 </div>
 
 </div>
 
-<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">来源：<span class="mono">code/backend/inf_backend/schema.sql</span>（6 张表 + 3 索引 + 1 唯一索引）逆生成；Mermaid 原始图见 <span class="mono">docs/algorithm/ER.mmd</span>。</div>
+<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">来源：code/backend/inf_backend/schema.sql（6 张表 + 3 索引 + 1 唯一索引）逆生成；Mermaid 原始图见 docs/algorithm/ER.mmd。</div>
 
 <!-- E-R：六张表 + 设计要点；由 schema.sql 逆生成。 -->
 
@@ -1314,7 +1314,7 @@ layout: default
 | `/api/books/{id}/export` | GET | 导出排版后的 Markdown | Markdown 文件 |
 | `/api/jobs/{id}` | GET | 查询生成任务进度 | 状态与进度 |
 
-<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">来源：<span class="mono">code/backend/inf_backend/web.py</span>（do_GET / do_POST 路由分派）与 <span class="mono">service.py</span>；异常统一转为 JSON 错误响应，生成任务返回 202 表示已受理。完整参数见 Swagger / APIFox。</div>
+<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">来源：code/backend/inf_backend/web.py（do_GET / do_POST 路由分派）与 service.py；异常统一转为 JSON 错误响应，生成任务返回 202 表示已受理。完整参数见 Swagger / APIFox。</div>
 
 <!-- 接口：12 行路由，覆盖模型配置、技能、作品、章节、任务、导出。 -->
 
@@ -1332,7 +1332,7 @@ layout: default
 
 <div class="card-soft p-4">
   <div class="tag">正式界面（code/frontend）</div>
-  <div class="body-text mt-2">HTML / CSS / JavaScript 原生页面，由 Vue 3.5.44 渐进管理交互；采用仓库内置 runtime-only 运行时与 <span class="mono">h()</span> 渲染函数，无前端构建步骤、不依赖 CDN；响应式组件覆盖书架、废案箱、文风保存、删除恢复、费用确认与取消；生成任务在后台线程执行，页面轮询任务状态展示进度。</div>
+  <div class="body-text mt-2">HTML / CSS / JavaScript 原生页面，由 Vue 3.5.44 渐进管理交互；采用仓库内置 runtime-only 运行时与 h() 渲染函数，无前端构建步骤、不依赖 CDN；响应式组件覆盖书架、废案箱、文风保存、删除恢复、费用确认与取消；生成任务在后台线程执行，页面轮询任务状态展示进度。</div>
 </div>
 
 <div class="card-soft p-4">
@@ -1347,7 +1347,7 @@ layout: default
 
 <div class="card-soft p-4">
   <div class="tag">界面与需求对应</div>
-  <div class="body-text mt-2">界面动作与用户故事一一对应：创建作品、配置文风、确认费用、逐章生成、失败恢复、导出 Markdown（见 <span class="mono">docs/requirements/user_stories.md</span>），使 8 分钟演示可按故事线顺序进行。</div>
+  <div class="body-text mt-2">界面动作与用户故事一一对应：创建作品、配置文风、确认费用、逐章生成、失败恢复、导出 Markdown（见 docs/requirements/user_stories.md），使 8 分钟演示可按故事线顺序进行。</div>
 </div>
 
 </div>
@@ -1373,17 +1373,17 @@ layout: default
 
 <div class="card-soft p-4">
   <div class="tag">3.6.2 工具使用</div>
-  <div class="body-text mt-2"><b>Ruff 0.17.4</b>（Linter + Formatter 二合一，覆盖 PEP 8 风格与语义规则）：规则集 E、W、F、I、B、C4、UP，ignore = ["E501"]，line-length = 88，target-version = "py311"；规则集中于 <span class="mono">code/backend/pyproject.toml</span>，编辑器、预提交与 CI 共用同一份配置。</div>
+  <div class="body-text mt-2"><b>Ruff 0.17.4</b>（Linter + Formatter 二合一，覆盖 PEP 8 风格与语义规则）：规则集 E、W、F、I、B、C4、UP，ignore = ["E501"]，line-length = 88，target-version = "py311"；规则集中于 code/backend/pyproject.toml，编辑器、预提交与 CI 共用同一份配置。</div>
 </div>
 
 <div class="card-soft p-4">
   <div class="tag">整改结果（有据可查）</div>
-  <div class="body-text mt-2">整改前基线 <b>75 处不合规</b>（E402 42、B023 14、B904 12、B007 3、F841 3、E731 1、I001 36）；整改后 <b>0 处</b>，<span class="mono">ruff format</span> 全仓库无差异；改动 44 个 <span class="mono">.py</span> 文件（+240 / −194 行）。详见 <span class="mono">docs/software/CODE_QUALITY_FIXES.md</span>。</div>
+  <div class="body-text mt-2">整改前基线 <b>75 处不合规</b>（E402 42、B023 14、B904 12、B007 3、F841 3、E731 1、I001 36）；整改后 <b>0 处</b>，ruff format 全仓库无差异；改动 44 个 .py 文件（+240 / −194 行）。详见 docs/software/CODE_QUALITY_FIXES.md。</div>
 </div>
 
 <div class="card-soft p-4">
   <div class="tag">自动化与佐证</div>
-  <div class="body-text mt-2"><b>预提交钩子</b>：ruff-pre-commit v0.17.4（ruff --fix、ruff-format）+ pre-commit-hooks v4.6.0（check-toml、check-yaml、end-of-file-fixer、trailing-whitespace）。<br><b>CI</b>：<span class="mono">.github/workflows/tests.yml</span> 含 lint、Windows 测试、postgresql（17/18 矩阵）、hosted-linux 四类 job。<br><b>代码复杂度</b>：可继续用 VS Code 插件（complexipy / Pylint）补测，当前以 Ruff 规则与测试覆盖为主要证据。</div>
+  <div class="body-text mt-2"><b>预提交钩子</b>：ruff-pre-commit v0.17.4（ruff --fix、ruff-format）+ pre-commit-hooks v4.6.0（check-toml、check-yaml、end-of-file-fixer、trailing-whitespace）。<br><b>CI</b>：.github/workflows/tests.yml 含 lint、Windows 测试、postgresql（17/18 矩阵）、hosted-linux 四类 job。<br><b>代码复杂度</b>：可继续用 VS Code 插件（complexipy / Pylint）补测，当前以 Ruff 规则与测试覆盖为主要证据。</div>
 </div>
 
 </div>
@@ -1413,13 +1413,13 @@ layout: default
       <tr><td>合计</td><td>123</td><td>17,666</td></tr>
     </tbody>
   </table>
-  <div class="small mt-2">统计口径：本地克隆快照逐文件累计（.py / .js / .html / .css），提交 <span class="mono">0759e38</span>；正式答辩请用 VS Code Counter 插件重跑并附截图。</div>
+  <div class="small mt-2">统计口径：本地克隆快照逐文件累计（.py / .js / .html / .css），提交 0759e38；正式答辩请用 VS Code Counter 插件重跑并附截图。</div>
 </div>
 
 <div>
   <div class="card-soft px-4 py-3">
     <div class="tag">AI Vibe Coding 与团队自写代码比例</div>
-    <div class="body-text mt-1">仓库未提供官方比例数据，需按统一口径统计后填入：建议按「提交作者 + 提交说明 + 是否 AI 生成」三要素归类，输出 AI 辅助生成行数 / 总行数比值，并注明统计工具（如 <span class="mono">git log --numstat</span> 结合人工抽查）。</div>
+    <div class="body-text mt-1">仓库未提供官方比例数据，需按统一口径统计后填入：建议按「提交作者 + 提交说明 + 是否 AI 生成」三要素归类，输出 AI 辅助生成行数 / 总行数比值，并注明统计工具（如 git log --numstat 结合人工抽查）。</div>
   </div>
   <div class="ph mt-3" style="height:96px">此处粘贴 VS Code Counter 统计截图<br>含按语言分行的行数统计，以及 AI 辅助编写比例的说明</div>
 </div>
@@ -1443,12 +1443,12 @@ layout: default
 <div class="card-soft px-4 py-3">
   <div class="tag">主要来源（可公开验证）</div>
   <div class="small mt-1 leading-[1.9]">
-    <div>· 仓库：<span class="mono">github.com/liuliyisui/tome-agent</span> — README「技术选型」「核心功能」「验证与使用说明」</div>
-    <div>· <span class="mono">docs/software/architecture.md</span>、<span class="mono">docs/algorithm/LANGGRAPH.mmd</span></div>
-    <div>· <span class="mono">docs/software/code_quality.md</span>、<span class="mono">CODE_QUALITY_FIXES.md</span></div>
-    <div>· <span class="mono">docs/software/DEPLOY.md</span>、<span class="mono">WINDOWS_PORTABLE.md</span>、<span class="mono">LINUX_HOSTED.md</span>、<span class="mono">POSTGRESQL.md</span></div>
-    <div>· <span class="mono">code/backend/inf_backend/schema.sql</span>、<span class="mono">web.py</span> / <span class="mono">service.py</span></div>
-    <div>· <span class="mono">docs/mgmt/KANBAN.md</span>、<span class="mono">TEAM_PLAN.md</span>、<span class="mono">ROADMAP.md</span>、<span class="mono">COMMUNICATION_AND_RISK_PLAN.md</span></div>
+    <div>· 仓库：github.com/liuliyisui/tome-agent — README「技术选型」「核心功能」「验证与使用说明」</div>
+    <div>· docs/software/architecture.md、docs/algorithm/LANGGRAPH.mmd</div>
+    <div>· docs/software/code_quality.md、CODE_QUALITY_FIXES.md</div>
+    <div>· docs/software/DEPLOY.md、WINDOWS_PORTABLE.md、LINUX_HOSTED.md、POSTGRESQL.md</div>
+    <div>· code/backend/inf_backend/schema.sql、web.py / service.py</div>
+    <div>· docs/mgmt/KANBAN.md、TEAM_PLAN.md、ROADMAP.md、COMMUNICATION_AND_RISK_PLAN.md</div>
   </div>
 </div>
 
