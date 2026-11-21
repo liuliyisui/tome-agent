@@ -32,7 +32,13 @@ class WebIntegrationTests(unittest.TestCase):
     def test_privacy_requires_acknowledgement_and_never_calls_model_on_rejection(self):
         book_id = self.privacy_book("联系人 writer@example.test")
         endpoint = f"/api/books/{book_id}"
-        with patch.object(service, "generate") as generate:
+        with (
+            patch.object(service, "generate") as generate,
+            patch(
+                "inf_backend.web.Settings.load",
+                return_value=Settings(api_key="FAKE_TEST_KEY"),
+            ),
+        ):
             estimate = self.request(endpoint + "/estimate", {})
             self.assertTrue(estimate["safety"]["requires_confirmation"])
             self.assertNotIn("writer@example.test", json.dumps(estimate))
