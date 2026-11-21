@@ -109,8 +109,6 @@ layout: default
 
 </div>
 
-<div class="absolute left-[52px] bottom-[16px] text-[9px] text-[#A99C88]">合计 23 页（含封面与小结）；页码为放映顺序，与任务书 1.1–3.7 的条目一一对应。</div>
-
 <!-- 目录页：把封面上的范围说明搬到这里并补全到每个小节。 -->
 ---
 layout: default
