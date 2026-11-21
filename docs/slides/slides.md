@@ -63,7 +63,7 @@ layout: default
 
 <div class="cols cols-2 gap-lg">
   <div>
-    <p class="lede">长篇不是一次生成，而是持续数周的创作过程：几十次模型调用、上百个设定、不断被推翻又重建的情节。</p>
+    <p class="lede">长篇创作持续数周：几十次模型调用、上百个设定、不断被推翻又重建的情节。</p>
     <div class="stat-row">
       <div class="stat-cell">
         <div class="stat-num">1</div>
@@ -78,12 +78,12 @@ layout: default
         <div class="stat-label">次模型调用</div>
       </div>
     </div>
-    <p class="muted mt-2">每一次调用都可能改变人物状态、时间线或伏笔位置。真正的难点不是“下一句写什么”，而是“下一章还记不记得”。</p>
+    <p class="muted mt-2">每一次调用都可能改变人物状态、时间线或伏笔位置。难点在下一章：人物、时间线和伏笔是否还记得住。</p>
   </div>
 
   <div class="card-dark quote-card">
     <div class="quote-mark">“</div>
-    <div class="quote">真正的瓶颈不是文笔，<br>是<b>跨章状态</b>。</div>
+    <div class="quote">真正卡住长篇的，<br>是<b>跨章状态</b>。</div>
     <div class="quote-sub">人物、物品、时间、伏笔、知识来源——只要有一个漂移，读者就会出戏。</div>
     <div class="quote-line"></div>
     <div class="quote-foot">Tome Agent 的答案：把长篇拆成可提交、可恢复、可追溯的状态变更。</div>
@@ -92,7 +92,7 @@ layout: default
 
 <div class="bottom-note">来源：docs/requirements/problem_definition.md · docs/software/architecture.md</div>
 
-<!-- 先给判断：长篇的瓶颈是状态，不是单段文本质量。 -->
+<!-- 先给判断：长篇的瓶颈在跨章状态。 -->
 
 ---
 layout: default
@@ -134,7 +134,7 @@ layout: default
 
 <div class="root-cause">
   <div class="root-label">同一个根因</div>
-  <div class="root-text">记忆不是提示词问题，是状态管理问题。</div>
+  <div class="root-text">记忆问题本质上是状态管理问题。</div>
   <div class="root-note">上下文窗口会截断，摘要会失真，向量检索不能判断一条事实是否已经过期。</div>
 </div>
 
@@ -156,7 +156,7 @@ layout: default
   <div class="mission-card">
     <div class="tag">使命</div>
     <div class="mission-text">把「创作一部长篇」的门槛，<br>从「会不会写」降到<br><em>「说不说得清一个想法」</em>。</div>
-    <div class="mission-foot">不是把作者变成机器，而是把系统该记的东西交还给系统。</div>
+    <div class="mission-foot">把系统该记的东西交还给系统，让作者专注创作判断。</div>
   </div>
 
   <div class="slogan-card">
@@ -193,7 +193,7 @@ layout: default
 
 <div class="kicker">目标用户 / WHO</div>
 
-# 服务「想写却写不完」的人，<br>不是替代专业作家。
+# 服务「想写却写不完」的人。<br>为普通作者补上工程能力。
 
 <div class="rule"></div>
 
@@ -210,7 +210,7 @@ layout: default
     <div class="persona-top"><span class="persona-index">02</span><span class="tag">高价值用户</span></div>
     <div class="persona-title">类型小说作者</div>
     <div class="persona-row"><b>他们是谁</b><span>有稳定更新需求，设定复杂、伏笔多，最怕前后矛盾。</span></div>
-    <div class="persona-row"><b>卡在哪里</b><span>灵感不是问题，一致性才是；每次改设定都要重读全书。</span></div>
+    <div class="persona-row"><b>卡在哪里</b><span>灵感充足，一致性难守；每次改设定都要重读全书。</span></div>
     <div class="persona-row"><b>我们要给</b><span>可追溯的状态与来源，让修改只影响该影响的地方。</span></div>
   </div>
 
@@ -269,7 +269,7 @@ layout: default
 </div>
 
 <div class="value-bottom">
-  <div class="value-quote">价值不是“写得更多”，而是让作者<b>敢继续写下去</b>。</div>
+  <div class="value-quote">价值落在让作者<b>敢继续写下去</b>。</div>
   <div class="value-side">对应交付：创建作品 · 配置文风 · 费用确认 · 逐章生成 · 失败恢复 · 导出 Markdown</div>
 </div>
 
@@ -283,7 +283,7 @@ layout: default
 
 <div class="kicker">差异化 / DIFFERENCE</div>
 
-# 不比谁更会写，<br>比谁记得住、谁不糊弄。
+# 把长篇写下去，<br>靠记得住、不糊弄。
 
 <div class="rule"></div>
 
@@ -307,12 +307,12 @@ layout: default
 
 <div class="compare-bottom">
   <div class="compare-line"></div>
-  <div class="compare-note">差异化的落点不是“更会写”，而是<b>更可管理</b>：状态有版本，失败可恢复，成本可解释，内容可迁移。</div>
+  <div class="compare-note">差异化落在<b>可管理</b>：状态有版本，失败可恢复，成本可解释，内容可迁移。</div>
 </div>
 
 <div class="bottom-note">来源：docs/requirements/problem_definition.md · docs/algorithm/research.md</div>
 
-<!-- 与通用聊天和写作插件对比，优势集中在可管理性，而不是文采。 -->
+<!-- 与通用聊天和写作插件对比，优势集中在可管理性。 -->
 
 ---
 layout: default
@@ -399,7 +399,7 @@ class: section
 
 <div class="section-foot">Tome Agent · 产品设计 / 设计原则 / 产品实现</div>
 
-<!-- 第二部分：十二条原则不是墙上的标语，而是能回到仓库里的决策。 -->
+<!-- 第二部分：十二条原则要能回到仓库里的决策。 -->
 
 ---
 layout: default
@@ -440,7 +440,7 @@ layout: default
 
 <div class="overview-note">
   <div class="overview-mark">“</div>
-  <div>原则不是挂在墙上的词，而是<b>遇到取舍时，能解释为什么选这个、不选那个</b>。</div>
+  <div>原则要能解释取舍：<b>为什么选这个、不选那个</b>。</div>
 </div>
 
 <div class="bottom-note">结构对应：需求与信息 → 系统与迭代 → 继承与效益 → 测试与审查</div>
@@ -485,7 +485,7 @@ class: principle-page
     <div class="p-no">03</div>
     <div class="p-body">
       <div class="p-title">创新才有落脚点</div>
-      <div class="p-text">把创新放在“事件先行 + 三层记忆 + 可恢复提交”，而不是为了新而新地换框架。</div>
+      <div class="p-text">把创新放在“事件先行 + 三层记忆 + 可恢复提交”，围绕作者可感知的问题持续迭代。</div>
     </div>
     <div class="p-ev"><span>证据</span><code>docs/software/LANGGRAPH_MIGRATION.md</code><em>graph_runtime.py</em></div>
   </div>
@@ -506,7 +506,7 @@ class: principle-page
   <div class="principle-big">02</div>
   <div>
     <div class="kicker">原则组 II · 系统</div>
-    <h1>把作品当系统，<br>而不是一段文本。</h1>
+    <h1>把作品当系统，<br>人物、时间与事件分别建模。</h1>
   </div>
 </div>
 
@@ -593,7 +593,7 @@ class: principle-page
 
 <div class="p-foot">取舍标准：新增的每一层，都要能回答“它替作者解决了什么”。</div>
 
-<div class="p-quote">不是每个能力都值得自己造。</div>
+<div class="p-quote">只造真正影响体验的能力。</div>
 
 <!-- 第三组：取舍。把工程资源花在确定性上。 -->
 
@@ -641,9 +641,9 @@ class: principle-page
   </div>
 </div>
 
-<div class="p-foot">质量不是最后一道门，而是每次提交都在走的默认路径。</div>
+<div class="p-foot">质量是每次提交都在走的默认路径。</div>
 
-<div class="p-quote">质量不是一个里程碑，而是每次提交的默认值。</div>
+<div class="p-quote">每次提交都留下可复查的证据。</div>
 
 <!-- 第四组：质量。测试、简化、审查，三件事都变成默认动作。 -->
 
@@ -706,7 +706,7 @@ class: section
 
 <div class="section-foot">Tome Agent · 产品设计 / 设计原则 / 产品实现</div>
 
-<!-- 第三部分：实现不是“写完了”，而是每个设计决定都能在仓库里找到落点。 -->
+<!-- 第三部分：每个设计决定都能在仓库里找到落点。 -->
 
 ---
 layout: default
@@ -749,11 +749,11 @@ flowchart LR
 
 <div class="arch-foot"><span>请求路径</span> 界面动作 → 服务层校验 → 引擎编排 → 检查点 / 数据库提交 → 结果回传。</div>
 
-<div class="arch-quote">架构不是分层越多越好，而是<b>每一层都能被替换、被测试、被解释</b>。</div>
+<div class="arch-quote">好的架构让<b>每一层都能被替换、被测试、被解释</b>。</div>
 
 <div class="bottom-note">来源：docs/software/architecture.md · code/backend/inf_backend/service.py · code/core_engine/</div>
 
-<!-- 四层架构，重点是边界而不是分层数量。 -->
+<!-- 四层架构，重点是边界。 -->
 
 ---
 layout: default
@@ -798,7 +798,7 @@ flowchart LR
   </div>
 </div>
 
-<div class="flow-quote"><span>修订上限</span> 让系统回到可收敛的路径；不是所有分歧都要靠“再生成一次”解决。</div>
+<div class="flow-quote"><span>修订上限</span> 让系统回到可收敛的路径，减少无效的重复生成。</div>
 
 <div class="bottom-note">来源：docs/algorithm/LANGGRAPH.mmd · code/core_engine/memory_runtime/writing_flow/graph_runtime.py</div>
 
@@ -841,7 +841,7 @@ layout: default
   </div>
 </div>
 
-<div class="memory-note"><b>三层记忆不是向量库。</b>检索只能找到相似内容，不能判断一条事实是否已经过期；状态需要版本和来源。</div>
+<div class="memory-note"><b>三层记忆用结构化状态管理事实。</b>检索只能找到相似内容，不能判断一条事实是否已经过期；状态需要版本和来源。</div>
 
 <div class="bottom-note">来源：docs/software/architecture.md「事件先行与三层记忆」 · code/core_engine/memory_runtime/</div>
 
@@ -897,7 +897,7 @@ layout: default
 
 <div class="kicker">3.6 质量 / QUALITY</div>
 
-# 质量不是最后一道门，<br>是每次提交都在走的路。
+# 质量是每次提交的<br>默认动作。
 
 <div class="rule"></div>
 
