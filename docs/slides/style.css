@@ -200,6 +200,20 @@
   position: relative;
 }
 
+/* 占位框：待补截图的位置 */
+.ph {
+  border: 1.5px dashed #c9bfae;
+  border-radius: 10px;
+  color: #8a8072;
+  font-size: 10px;
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6px 10px;
+}
+
 /* ---------- 页码与进度条 ---------- */
 .slidev-page-number {
   color: #a99c88;

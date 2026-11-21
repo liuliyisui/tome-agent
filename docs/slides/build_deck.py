@@ -237,7 +237,7 @@ s = new_slide()
 bar(s, 0, 0, W, 0.16, PRIMARY)
 
 # 品牌标识（透明底，右侧居中）
-logo_path = HERE / "slidev" / "public" / "tome-logo-clean.png"
+logo_path = HERE / "public" / "tome-logo-clean.png"
 logo_w = 3.0
 logo_h = logo_w * 63 / 242
 s.shapes.add_picture(

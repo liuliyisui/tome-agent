@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       slide_file:
-        description: "要导出的 Markdown 文件（相对 slides/slidev）"
+        description: "要导出的 Markdown 文件（相对 docs/slides）"
         required: false
         default: "slides.md"
 
@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: slides/slidev
+        working-directory: docs/slides
 
     steps:
       - name: Checkout
@@ -37,7 +37,7 @@ jobs:
         with:
           node-version: "22"
           cache: pnpm
-          cache-dependency-path: slides/slidev/pnpm-lock.yaml
+          cache-dependency-path: docs/slides/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -65,5 +65,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: slides-pdf
-          path: slides/slidev/dist/*.pdf
+          path: docs/slides/dist/*.pdf
           retention-days: 14

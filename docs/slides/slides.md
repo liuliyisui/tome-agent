@@ -839,3 +839,614 @@ layout: default
 </div>
 
 <!-- 组四的关键词是「可验收」：定量给标准，简化控成本，审核保证每一步没跑偏。十二原则收束。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3. 产品实现</div>
+
+# 设计与原则落到仓库里：体验、选型、架构、质量、统计
+
+<div class="hr-line"></div>
+
+<div class="grid grid-cols-4 gap-3 mt-2">
+  <div class="card-soft px-4 py-3"><div class="tag">3.1</div><div class="text-[12.5px] font-bold mt-1">用户体验设计的因素</div></div>
+  <div class="card-soft px-4 py-3"><div class="tag">3.2</div><div class="text-[12.5px] font-bold mt-1">语言 / IDE / 平台 / 框架</div></div>
+  <div class="card-soft px-4 py-3"><div class="tag">3.3</div><div class="text-[12.5px] font-bold mt-1">仓库链接与提交历史</div></div>
+  <div class="card-soft px-4 py-3"><div class="tag">3.4</div><div class="text-[12.5px] font-bold mt-1">全生命周期问题汇总</div></div>
+  <div class="card-soft px-4 py-3"><div class="tag">3.5</div><div class="text-[12.5px] font-bold mt-1">概要设计：架构 / 数据 / 接口</div></div>
+  <div class="card-soft px-4 py-3"><div class="tag">3.6</div><div class="text-[12.5px] font-bold mt-1">软件质量：方法 / 工具 / 整改</div></div>
+  <div class="card-soft px-4 py-3"><div class="tag">3.7</div><div class="text-[12.5px] font-bold mt-1">代码统计：模块 / 行数 / AI 占比</div></div>
+  <div class="card-soft px-4 py-3"><div class="tag">仓库</div><div class="mono text-[10px] mt-1 leading-relaxed">github.com/liuliyisui/tome-agent</div></div>
+</div>
+
+<!-- 第 3 部分：从设计走到仓库。七个小节对应任务书的 3.1–3.7，每页底部标注交付证据的来源。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3.0 本部分覆盖的考核要点</div>
+
+# 每条要求对应的交付证据
+
+<div class="hr-line"></div>
+
+| 课程要求（对应任务书 3. 产品实现） | 交付证据 |
+| --- | --- |
+| 3.1 用户体验设计考虑的因素 | 六项体验因素，含失败可见性 |
+| 3.2 编程语言 / IDE / 平台 / 框架（含版本号） | 版本表 + 选型原因（已写入 README） |
+| 3.3 代码仓库链接与提交历史 | 仓库地址、每人提交次数、看板与缺陷追踪 |
+| 3.4 全生命周期问题与解决方法汇总 | 六类问题表 + 仓库内 `docs/software/ISSUES_SUMMARY.md` |
+| 3.5.1 系统架构图 | 自底向上四层架构（界面 / 服务 / 引擎 / 存储） |
+| 3.5.2 基础设施图 | 单机本地部署形态（从架构图说明理由） |
+| 3.5.3 智能体技术设计 | 任务编排状态图、事件先行与三层记忆、护栏、写作 Skill 知识库、参考文献 |
+| 3.5.4 数据库设计 | 由 `schema.sql` 逆向生成的 E-R 图与设计要点 |
+| 3.5.5 接口设计 | 真实 HTTP 路由表（取自 `web.py`）与方法描述 |
+| 3.5.6 前端设计 | 渐进式 Vue 3 方案与原型边界说明 |
+| 3.6 软件质量（3.6.1 / 3.6.2） | 日志与异常处理、Ruff 规则集与整改结果、CI 四类 job |
+| 3.7 代码统计 | 模块数、分语言行数、AI 辅助编写比例口径 |
+
+<div class="mt-3 text-[9.5px]" style="color:#8A8072">参考文档要求「引用的相关开源代码、文献需要给出来源」：本部分每页标注来源，最后一页列出完整清单。</div>
+
+<!-- 索引页：让评委能直接对着任务书勾。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3.1 用户体验设计考虑的因素</div>
+
+# 从「能跑起来」到「敢让作者一直用下去」
+
+<div class="hr-line"></div>
+
+<div class="grid grid-cols-3 gap-3">
+
+<div class="card-soft p-4">
+  <div class="num text-[15px]">01</div>
+  <div class="text-[12.5px] font-bold mt-1">本地即用，零部署门槛</div>
+  <div class="body-text mt-2">浏览器打开 <span class="mono">127.0.0.1:8765</span> 即进入工作室；本机单用户定位，无需注册、无需公网服务。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="num text-[15px]">02</div>
+  <div class="text-[12.5px] font-bold mt-1">进度可续，不丢半成品</div>
+  <div class="body-text mt-2">每个阶段保存检查点，中断后可恢复；保留已完成章节与待处理任务队列。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="num text-[15px]">03</div>
+  <div class="text-[12.5px] font-bold mt-1">费用可见，调用前确认</div>
+  <div class="body-text mt-2">生成前给出费用预估并由用户确认；记录 token 与用量；API 密钥仅存本机 <span class="mono">.env</span>，不回传网页。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="num text-[15px]">04</div>
+  <div class="text-[12.5px] font-bold mt-1">失败可见，降级保正文</div>
+  <div class="body-text mt-2">超时、响应截断、坏 JSON 等错误对用户可见；局部规划或记忆处理失败时记录问题并保留有效正文。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="num text-[15px]">05</div>
+  <div class="text-[12.5px] font-bold mt-1">创作流程可控</div>
+  <div class="body-text mt-2">创建作品、配置文风、逐章或批量生成、导出排版后的 Markdown；章节可按作者反馈重新生成。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="num text-[15px]">06</div>
+  <div class="text-[12.5px] font-bold mt-1">技能可控且安全</div>
+  <div class="body-text mt-2">每部作品最多选择 5 个写作 Skill，仅以文本注入模型，不执行脚本、工具调用或文件操作。</div>
+</div>
+
+</div>
+
+<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">来源：README「核心功能」「验证与使用说明」、docs/software/USER_GUIDE.md、code/backend/inf_backend/web.py（路由与错误处理）。</div>
+
+<!-- 六项体验因素：从"能跑"到"敢一直用"。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3.2 编程语言 / IDE / 平台 / 框架</div>
+
+# 技术选型与版本号
+
+<div class="hr-line"></div>
+
+| 条目名称 | 条目内容 | 版本号 | 选型原因与用途 |
+| --- | --- | --- | --- |
+| 程序设计语言 | Python | 3.11+（CI 固定 3.11） | 写作引擎、模型接口与后端服务；复用既有引擎与标准库测试 |
+| 智能体编排 | LangGraph | 1.2.17 | 用状态图表达规划 / 写作 / 记忆 / 审核，支持条件边与重规划 |
+| 前端框架 | Vue（runtime-only） | 3.5.44 | 仓库内置运行时组织交互组件，无需前端构建步骤 |
+| 前端语言 | HTML / CSS / JavaScript | 浏览器原生 | 原生技术实现本地工作室，降低构建与部署复杂度 |
+| Web 服务 | Python 标准库 `http.server` | 随 Python 版本 | 为本地单用户提供 HTTP 接口，避免再叠一层 Web 框架 |
+| 数据库（可选） | PostgreSQL + Psycopg | PG 17（CI 覆盖 17/18）；Psycopg 3.3.3 | 持久化作品、章节与任务；未配置时降级为文件模式 |
+| 模型服务 | DeepSeek / OpenAI 兼容接口 | Chat Completions | 沿用已接入接口，复用配置、计费预估与故障测试逻辑 |
+| 开发工具 | VS Code 等 Python 编辑器 | 未锁定 | 编辑调试；Ruff + Pylance 方案 A，规则集中在仓库配置文件 |
+
+<div class="card px-4 py-3 mt-4">
+  <div class="text-[11px]"><span class="tag text-[11px]">选型原则：</span>「不要太重，也不要太轻」——不引入 ASGI 框架与前端构建链，把复杂度放在智能体编排与状态一致性上；代价是接口验证、错误转换与线程管理由项目自行维护。同一张表已写入仓库 <span class="mono">README.md</span>「技术选型」。</div>
+</div>
+
+<!-- 选型表：版本号 + 为什么这么选，一行都说清楚。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3.3 代码仓库链接与提交历史</div>
+
+# 仓库、提交历史与协作看板
+
+<div class="hr-line"></div>
+
+<div class="grid grid-cols-[1fr_1fr] gap-5">
+
+<div>
+  <div class="card-soft px-4 py-3">
+    <div class="tag">仓库地址</div>
+    <div class="mono text-[11px] mt-1">https://github.com/liuliyisui/tome-agent</div>
+    <div class="small mt-2">提交历史：仓库页 Pulse → Insights → Pulse</div>
+  </div>
+  <div class="card-soft px-4 py-3 mt-3">
+    <div class="tag">看板与缺陷追踪</div>
+    <div class="small mt-1 leading-[1.8]">任务与缺陷以 GitHub Issues 为正式记录，看板见 <span class="mono">docs/mgmt/KANBAN.md</span>（Issue #1–#6）；分工与分支策略见 <span class="mono">TEAM_PLAN.md</span>，路线图见 <span class="mono">ROADMAP.md</span>，风险与沟通见 <span class="mono">COMMUNICATION_AND_RISK_PLAN.md</span>。</div>
+  </div>
+</div>
+
+<div>
+  <div class="tag">每位成员的提交次数</div>
+  <div class="text-[10px] mt-1 mb-2" style="color:#8A8072">由 GitHub API <span class="mono">/contributors</span> 统计（截至本次汇报）</div>
+  <table>
+    <thead><tr><th>贡献者</th><th>提交次数</th></tr></thead>
+    <tbody>
+      <tr><td>liuliyisui</td><td>54</td></tr>
+      <tr><td>qinzongxin</td><td>43</td></tr>
+      <tr><td>tjh-666-student</td><td>23</td></tr>
+      <tr><td>Yulc9527</td><td>4</td></tr>
+      <tr><td>合计</td><td>124（仓库 main 分支）</td></tr>
+    </tbody>
+  </table>
+  <div class="ph mt-3" style="height:52px">此处粘贴 GitHub Pulse 提交历史截图（Insights → Pulse，可按成员筛选）</div>
+</div>
+
+</div>
+
+<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">提交次数来源：GitHub REST API repos/liuliyisui/tome-agent/contributors（统计时间：本次汇报当日）。</div>
+
+<!-- 仓库、提交、看板、缺陷：四个证据一起给。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3.4 全生命周期主要问题与解决方法</div>
+
+# 问题汇总表（分析 · 设计 · 开发 · 测试 · 部署运维）
+
+<div class="hr-line"></div>
+
+| 问题类别 | 问题名称 | 发生原因 | 解决办法 |
+| --- | --- | --- | --- |
+| 分析 | 需求边界反复 | 长篇创作需求含糊，演示原型与真实生成混为一谈 | 区分 <span class="mono">docs/software/prototype</span>（模拟数据）与正式服务，原型不作为真实生成证据 |
+| 设计 | 编排框架迁移 | LangGraph 迁移可能破坏已验证的领域逻辑 | 节点内复用既有模型适配、事件推演与记忆函数，控制迁移范围 |
+| 开发 | 模型调用失败 | 网络超时、响应截断、坏 JSON | 记录错误与用量；失败降级，保留已完成正文并区分「请求失败 / 可能已计费 / 内容未审核」 |
+| 开发 | 长篇生成中断 | 一次成稿需多次模型调用，耗时长 | 每阶段保存原子检查点，识别待处理任务与损坏检查点 |
+| 测试 | 文件与数据库双写 | 数据库记录与文件检查点并非原子事务 | 故障演练确认恢复行为，明确列出未覆盖边界，不过度承诺 |
+| 部署运维 | 旧版本无法续写 | 旧检查点运行时哈希与新版本源码不一致 | 禁止手改哈希绕过；升级前保留旧代码与作品 |
+
+<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">存储位置：本表已以 Markdown 存入项目仓库 <span class="mono">docs/software/ISSUES_SUMMARY.md</span>。来源：architecture.md、CODE_QUALITY_FIXES.md、retrospection/README.md。</div>
+
+<!-- 六类问题：分析、设计、开发×2、测试、部署运维。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3.5.1 系统架构图</div>
+
+# 系统架构：分层自下而上
+
+<div class="hr-line"></div>
+
+<div class="flex items-stretch gap-2 mt-3">
+
+<div class="card-soft px-3 py-4 flex-1">
+  <div class="tag">存储层</div>
+  <div class="body-text mt-2 leading-[1.7]">应用原子检查点（本地文件）<br>PostgreSQL（可选）：作品 / 章节 / 任务 / 用量</div>
+</div>
+
+<div class="flex items-center text-[14px]" style="color:#A99C88">→</div>
+
+<div class="card-soft px-3 py-4 flex-1">
+  <div class="tag">引擎层</div>
+  <div class="body-text mt-2 leading-[1.7]">LangGraph 状态图 · 事件推演<br>三层记忆 · 连续性校验 · 失败降级</div>
+</div>
+
+<div class="flex items-center text-[14px]" style="color:#A99C88">→</div>
+
+<div class="card-soft px-3 py-4 flex-1">
+  <div class="tag">服务层</div>
+  <div class="body-text mt-2 leading-[1.7]">Python HTTP 服务<br><span class="mono">127.0.0.1:8765</span><br>WritingSession 会话入口</div>
+</div>
+
+<div class="flex items-center text-[14px]" style="color:#A99C88">→</div>
+
+<div class="card-soft px-3 py-4 flex-1">
+  <div class="tag">界面层</div>
+  <div class="body-text mt-2 leading-[1.7]">正式 Vue 3 页面 <span class="mono">code/frontend</span><br>书架 / 文风 / 费用确认 / 生成 / 导出</div>
+</div>
+
+</div>
+
+<div class="grid grid-cols-[1fr_1fr] gap-4 mt-4">
+  <div class="card px-4 py-3">
+    <div class="tag">模型服务（服务层旁路调用）</div>
+    <div class="small mt-1 leading-[1.7]">DeepSeek / OpenAI 兼容接口；<span class="mono">chat_provider</span> 封装请求、超时与用量。</div>
+  </div>
+  <div class="card px-4 py-3">
+    <div class="tag">依赖方向</div>
+    <div class="small mt-1 leading-[1.7]">界面 → 服务 → 引擎 → 存储；引擎不感知界面与传输层，便于替换与测试。</div>
+  </div>
+</div>
+
+<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">图源：<span class="mono">docs/software/architecture.md</span>、<span class="mono">docs/algorithm/LANGGRAPH.mmd</span>、<span class="mono">code/backend/inf_backend/</span>、<span class="mono">code/core_engine/memory_runtime/</span>。</div>
+
+<!-- 四层架构：存储→引擎→服务→界面，模型服务旁路。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3.5.2 基础设施图</div>
+
+# 部署形态：单机本地
+
+<div class="hr-line"></div>
+
+<div class="grid grid-cols-3 gap-3">
+
+<div class="card-soft p-4">
+  <div class="tag">本地单机</div>
+  <div class="body-text mt-2">本机单用户工作室定位，不以公网多租户服务为设计目标；无多节点、无负载均衡，故按参考文档「只有一台服务器可不画」从略。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">存储可切换</div>
+  <div class="body-text mt-2">默认文件模式：作品存于 <span class="mono">code/backend/data/inf_books/</span>；配置 <span class="mono">DATABASE_URL</span> 后切换 PostgreSQL，引擎检查点仍留在本地文件。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">启动方式</div>
+  <div class="body-text mt-2">Windows：<span class="mono">setup.cmd</span> + <span class="mono">run-web.cmd</span>；另提供便携版与 Linux 托管部署说明（DEPLOY.md、WINDOWS_PORTABLE.md、LINUX_HOSTED.md）。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">容器与 CI</div>
+  <div class="body-text mt-2">Compose 文件描述本地 PostgreSQL 服务、健康检查与数据卷；GitHub Actions 覆盖 PostgreSQL 17/18 版本矩阵与托管 Linux 运行。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">运行时版本</div>
+  <div class="body-text mt-2">Python 3.11+（CI 固定 3.11）；依赖锁定 <span class="mono">requirements.txt</span>：psycopg[binary]==3.3.3、langgraph==1.2.17。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">密钥与数据</div>
+  <div class="body-text mt-2">模型密钥写入本机 <span class="mono">.env</span>，不提交 Git；<span class="mono">.env.example</span> 为配置模板，作品数据与技能文件留在本机目录。</div>
+</div>
+
+</div>
+
+<!-- 单机本地：为什么没有基础设施图（只有一台机器），以及存储/启动/密钥怎么放。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3.5.3 智能体技术设计（一）</div>
+
+# 任务编排：状态图与事件先行
+
+<div class="hr-line"></div>
+
+<div class="flex items-center gap-1 mt-4">
+  <div class="step flex-1">开始</div>
+  <div class="text-[11px]" style="color:#A99C88">→</div>
+  <div class="step flex-1">event_planner<br>事件规划</div>
+  <div class="text-[11px]" style="color:#A99C88">→</div>
+  <div class="step flex-1">event_writer<br>正文生成</div>
+  <div class="text-[11px]" style="color:#A99C88">→</div>
+  <div class="step flex-1">event_commit<br>提交章节</div>
+  <div class="text-[11px]" style="color:#A99C88">→</div>
+  <div class="step flex-1">memory<br>三层记忆</div>
+  <div class="text-[11px]" style="color:#A99C88">→</div>
+  <div class="step flex-1">reviewer<br>审核</div>
+  <div class="text-[11px]" style="color:#A99C88">→</div>
+  <div class="step step-alt flex-1">结束</div>
+</div>
+
+<div class="text-[9.5px] mt-2" style="color:#8A8072">event_writer → event_planner 之间存在 <span class="mono">revise</span> 修订回边；coordinator 亦由审核条件边选择提交或拒绝。</div>
+
+<div class="grid grid-cols-2 gap-4 mt-4">
+  <div class="card-soft p-4">
+    <div class="tag">任务编排</div>
+    <div class="body-text mt-2">规划、写作、提交、记忆、审核为独立节点；写作提出事件修订时经条件边返回规划节点（保留一次修订上限）。严格事务入口 Coordinator 决定提交或拒绝。</div>
+  </div>
+  <div class="card-soft p-4">
+    <div class="tag">事件先行 + 三层记忆</div>
+    <div class="body-text mt-2">先规划场景事件并推演状态，再生成正文；工作记忆、近期记忆、长期记忆分层保存并保留正文来源，避免整本重发。</div>
+  </div>
+</div>
+
+<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">图源：<span class="mono">docs/algorithm/LANGGRAPH.mmd</span>（Mermaid 源文件，节点名与边标签与源码一致）。</div>
+
+<!-- 状态图五个节点加 revise 回边；事件先行是这一节的核心创新。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3.5.3 智能体技术设计（二）</div>
+
+# 记忆、护栏与专业知识库
+
+<div class="hr-line"></div>
+
+<div class="grid grid-cols-2 gap-3">
+
+<div class="card-soft p-4">
+  <div class="tag">连续性管理</div>
+  <div class="body-text mt-2">跟踪人物、物品、时间、任务、知识来源与状态版本，由领域规则校验状态变化，结构化契约替代「整本重发」，减少上下文与调用成本。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">护栏与失败降级</div>
+  <div class="body-text mt-2">记忆处理失败时记录问题并保留已生成的有效正文；失败状态与「内容未审核」严格区分；审核为模式开关，当前配置为正文审核关闭，不宣称每章均经模型审核。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">专业知识库：写作 Skill</div>
+  <div class="body-text mt-2">作品级选择（每部作品最多 5 个）写作 Skill，生成正文时以文本注入模型，与记忆协作补充风格与要求；技能不执行脚本、工具调用或文件操作。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">模型选择与边界</div>
+  <div class="body-text mt-2">本项目不训练算法模型，核心是 LangGraph 编排 + 事件先行 + 三层记忆；未采用向量检索（相似度不能判断事实是否过期），列为后续补充；未启用 LangGraph 原生 checkpoint，沿用应用自身原子检查点。</div>
+</div>
+
+</div>
+
+<div class="card px-4 py-3 mt-3">
+  <div class="text-[10px] leading-[1.8]"><span class="tag text-[10px]">开源框架与官方文档：</span><span class="mono">langchain.com/oss/python/langgraph</span> · DeepSeek API 文档 · PostgreSQL 事务 · Psycopg 3 事务管理 · Vue 渲染函数 · Python <span class="mono">http.server</span> · Docker Compose 文档 · GitHub Actions Python CI 指南。</div>
+</div>
+
+<!-- 记忆/护栏/知识库/模型边界，四块拼成智能体设计。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3.5.4 数据库设计</div>
+
+# PostgreSQL 数据模型（E-R 图）
+
+<div class="hr-line"></div>
+
+<div class="card-soft px-4 py-3">
+  <div class="tag">tome_books 作品主表</div>
+  <div class="small mono mt-1 leading-[1.7]">id (PK) · metadata jsonb · state jsonb · state_kind (snapshot/longform) · style jsonb · checkpoint · last_usage jsonb · pinned · deleted_at / restore_token</div>
+</div>
+
+<div class="grid grid-cols-3 gap-3 mt-3">
+
+<div class="card-soft p-3">
+  <div class="tag">tome_chapters 章节（1:N）</div>
+  <div class="small mono mt-1 leading-[1.7]">book_id, number (PK, FK)<br>title · body · version</div>
+</div>
+
+<div class="card-soft p-3">
+  <div class="tag">tome_jobs 生成任务（1:N）</div>
+  <div class="small mono mt-1 leading-[1.7]">id (PK) · book_id (FK)<br>status(running/completed/failed/interrupted) · payload jsonb</div>
+</div>
+
+<div class="card-soft p-3">
+  <div class="tag">tome_usage 用量记录</div>
+  <div class="small mono mt-1 leading-[1.7]">book_id, checkpoint (PK)<br>payload jsonb · saved_at</div>
+</div>
+
+<div class="card-soft p-3">
+  <div class="tag">tome_chapter_versions 章节版本</div>
+  <div class="small mono mt-1 leading-[1.7]">book_id, number, version (PK)<br>title · body · created_at</div>
+</div>
+
+<div class="card-soft p-3">
+  <div class="tag">tome_schema_version 结构版本</div>
+  <div class="small mono mt-1 leading-[1.7]">version (PK) · applied_at<br>3 个索引 + 1 个唯一索引</div>
+</div>
+
+<div class="card px-3 py-2">
+  <div class="tag">设计要点</div>
+  <div class="small mt-1 leading-[1.7]">JSONB 承载结构化状态；回收站用 <span class="mono">deleted_at</span> + <span class="mono">restore_token</span> 实现软删除与恢复；未配置数据库时降级为文件模式。</div>
+</div>
+
+</div>
+
+<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">来源：<span class="mono">code/backend/inf_backend/schema.sql</span>（6 张表 + 3 索引 + 1 唯一索引）逆生成；Mermaid 原始图见 <span class="mono">docs/algorithm/ER.mmd</span>。</div>
+
+<!-- E-R：六张表 + 设计要点；由 schema.sql 逆生成。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3.5.5 接口设计</div>
+
+# 真实 HTTP 路由（取自 web.py）
+
+<div class="hr-line"></div>
+
+| 接口名称 | 方法 | 接口功能 | 输出对象 |
+| --- | --- | --- | --- |
+| `/api/model-config` | GET / POST | 读取与保存模型服务配置 | 模型配置（密钥不回传） |
+| `/api/model-test` | POST | 模型连通性与能力测试 | 测试结果 / 错误信息 |
+| `/api/skills` | GET / POST | 列出与安装写作 Skill | 技能列表 |
+| `/api/config` | GET / POST | 读取与保存默认设置 | 配置对象 |
+| `/api/books` | GET / POST | 书架列表 / 新建作品 | 作品列表 / 作品 id |
+| `/api/books/{id}/generate` | POST | 触发生成任务 | 任务对象（HTTP 202） |
+| `/api/books/{id}/estimate` | POST | 生成前费用预估 | 预估费用 |
+| `/api/books/{id}/chapters/{n}/regenerate` | POST | 按作者反馈重写章节 | 任务对象 |
+| `/api/books/{id}/style` | POST | 保存文风（次章生效） | 文风对象 |
+| `/api/books/trash` `/restore` `/trash/purge` | GET / POST | 废案箱、恢复与彻底删除 | 列表 / 操作结果 |
+| `/api/books/{id}/export` | GET | 导出排版后的 Markdown | Markdown 文件 |
+| `/api/jobs/{id}` | GET | 查询生成任务进度 | 状态与进度 |
+
+<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">来源：<span class="mono">code/backend/inf_backend/web.py</span>（do_GET / do_POST 路由分派）与 <span class="mono">service.py</span>；异常统一转为 JSON 错误响应，生成任务返回 202 表示已受理。完整参数见 Swagger / APIFox。</div>
+
+<!-- 接口：12 行路由，覆盖模型配置、技能、作品、章节、任务、导出。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3.5.6 前端设计</div>
+
+# 前端：渐进式 Vue 3 与本地资源
+
+<div class="hr-line"></div>
+
+<div class="grid grid-cols-2 gap-3">
+
+<div class="card-soft p-4">
+  <div class="tag">正式界面（code/frontend）</div>
+  <div class="body-text mt-2">HTML / CSS / JavaScript 原生页面，由 Vue 3.5.44 渐进管理交互；采用仓库内置 runtime-only 运行时与 <span class="mono">h()</span> 渲染函数，无前端构建步骤、不依赖 CDN；响应式组件覆盖书架、废案箱、文风保存、删除恢复、费用确认与取消；生成任务在后台线程执行，页面轮询任务状态展示进度。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">独立交互原型（docs/software/prototype）</div>
+  <div class="body-text mt-2">以模拟数据与 localStorage 展示交互流程，不调用模型、不读写正式存档；原型演示不作为真实生成或数据持久化的证据，答辩时可现场说明两者差别。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">选型取舍</div>
+  <div class="body-text mt-2">相较立即重建 React/Vue 单页工程，渐进方案复用现有功能、缩小学习范围；代价是命令式交互与组件状态并存，必须明确接口、事件与重复提交控制。若后续面向公网多用户，则需重新评估构建链、鉴权与任务队列。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">界面与需求对应</div>
+  <div class="body-text mt-2">界面动作与用户故事一一对应：创建作品、配置文风、确认费用、逐章生成、失败恢复、导出 Markdown（见 <span class="mono">docs/requirements/user_stories.md</span>），使 8 分钟演示可按故事线顺序进行。</div>
+</div>
+
+</div>
+
+<!-- 前端：渐进式 Vue，为什么不上构建链，以及原型与正式界面的区别。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3.6 软件质量（3.6.1 方法 + 3.6.2 工具）</div>
+
+# 质量控制与保证
+
+<div class="hr-line"></div>
+
+<div class="grid grid-cols-2 gap-3">
+
+<div class="card-soft p-4">
+  <div class="tag">3.6.1 方法与保证</div>
+  <div class="body-text mt-2"><b>日志</b>：记录模型请求、用量与错误（超时、截断、格式不符），区分「请求失败 / 可能已计费 / 内容未审核」。<br><b>异常与错误处理</b>：失败降级保留已生成正文；检查点记录待处理任务；接口异常统一转 JSON 错误响应；版本指纹不一致时拒绝续写而非静默覆盖。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">3.6.2 工具使用</div>
+  <div class="body-text mt-2"><b>Ruff 0.17.4</b>（Linter + Formatter 二合一，覆盖 PEP 8 风格与语义规则）：规则集 E、W、F、I、B、C4、UP，ignore = ["E501"]，line-length = 88，target-version = "py311"；规则集中于 <span class="mono">code/backend/pyproject.toml</span>，编辑器、预提交与 CI 共用同一份配置。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">整改结果（有据可查）</div>
+  <div class="body-text mt-2">整改前基线 <b>75 处不合规</b>（E402 42、B023 14、B904 12、B007 3、F841 3、E731 1、I001 36）；整改后 <b>0 处</b>，<span class="mono">ruff format</span> 全仓库无差异；改动 44 个 <span class="mono">.py</span> 文件（+240 / −194 行）。详见 <span class="mono">docs/software/CODE_QUALITY_FIXES.md</span>。</div>
+</div>
+
+<div class="card-soft p-4">
+  <div class="tag">自动化与佐证</div>
+  <div class="body-text mt-2"><b>预提交钩子</b>：ruff-pre-commit v0.17.4（ruff --fix、ruff-format）+ pre-commit-hooks v4.6.0（check-toml、check-yaml、end-of-file-fixer、trailing-whitespace）。<br><b>CI</b>：<span class="mono">.github/workflows/tests.yml</span> 含 lint、Windows 测试、postgresql（17/18 矩阵）、hosted-linux 四类 job。<br><b>代码复杂度</b>：可继续用 VS Code 插件（complexipy / Pylint）补测，当前以 Ruff 规则与测试覆盖为主要证据。</div>
+</div>
+
+</div>
+
+<!-- 质量：日志与异常、Ruff 规则、75→0 的整改、CI 四类 job。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">3.7 代码统计</div>
+
+# 模块数与代码行数
+
+<div class="hr-line"></div>
+
+<div class="grid grid-cols-[1.2fr_1fr] gap-5">
+
+<div>
+  <table>
+    <thead><tr><th>模块</th><th>文件数</th><th>行数</th></tr></thead>
+    <tbody>
+      <tr><td>code/core_engine（Python，写作与记忆引擎）</td><td>101</td><td>15,217</td></tr>
+      <tr><td>code/backend（Python，后端服务）</td><td>8</td><td>1,018</td></tr>
+      <tr><td>tests（Python，单元 + 集成）</td><td>11</td><td>1,117</td></tr>
+      <tr><td>code/frontend（JS / HTML / CSS）</td><td>3</td><td>314</td></tr>
+      <tr><td>合计</td><td>123</td><td>17,666</td></tr>
+    </tbody>
+  </table>
+  <div class="small mt-2">统计口径：本地克隆快照逐文件累计（.py / .js / .html / .css），提交 <span class="mono">0759e38</span>；正式答辩请用 VS Code Counter 插件重跑并附截图。</div>
+</div>
+
+<div>
+  <div class="card-soft px-4 py-3">
+    <div class="tag">AI Vibe Coding 与团队自写代码比例</div>
+    <div class="body-text mt-1">仓库未提供官方比例数据，需按统一口径统计后填入：建议按「提交作者 + 提交说明 + 是否 AI 生成」三要素归类，输出 AI 辅助生成行数 / 总行数比值，并注明统计工具（如 <span class="mono">git log --numstat</span> 结合人工抽查）。</div>
+  </div>
+  <div class="ph mt-3" style="height:96px">此处粘贴 VS Code Counter 统计截图<br>含按语言分行的行数统计，以及 AI 辅助编写比例的说明</div>
+</div>
+
+</div>
+
+<!-- 代码统计：四模块 17,666 行；AI 比例需按口径统计后填。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">小结</div>
+
+# 第三部分到此：产品实现要点已覆盖 3.1 – 3.7
+
+<div class="hr-line"></div>
+
+<div class="grid grid-cols-2 gap-3">
+
+<div class="card-soft px-4 py-3">
+  <div class="tag">主要来源（可公开验证）</div>
+  <div class="small mt-1 leading-[1.9]">
+    <div>· 仓库：<span class="mono">github.com/liuliyisui/tome-agent</span> — README「技术选型」「核心功能」「验证与使用说明」</div>
+    <div>· <span class="mono">docs/software/architecture.md</span>、<span class="mono">docs/algorithm/LANGGRAPH.mmd</span></div>
+    <div>· <span class="mono">docs/software/code_quality.md</span>、<span class="mono">CODE_QUALITY_FIXES.md</span></div>
+    <div>· <span class="mono">docs/software/DEPLOY.md</span>、<span class="mono">WINDOWS_PORTABLE.md</span>、<span class="mono">LINUX_HOSTED.md</span>、<span class="mono">POSTGRESQL.md</span></div>
+    <div>· <span class="mono">code/backend/inf_backend/schema.sql</span>、<span class="mono">web.py</span> / <span class="mono">service.py</span></div>
+    <div>· <span class="mono">docs/mgmt/KANBAN.md</span>、<span class="mono">TEAM_PLAN.md</span>、<span class="mono">ROADMAP.md</span>、<span class="mono">COMMUNICATION_AND_RISK_PLAN.md</span></div>
+  </div>
+</div>
+
+<div class="card-dk px-5 py-5 flex flex-col justify-center">
+  <div class="text-[22px] font-extrabold">谢谢观看 · 欢迎提问</div>
+  <div class="text-[11px] mt-3 leading-[1.9]" style="color:#E8E0D2">第一部分 1、2、3 三节合并完成：<br>产品设计（1.1–1.2）· 十二条设计原则（2）· 产品实现（3.1–3.7）</div>
+</div>
+
+</div>
+
+<!-- 收尾：来源清单 + 谢谢。 -->

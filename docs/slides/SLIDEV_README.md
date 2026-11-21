@@ -1,10 +1,10 @@
- Tome Agent 汇报幻灯片（Slidev 版）
+﻿ Tome Agent 汇报幻灯片（Slidev 版）
 
 这套幻灯片用 [Slidev](https://sli.dev) 写成：**内容是一份 Markdown**，样式在一个 CSS 里，构建、发布、导出 PDF 全部交给 GitHub Actions。
 和 `../Tome-Agent_第一部分_产品设计与设计原则.pptx`（python-pptx 版）内容一致，两者可以互为备份。
 
 ```
-slides/slidev/
+docs/slides/
 ├── slides.md                 # 全部 18 页内容（每页之间用 --- 分隔，<!-- --> 是演讲备注）
 ├── style.css                 # 视觉规范：墨蓝 / 朱砂 / 纸白，标题、卡片、表格样式
 ├── package.json              # 依赖与命令（dev / build / export）
@@ -31,7 +31,7 @@ slides/slidev/
 > ```
 
 ```bash
-cd slides/slidev
+cd docs/slides
 pnpm install          # 装依赖（首次约 1–2 分钟）
 pnpm dev              # 打开 http://localhost:3030 实时预览，改 slides.md 自动刷新
 pnpm exec slidev build slides.md --out dist --base /tome-agent/   # 只构建不预览
@@ -54,7 +54,7 @@ pnpm exec slidev build slides.md --out dist --base /tome-agent/   # 只构建不
 ### 第 1 步：提交文件
 
 ```bash
-git add slides/slidev .github/workflows/deploy-slides.yml .github/workflows/export-slides-pdf.yml
+git add docs/slides .github/workflows/deploy-slides.yml .github/workflows/export-slides-pdf.yml
 git commit -m "slides: add Slidev deck for part 1 and Pages deploy workflow"
 git push origin master
 ```
@@ -68,7 +68,7 @@ git push origin master
 
 ### 第 3 步：让它跑起来
 
-推送到 `main` / `master` 且改动了 `slides/slidev/**` 时自动触发；也可以在
+推送到 `main` / `master` 且改动了 `docs/slides/**` 时自动触发；也可以在
 **Actions → Deploy slides (Slidev) → Run workflow** 手动触发。
 
 工作流 5 个关键环节：
@@ -115,7 +115,7 @@ python -m http.server 3040 --bind 127.0.0.1 --directory slides\slidev\dist-local
 2. **本地**：
 
    ```bash
-   cd slides/slidev
+   cd docs/slides
    pnpm add -D playwright-chromium@1.65.1 --ignore-scripts   # 临时装导出用的浏览器驱动
    pnpm exec playwright install chromium                     # 只需一次，约 120 MB
    pnpm export                                               # 输出 dist/tome-agent-part1.pdf
@@ -139,7 +139,7 @@ python -m http.server 3040 --bind 127.0.0.1 --directory slides\slidev\dist-local
 | Actions 报 lockfile 不一致 | 本地 pnpm 版本和 `version: 11.28.5` 不同。用同一版本重新 `pnpm install` 后提交 lockfile |
 | PDF 中文变方框 | 缺少 CJK 字体；确认执行了 `fonts-noto-cjk` 那一步 |
 | 导出超时 | 页数多或机器慢；把 `--timeout` 从 180000 调大 |
-| 只改 CSS 没重新构建 | `paths` 只匹配 `slides/slidev/**`，CSS 在该目录内，会触发；改工作流本身也会触发 |
+| 只改 CSS 没重新构建 | `paths` 只匹配 `docs/slides/**`，CSS 在该目录内，会触发；改工作流本身也会触发 |
 | 想改单页 | 在 `slides.md` 里找对应 `---` 分隔块；`<!-- ... -->` 是演讲备注，不在放映画面里显示 |
 
 **版式约定**（`style.css` 已定义，写新页直接套）：

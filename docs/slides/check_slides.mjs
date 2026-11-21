@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path'
 import { parse } from 'yaml'
 
 const here = resolve(import.meta.dirname)
-const root = resolve(here, '..', '..')
+const root = resolve(here, '..', '..')  // docs/slides → 仓库根
 // 文件带 UTF-8 BOM（保证 Windows 编辑器不乱码），解析前先去掉
 const raw = readFileSync(join(here, 'slides.md'), 'utf8').replace(/^\uFEFF/, '')
 const lines = raw.split(/\r?\n/)
