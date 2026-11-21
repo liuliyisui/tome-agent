@@ -793,7 +793,6 @@ layout: default
     <div class="repo-links">
       <span>KANBAN.md</span><span>TEAM_PLAN.md</span><span>ROADMAP.md</span>
     </div>
-    <div class="repo-quote">Agensi 主动联系：可把写作流程封装成 Skill，上架其市场。</div>
   </div>
 </div>
 
