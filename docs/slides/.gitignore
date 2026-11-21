@@ -4,3 +4,6 @@ dist-local/
 .pnpm-store/
 *.local
 .DS_Store
+
+# Office lock files
+~$*
