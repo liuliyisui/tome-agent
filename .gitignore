@@ -19,6 +19,7 @@ __pycache__/
 
 # 本地临时目录与日志
 .tmp/
+.pnpm-store/
 *.log
 
 # 编辑器 / 系统
