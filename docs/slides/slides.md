@@ -698,7 +698,7 @@ class: section
   <div class="section-body">
     <div class="kicker light">Product implementation</div>
     <h1>产品实现</h1>
-    <p>从体验与选型，到架构、状态与质量。<br>把设计原则变成代码、测试和部署记录。</p>
+    <p>从体验与选型，到概要设计、架构与质量。<br>把设计原则变成代码、测试和部署记录。</p>
   </div>
 </div>
 
@@ -852,6 +852,104 @@ layout: default
 <div class="bottom-note">来源：docs/software/ISSUES_SUMMARY.md · docs/software/architecture.md · tests/TEST_REPORT.md</div>
 
 <!-- 3.4 全生命周期：主要问题、发生原因、解决办法与仓库证据。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.5 软件概要设计 / DESIGN</div>
+
+# 概要设计：先把边界和依赖画清楚。
+
+<div class="rule"></div>
+
+<div class="ux-grid">
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">01</span><span class="tag">3.5.1</span></div>
+    <div class="ux-title">系统架构</div>
+    <div class="ux-text">界面、服务、引擎、存储四层边界，模型服务从引擎层旁路调用。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">02</span><span class="tag">3.5.2</span></div>
+    <div class="ux-title">基础设施</div>
+    <div class="ux-text">单台 Linux 服务器，Nginx 负责 HTTPS 与反向代理，服务只监听本机。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">03</span><span class="tag">3.5.3</span></div>
+    <div class="ux-title">智能体设计</div>
+    <div class="ux-text">LangGraph 编排事件、写作、提交、记忆与审核；三层记忆负责跨章状态。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">04</span><span class="tag">3.5.4</span></div>
+    <div class="ux-title">数据库</div>
+    <div class="ux-text">6 张表覆盖作品、章节、版本、任务与用量；PostgreSQL 可选，文件模式可降级。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">05</span><span class="tag">3.5.5</span></div>
+    <div class="ux-title">接口</div>
+    <div class="ux-text">作品、生成、编辑、复查、任务状态和导出都走真实 HTTP 路由。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">06</span><span class="tag">3.5.6</span></div>
+    <div class="ux-title">前端</div>
+    <div class="ux-text">Vue runtime-only 页面承载书架、文风、生成、编辑、复查与导出。</div>
+  </div>
+</div>
+
+<div class="ux-foot">设计文档入口：<b>docs/software/architecture.md</b> · <b>docs/algorithm/LANGGRAPH.mmd</b> · <b>schema.sql</b></div>
+
+<div class="bottom-note">来源：docs/software/architecture.md · docs/algorithm/LANGGRAPH.mmd · code/backend/inf_backend/schema.sql</div>
+
+<!-- 3.5 软件概要设计：设计文档索引，具体展开见 3.5.1–3.5.6。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.5.0 使用工具 / TOOLING</div>
+
+# 图源、讲稿和代码放在同一个仓库。
+
+<div class="rule"></div>
+
+<div class="tool-grid">
+  <div class="tool-card">
+    <div class="ux-top"><span class="ux-no">01</span><span class="tag">画图</span></div>
+    <div class="tool-name">Mermaid</div>
+    <div class="tool-role">架构图 · 状态图 · E-R 图</div>
+    <div class="tool-list">
+      <div>用 <code>flowchart</code> / <code>erDiagram</code> 写图源</div>
+      <div>状态图源文件：<code>docs/algorithm/LANGGRAPH.mmd</code></div>
+      <div>图随代码一起 review、一起 diff</div>
+    </div>
+  </div>
+  <div class="tool-card">
+    <div class="ux-top"><span class="ux-no">02</span><span class="tag">讲稿</span></div>
+    <div class="tool-name">Slidev</div>
+    <div class="tool-role">Markdown → 网页 / PDF</div>
+    <div class="tool-list">
+      <div>幻灯片本身就是 Markdown</div>
+      <div>Mermaid 代码块在页面内直接渲染</div>
+      <div>GitHub Actions 构建并发布 Pages</div>
+    </div>
+  </div>
+  <div class="tool-card">
+    <div class="ux-top"><span class="ux-no">03</span><span class="tag">工程</span></div>
+    <div class="tool-name">VS Code + Git</div>
+    <div class="tool-role">编辑 · 检查 · 提交</div>
+    <div class="tool-list">
+      <div>Markdown、Mermaid、Python 在同一编辑器</div>
+      <div>Ruff / Pylance 做格式与静态检查</div>
+      <div>图源、讲稿和实现进入同一次提交</div>
+    </div>
+  </div>
+</div>
+
+<div class="tool-note">工具选择标准：图能 diff，稿能构建，结果能复查。</div>
+
+<div class="bottom-note">来源：docs/algorithm/LANGGRAPH.mmd · docs/slides/slides.md · README「技术选型」</div>
+
+<!-- 3.5.0 使用工具：Mermaid、Slidev、VS Code + Git。 -->
 
 ---
 layout: default

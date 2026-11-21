@@ -2627,3 +2627,65 @@
   color: var(--pine);
   background: transparent;
 }
+/* 3.5.0 Diagramming and publishing tools */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tool-card {
+  min-height: 226px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.44);
+  box-shadow: 0 10px 26px rgba(31, 48, 38, 0.04);
+}
+
+.tool-name {
+  margin-top: 12px;
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.tool-role {
+  margin-top: 4px;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.tool-list {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.tool-list div {
+  margin-top: 6px;
+  font-size: 9.2px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.slidev-layout .tool-list code {
+  padding: 0;
+  font-size: 7.8px;
+  color: var(--pine);
+  background: transparent;
+  word-break: break-all;
+}
+
+.tool-note {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-left: 2px solid var(--gold);
+  background: var(--paper-2);
+  font-size: 9.5px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
