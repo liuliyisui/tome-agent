@@ -1,0 +1,69 @@
+# 按需导出幻灯片 PDF（Slidev export 需要 Chromium + 中文字体）
+#
+# 在 Actions 页面点 “Run workflow” 手动触发；结果在本次运行的 Artifacts 里下载。
+
+name: Export slides PDF (Slidev)
+
+on:
+  workflow_dispatch:
+    inputs:
+      slide_file:
+        description: "要导出的 Markdown 文件（相对 slides/slidev）"
+        required: false
+        default: "slides.md"
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    name: Export PDF
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: slides/slidev
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "11.28.5"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: slides/slidev/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # playwright-chromium 不在 package.json 里（避免每次部署都下 150 MB），
+      # 只在导出 PDF 时按需装上，并忽略它的 postinstall，浏览器单独显式安装。
+      - name: Add playwright-chromium
+        run: pnpm add -D playwright-chromium@1.65.1 --ignore-scripts
+
+      - name: Install Chinese fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk
+
+      - name: Install Chromium for export
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Export PDF
+        # 输入来自 workflow_dispatch，走环境变量传参，避免拼接进 shell 造成命令注入
+        env:
+          SLIDE_FILE: ${{ inputs.slide_file }}
+        run: pnpm exec slidev export "$SLIDE_FILE" --output "dist/tome-agent-part1.pdf" --timeout 180000
+
+      - name: Upload PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: slides-pdf
+          path: slides/slidev/dist/*.pdf
+          retention-days: 14
