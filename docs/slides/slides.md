@@ -49,7 +49,7 @@ class: cover
   <div class="cover-repo">github.com/liuliyisui/tome-agent</div>
 </div>
 
-<!-- 开场：Tome Agent 不是另一个聊天框，而是一套把长篇创作当成状态系统来管理的工具。 -->
+<!-- 开场：Tome Agent 是一套把长篇创作当成状态系统来管理的工具。 -->
 
 ---
 layout: default
