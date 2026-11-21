@@ -13,7 +13,7 @@ from uuid import uuid4
 
 from tome_writer.memory_temporality import current_claim, has_current_content
 
-from . import database, generation, library, service
+from . import database, editing, generation, library, privacy, proofreading, service
 from .logging_setup import configure_logging, log_failure, logger
 from .settings import (
     BACKEND_ROOT,
@@ -71,15 +71,71 @@ def serialize(book):
     return {"metadata": book["metadata"], "state": state, "mode": mode}
 
 
+_VIEW_CACHE = {}
+_VIEW_CACHE_LOCK = threading.Lock()
+_VIEW_CACHE_LIMIT = 16
+
+
+def _stat_signature(path):
+    try:
+        info = path.stat()
+    except OSError:
+        return None
+    return (info.st_mtime_ns, info.st_size)
+
+
+def _view_fingerprint(book_id):
+    """Cheap change detector: every file that feeds ``load_view``."""
+    try:
+        folder = service.book_path(book_id)
+    except ValueError:
+        return None
+    pointer_text = None
+    checkpoint = None
+    pointer = folder / "longform-current.json"
+    try:
+        pointer_text = pointer.read_text(encoding="utf-8-sig")
+        relative = json.loads(pointer_text).get("checkpoint")
+        if isinstance(relative, str):
+            checkpoint = folder / relative
+    except (OSError, ValueError):
+        pointer_text = None
+    return (
+        pointer_text,
+        _stat_signature(checkpoint) if checkpoint is not None else None,
+        _stat_signature(folder / "checkpoint.json"),
+        _stat_signature(folder / "metadata.json"),
+        _stat_signature(folder / "writing-notes.json"),
+        _stat_signature(folder / "writing-style.json"),
+        _stat_signature(folder / "skills.json"),
+        _stat_signature(folder / "cover.image"),
+    )
+
+
 def load_view(book_id):
+    fingerprint = _view_fingerprint(book_id)
+    if fingerprint is not None:
+        with _VIEW_CACHE_LOCK:
+            cached = _VIEW_CACHE.get(book_id)
+            if cached is not None and cached[0] == fingerprint:
+                return cached[1]
     if service._metadata(book_id)["model"]["model"] == "offline-demo":
         raise FileNotFoundError("离线演示已移除")
-    return {
-        **serialize({**service.load_book(book_id), "id": book_id}),
+    book = service.load_book(book_id)
+    view = {
+        **serialize({**book, "id": book_id}),
+        "writing_notes": service.load_writing_notes(book_id, book),
+        "edit_revision": proofreading.revision(editing.chapters_of(book)),
         "cover_version": service.cover_version(book_id),
         "style": service.load_writing_style(book_id),
         "skills": service.load_book_skills(book_id),
     }
+    if fingerprint is not None:
+        with _VIEW_CACHE_LOCK:
+            if len(_VIEW_CACHE) >= _VIEW_CACHE_LIMIT and book_id not in _VIEW_CACHE:
+                _VIEW_CACHE.pop(next(iter(_VIEW_CACHE)))
+            _VIEW_CACHE[book_id] = (fingerprint, view)
+    return view
 
 
 class WebServer(ThreadingHTTPServer):
@@ -132,6 +188,9 @@ class WebServer(ThreadingHTTPServer):
             or estimate["expires_at"] < time.time()
         ):
             raise ValueError("请先查看本次 token 和费用预估，再点击继续生成")
+        privacy.enforce(
+            generation.privacy_report(book_id), data.get("privacy_confirmed")
+        )
         settings = Settings.load()
         if estimate["signature"] != generation.signature(
             book_id, model_config=settings.public_config()
@@ -187,8 +246,16 @@ class WebServer(ThreadingHTTPServer):
         def run():
             logger.info("Generation started: job=%s", job_id)
             try:
-                options = {"settings": settings, "count": count}
+                options = {
+                    "settings": settings,
+                    "count": count,
+                    "privacy_confirmed": data.get("privacy_confirmed") is True,
+                }
                 with service.operation_lock(service.book_path(book_id)):
+                    if estimate["signature"] != generation.signature(
+                        book_id, model_config=settings.public_config()
+                    ):
+                        raise ValueError("正文或配置已更新，请重新预估后再生成")
                     service.generate(book_id, progress=progress, **options)
                 progress({"completed": count})
                 result = {"status": "completed", "book_id": book_id}
@@ -214,8 +281,13 @@ class WebServer(ThreadingHTTPServer):
         threading.Thread(target=run, daemon=True).start()
         return {"job_id": job_id}
 
-    def start_regeneration(self, book_id, number, confirmed, author_feedback):
+    def start_regeneration(
+        self, book_id, number, confirmed, author_feedback, privacy_confirmed=False
+    ):
         author_feedback = service.validate_author_feedback(author_feedback)
+        privacy.enforce(
+            generation.privacy_report(book_id, author_feedback), privacy_confirmed
+        )
         with self.job_lock:
             if book_id in self.busy:
                 raise ValueError("当前作品正在生成，请等任务结束后再重新生成")
@@ -263,6 +335,7 @@ class WebServer(ThreadingHTTPServer):
                         regenerate_number=number,
                         confirmed=confirmed,
                         author_feedback=author_feedback,
+                        privacy_confirmed=privacy_confirmed is True,
                     )
                 progress({"completed": 1})
                 result = {"status": "completed", "book_id": book_id}
@@ -361,7 +434,14 @@ class Handler(BaseHTTPRequestHandler):
                     self.reply(415, {"error": "请求必须使用 JSON"})
                     return
                 length = int(self.headers.get("Content-Length", "0"))
-                if not 0 < length <= (2_800_100 if path.endswith("/cover") else 65536):
+                limit = (
+                    2_800_100
+                    if path.endswith("/cover")
+                    else 1_300_000
+                    if "/chapters/" in path and path.endswith(("/edit", "/review"))
+                    else 65536
+                )
+                if not 0 < length <= limit:
                     raise ValueError("请求大小无效")
                 data = json.loads(self.rfile.read(length))
                 if not isinstance(data, dict):
@@ -497,6 +577,32 @@ class Handler(BaseHTTPRequestHandler):
                     self.reply(202, self.server.start_generation(book_id, data))
                 elif post and len(parts) == 4 and parts[3] == "estimate":
                     self.reply(200, self.server.prepare_generation(book_id, data))
+                elif post and len(parts) == 4 and parts[3] == "review":
+                    self.reply(200, editing.review_book(book_id))
+                elif post and len(parts) == 4 and parts[3] == "export":
+                    body = editing.reviewed_export(book_id, data).encode("utf-8")
+                    self.reply(
+                        200, body, "text/markdown; charset=utf-8", attachment=True
+                    )
+                elif (
+                    post
+                    and len(parts) == 6
+                    and parts[3] == "chapters"
+                    and parts[5] in ("review", "edit")
+                ):
+                    try:
+                        number = int(parts[4])
+                    except ValueError:
+                        raise ValueError("章节号无效") from None
+                    with self.server.job_lock:
+                        if book_id in self.server.busy:
+                            raise ValueError("作品正在生成，请完成后修改正文")
+                        if parts[5] == "review":
+                            result = editing.review_draft(book_id, number, data)
+                        else:
+                            result = editing.save_chapter(book_id, number, data)
+                            result["book"] = load_view(book_id)
+                    self.reply(200, result)
                 elif post and len(parts) == 4 and parts[3] == "pin":
                     with self.server.job_lock:
                         result = library.pin_book(book_id, data.get("pinned"))
@@ -543,6 +649,7 @@ class Handler(BaseHTTPRequestHandler):
                             number,
                             data.get("confirmed") is True,
                             data.get("author_feedback"),
+                            data.get("privacy_confirmed") is True,
                         ),
                     )
                 elif not post and len(parts) == 3:
@@ -589,6 +696,8 @@ class Handler(BaseHTTPRequestHandler):
         except database.DatabaseUnavailable as exc:
             log_failure("Database request", exc)
             self.reply(503, {"error": str(exc)})
+        except privacy.SensitiveInformationError as exc:
+            self.reply(400, {"error": str(exc), "safety": exc.report})
         except (ValueError, TypeError) as exc:
             self.reply(400, {"error": str(exc)})
         except Exception as exc:

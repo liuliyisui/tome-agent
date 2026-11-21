@@ -21,6 +21,7 @@ async function fixture({ configured = true, theme = null, darkSystem = false, bl
       model: { model: "test" },
     },
     mode: "longform",
+    edit_revision: "revision-" + id,
     style: { instructions: "原文风", reference: "" },
     job: null,
     state: {
@@ -70,7 +71,9 @@ async function fixture({ configured = true, theme = null, darkSystem = false, bl
           })),
         });
       if (url === "/api/books/trash") return response({ books: [] });
-      if (url === "/api/skills") return response({ skills: [] });
+      if (url === "/api/skills") return payload
+        ? response({ skill: { id: "installed-skill", name: payload.name, content: payload.content } })
+        : response({ skills: [] });
       if (url === "/api/jobs/job-1")
         return response({
           status: jobStatus,
@@ -365,5 +368,102 @@ test("event identifiers are hidden without removing other facts", async () => {
   assert.equal(Object.keys(f.books.a.state.facts).length, 4);
   assert.ok(groups.some((g) => g.label === "主角"));
   assert.ok(groups.every((g) => !g.label.includes("event:")));
+  f.dispose();
+});
+
+
+test("personal information needs explicit acknowledgement for each estimate", async () => {
+  const f = await fixture();
+  await f.model.selectBook("a");
+  await f.model.prepareGeneration();
+  f.model.state.estimate.safety = { blocked: false, requires_confirmation: true };
+  await f.model.confirmGeneration();
+  assert.equal(f.calls.filter(c => c.url.endsWith("/generate")).length, 0);
+  f.model.state.privacyConfirmed = true;
+  await f.model.confirmGeneration();
+  assert.equal(f.calls.find(c => c.url.endsWith("/generate")).payload.privacy_confirmed, true);
+  f.dispose();
+});
+
+test("suspected credentials block generation despite acknowledgement", async () => {
+  const f = await fixture();
+  await f.model.selectBook("a");
+  await f.model.prepareGeneration();
+  f.model.state.estimate.safety = { blocked: true, requires_confirmation: false };
+  f.model.state.privacyConfirmed = true;
+  await f.model.confirmGeneration();
+  assert.equal(f.calls.filter(c => c.url.endsWith("/generate")).length, 0);
+  f.model.closeDialog("estimate");
+  await f.model.prepareGeneration();
+  assert.equal(f.model.state.privacyConfirmed, false);
+  f.dispose();
+});
+
+
+test("notices distinguish input warnings, failures and successful saves", async () => {
+  const f = await fixture();
+  await f.model.selectBook("a");
+  await f.model.uploadCover({ target: { files: [{ type: "application/pdf", size: 1 }], value: "bad" } });
+  assert.equal(f.model.state.noticeType, "warning");
+  assert.match(f.model.state.notice, /PNG/);
+  await f.model.installSkill({ target: { files: [{ size: 1, name: "bad.md", text: async () => { throw new Error("无法读取技能文件"); } }], value: "bad" } });
+  assert.equal(f.model.state.noticeType, "error");
+  assert.match(f.model.state.notice, /无法读取/);
+  await f.model.installSkill({ target: { files: [{ size: 10, name: "writing.md", text: async () => "逐步揭示线索" }], value: "ok" } });
+  assert.equal(f.model.state.noticeType, "success");
+  assert.equal(f.model.state.skills[0].id, "installed-skill");
+  await f.model.prepareGeneration();
+  assert.equal(f.model.state.notice, "");
+  assert.equal(f.model.state.noticeType, "info");
+  f.dispose();
+});
+
+test("reconnecting is a warning while failed and completed jobs have distinct levels", async () => {
+  const f = await fixture();
+  await f.model.selectBook("a");
+  f.model.state.jobs.a = "job-1";
+  f.model.state.current.job = { status: "running", count: 1 };
+  f.model.state.jobErrors.a = "状态连接暂时中断，正在重连";
+  assert.equal(f.model.jobLevel.value, "warning");
+  delete f.model.state.jobs.a;
+  f.model.state.current.job.status = "failed";
+  assert.equal(f.model.jobLevel.value, "error");
+  delete f.model.state.jobErrors.a;
+  f.model.state.current.job.status = "completed";
+  assert.equal(f.model.jobLevel.value, "success");
+  f.dispose();
+});
+
+
+test("local manuscript drafts survive reopening and block generation while editing", async () => {
+  const f = await fixture();
+  await f.model.selectBook("a");
+  f.model.openEditor();
+  f.model.state.editor.text = "作者修改后的正文。";
+  assert.equal(f.model.generationDisabled.value, true);
+  assert.equal(JSON.parse(f.storage.get("tome-chapter-draft:a:1")).text, "作者修改后的正文。");
+  f.model.closeEditor();
+  f.model.openEditor();
+  assert.equal(f.model.state.editor.text, "作者修改后的正文。");
+  assert.equal(f.model.state.editor.base_revision, "revision-a");
+  f.model.discardDraft();
+  assert.equal(f.storage.has("tome-chapter-draft:a:1"), false);
+  f.dispose();
+});
+
+
+test("failed browser draft storage cannot silently discard manuscript edits", async () => {
+  const f = await fixture({ blockStorage: true });
+  await f.model.selectBook("a");
+  f.model.openEditor();
+  f.model.state.editor.text = "尚未保存的作者文字。";
+  assert.equal(f.model.state.draftStored, false);
+  f.model.showLibrary();
+  assert.equal(f.model.state.view, "book");
+  assert.equal(f.model.state.editor.text, "尚未保存的作者文字。");
+  assert.equal(f.model.state.noticeType, "warning");
+  f.model.discardDraft();
+  f.model.showLibrary();
+  assert.equal(f.model.state.view, "library");
   f.dispose();
 });

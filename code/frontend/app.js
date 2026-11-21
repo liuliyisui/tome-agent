@@ -4,6 +4,7 @@ const {
   reactive,
   computed,
   ref,
+  nextTick,
   watch,
   onMounted,
   onBeforeUnmount,
@@ -25,10 +26,12 @@ async function api(path, data) {
   if (!response.ok) {
     const error = new Error(result.error || "操作失败");
     error.status = response.status;
+    error.safety = result.safety;
     throw error;
   }
   return result;
 }
+const MESSAGE_LABELS = Object.freeze({ info: "提示", success: "成功", warning: "警告", danger: "危险", error: "错误" });
 const bookUrl = (id) => `/api/books/${encodeURIComponent(id)}`;
 const titleOf = (book) =>
   book?.metadata?.title || book?.title || book?.id || "";
@@ -102,6 +105,125 @@ const FactMemory = {
   },
 };
 
+const ProofreadingResults = {
+  name: "ProofreadingResults",
+  props: ["report", "acknowledged", "editable"],
+  emits: ["update:acknowledged", "locate", "apply"],
+  setup(props, { emit }) {
+    return () => {
+      const report = props.report;
+      if (!report) return null;
+      return h("section", { class: ["proofreading-results", "status-message", report.blocked ? "message-danger" : report.total ? "message-warning" : "message-success"], "aria-label": "本地复查结果" }, [
+        h("h4", { role: "status" }, report.blocked ? "危险：发现疑似密钥，请先移除" : report.total ? `发现 ${report.total} 条待核对提示` : "本地规则未发现问题"),
+        h("p", { class: "form-hint" }, report.note),
+        report.truncated ? h("p", "提示较多，仅展示部分结果，请修改后重新复查。") : null,
+        h("ol", { class: "proofreading-list" }, (report.findings || []).map((item, index) => h("li", { key: index }, [
+          h("strong", `${item.level === "danger" ? "危险" : "提示"} · 第 ${item.chapter} 章${item.field === "title" ? "标题" : `第 ${item.line} 行`}：${item.message}`),
+          h("p", item.suggestion),
+          h("div", { class: "proofreading-actions" }, [
+            h("button", { type: "button", class: "text-button", onClick: () => emit("locate", item) }, "定位修改"),
+            props.editable && item.replacement !== null ? h("button", { type: "button", class: "outline", onClick: () => emit("apply", item) }, `采用建议：${item.replacement}`) : null,
+          ]),
+        ]))),
+        report.total && !report.blocked ? h("label", { class: "check-label proofread-ack" }, [
+          h("input", { type: "checkbox", checked: props.acknowledged === true, onChange: event => emit("update:acknowledged", event.target.checked) }),
+          h("span", "我已核对以上提示，确认按当前内容提交"),
+        ]) : null,
+      ]);
+    };
+  },
+};
+
+const WritingNotes = {
+  name: "WritingNotes",
+  props: ["notes"],
+  setup(props) {
+    return () => {
+      const note = props.notes;
+      if (!note) return null;
+      const context = note.context || {}, comparison = note.comparison;
+      const scenes = Array.isArray(note.scenes) ? note.scenes : [];
+      const skills = Array.isArray(context.skills) ? context.skills : [];
+      const block = (title, children) => h("div", { class: "writing-note-block" }, [h("h4", title), ...children]);
+      const revision = comparison ? [
+        h("p", comparison.format_only ? "仅调整了段落间空白或缩进，文字内容未变。" : comparison.text_changed
+          ? `与原稿相比：更新 ${comparison.updated} 段，新增 ${comparison.added} 段，移除 ${comparison.removed} 段。`
+          : "本次正文与原稿相同。"),
+        comparison.title_changed ? h("p", `标题由「${comparison.previous_title}」调整为当前标题。`) : null,
+        ...(comparison.examples || []).map((change, index) => h("details", { class: "revision-example", key: index }, [
+          h("summary", `${change.old_paragraph ? `原稿第 ${change.old_paragraph} 段起` : "新增内容"} → ${change.new_paragraph ? `新稿第 ${change.new_paragraph} 段起` : "已移除"}`),
+          h("div", { class: "revision-comparison" }, [
+            h("div", [h("strong", "原稿"), h("p", change.before || "（无对应内容）")]),
+            h("div", [h("strong", "新稿"), h("p", change.after || "（已移除）")]),
+          ]),
+        ])),
+      ] : [h("p", note.operation === "generate"
+        ? "本章为新生成内容，没有历史正文可供对照。"
+        : "该历史章节未保存当次修改对照。")];
+      return h("section", { class: "writing-notes", "aria-label": "写作摘要与修改说明" }, [
+        h("h3", "写作摘要与修改说明"),
+        h("p", { class: "writing-notes-brief" }, note.brief || "本章未保留简要规划，可展开查看现存记录。"),
+        h("details", { class: "writing-notes-details" }, [
+          h("summary", "查看写作安排与修改对照"),
+          block("本章安排", scenes.length ? [
+            h("ol", scenes.map((scene, index) => h("li", { key: index }, [
+              h("p", scene.purpose || `场景 ${index + 1}`),
+              h("ul", (scene.events || []).map((event, i) => h("li", { key: i }, event))),
+            ]))),
+            note.scenes_omitted ? h("p", { class: "form-hint" }, `另有 ${note.scenes_omitted} 个场景；此处展示前 ${scenes.length} 个。`) : null,
+          ] : [h("p", "没有可展示的场景规划记录。")]),
+          context.model ? block("本次写作要求", [
+            h("p", `使用模型：${context.model}`),
+            h("p", context.style_instructions ? `文风要求：${context.style_instructions}` : "未额外设置文风要求。"),
+            context.reference_used ? h("p", "参考片段已作为文风参考提供给写作模型。") : null,
+            skills.length ? h("p", `选用 Skill：${skills.join("、")}`) : null,
+          ]) : null,
+          block("修改说明", [
+            context.author_feedback ? h("p", { class: "author-feedback-note" }, `本次作者意见：${context.author_feedback}`) : null,
+            ...revision,
+            ...(note.adjustments || []).map((text, index) => h("p", { key: index }, text)),
+          ]),
+          block("完成记录", [h("p", note.memory), h("p", note.review)]),
+          h("p", { class: "form-hint" }, note.provenance),
+        ]),
+      ]);
+    };
+  },
+};
+
+const LocalSafetyReview = {
+  name: "LocalSafetyReview",
+  props: ["report", "confirmed"],
+  emits: ["update:confirmed"],
+  setup(props, { emit }) {
+    return () => {
+      const report = props.report;
+      if (!report) return null;
+      return h("section", {
+        class: ["privacy-review", "status-message", `message-${report.blocked ? "danger" : report.total ? "warning" : "info"}`, { "privacy-blocked": report.blocked }],
+        "aria-label": "本地敏感信息检查",
+      }, [
+        h("h3", `${report.blocked ? "危险" : report.total ? "警告" : "提示"} · 本地敏感信息检查`),
+        h("p", { role: report.blocked ? "alert" : "status" }, report.blocked
+          ? "发现疑似密钥，请从创作内容中移除后再提交。"
+          : report.total ? "以下内容可能包含个人信息，发送前请核实。"
+          : "未命中当前检测规则。"),
+        report.findings?.length ? h("ul", report.findings.map((item, index) =>
+          h("li", { key: index }, `${item.source}：${item.label}，${item.count} 处`))) : null,
+        h("p", { class: "form-hint" }, "检查在本机完成，结果不显示敏感原文。规则可能漏检；请用虚构信息替换真实隐私。"),
+        report.requires_confirmation && !report.blocked
+          ? h("label", { class: "privacy-confirm" }, [
+            h("input", {
+              type: "checkbox", checked: props.confirmed === true,
+              onChange: (event) => emit("update:confirmed", event.target.checked),
+            }),
+            h("span", "我已核实这些信息为虚构或已获授权，同意本次发送给模型服务商"),
+          ]) : null,
+      ]);
+    };
+  },
+};
+
 const PROVIDER_PRESETS = [
   { id: "deepseek", name: "DeepSeek", icon: "D", provider: "deepseek", model: "deepseek-chat", endpoint: "" },
   { id: "openai", name: "OpenAI", icon: "O", provider: "openai", model: "gpt-4o", endpoint: "" },
@@ -116,7 +238,7 @@ const PROVIDER_PRESETS = [
 ];
 const app = createApp({
   name: "TomeStudio",
-  components: { ChapterReader, FactMemory },
+  components: { ChapterReader, FactMemory, LocalSafetyReview, WritingNotes, ProofreadingResults },
   render: window.TomeRender,
   setup() {
     let sidebarCollapsed = false;
@@ -140,6 +262,7 @@ const app = createApp({
       model: "",
       connectionError: false,
       notice: "",
+      noticeType: "info",
       menuId: null,
       dialogs: {
         settings: false,
@@ -150,6 +273,7 @@ const app = createApp({
         purge: false,
         estimate: false,
         regenerate: false,
+        review: false,
       },
       busy: {
         api: false,
@@ -162,6 +286,10 @@ const app = createApp({
         regenerate: false,
         delete: false,
         purge: false,
+        edit: false,
+        proofread: false,
+        review: false,
+        export: false,
       },
       pending: new Set(),
       errors: {
@@ -173,6 +301,12 @@ const app = createApp({
         estimate: "",
         regenerate: "",
       },
+      editor: null,
+      exportReview: null,
+      editError: "",
+      reviewError: "",
+      draftStatus: "",
+      draftStored: true,
       regeneration: null,
       apiKey: "",
       providerSlot: "deepseek",
@@ -197,11 +331,96 @@ const app = createApp({
       jobErrors: {},
       estimate: null,
       estimateTitle: "",
+      privacyConfirmed: false,
       deleteBook: null,
       purgeBook: null,
       purgeTitle: "",
       trashMessage: "",
     });
+    const draftKey = (key, number) => `tome-chapter-draft:${key}:${number}`;
+    function sizeEditor() {
+      const el = document.getElementById("chapter-edit-text");
+      if (!el) return;
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight + 2}px`;
+    }
+    const PARAGRAPH_INDENT = "\u3000\u3000";
+    function normalizeParagraphIndent(text) {
+      return String(text ?? "")
+        .split("\n")
+        .map((line) =>
+          line.trim() === ""
+            ? ""
+            : PARAGRAPH_INDENT + line.replace(/^[\u3000\s]+/, ""),
+        )
+        .join("\n");
+    }
+    let editorResizeFrame = 0;
+    function scheduleEditorResize() {
+      if (editorResizeFrame) return;
+      editorResizeFrame = requestAnimationFrame(() => {
+        editorResizeFrame = 0;
+        sizeEditor();
+      });
+    }
+    function onEditorInput(event) {
+      if (event.target && event.target.id === "chapter-edit-text") scheduleEditorResize();
+    }
+    function onEditorKeydown(event) {
+      if (!state.editor) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeEditor();
+        return;
+      }
+      const target = event.target;
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        !event.isComposing &&
+        target &&
+        target.id === "chapter-edit-text"
+      ) {
+        event.preventDefault();
+        const start = target.selectionStart ?? target.value.length;
+        const end = target.selectionEnd ?? start;
+        const insert = "\n" + PARAGRAPH_INDENT;
+        target.value =
+          target.value.slice(0, start) + insert + target.value.slice(end);
+        const caret = start + insert.length;
+        target.setSelectionRange(caret, caret);
+        target.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
+    watch(() => Boolean(state.editor), (open) => {
+      document.body.classList.toggle("editor-open", open);
+      if (open) nextTick(scheduleEditorResize);
+    }, { immediate: true });
+    onMounted(() => {
+      document.addEventListener("input", onEditorInput, true);
+      document.addEventListener("keydown", onEditorKeydown);
+      window.addEventListener("resize", scheduleEditorResize);
+    });
+    onBeforeUnmount(() => {
+      document.removeEventListener("input", onEditorInput, true);
+      document.removeEventListener("keydown", onEditorKeydown);
+      window.removeEventListener("resize", scheduleEditorResize);
+    });
+    watch(() => state.editor && [state.editor.key, state.editor.number, state.editor.title, state.editor.text], () => {
+      const draft = state.editor;
+      if (!draft) return;
+      draft.report = null;
+      draft.acknowledged = false;
+      try {
+        localStorage.setItem(draftKey(draft.key, draft.number), JSON.stringify({ title: draft.title, text: draft.text, base_revision: draft.base_revision }));
+        state.draftStored = true;
+        state.draftStatus = "草稿已保存在当前浏览器，提交后才会同步正文与记忆。";
+      } catch { state.draftStored = false; state.draftStatus = "浏览器无法暂存草稿，请及时提交或复制保留文字。"; }
+      scheduleEditorResize();
+    }, { flush: "sync" });
     function applyTheme() {
       const dark = state.theme === "dark" ||
         (state.theme === "system" && systemTheme?.matches);
@@ -322,6 +541,7 @@ const app = createApp({
     const generationDisabled = computed(
       () =>
         !state.current ||
+        Boolean(state.editor) ||
         running.value ||
         complete.value ||
         state.current.mode === "legacy" ||
@@ -358,6 +578,10 @@ const app = createApp({
             ? `✓ 本批次 ${job.count || 1} 章已生成并存档。`
             : "";
     });
+    const jobLevel = computed(() => {
+      if (state.jobErrors[id.value]) return running.value ? "warning" : "error";
+      return !running.value && (complete.value || state.current?.job?.status === "completed") ? "success" : "info";
+    });
     const connectionText = computed(() =>
         state.connectionError
           ? "连接失败"
@@ -393,8 +617,9 @@ const app = createApp({
               hour12: false,
             });
       };
-    const notify = (message) => {
+    const notify = (message, type = "info") => {
       state.notice = message || "";
+      state.noticeType = message && Object.hasOwn(MESSAGE_LABELS, type) ? type : "info";
     };
     watch(
       () => state.notice,
@@ -407,6 +632,7 @@ const app = createApp({
       },
       { flush: "post" },
     );
+    function closeBookMenu() { state.menuId = null; }
     function toggleSidebar() {
       state.sidebarCollapsed = !state.sidebarCollapsed;
       try {
@@ -417,13 +643,14 @@ const app = createApp({
       } catch {}
     }
     function showLibrary() {
+      if (!leaveEditor()) return;
       navigationVersion++;
       state.current = null;
       state.view = "library";
       state.menuId = null;
       notify();
       window.scrollTo({ top: 0, left: 0 });
-      refreshBooks().catch((e) => notify(e.message));
+      refreshBooks().catch((e) => notify(e.message, "error"));
     }
     function closeDialog(name) {
       if (state.busy[name] || (name === "estimate" && state.busy.start)) return;
@@ -431,6 +658,7 @@ const app = createApp({
       if (name === "api") state.apiKey = "";
       if (name === "estimate") state.estimate = null;
       if (name === "regenerate") state.regeneration = null;
+      if (name === "review") state.exportReview = null;
       if (name === "delete") state.deleteBook = null;
       if (name === "purge") {
         state.purgeBook = null;
@@ -444,6 +672,7 @@ const app = createApp({
       state.dialogs.api = true;
     }
     function openCreate() {
+      if (!leaveEditor()) return;
       if (!state.configured) return openApiConfig();
       state.errors.create = "";
       state.dialogs.create = true;
@@ -524,7 +753,7 @@ const app = createApp({
         saveCustomProviders();
         state.apiKey = "";
         state.dialogs.api = false;
-        notify("API Key 已保存，可以开始创作。");
+        notify("API Key 已保存，可以开始创作。", "success");
       } catch (e) {
         state.errors.api = e.message;
       } finally {
@@ -576,6 +805,8 @@ const app = createApp({
       }
     }
     async function selectBook(key) {
+      if (!leaveEditor()) return;
+      if (state.pending.has(key)) return;
       const version = ++navigationVersion;
       state.pending.add(key);
       state.menuId = null;
@@ -585,9 +816,10 @@ const app = createApp({
         acceptBook(book);
         state.view = "book";
         notify();
-        await refreshBooks();
+        // 侧栏计数在后台刷新，不阻塞这次点击
+        refreshBooks().catch(() => {});
       } catch (e) {
-        if (version === navigationVersion) notify(e.message);
+        if (version === navigationVersion) notify(e.message, "error");
       } finally {
         state.pending.delete(key);
       }
@@ -636,7 +868,7 @@ const app = createApp({
         await api(`${bookUrl(book.id)}/pin`, { pinned: !book.pinned });
         await refreshBooks();
       } catch (e) {
-        notify(e.message);
+        notify(e.message, "error");
       } finally {
         state.pending.delete(book.id);
       }
@@ -677,7 +909,7 @@ const app = createApp({
         await refreshBooks();
         state.dialogs.trash = true;
       } catch (e) {
-        notify(e.message);
+        notify(e.message, "error");
       }
     }
     async function restoreBook(book) {
@@ -711,6 +943,12 @@ const app = createApp({
           confirmation_title: state.purgeTitle,
           confirmed: true,
         });
+        try {
+          for (let i = localStorage.length - 1; i >= 0; i--) {
+            const key = localStorage.key(i);
+            if (key?.startsWith(`tome-chapter-draft:${book.book_id}:`)) localStorage.removeItem(key);
+          }
+        } catch {}
         state.dialogs.purge = false;
         state.purgeBook = null;
         state.purgeTitle = "";
@@ -742,7 +980,7 @@ const app = createApp({
       const key = id.value;
       if (!file || !key) return;
       if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
-        notify('请选择不超过 2 MB 的 PNG、JPEG 或 WebP 图片。');
+        notify('请选择不超过 2 MB 的 PNG、JPEG 或 WebP 图片。', 'warning');
         input.value = '';
         return;
       }
@@ -759,9 +997,9 @@ const app = createApp({
         const summary = state.books.find((book) => book.id === key);
         if (summary) summary.cover_version = result.cover_version;
         await refreshBooks();
-        notify('封面已保存。');
+        notify('封面已保存。', 'success');
       } catch (error) {
-        notify(error.message);
+        notify(error.message, "error");
       } finally {
         input.value = '';
         state.busy.cover = false;
@@ -802,8 +1040,8 @@ const app = createApp({
         const name = (match?.[1] || file.name.replace(/\.md$/i, "")).replace(/^['"]|['"]$/g, "").trim();
         const result = await api("/api/skills", {name, content});
         state.skills.push(result.skill);
-        notify("技能已安装，请为作品选择后使用。");
-      } catch (e) { notify(e.message); }
+        notify("技能已安装，请为作品选择后使用。", "success");
+      } catch (e) { notify(e.message, "error"); }
       finally { input.value = ""; state.busy.skill = false; }
     }
     async function selectSkills(event) {
@@ -813,8 +1051,7 @@ const app = createApp({
       try {
         const result = await api(`${bookUrl(key)}/skills`, {skills: selected});
         if (id.value === key) state.current.skills = result.skills;
-        notify("技能选择已保存，从下次生成开始生效。");
-      } catch (e) { notify(e.message); event.target.checked = !event.target.checked; }
+      } catch (e) { notify(e.message, "error"); event.target.checked = !event.target.checked; }
     }
     async function prepareGeneration() {
       if (generationDisabled.value) return;
@@ -830,24 +1067,27 @@ const app = createApp({
         });
         if (id.value !== key) return;
         state.estimate = result;
+        state.privacyConfirmed = false;
         state.estimateTitle = meta.value.title;
         state.errors.estimate = "";
         state.dialogs.estimate = true;
       } catch (e) {
-        notify(e.message);
+        notify(e.message, "error");
       } finally {
         state.busy.estimate = false;
       }
     }
     async function confirmGeneration() {
       const estimate = state.estimate;
-      if (!estimate || state.busy.start) return;
+      if (!estimate || state.busy.start || estimate.safety?.blocked ||
+          (estimate.safety?.requires_confirmation && !state.privacyConfirmed)) return;
       state.busy.start = true;
       state.errors.estimate = "";
       try {
         const { job_id } = await api(`${bookUrl(estimate.book_id)}/generate`, {
           estimate_id: estimate.estimate_id,
           confirmed: true,
+          privacy_confirmed: state.privacyConfirmed,
         });
         state.jobs[estimate.book_id] = job_id;
         delete state.jobErrors[estimate.book_id];
@@ -862,9 +1102,146 @@ const app = createApp({
         startPolling(estimate.book_id, job_id);
       } catch (e) {
         state.errors.estimate = e.message;
+        if (e.safety) { state.estimate.safety = e.safety; state.privacyConfirmed = false; }
       } finally {
         state.busy.start = false;
       }
+    }
+    function openEditor(number = chapter.value?.number) {
+      if (running.value || state.busy.edit || state.busy.proofread) return;
+      const source = chapters.value.find(item => item.number === number);
+      if (!source) return;
+      navigationVersion++;
+      state.chapterIndex = chapters.value.findIndex(item => item.number === number);
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem(draftKey(id.value, number)) || "null"); } catch {}
+      const restored = saved && typeof saved.title === "string" && typeof saved.text === "string";
+      state.editError = "";
+      state.editor = {
+        key: id.value, number, title: restored ? saved.title : source.title,
+        text: normalizeParagraphIndent(
+          (restored ? saved.text : source.text).replace(/\r\n?/g, "\n"),
+        ),
+        base_revision: restored ? saved.base_revision : state.current.edit_revision,
+        report: null, acknowledged: false,
+      };
+      if (restored && saved.base_revision !== state.current.edit_revision)
+        state.editError = "检测到旧草稿：作品已更新，请先复制保留，再丢弃旧草稿并重新编辑。";
+    }
+    function leaveEditor() {
+      if (state.busy.edit || state.busy.proofread) return false;
+      if (state.editor && !state.draftStored) { notify("草稿尚未保存，请先提交或复制保留文字。", "warning"); return false; }
+      state.editor = null;
+      return true;
+    }
+    function closeEditor() { leaveEditor(); }
+    function discardDraft() {
+      const draft = state.editor;
+      if (!draft || state.busy.edit || state.busy.proofread) return;
+      state.editor = null;
+      try { localStorage.removeItem(draftKey(draft.key, draft.number)); } catch {}
+      state.editError = "";
+    }
+    async function proofreadDraft() {
+      const draft = state.editor;
+      if (!draft || state.busy.proofread) return null;
+      state.busy.proofread = true;
+      state.editError = "";
+      try {
+        const report = await api(`${bookUrl(draft.key)}/chapters/${draft.number}/review`, {title: draft.title, text: draft.text});
+        if (state.editor !== draft) return null;
+        draft.report = report;
+        draft.acknowledged = false;
+        return report;
+      } catch (e) { state.editError = e.message; return null; }
+      finally { state.busy.proofread = false; }
+    }
+    async function saveEditedChapter() {
+      const draft = state.editor;
+      if (!draft || state.busy.edit || state.busy.proofread || running.value) return;
+      const report = draft.report || await proofreadDraft();
+      if (!report || state.editor !== draft) return;
+      if (report.blocked || (report.total && !draft.acknowledged)) {
+        state.editError = report.blocked ? "请先移除疑似密钥，再重新复查。" : "请核对提示并勾选确认后再提交。";
+        return;
+      }
+      state.busy.edit = true;
+      try {
+        const result = await api(`${bookUrl(draft.key)}/chapters/${draft.number}/edit`, {
+          title: draft.title, text: draft.text, base_revision: draft.base_revision,
+          review_revision: report.revision, acknowledged: draft.acknowledged,
+        });
+        state.editor = null;
+        try { localStorage.removeItem(draftKey(draft.key, draft.number)); } catch {}
+        acceptBook(result.book);
+        state.chapterIndex = chapters.value.findIndex(item => item.number === draft.number);
+        await refreshBooks();
+        notify("正文已保存，记忆已按修订正文同步，后续续写使用新稿。", "success");
+      } catch (e) { state.editError = e.message; }
+      finally { state.busy.edit = false; }
+    }
+    async function locateFinding(item) {
+      state.dialogs.review = false;
+      state.exportReview = null;
+      if (!state.editor || state.editor.number !== item.chapter) openEditor(item.chapter);
+      await nextTick();
+      const input = document.getElementById(item.field === "title" ? "chapter-edit-title" : "chapter-edit-text");
+      input?.focus();
+      input?.setSelectionRange(item.start, item.end);
+      if (input?.tagName === "TEXTAREA") {
+        // Textarea selection APIs do not reliably reveal a distant match.
+        // Measure the prefix with matching wrapping, then center that line.
+        const mirror = document.createElement("div"), css = getComputedStyle(input);
+        for (const prop of ["fontFamily", "fontSize", "fontWeight", "fontStyle", "lineHeight", "letterSpacing", "wordSpacing", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "tabSize", "textIndent", "whiteSpace", "overflowWrap", "wordBreak"])
+          mirror.style[prop] = css[prop];
+        Object.assign(mirror.style, { position: "fixed", visibility: "hidden", pointerEvents: "none", left: "-100000px", top: "0", width: `${input.clientWidth}px`, boxSizing: "border-box", border: "0", height: "auto" });
+        const marker = document.createElement("span");
+        marker.textContent = input.value.slice(item.start, item.end) || "\u200b";
+        mirror.append(document.createTextNode(input.value.slice(0, item.start)), marker);
+        document.body.append(mirror);
+        input.scrollTop = Math.max(0, marker.getBoundingClientRect().top - mirror.getBoundingClientRect().top - input.clientHeight / 2);
+        mirror.remove();
+      }
+      input?.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+    async function applyProofreading(item) {
+      if (item.replacement === null) return locateFinding(item);
+      if (!state.editor || state.editor.number !== item.chapter) { await locateFinding(item); return; }
+      const draft = state.editor;
+      if (!draft.report) return;
+      const field = item.field === "title" ? "title" : "text";
+      draft[field] = draft[field].slice(0, item.start) + item.replacement + draft[field].slice(item.end);
+      await nextTick();
+      document.getElementById(field === "title" ? "chapter-edit-title" : "chapter-edit-text")?.focus();
+    }
+    async function reviewForExport() {
+      if (!id.value || state.busy.review) return;
+      if (state.editor) { state.editError = "请先提交本地修改，再复查导出。"; return; }
+      state.busy.review = true;
+      state.reviewError = "";
+      try {
+        const key = id.value, report = await api(`${bookUrl(key)}/review`, {});
+        if (key !== id.value) return;
+        state.exportReview = { key, report, acknowledged: false };
+        state.dialogs.review = true;
+      } catch (e) { notify(e.message, "error"); }
+      finally { state.busy.review = false; }
+    }
+    async function exportReviewed() {
+      const draft = state.exportReview;
+      if (!draft || state.busy.export || draft.report.blocked || (draft.report.total && !draft.acknowledged)) return;
+      state.busy.export = true;
+      state.reviewError = "";
+      try {
+        const response = await fetch(`${bookUrl(draft.key)}/export`, {method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({review_revision: draft.report.revision, acknowledged: draft.acknowledged})});
+        if (!response.ok) { const result = await response.json(); throw new Error(result.error || "导出失败"); }
+        const url = URL.createObjectURL(await response.blob());
+        const link = document.createElement("a"); link.href = url; link.download = `${titleOf(state.current)}.md`;
+        document.body.append(link); link.click(); link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        state.dialogs.review = false; state.exportReview = null;
+      } catch (e) { state.reviewError = e.message; }
+      finally { state.busy.export = false; }
     }
     function openRegeneration() {
       const key = id.value;
@@ -876,6 +1253,8 @@ const app = createApp({
         number: chapter.number,
         later: chapters.value.length - chapter.number,
         feedback: "",
+        safety: null,
+        privacyConfirmed: false,
       };
       state.dialogs.regenerate = true;
     }
@@ -884,6 +1263,7 @@ const app = createApp({
       if (!draft || draft.key !== id.value || running.value || state.busy.regenerate) return;
       const { key, number } = draft;
       const feedback = draft.feedback.trim();
+      if (draft.safety?.blocked || (draft.safety?.requires_confirmation && !draft.privacyConfirmed)) return;
       if (!feedback) {
         state.errors.regenerate = "请填写希望调整的内容。";
         return;
@@ -893,7 +1273,7 @@ const app = createApp({
       try {
         const { job_id } = await api(
           `${bookUrl(key)}/chapters/${number}/regenerate`,
-          { confirmed: true, author_feedback: feedback },
+          { confirmed: true, author_feedback: feedback, privacy_confirmed: draft.privacyConfirmed },
         );
         state.dialogs.regenerate = false;
         state.regeneration = null;
@@ -909,6 +1289,7 @@ const app = createApp({
         notify("已开始重新生成，请稍候。");
       } catch (e) {
         state.errors.regenerate = e.message;
+        if (e.safety) { draft.safety = e.safety; draft.privacyConfirmed = false; }
       } finally {
         state.busy.regenerate = false;
       }
@@ -948,7 +1329,7 @@ const app = createApp({
         else await refreshBooks();
         if (job.status === "failed") {
           state.jobErrors[key] = job.error;
-          notify(job.error);
+          notify(job.error, "error");
         }
       } catch (e) {
         if (disposed) return;
@@ -959,9 +1340,9 @@ const app = createApp({
           try {
             if (id.value === key) await refreshCurrent(key);
           } catch (error) {
-            notify(error.message);
+            notify(error.message, "error");
           }
-          notify("任务状态已失效，已重新读取作品存档。请确认正文后再提交。");
+          notify("任务状态已失效，已重新读取作品存档。请确认正文后再提交。", "warning");
           return;
         }
         if (polling.has(jobId)) {
@@ -1021,10 +1402,10 @@ const app = createApp({
         if (!cfg.configured) openApiConfig();
         await refreshBooks();
         try { state.skills = (await api("/api/skills")).skills; }
-        catch (e) { notify(`技能列表加载失败：${e.message}`); }
+        catch (e) { notify(`技能列表加载失败：${e.message}`, "warning"); }
       } catch (e) {
         state.connectionError = true;
-        notify(e.message);
+        notify(e.message, "error");
       } finally {
         window.scrollTo({ top: 0, left: 0 });
       }
@@ -1053,6 +1434,8 @@ const app = createApp({
       generationDisabled,
       generateLabel,
       jobStatus,
+      jobLevel,
+      messageLabels: MESSAGE_LABELS,
       connectionText,
       breadcrumb,
       sidebarHidden,
@@ -1061,11 +1444,13 @@ const app = createApp({
       bookUrl,
       uploadCover,
       turnChapter,
+      openEditor, closeEditor, discardDraft, proofreadDraft, saveEditedChapter, locateFinding, applyProofreading, reviewForExport, exportReviewed,
       fmt,
       cost,
       price,
       deletedAt,
       toggleSidebar,
+      closeBookMenu,
       openApiConfig,
       showLibrary,
       closeDialog,
@@ -1105,6 +1490,64 @@ app.directive("dialog", {
   },
   beforeUnmount(el) {
     if (el.open) el.close();
+  },
+});
+const floatingMenuCleanup = new WeakMap();
+app.directive("floating-menu", {
+  mounted(el, { value }) {
+    const anchor = document.getElementById(value.anchorId);
+    if (!anchor) { value.close(); return; }
+    // Teleport escapes scroll clipping; Popover puts supporting browsers in
+    // the native top layer. Fixed positioning remains the fallback.
+    if (typeof el.showPopover === "function") el.showPopover();
+    const place = () => {
+      if (!anchor.isConnected) { value.close(); return; }
+      const rect = anchor.getBoundingClientRect();
+      const shelf = anchor.closest("#book-list")?.getBoundingClientRect();
+      if (shelf && (rect.bottom <= Math.max(0, shelf.top) || rect.top >= Math.min(innerHeight, shelf.bottom) ||
+          rect.right <= Math.max(0, shelf.left) || rect.left >= Math.min(innerWidth, shelf.right))) {
+        value.close(); return;
+      }
+      const gap = 8, menu = el.getBoundingClientRect();
+      const below = innerHeight - rect.bottom, above = rect.top;
+      const top = below >= menu.height + gap || below >= above
+        ? rect.bottom + 4 : rect.top - menu.height - 4;
+      el.style.left = `${Math.max(gap, Math.min(rect.right - menu.width, innerWidth - menu.width - gap))}px`;
+      el.style.top = `${Math.max(gap, Math.min(top, innerHeight - menu.height - gap))}px`;
+    };
+    const outside = (event) => {
+      if (!el.contains(event.target) && !anchor.contains(event.target)) value.close();
+    };
+    const keyboard = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault(); value.close(); anchor.focus({ preventScroll: true });
+      } else if (event.key === "Tab" && el.contains(document.activeElement)) {
+        const controls = [...el.querySelectorAll("button:not(:disabled)")];
+        if ((event.shiftKey && document.activeElement === controls[0]) ||
+            (!event.shiftKey && document.activeElement === controls.at(-1))) {
+          value.close(); anchor.focus({ preventScroll: true });
+        }
+      }
+    };
+    place();
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", keyboard);
+    window.addEventListener("scroll", place, true);
+    window.addEventListener("resize", place);
+    const observer = typeof ResizeObserver === "function" ? new ResizeObserver(place) : null;
+    observer?.observe(anchor);
+    floatingMenuCleanup.set(el, () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", keyboard);
+      window.removeEventListener("scroll", place, true);
+      window.removeEventListener("resize", place);
+      observer?.disconnect();
+    });
+    el.querySelector("button:not(:disabled)")?.focus({ preventScroll: true });
+  },
+  beforeUnmount(el) {
+    floatingMenuCleanup.get(el)?.();
+    floatingMenuCleanup.delete(el);
   },
 });
 app.mount("#tome-app");

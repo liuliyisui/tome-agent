@@ -17,6 +17,165 @@ from tome_writer.storage import FileStore
 
 
 class WebIntegrationTests(unittest.TestCase):
+    def privacy_book(self, prompt="故事"):
+        book = self.request(
+            "/api/books",
+            {
+                "title": "本地检查",
+                "prompt": prompt,
+                "chapters": 3,
+                "target_units": 3000,
+            },
+        )
+        return book["state"]["project_id"]
+
+    def test_privacy_requires_acknowledgement_and_never_calls_model_on_rejection(self):
+        book_id = self.privacy_book("联系人 writer@example.test")
+        endpoint = f"/api/books/{book_id}"
+        with patch.object(service, "generate") as generate:
+            estimate = self.request(endpoint + "/estimate", {})
+            self.assertTrue(estimate["safety"]["requires_confirmation"])
+            self.assertNotIn("writer@example.test", json.dumps(estimate))
+            for acknowledged in (False, "true"):
+                with self.assertRaises(HTTPError) as error:
+                    self.request(
+                        endpoint + "/generate",
+                        {
+                            "estimate_id": estimate["estimate_id"],
+                            "confirmed": True,
+                            "privacy_confirmed": acknowledged,
+                        },
+                    )
+                body = json.loads(error.exception.read())
+                self.assertTrue(body["safety"]["requires_confirmation"])
+            generate.assert_not_called()
+            self.assertEqual(self.server.jobs, {})
+            started = self.request(
+                endpoint + "/generate",
+                {
+                    "estimate_id": estimate["estimate_id"],
+                    "confirmed": True,
+                    "privacy_confirmed": True,
+                },
+            )
+            self.wait_job(started["job_id"])
+            self.assertIs(generate.call_args.kwargs["privacy_confirmed"], True)
+
+    def test_privacy_secret_cannot_be_waived(self):
+        book_id = self.privacy_book("不要发送 sk-" + "FAKE_SECRET_FOR_TESTS_1234567890")
+        endpoint = f"/api/books/{book_id}"
+        estimate = self.request(endpoint + "/estimate", {})
+        self.assertTrue(estimate["safety"]["blocked"])
+        with (
+            patch.object(service, "generate") as generate,
+            self.assertRaises(HTTPError) as error,
+        ):
+            self.request(
+                endpoint + "/generate",
+                {
+                    "estimate_id": estimate["estimate_id"],
+                    "confirmed": True,
+                    "privacy_confirmed": True,
+                },
+            )
+        self.assertTrue(json.loads(error.exception.read())["safety"]["blocked"])
+        generate.assert_not_called()
+        self.assertEqual(self.server.jobs, {})
+
+    def test_privacy_rechecks_style_changed_after_estimate(self):
+        book_id = self.privacy_book()
+        endpoint = f"/api/books/{book_id}"
+        estimate = self.request(endpoint + "/estimate", {})
+        self.request(
+            endpoint + "/style", {"instructions": "", "reference": "13800138000"}
+        )
+        with (
+            patch.object(service, "generate") as generate,
+            self.assertRaises(HTTPError) as error,
+        ):
+            self.request(
+                endpoint + "/generate",
+                {"estimate_id": estimate["estimate_id"], "confirmed": True},
+            )
+        self.assertTrue(
+            json.loads(error.exception.read())["safety"]["requires_confirmation"]
+        )
+        generate.assert_not_called()
+
+    def test_regeneration_checks_feedback_before_creating_a_job(self):
+        book_id = self.privacy_book()
+        endpoint = f"/api/books/{book_id}/chapters/1/regenerate"
+        with (
+            patch.object(service, "generate") as generate,
+            self.assertRaises(HTTPError) as error,
+        ):
+            self.request(
+                endpoint,
+                {"confirmed": True, "author_feedback": "写入邮箱 writer@example.test"},
+            )
+        body = json.loads(error.exception.read())
+        self.assertTrue(body["safety"]["requires_confirmation"])
+        self.assertNotIn("writer@example.test", json.dumps(body))
+        generate.assert_not_called()
+        self.assertEqual(self.server.jobs, {})
+
+    def test_local_edit_endpoints_sync_prose_and_enforce_reviewed_export(self):
+        from tests.unit.test_langgraph import EventProvider
+
+        book_id = self.privacy_book()
+        service.generate(
+            book_id, gateway=EventProvider(), settings=Settings(api_key="FAKE_TEST_KEY")
+        )
+        endpoint = f"/api/books/{book_id}"
+        view = self.request(endpoint)
+        draft = {
+            "title": "作者本地稿",
+            "text": "他迫不急待地走出武馆。",
+            "base_revision": view["edit_revision"],
+        }
+        report = self.request(endpoint + "/chapters/1/review", draft)
+        self.assertTrue(any(f["category"] == "typo" for f in report["findings"]))
+        with self.assertRaises(HTTPError):
+            self.request(
+                endpoint + "/chapters/1/edit",
+                {**draft, "review_revision": report["revision"]},
+            )
+        saved = self.request(
+            endpoint + "/chapters/1/edit",
+            {**draft, "review_revision": report["revision"], "acknowledged": True},
+        )
+        self.assertEqual(saved["book"]["state"]["chapters"][0]["text"], draft["text"])
+        self.assertEqual(saved["memory_synced_through"], 1)
+        whole = self.request(endpoint + "/review", {})
+        exported = self.request(
+            endpoint + "/export",
+            {"review_revision": whole["revision"], "acknowledged": True},
+        )
+        self.assertIn(draft["text"], exported)
+        with self.assertRaises(HTTPError):
+            self.request(
+                endpoint + "/export", {"review_revision": "old", "acknowledged": True}
+            )
+        long_review = self.request(
+            endpoint + "/chapters/1/review", {"title": "长稿", "text": "甲" * 30000}
+        )
+        self.assertEqual(long_review["total"], 0)
+        with self.server.job_lock:
+            self.server.busy.add(book_id)
+        try:
+            with self.assertRaises(HTTPError):
+                self.request(
+                    endpoint + "/chapters/1/edit",
+                    {
+                        **draft,
+                        "review_revision": report["revision"],
+                        "acknowledged": True,
+                    },
+                )
+        finally:
+            with self.server.job_lock:
+                self.server.busy.discard(book_id)
+
     def test_unexpected_request_error_is_logged_without_sensitive_details(self):
         with (
             patch.object(

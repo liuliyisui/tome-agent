@@ -131,6 +131,88 @@ class BrowserSmokeTests(unittest.TestCase):
         self.assertIn("2000 / 2,000", instruction_hint.inner_text())
         self.assertIn("6000 / 6,000", reference_hint.inner_text())
 
+    def test_privacy_prompt_requires_confirmation_and_hides_sensitive_values(self):
+        with patch.object(service, "generate") as generate:
+            self.open_create_dialog()
+            self.fill_create_form()
+            self.page.fill(
+                'textarea[name="prompt"]', "写一封给 writer@example.test 的信"
+            )
+            self.page.click("#create-submit")
+            self.page.click("#generate")
+            self.page.wait_for_selector("#estimate-dialog[open] .privacy-review")
+            panel = self.page.locator("#estimate-dialog .privacy-review")
+            self.assertIn("邮箱地址", panel.inner_text())
+            self.assertNotIn("writer@example.test", panel.inner_text())
+            button = self.page.locator("#estimate-continue")
+            self.assertTrue(button.is_disabled())
+            generate.assert_not_called()
+            checkbox = panel.get_by_role("checkbox")
+            checkbox.focus()
+            self.page.keyboard.press("Space")
+            self.assertTrue(button.is_enabled())
+            button.click()
+            self.page.wait_for_selector(
+                "#estimate-dialog:not([open])", state="attached"
+            )
+            self.assertTrue(generate.call_args.kwargs["privacy_confirmed"])
+
+    def test_privacy_secret_blocks_generation_even_in_dark_theme(self):
+        self.page.emulate_media(color_scheme="dark")
+        with patch.object(service, "generate") as generate:
+            self.open_create_dialog()
+            self.fill_create_form()
+            self.page.fill(
+                'textarea[name="prompt"]',
+                "误粘贴 sk-FAKE_SECRET_ONLY_FOR_TESTS_1234567890",
+            )
+            self.page.click("#create-submit")
+            self.page.click("#generate")
+            panel = self.page.locator("#estimate-dialog .privacy-blocked")
+            panel.wait_for()
+            self.assertIn("疑似密钥", panel.inner_text())
+            self.assertNotIn("FAKE_SECRET", panel.inner_text())
+            self.assertEqual(panel.get_by_role("checkbox").count(), 0)
+            self.assertTrue(self.page.locator("#estimate-continue").is_disabled())
+            generate.assert_not_called()
+
+    def test_regeneration_feedback_privacy_check_can_be_reviewed_and_reset(self):
+        from memory_runtime.test_completion import Faults
+
+        with patch.object(service, "_gateway", return_value=(Faults(), None)):
+            self.open_create_dialog()
+            self.fill_create_form()
+            self.page.click("#create-submit")
+            self.page.click("#generate")
+            self.page.click("#estimate-continue")
+            button = self.page.get_by_role("button", name="重新生成本章")
+            button.wait_for()
+            self.page.wait_for_function(
+                "() => document.querySelector('#chapter-body')?.textContent.includes('走廊')"
+            )
+            with patch.object(service, "generate") as generate:
+                button.click()
+                feedback = self.page.locator("#regenerate-feedback")
+                feedback.fill("给 writer@example.test 写信")
+                self.page.click("#regenerate-submit")
+                panel = self.page.locator("#regenerate-dialog .privacy-review")
+                panel.wait_for()
+                self.assertIn("本次作者意见", panel.inner_text())
+                self.assertNotIn("writer@example.test", panel.inner_text())
+                self.assertTrue(self.page.locator("#regenerate-submit").is_disabled())
+                generate.assert_not_called()
+                panel.get_by_role("checkbox").check()
+                self.assertTrue(self.page.locator("#regenerate-submit").is_enabled())
+                feedback.fill("只调整对白")
+                self.assertEqual(
+                    self.page.locator("#regenerate-dialog .privacy-review").count(), 0
+                )
+                self.page.click("#regenerate-submit")
+                self.page.wait_for_selector(
+                    "#regenerate-dialog:not([open])", state="attached"
+                )
+                self.assertIs(generate.call_args.kwargs["privacy_confirmed"], False)
+
     def test_home_and_empty_library(self):
         page = self.page
         self.assertEqual(page.title(), "Tome · 故事工作室")
@@ -231,6 +313,183 @@ class BrowserSmokeTests(unittest.TestCase):
         page.wait_for_selector(".works-empty")
         self.assertEqual(page.text_content("#book-count").strip(), "0")
 
+    def test_book_menu_escapes_shelf_clipping_and_keeps_pin_keyboard_actions(self):
+        self.page.set_viewport_size({"width": 1280, "height": 600})
+        for number in range(8):
+            service.create_book(
+                f"menu-book-{number}",
+                f"浮层测试作品{number}",
+                "测试",
+                2,
+                2000,
+                settings=settings.Settings(api_key="FAKE_TEST_KEY"),
+            )
+        page = self.page
+        page.reload()
+        page.click("#my-works")
+        trigger = page.locator("#book-list .book-row").last.locator("summary")
+        trigger_id = trigger.get_attribute("id")
+        trigger = page.locator("#" + trigger_id)
+        menu_id = trigger.get_attribute("aria-controls")
+        book_id = menu_id.removeprefix("book-actions-")
+        trigger.scroll_into_view_if_needed()
+        trigger.click()
+        menu = page.locator("#" + menu_id)
+        menu.wait_for()
+        self.assertTrue(menu.evaluate("el => el.parentElement === document.body"))
+        menu_box = menu.bounding_box()
+        shelf_box = page.locator("#book-list").bounding_box()
+        self.assertGreater(
+            menu_box["y"] + menu_box["height"], shelf_box["y"] + shelf_box["height"]
+        )
+        delete_button = menu.locator("[data-delete]")
+        self.assertTrue(
+            delete_button.evaluate(
+                "el => {const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))}"
+            )
+        )
+        page.keyboard.press("Escape")
+        menu.wait_for(state="detached")
+        self.assertEqual(trigger.get_attribute("aria-expanded"), "false")
+        self.assertEqual(
+            page.evaluate("() => document.activeElement.id"),
+            trigger_id,
+        )
+        trigger.click()
+        menu.locator("[data-pin]").click()
+        menu.wait_for(state="detached")
+        page.locator(f'#book-list [data-book="{book_id}"] .pin-mark').wait_for()
+        trigger.click()
+        menu.wait_for()
+        page.click("#my-works")
+        menu.wait_for(state="detached")
+        page.wait_for_load_state("networkidle")
+
+    def test_shelf_scrolls_only_for_real_book_content(self):
+        page = self.page
+        page.set_viewport_size({"width": 1280, "height": 900})
+        for number in range(3):
+            service.create_book(
+                f"scroll-book-{number}",
+                f"滚动测试{number}",
+                "测试",
+                2,
+                2000,
+                settings=settings.Settings(api_key="FAKE_TEST_KEY"),
+            )
+        page.reload()
+        page.click("#my-works")
+        page.wait_for_function(
+            "() => document.querySelectorAll('#book-list .book-row').length === 3"
+        )
+        shelf = page.locator("#book-list")
+        self.assertTrue(shelf.evaluate("el => el.scrollHeight <= el.clientHeight + 1"))
+        for number in range(3, 18):
+            service.create_book(
+                f"scroll-book-{number}",
+                f"滚动测试{number}",
+                "测试",
+                2,
+                2000,
+                settings=settings.Settings(api_key="FAKE_TEST_KEY"),
+            )
+        page.click("#my-works")
+        page.wait_for_function(
+            "() => document.querySelectorAll('#book-list .book-row').length === 18"
+        )
+        self.assertTrue(shelf.evaluate("el => el.scrollHeight > el.clientHeight"))
+        gap = shelf.evaluate(
+            "el => {el.scrollTop=el.scrollHeight;return el.getBoundingClientRect().bottom-el.lastElementChild.getBoundingClientRect().bottom}"
+        )
+        self.assertLessEqual(abs(gap), 1.5)
+        page.set_viewport_size({"width": 375, "height": 812})
+        self.assertTrue(shelf.evaluate("el => el.scrollHeight <= el.clientHeight + 1"))
+        page.wait_for_load_state("networkidle")
+
+    def test_local_editor_restores_draft_applies_review_and_exports_new_prose(self):
+        from memory_runtime.test_completion import Faults
+
+        with patch.object(service, "_gateway", return_value=(Faults(), None)):
+            self.open_create_dialog()
+            self.fill_create_form()
+            self.page.click("#create-submit")
+            self.page.click("#generate")
+            self.page.click("#estimate-continue")
+            self.page.wait_for_function(
+                "() => document.querySelector('#chapter-body')?.textContent.includes('走廊')"
+            )
+        page = self.page
+        page.locator("#edit-chapter").click()
+        editor = page.locator("#chapter-edit-text")
+        editor.fill("他迫不急待地走出武馆。")
+        page.click("#proofread-chapter")
+        page.get_by_role("button", name="采用建议：迫不及待", exact=True).click()
+        self.assertEqual(editor.input_value(), "他迫不及待地走出武馆。")
+        page.reload()
+        page.click("#my-works")
+        page.locator("[data-book]").first.click()
+        page.click("#edit-chapter")
+        self.assertEqual(editor.input_value(), "他迫不及待地走出武馆。")
+        page.click("#save-chapter-edit")
+        page.locator("#chapter-editor").wait_for(state="detached")
+        self.assertIn("他迫不及待地走出武馆。", page.inner_text("#chapter-body"))
+        page.click("#export")
+        page.locator("#export-review-dialog[open]").wait_for()
+        with page.expect_download() as pending:
+            page.click("#confirm-reviewed-export")
+        downloaded = Path(pending.value.path()).read_text(encoding="utf-8")
+        self.assertIn("他迫不及待地走出武馆。", downloaded)
+        self.assertNotIn("本地规则未发现问题", downloaded)
+        page.wait_for_load_state("networkidle")
+
+    def test_local_editor_locates_private_information_and_blocks_secret(self):
+        from memory_runtime.test_completion import Faults
+
+        with patch.object(service, "_gateway", return_value=(Faults(), None)):
+            self.open_create_dialog()
+            self.fill_create_form()
+            self.page.click("#create-submit")
+            self.page.click("#generate")
+            self.page.click("#estimate-continue")
+            self.page.wait_for_function(
+                "() => document.querySelector('#chapter-body')?.textContent.includes('走廊')"
+            )
+        page = self.page
+        page.click("#edit-chapter")
+        editor = page.locator("#chapter-edit-text")
+        editor.fill(
+            "\n".join(f"甲在第{i}天走过武馆。" for i in range(200))
+            + "\n他迫不急待地出发。"
+        )
+        editor.evaluate("el => {el.setSelectionRange(0,0);el.scrollTop=0}")
+        page.click("#proofread-chapter")
+        page.locator("#chapter-editor .proofreading-results").get_by_role(
+            "button", name="定位修改", exact=True
+        ).click()
+        self.assertGreater(editor.evaluate("el => el.scrollTop"), 0)
+        editor.fill("😀开场。\n电话 13800138000。")
+        page.click("#proofread-chapter")
+        panel = page.locator("#chapter-editor .proofreading-results")
+        panel.wait_for()
+        self.assertNotIn("13800138000", panel.inner_text())
+        panel.get_by_role("button", name="定位修改", exact=True).click()
+        self.assertEqual(
+            editor.evaluate("el => el.value.slice(el.selectionStart,el.selectionEnd)"),
+            "13800138000",
+        )
+        self.assertTrue(page.locator("#save-chapter-edit").is_disabled())
+        panel.get_by_role("checkbox").check()
+        self.assertTrue(page.locator("#save-chapter-edit").is_enabled())
+        editor.fill("误贴 sk-FAKE_SECRET_FOR_LOCAL_REVIEW_1234567890")
+        page.click("#proofread-chapter")
+        page.locator("#chapter-editor .message-danger").wait_for()
+        self.assertTrue(page.locator("#save-chapter-edit").is_disabled())
+        page.set_viewport_size({"width": 375, "height": 812})
+        self.assertFalse(
+            page.evaluate("() => document.documentElement.scrollWidth > innerWidth")
+        )
+        page.wait_for_load_state("networkidle")
+
     def test_create_generate_save_and_reload_offline(self):
         """Scenario: a writer creates a book and recovers the generated chapter."""
         from memory_runtime.test_completion import Faults
@@ -304,6 +563,11 @@ class BrowserSmokeTests(unittest.TestCase):
             self.page.wait_for_function(
                 "() => document.querySelector('#chapter-body')?.textContent.includes('走廊')"
             )
+            notes = self.page.locator(".writing-notes")
+            notes.wait_for()
+            notes.get_by_text("查看写作安排与修改对照").click()
+            self.assertIn("本章为新生成内容", notes.inner_text())
+            self.assertIn("未启用独立正文审核", notes.inner_text())
             old_text = self.page.inner_text("#chapter-body")
             book_id = self.page.locator("#export").get_attribute("href").split("/")[3]
             endpoint = f"{self.base}/api/books/{book_id}/chapters/1/regenerate"
@@ -334,6 +598,26 @@ class BrowserSmokeTests(unittest.TestCase):
             self.page.wait_for_function(
                 "() => document.querySelector('#chapter-body')?.textContent.includes('把来信折好')"
             )
+            notes = self.page.locator(".writing-notes")
+            if not notes.locator(".writing-notes-details").evaluate("el => el.open"):
+                notes.get_by_text("查看写作安排与修改对照").click()
+            self.assertIn("本次作者意见：保留来信，删掉走廊描写", notes.inner_text())
+            self.assertIn("与原稿相比", notes.inner_text())
+            self.assertGreater(notes.locator(".revision-example").count(), 0)
+            self.page.reload()
+            self.page.click("#my-works")
+            self.page.locator(f'[data-book="{book_id}"]').first.click()
+            notes = self.page.locator(".writing-notes")
+            notes.get_by_text("查看写作安排与修改对照").click()
+            self.assertIn("保留来信，删掉走廊描写", notes.inner_text())
+            self.assertNotIn(
+                "写作摘要与修改说明", self.page.inner_text("#chapter-body")
+            )
+            self.page.set_viewport_size({"width": 375, "height": 812})
+            self.assertFalse(
+                self.page.evaluate("document.documentElement.scrollWidth > innerWidth")
+            )
+            self.page.wait_for_load_state("networkidle")
             revisions = [
                 request
                 for request in model.requests

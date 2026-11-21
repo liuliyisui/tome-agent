@@ -31,7 +31,8 @@ from tome_writer.domain import (
 from tome_writer.models import Budget, ModelGateway
 from tome_writer.storage import FileStore
 
-from . import database
+from . import database, privacy, writing_notes
+from .logging_setup import log_failure
 from .settings import BACKEND_ROOT, Settings
 
 DATA = BACKEND_ROOT / "data"
@@ -622,6 +623,15 @@ def _regeneration_boundary(book_id, plan, prefix):
                 return _load_compatible_checkpoint(path, plan)
         except (KeyError, TypeError, ValueError, OSError, ContractError):
             continue
+    if prefix and all(
+        c.get("source_policy") == "AUTHOR_TEXT_REPLACES_PRIOR_EVENT_PLAN"
+        for c in prefix
+    ):
+        from .editing import rebuild_session
+
+        rebuilt = rebuild_session(book_id, plan, prefix).book
+        if chapter_hashes(rebuilt["chapters"]) == expected:
+            return rebuilt
     raise ValueError("找不到与本作品前文章节一致的可恢复检查点")
 
 
@@ -662,6 +672,7 @@ def generate_longform(
     regenerate_number=None,
     confirmed=False,
     author_feedback="",
+    privacy_confirmed=False,
 ):
     """Generate chapters with the event-first, three-tier-memory runtime.
 
@@ -708,12 +719,21 @@ def generate_longform(
                 ),
             )
             gateway.provider = stream_provider
-    gateway = StyleGateway(gateway, load_writing_style(book_id))
+    gateway = privacy.PrivacyGateway(gateway, privacy_confirmed)
+    writing_style = load_writing_style(book_id)
+    gateway = StyleGateway(gateway, writing_style)
     selected = set(load_book_skills(book_id))
     skills = [item for item in list_skills() if item["id"] in selected]
     if len(skills) != len(selected):
         raise ValueError("已选择的技能不存在，请重新选择")
     gateway = SkillGateway(gateway, skills)
+    note_context = {
+        "model": cfg.model,
+        "style_instructions": writing_style["instructions"],
+        "reference_used": bool(writing_style["reference"]),
+        "skills": [item["name"] for item in skills],
+        "author_feedback": author_feedback if original_chapter is not None else "",
+    }
     if original_chapter is not None:
         gateway = RegenerationGateway(gateway, author_feedback, original_chapter)
     run = book_path(book_id) / "longform-runs" / ("run-" + uuid4().hex)
@@ -765,6 +785,10 @@ def generate_longform(
         finally:
             if original_chapter is None or len(session.book["chapters"]) > written:
                 _save_generation_checkpoint(book_id, session, written, budget)
+                if len(session.book["chapters"]) >= number:
+                    _save_writing_note(
+                        book_id, session.book, number, note_context, original_chapter
+                    )
         if progress:
             progress(
                 {
@@ -779,6 +803,23 @@ def generate_longform(
         detail = json.dumps(failure.get("errors", []), ensure_ascii=False)
         raise RuntimeError(f"第{failure['chapter_number']}章未生成正文：{detail}")
     return {"metadata": meta, "state": session.book}
+
+
+def load_writing_notes(book_id, book):
+    stored = writing_notes.read(book_path(book_id) / "writing-notes.json")
+    return writing_notes.for_book(book, stored)
+
+
+def _save_writing_note(book_id, book, number, context, original=None):
+    # A note is auxiliary. A failed note write must not hide a saved chapter.
+    try:
+        path = book_path(book_id) / "writing-notes.json"
+        record = writing_notes.update(
+            writing_notes.read(path), book, number, context, original
+        )
+        _atomic_json(path, record)
+    except (OSError, ValueError, TypeError, KeyError) as exc:
+        log_failure("Writing note", exc)
 
 
 def _save_generation_checkpoint(book_id, session, written, budget):
