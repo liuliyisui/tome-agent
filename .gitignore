@@ -1,0 +1,27 @@
+# 依赖与虚拟环境
+node_modules/
+.venv/
+venv/
+
+# 构建产物
+dist/
+dist-local/
+dist-full/
+build/
+out/
+
+# 缓存与工具输出
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.VSCodeCounter/
+
+# 本地临时目录与日志
+.tmp/
+*.log
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+~$*
