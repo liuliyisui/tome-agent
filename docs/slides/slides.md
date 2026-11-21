@@ -57,8 +57,6 @@ layout: default
 
 <div class="kicker">问题 / WHY</div>
 
-# 模型能写好一段，<br>却记不住一整部。
-
 <div class="rule"></div>
 
 <div class="cols cols-2 gap-lg">
@@ -99,8 +97,6 @@ layout: default
 ---
 
 <div class="kicker">问题 / 五个症状</div>
-
-# 读者先感到“看不下去了”，<br>问题通常已经积累了几章。
 
 <div class="rule"></div>
 
@@ -148,7 +144,6 @@ layout: default
 
 <div class="kicker">产品定义 / 使命与口号</div>
 
-# 先把「记得住」做对，<br>再谈「写得好」。
 
 <div class="rule"></div>
 
@@ -193,8 +188,6 @@ layout: default
 
 <div class="kicker">目标用户 / WHO</div>
 
-# 服务「想写却写不完」的人。<br>为普通作者补上工程能力。
-
 <div class="rule"></div>
 
 <div class="persona-grid">
@@ -232,8 +225,6 @@ layout: default
 ---
 
 <div class="kicker">价值主张 / VALUE</div>
-
-# 用用户故事说价值：<br>少重读，少试错，有退路。
 
 <div class="rule"></div>
 
@@ -281,8 +272,6 @@ layout: default
 
 <div class="kicker">差异化 / DIFFERENCE</div>
 
-# 把长篇写下去，<br>靠记得住、不糊弄。
-
 <div class="rule"></div>
 
 <table class="compare">
@@ -317,8 +306,6 @@ layout: default
 ---
 
 <div class="kicker">产品形态 / FORM</div>
-
-# 浏览器打开就能写，<br>一章一次事务提交。
 
 <div class="rule"></div>
 
@@ -404,8 +391,6 @@ layout: default
 ---
 
 <div class="kicker">原则总览 / 4 × 3</div>
-
-# 十二条原则，<br>一条主线：让作者敢一直用下去。
 
 <div class="rule"></div>
 
@@ -651,8 +636,6 @@ layout: default
 
 <div class="kicker">取舍 / WHAT WE DON'T DO</div>
 
-# 我们刻意不做的事，<br>定义了产品是什么。
-
 <div class="rule"></div>
 
 <div class="tradeoff-grid">
@@ -712,8 +695,6 @@ layout: default
 
 <div class="kicker">3.1 用户体验 / UX</div>
 
-# 写作工具先要让人敢一直用。
-
 <div class="rule"></div>
 
 <div class="ux-grid">
@@ -761,8 +742,6 @@ layout: default
 
 <div class="kicker">3.2 技术选型 / STACK</div>
 
-# 够用、可验证，避免过度设计。
-
 <div class="rule"></div>
 
 <table class="compare tech-table">
@@ -792,8 +771,6 @@ layout: default
 ---
 
 <div class="kicker">3.3 代码仓库 / REPOSITORY</div>
-
-# 仓库与提交历史：真实协作留痕。
 
 <div class="rule"></div>
 
@@ -828,8 +805,6 @@ layout: default
 
 <div class="kicker">3.4 全生命周期 / LIFECYCLE</div>
 
-# 主要问题与处理记录。
-
 <div class="rule"></div>
 
 <table class="compare issue-table">
@@ -858,8 +833,6 @@ layout: default
 ---
 
 <div class="kicker">3.5 软件概要设计 / DESIGN</div>
-
-# 概要设计：先把边界和依赖画清楚。
 
 <div class="rule"></div>
 
@@ -908,8 +881,6 @@ layout: default
 
 <div class="kicker">3.5.0 使用工具 / TOOLING</div>
 
-# 图源、讲稿和代码放在同一个仓库。
-
 <div class="rule"></div>
 
 <div class="tool-grid">
@@ -957,8 +928,6 @@ layout: default
 
 <div class="kicker">3.5.1 架构 / ARCHITECTURE</div>
 
-# 四层边界：界面不碰模型，模型不碰存储。
-
 <div class="rule"></div>
 
 ```mermaid {theme: 'base', themeCSS: '.node rect{fill:#F6F3E9 !important;stroke:#1E4A36 !important;rx:4px;ry:4px}.node polygon{fill:#F6F3E9 !important;stroke:#1E4A36 !important}.nodeLabel{fill:#1F3026 !important;font-family:Noto Sans SC,Microsoft YaHei,sans-serif !important;font-size:13px !important}.edgePath .path{stroke:#7D9274 !important;stroke-width:1.5px !important}.marker{fill:#7D9274 !important;stroke:#7D9274 !important}.labelBkg{background:#F6F3E9 !important;color:#5D7355 !important}.labelBkg p{background:transparent !important;color:#5D7355 !important}.edgeLabel rect{fill:#F6F3E9 !important;opacity:1 !important}.edgeLabel{background:#F6F3E9 !important;color:#5D7355 !important}.edgeLabel span{color:#5D7355 !important}', scale: 0.9}
@@ -1004,8 +973,6 @@ layout: default
 
 <div class="kicker">3.5.2 基础设施 / INFRA</div>
 
-# 单机部署：入口、应用、数据三段就够。
-
 <div class="rule"></div>
 
 <div class="ux-grid">
@@ -1037,8 +1004,6 @@ layout: default
 ---
 
 <div class="kicker">3.5.3 智能体设计 / AGENT</div>
-
-# 智能体设计：编排、记忆、护栏、工具各有边界。
 
 <div class="rule"></div>
 
@@ -1076,8 +1041,6 @@ layout: default
 ---
 
 <div class="kicker">3.5.3 编排 / LANGGRAPH</div>
-
-# 事件先行：先改状态，再写正文。
 
 <div class="rule"></div>
 
@@ -1126,8 +1089,6 @@ layout: default
 
 <div class="kicker">3.5.3 记忆 / MEMORY</div>
 
-# 每条设定都带版本、<br>变更理由和正文出处。
-
 <div class="rule"></div>
 
 <div class="cols cols-2 gap-lg memory-layout">
@@ -1169,8 +1130,6 @@ layout: default
 
 <div class="kicker">3.5.5 接口 / API</div>
 
-# 生成、编辑、复查、导出都有固定入口。
-
 <div class="rule"></div>
 
 <table class="compare interface-table">
@@ -1200,8 +1159,6 @@ layout: default
 ---
 
 <div class="kicker">3.5.6 前端 / FRONTEND</div>
-
-# 前端设计：零构建、同源、渐进增强。
 
 <div class="rule"></div>
 
@@ -1236,8 +1193,6 @@ layout: default
 ---
 
 <div class="kicker">3.6 质量 / QUALITY</div>
-
-# 质量是每次提交的<br>默认动作。
 
 <div class="rule"></div>
 
@@ -1277,8 +1232,6 @@ layout: default
 
 <div class="kicker">3.6.1–3.6.2 质量控制 / TOOLS</div>
 
-# 规矩写成工具，<br>才不会靠人记得。
-
 <div class="rule"></div>
 
 <div class="cols cols-2 gap-lg quality-layout">
@@ -1317,8 +1270,6 @@ layout: default
 ---
 
 <div class="kicker">3.7 代码统计 / CODE</div>
-
-# 代码行数只是中间产物，<br>真正的考验在于持续维护。
 
 <div class="rule"></div>
 
@@ -1416,8 +1367,6 @@ layout: default
 ---
 
 <div class="kicker">小结 / SUMMARY</div>
-
-# 把复杂留给系统，<br>把简单留给作者。
 
 <div class="rule"></div>
 
