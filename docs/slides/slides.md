@@ -344,7 +344,7 @@ layout: default
 ---
 <div class="eyebrow">2. 产品设计应用的原则</div>
 
-# 十二条原则，每条一句，且每条都能在仓库里找到证据
+# 只列项目里真正用到的原则，每条标注对应实现或文档
 
 <div class="hr-line"></div>
 
@@ -352,43 +352,45 @@ layout: default
 
 <div class="card-soft p-4">
   <div class="tag">组一 · 需求 信息 创新</div>
-  <div class="body-text mt-2 leading-[1.8]">
-    <div><b>需求原则</b>：从「不会写、吃设定」出发，先冻结 MVP，明确不做清单</div>
-    <div><b>信息原则</b>：竞品与长文本架构调研先行，结论写进问题定义</div>
-    <div><b>创新原则</b>：事件先行 + 事实账本；提交是事务，不是覆盖</div>
+  <div class="body-text mt-2 leading-[1.75]">
+    <div><b>需求原则</b>：先冻结 MVP 与「不做」清单<span class="ev">problem_definition.md</span></div>
+    <div><b>信息原则</b>：竞品与长文本方案对比后才定架构<span class="ev">architecture.md</span></div>
+    <div><b>创新原则</b>：事件先行 + 事实账本，提交是事务<span class="ev">LANGGRAPH.mmd</span></div>
   </div>
 </div>
 
 <div class="card-soft p-4">
   <div class="tag">组二 · 系统 收敛 优化</div>
-  <div class="body-text mt-2 leading-[1.8]">
-    <div><b>系统原则</b>：五阶段状态图，四角色契约固定，失败不污染正式快照</div>
-    <div><b>收敛原则</b>：四种记忆方案发散后，收敛到结构化事实 + 三层记忆</div>
-    <div><b>优化原则</b>：篇幅动态分配、失败降级、重规划只改未写章节</div>
+  <div class="body-text mt-2 leading-[1.75]">
+    <div><b>系统原则</b>：五阶段状态图、四角色契约固定<span class="ev">LANGGRAPH.mmd</span></div>
+    <div><b>收敛原则</b>：摘要 / 向量 / 全文 / 结构化事实四选一<span class="ev">architecture.md L75</span></div>
+    <div><b>优化原则</b>：篇幅按字数动态分配、失败降级、重规划只改未写章<span class="ev">README</span></div>
   </div>
 </div>
 
 <div class="card-soft p-4">
   <div class="tag">组三 · 继承 效益 时间</div>
-  <div class="body-text mt-2 leading-[1.8]">
-    <div><b>继承原则</b>：LangGraph / 兼容协议 / Vue / PostgreSQL，不自造编排</div>
-    <div><b>效益原则</b>：单台云服务器 + 用户自带 Key，成本可控、可备份迁移</div>
-    <div><b>时间原则</b>：14 天交付计划，窗口期内用对照实验证明价值</div>
+  <div class="body-text mt-2 leading-[1.75]">
+    <div><b>继承原则</b>：编排 / 接口 / 前端 / 存储全部复用<span class="ev">README 技术选型</span></div>
+    <div><b>效益原则</b>：生成前费用预估、单台服务器托管<span class="ev">official_pricing.py</span></div>
+    <div><b>时间原则</b>：两周交付计划与里程碑 M1–M4<span class="ev">TEAM_PLAN.md</span></div>
   </div>
 </div>
 
 <div class="card-soft p-4">
   <div class="tag">组四 · 定量 简化 审核</div>
-  <div class="body-text mt-2 leading-[1.8]">
-    <div><b>定量原则</b>：成功标准可测（1 万字 / 8–10 章、矛盾数、token 与费用）</div>
-    <div><b>简化原则</b>：标准库 HTTP、零前端构建、零外部依赖即可跑</div>
-    <div><b>审核原则</b>：独立审核角色 + PR 复核 + ruff / CI 四类 job</div>
+  <div class="body-text mt-2 leading-[1.75]">
+    <div><b>定量原则</b>：成功标准可测 + 127 / 42 项回归<span class="ev">VALIDATION.md</span></div>
+    <div><b>简化原则</b>：标准库 HTTP、零前端构建、零外部依赖<span class="ev">README</span></div>
+    <div><b>审核原则</b>：独立审核节点 + PR 复核 + ruff/CI<span class="ev">tests.yml</span></div>
   </div>
 </div>
 
 </div>
 
-<!-- 十二条压成一页：每条一句做法，详情在完整版里。 -->
+<div class="absolute left-[52px] bottom-[16px] text-[9px] text-[#A99C88]">凡在项目中找不到对应实践的条目已不列入；括号内为可查证的实现或文档位置。</div>
+
+<!-- 原则页：只保留仓库里能落地的条目，并标出处。 -->
 ---
 layout: default
 ---
