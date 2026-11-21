@@ -8,8 +8,11 @@ from unittest.mock import patch
 
 from inf_backend import editing, proofreading, service
 from inf_backend.settings import Settings
+from memory_runtime.prose_memory import verify_prose_coverage
+from memory_runtime.writing import WritingSession
 from tests.unit.test_langgraph import EventProvider
-from tome_writer.domain import canonical
+from tome_writer.domain import ContractError, canonical
+from tome_writer.tiered_memory import select_context
 
 
 class LocalEditingTests(unittest.TestCase):
@@ -68,6 +71,53 @@ class LocalEditingTests(unittest.TestCase):
         planner = next(r for r in model.requests if r.role == "planner")
         self.assertIn(data["text"], canonical(planner.payload))
         self.assertEqual(len(service.load_book("edited-book")["state"]["chapters"]), 3)
+
+    @staticmethod
+    def long_prose():
+        return "\n\n".join(
+            f"线索{i}：" + "窗外的雨打湿了门前石阶，掌柜点灯等候回信。" * 8
+            for i in range(50)
+        )
+
+    def test_large_edit_bounds_working_memory_without_losing_excerpts(self):
+        text = self.long_prose()
+        editing.save_chapter("edited-book", 1, self.data(text=text))
+        book = service.load_book("edited-book")["state"]
+        memory = book["memory"]
+        self.assertEqual(book["chapters"][0]["text"], text)
+        self.assertTrue(verify_prose_coverage(memory, book["chapters"][0]))
+        self.assertTrue(
+            any(item["tier"] == "recent" for item in memory["items"].values())
+        )
+        select_context(memory, max_bytes=22000)
+
+    def test_legacy_oversized_manual_checkpoint_can_continue(self):
+        text = self.long_prose()
+        with patch.object(WritingSession, "balance_working_memory"):
+            editing.save_chapter("edited-book", 1, self.data(text=text))
+        pointer = service._longform_pointer("edited-book")
+        old_path = pointer.parent / json.loads(pointer.read_text())["checkpoint"]
+        old_bytes = old_path.read_bytes()
+        old_book = service.load_book("edited-book")["state"]
+        self.assertTrue(
+            all(
+                item["tier"] == "working"
+                for item in old_book["memory"]["items"].values()
+            )
+        )
+        with self.assertRaisesRegex(
+            ContractError, "working memory exceeds wire budget"
+        ):
+            select_context(old_book["memory"], max_bytes=22000)
+        new_book = service.generate(
+            "edited-book", gateway=EventProvider(), settings=self.config
+        )["state"]
+        self.assertEqual(len(new_book["chapters"]), 3)
+        self.assertEqual(new_book["chapters"][:2], old_book["chapters"])
+        self.assertTrue(
+            verify_prose_coverage(new_book["memory"], new_book["chapters"][0])
+        )
+        self.assertEqual(old_path.read_bytes(), old_bytes)
 
     def test_editing_second_chapter_keeps_other_prose_without_stale_event_state(self):
         old = service.load_book("edited-book")

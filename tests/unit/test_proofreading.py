@@ -31,14 +31,19 @@ class ProofreadingTests(unittest.TestCase):
         self.assertNotIn("writer@example.test", body)
         self.assertTrue(all(f["end"] > f["start"] for f in result["findings"]))
 
-    def test_utf16_and_crlf_offsets_select_the_correct_word(self):
-        text = "😀开场。\r\n他迫不急待地出发。"
-        finding = next(f for f in review(text)["findings"] if f["category"] == "typo")
-        normalized = text.replace("\r\n", "\n").encode("utf-16-le")
-        selected = normalized[finding["start"] * 2 : finding["end"] * 2].decode(
-            "utf-16-le"
-        )
-        self.assertEqual(selected, "迫不急待")
+    def test_utf16_offsets_and_line_numbers_follow_editor_newlines(self):
+        for newline in ("\n", "\r\n", "\r"):
+            with self.subTest(newline=newline):
+                text = f"😀开场。{newline}他迫不急待地出发。"
+                finding = next(
+                    f for f in review(text)["findings"] if f["category"] == "typo"
+                )
+                normalized = "😀开场。\n他迫不急待地出发。".encode("utf-16-le")
+                selected = normalized[finding["start"] * 2 : finding["end"] * 2].decode(
+                    "utf-16-le"
+                )
+                self.assertEqual(selected, "迫不急待")
+                self.assertEqual(finding["line"], 2)
 
     def test_repeats_and_unclosed_quotes_are_not_automatically_deleted(self):
         result = review("“他说的的故事还没结束。")

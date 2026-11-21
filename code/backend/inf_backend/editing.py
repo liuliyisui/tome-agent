@@ -121,7 +121,9 @@ def rebuild_session(book_id, plan, chapters, replacement=None):
         )
     # Persist the empty base and final snapshot only, avoiding one growing copy
     # of the whole manuscript per chapter on every small local edit.
-    session._save([], "MEMORY_COMMITTED")
+    trace = []
+    session.balance_working_memory(trace)
+    session._save(trace, "MEMORY_COMMITTED")
     service._load_compatible_checkpoint(session.latest_checkpoint, plan)
     return session
 

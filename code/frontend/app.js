@@ -99,6 +99,13 @@ function highlightedText(text, start, match, field) {
   if (to <= from) return text;
   return [text.slice(0, from), h("mark", { class: "search-hit-active" }, text.slice(from, to)), text.slice(to)];
 }
+function readProviderPreference(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || "null") ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
 const ChapterReader = {
   name: "ChapterReader",
   props: ["chapter", "match"],
@@ -748,12 +755,15 @@ const app = createApp({
       state.apiKey = "";
       state.errors.api = "";
     }
-    function addCustomProvider() {
+    function registerCustomProviderSlot() {
       let number = 1;
       while (state.customProviders.includes(`custom-${number}`)) number++;
       const slot = `custom-${number}`;
       state.customProviders.push(slot);
-      selectProvider(slot);
+      return slot;
+    }
+    function addCustomProvider() {
+      selectProvider(registerCustomProviderSlot());
     }
     function removeCustomProvider(slot) {
       if (!state.customProviders.includes(slot)) return;
@@ -799,12 +809,7 @@ const app = createApp({
         const cfg = await api("/api/model-config", payload);
         state.configured = cfg.configured;
         state.model = cfg.model;
-        state.modelForm = {
-          provider: cfg.provider,
-          providerName: cfg.provider_name || (cfg.provider === "deepseek" ? "DeepSeek" : cfg.provider === "openai" ? "OpenAI" : "自定义"),
-          model: cfg.model,
-          endpoint: cfg.provider === "compatible" ? cfg.endpoint : "",
-        };
+        state.modelForm = modelFormFromConfig(cfg);
         state.activeProvider = { providerName: cfg.provider_name, endpoint: cfg.endpoint };
         try { localStorage.removeItem("tome-hidden-active-provider"); } catch {}
         saveCustomProviders();
@@ -1458,53 +1463,70 @@ const app = createApp({
         }
       }
     }
+    function restoreProviderDrafts() {
+      const presets = readProviderPreference("tome-provider-presets", {});
+      for (const preset of PROVIDER_PRESETS) {
+        const draft = presets[preset.id];
+        if (draft?.provider !== preset.provider ||
+            typeof draft.model !== "string" || typeof draft.endpoint !== "string") continue;
+        state.providerDrafts[preset.id] = {
+          provider: preset.provider, providerName: preset.name, model: draft.model, endpoint: draft.endpoint,
+        };
+      }
+
+      const custom = readProviderPreference("tome-custom-providers", []);
+      if (!Array.isArray(custom)) return;
+      const valid = custom.filter((entry) =>
+        typeof entry?.providerName === "string" && typeof entry.model === "string" && typeof entry.endpoint === "string",
+      );
+      for (const { providerName, model, endpoint } of valid.slice(0, 100)) {
+        const slot = registerCustomProviderSlot();
+        state.providerDrafts[slot] = { provider: "compatible", providerName, model, endpoint };
+      }
+    }
+    function modelFormFromConfig(config) {
+      const preset = PROVIDER_PRESETS.find((item) => item.id === config.provider);
+      return {
+        provider: config.provider,
+        providerName: config.provider_name || preset?.name || "自定义",
+        model: config.model,
+        endpoint: config.provider === "compatible" ? config.endpoint : "",
+      };
+    }
+    function compatibleProviderSlot(config) {
+      const preset = PROVIDER_PRESETS.find((item) =>
+        item.provider === "compatible" && item.name === config.provider_name,
+      );
+      if (preset) return preset.id;
+      const existing = state.customProviders.find((slot) => {
+        const draft = state.providerDrafts[slot];
+        return draft?.endpoint === config.endpoint && draft?.providerName === config.provider_name;
+      });
+      return existing || registerCustomProviderSlot();
+    }
+    async function restoreActiveModel() {
+      const config = await api("/api/model-config");
+      if (!config.provider) return;
+      state.activeProvider = { providerName: config.provider_name, endpoint: config.endpoint };
+      const hidden = readProviderPreference("tome-hidden-active-provider", null);
+      const compatible = config.provider === "compatible";
+      if (compatible && hidden && hidden.providerName === config.provider_name &&
+          hidden.endpoint === config.endpoint) return;
+      state.providerSlot = compatible ? compatibleProviderSlot(config) : config.provider;
+      state.modelForm = modelFormFromConfig(config);
+    }
     onMounted(async () => {
       try {
         localStorage.removeItem("tome-selected-book");
         localStorage.removeItem("tome-last-deleted");
-        const savedPresets = JSON.parse(localStorage.getItem("tome-provider-presets") || "{}");
-        for (const preset of PROVIDER_PRESETS) {
-          const draft = savedPresets[preset.id];
-          if (draft && draft.provider === preset.provider && typeof draft.model === "string" && typeof draft.endpoint === "string") state.providerDrafts[preset.id] = { provider: preset.provider, providerName: preset.name, model: draft.model, endpoint: draft.endpoint };
-        }
-        const custom = JSON.parse(localStorage.getItem("tome-custom-providers") || "[]");
-        if (Array.isArray(custom)) {
-          custom.filter((entry) => entry && typeof entry.providerName === "string" && typeof entry.model === "string" && typeof entry.endpoint === "string").slice(0, 100).forEach((entry, index) => {
-            const slot = `custom-${index + 1}`;
-            state.customProviders.push(slot);
-            state.providerDrafts[slot] = { provider: "compatible", ...entry };
-          });
-        }
       } catch {}
+      restoreProviderDrafts();
       try {
         const cfg = await api("/api/config");
         state.configured = cfg.configured;
         state.model = cfg.model;
         try {
-          const modelConfig = await api("/api/model-config");
-          if (modelConfig.provider) {
-            state.activeProvider = { providerName: modelConfig.provider_name, endpoint: modelConfig.endpoint };
-            let hidden = null;
-            try { hidden = JSON.parse(localStorage.getItem("tome-hidden-active-provider") || "null"); } catch {}
-            const isHidden = modelConfig.provider === "compatible" && hidden && hidden.providerName === modelConfig.provider_name && hidden.endpoint === modelConfig.endpoint;
-            if (isHidden) {
-              // Deleting a list item does not deactivate the saved backend configuration.
-            } else if (modelConfig.provider === "compatible" && PROVIDER_PRESETS.some((item) => item.provider === "compatible" && item.name === modelConfig.provider_name)) {
-              state.providerSlot = PROVIDER_PRESETS.find((item) => item.provider === "compatible" && item.name === modelConfig.provider_name).id;
-            } else if (modelConfig.provider === "compatible") {
-              const existing = state.customProviders.find((slot) => state.providerDrafts[slot].endpoint === modelConfig.endpoint && state.providerDrafts[slot].providerName === modelConfig.provider_name);
-              state.providerSlot = existing || `custom-${state.customProviders.length + 1}`;
-              if (!existing) state.customProviders.push(state.providerSlot);
-            } else {
-              state.providerSlot = modelConfig.provider;
-            }
-            if (!isHidden) state.modelForm = {
-              provider: modelConfig.provider,
-              providerName: modelConfig.provider_name || (modelConfig.provider === "deepseek" ? "DeepSeek" : modelConfig.provider === "openai" ? "OpenAI" : "自定义"),
-              model: modelConfig.model,
-              endpoint: modelConfig.provider === "compatible" ? modelConfig.endpoint : "",
-            };
-          }
+          await restoreActiveModel();
         } catch { /* Keep defaults when connecting to an older server. */ }
         if (!cfg.configured) openApiConfig();
         await refreshBooks();

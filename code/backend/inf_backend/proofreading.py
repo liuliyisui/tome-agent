@@ -2,6 +2,7 @@
 
 import re
 import unicodedata
+from dataclasses import dataclass
 
 from tome_writer.domain import canonical, digest
 
@@ -23,6 +24,7 @@ TYPOS = {
     "振耳欲聋": "震耳欲聋",
 }
 MAX_FINDINGS = 200
+PUNCTUATION_PAIRS = {"“": "”", "「": "」", "『": "』", "（": "）", "【": "】"}
 
 
 def revision(chapters):
@@ -43,9 +45,7 @@ def _normal(text):
     return "".join(output), starts, ends
 
 
-def sensitive_matches(text):
-    """Return locations only, using the same rules as outbound protection."""
-    normalized, starts, ends = _normal(text)
+def _credential_spans(normalized):
     secret = []
     for pattern in privacy.CREDENTIALS:
         for match in pattern.finditer(normalized):
@@ -58,6 +58,25 @@ def sensitive_matches(text):
             merged[-1] = (merged[-1][0], max(end, merged[-1][1]))
         else:
             merged.append((start, end))
+    return merged
+
+
+def _personal_match_is_valid(category, match, normalized):
+    if category == "identity":
+        return privacy.valid_identity(match.group())
+    if category == "bank_card":
+        start, end = match.span()
+        context = normalized[max(0, start - 24) : end + 8]
+        return privacy.valid_card(match.group()) and bool(
+            privacy.CARD_CONTEXT.search(context)
+        )
+    return True
+
+
+def sensitive_matches(text):
+    """Return locations only, using the same rules as outbound protection."""
+    normalized, starts, ends = _normal(text)
+    merged = _credential_spans(normalized)
     matches = [("credential", a, b) for a, b in merged]
 
     def overlaps(start, end):
@@ -73,12 +92,7 @@ def sensitive_matches(text):
             a, b = match.span()
             if overlaps(a, b):
                 continue
-            if category == "identity" and not privacy.valid_identity(match.group()):
-                continue
-            if category == "bank_card" and not (
-                privacy.valid_card(match.group())
-                and privacy.CARD_CONTEXT.search(normalized[max(0, a - 24) : b + 8])
-            ):
+            if not _personal_match_is_valid(category, match, normalized):
                 continue
             matches.append((category, a, b))
     return [
@@ -87,144 +101,140 @@ def sensitive_matches(text):
     ]
 
 
-def _utf16(text, offset):
-    return (
-        len(text[:offset].replace("\r\n", "\n").replace("\r", "\n").encode("utf-16-le"))
-        // 2
-    )
+@dataclass(frozen=True, slots=True)
+class _Finding:
+    category: str
+    span: tuple[int, int]
+    message: str
+    suggestion: str
+    replacement: str | None = None
+    level: str = "warning"
+
+    def in_field(self, chapter, field, text):
+        start, end = self.span
+        prefix = _editor_text(text[:start])
+        return {
+            "chapter": chapter,
+            "field": field,
+            "category": self.category,
+            "start": len(prefix.encode("utf-16-le")) // 2,
+            "end": len(_editor_text(text[:end]).encode("utf-16-le")) // 2,
+            "line": prefix.count("\n") + 1,
+            "level": self.level,
+            "message": self.message,
+            "suggestion": self.suggestion,
+            "replacement": self.replacement,
+        }
+
+
+def _editor_text(text):
+    return text.replace("\r\n", "\n").replace("\r", "\n")
+
+
+def _word_findings(text):
+    for wrong, correct in TYPOS.items():
+        for match in re.finditer(re.escape(wrong), text):
+            yield _Finding(
+                "typo",
+                match.span(),
+                f"疑似易错词：{wrong}",
+                f"建议核对是否应为「{correct}」。",
+                correct,
+            )
+    for match in re.finditer(r"([的地得了着和与在是把被])\1+", text):
+        yield _Finding(
+            "repeated_word",
+            match.span(),
+            "疑似重复文字",
+            "核实是否为笔误；若为人物用语或刻意重复，可保留。",
+            match[1],
+        )
+
+
+def _paragraph_findings(text):
+    seen = set()
+    for match in re.finditer(r"[^\r\n]+", text):
+        line = match.group().strip()
+        if len(line) < 12:
+            continue
+        if line in seen:
+            yield _Finding(
+                "repeated_paragraph",
+                match.span(),
+                "发现相同段落",
+                "核对是否重复粘贴；不要直接删除有意重复的段落。",
+            )
+        seen.add(line)
+
+
+def _punctuation_findings(text):
+    stack = []
+    for index, char in enumerate(text):
+        if char in PUNCTUATION_PAIRS:
+            stack.append((char, index))
+        elif char in PUNCTUATION_PAIRS.values():
+            if stack and PUNCTUATION_PAIRS[stack[-1][0]] == char:
+                stack.pop()
+            else:
+                yield _Finding(
+                    "punctuation",
+                    (index, index + 1),
+                    "标点可能未配对",
+                    "检查此处括号或引号的配对关系。",
+                )
+    for char, index in stack[:20]:
+        yield _Finding(
+            "punctuation",
+            (index, index + 1),
+            "标点可能未闭合",
+            f"检查是否缺少「{PUNCTUATION_PAIRS[char]}」。",
+        )
+
+
+def _field_findings(text):
+    for category, start, end in sensitive_matches(text):
+        credential = category == "credential"
+        yield _Finding(
+            category,
+            (start, end),
+            privacy.LABELS[category],
+            "请删除密钥或私钥。"
+            if credential
+            else "核实是否为虚构或已获授权的信息，必要时改用占位文字。",
+            level="danger" if credential else "warning",
+        )
+    yield from _word_findings(text)
+    yield from _paragraph_findings(text)
+    yield from _punctuation_findings(text)
+
+
+def _finding_candidates(chapters):
+    for chapter in chapters:
+        for field in ("title", "text"):
+            text = chapter[field]
+            for issue in _field_findings(text):
+                yield issue, chapter["number"], field, text
 
 
 def inspect(chapters):
     findings = []
     truncated = False
     blocked = False
-
-    def add(
-        chapter,
-        field,
-        text,
-        category,
-        start,
-        end,
-        message,
-        suggestion,
-        replacement=None,
-        level="warning",
-    ):
-        nonlocal truncated, blocked
-        blocked = blocked or level == "danger"
+    for issue, number, field, text in _finding_candidates(chapters):
+        is_danger = issue.level == "danger"
+        blocked = blocked or is_danger
         if len(findings) >= MAX_FINDINGS:
             truncated = True
-            if level != "danger":
-                return
+            if not is_danger:
+                continue
             warning = next(
                 (i for i, item in enumerate(findings) if item["level"] != "danger"),
                 None,
             )
             if warning is None:
-                return
+                continue
             findings.pop(warning)
-        findings.append(
-            {
-                "chapter": chapter,
-                "field": field,
-                "category": category,
-                "start": _utf16(text, start),
-                "end": _utf16(text, end),
-                "line": text.count("\n", 0, start) + 1,
-                "level": level,
-                "message": message,
-                "suggestion": suggestion,
-                "replacement": replacement,
-            }
-        )
-
-    for chapter in chapters:
-        for field in ("title", "text"):
-            text = chapter[field]
-            number = chapter["number"]
-            for category, start, end in sensitive_matches(text):
-                add(
-                    number,
-                    field,
-                    text,
-                    category,
-                    start,
-                    end,
-                    privacy.LABELS[category],
-                    "请删除密钥或私钥。"
-                    if category == "credential"
-                    else "核实是否为虚构或已获授权的信息，必要时改用占位文字。",
-                    level="danger" if category == "credential" else "warning",
-                )
-            for wrong, correct in TYPOS.items():
-                for match in re.finditer(re.escape(wrong), text):
-                    add(
-                        number,
-                        field,
-                        text,
-                        "typo",
-                        *match.span(),
-                        f"疑似易错词：{wrong}",
-                        f"建议核对是否应为「{correct}」。",
-                        correct,
-                    )
-            for match in re.finditer(r"([的地得了着和与在是把被])\1+", text):
-                add(
-                    number,
-                    field,
-                    text,
-                    "repeated_word",
-                    *match.span(),
-                    "疑似重复文字",
-                    "核实是否为笔误；若为人物用语或刻意重复，可保留。",
-                    match[1],
-                )
-            seen = {}
-            for match in re.finditer(r"[^\r\n]+", text):
-                line = match.group().strip()
-                if len(line) >= 12:
-                    if line in seen:
-                        add(
-                            number,
-                            field,
-                            text,
-                            "repeated_paragraph",
-                            *match.span(),
-                            "发现相同段落",
-                            "核对是否重复粘贴；不要直接删除有意重复的段落。",
-                        )
-                    seen[line] = True
-            stack = []
-            pairs = {"“": "”", "「": "」", "『": "』", "（": "）", "【": "】"}
-            for index, char in enumerate(text):
-                if char in pairs:
-                    stack.append((char, index))
-                elif char in pairs.values():
-                    if stack and pairs[stack[-1][0]] == char:
-                        stack.pop()
-                    else:
-                        add(
-                            number,
-                            field,
-                            text,
-                            "punctuation",
-                            index,
-                            index + 1,
-                            "标点可能未配对",
-                            "检查此处括号或引号的配对关系。",
-                        )
-            for char, index in stack[:20]:
-                add(
-                    number,
-                    field,
-                    text,
-                    "punctuation",
-                    index,
-                    index + 1,
-                    "标点可能未闭合",
-                    f"检查是否缺少「{pairs[char]}」。",
-                )
+        findings.append(issue.in_field(number, field, text))
     findings.sort(
         key=lambda item: (
             item["level"] != "danger",

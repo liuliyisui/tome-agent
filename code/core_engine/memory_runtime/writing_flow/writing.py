@@ -70,6 +70,16 @@ def runtime_hashes():
 
 # LF and CRLF digests for source files changed by the reviewed Sonar refactor.
 _SONAR_REFACTOR_DIGESTS = {
+    "src/tome_writer/tiered_memory.py": (
+        (
+            "8a74f039ea45b750800a34fa0ab4dc40281d3fbce66b8834f46ab48e79d8dab5",
+            "b2a8f63ed1dfd738be286f6bc17a6b070f4c97405027a5948442549e0523d0a4",
+        ),
+        (
+            "5e6024f557eccd0af2a6b0ec51286cb22d19e2236838050618d71487b38c6e83",
+            "c3506f962cc6c32a0b03de74c9c5cfbe18c6392ddeb8f1321bdf06d4d1c80e24",
+        ),
+    ),
     "src/tome_writer/chat_provider.py": (
         (
             "377bd96ce20115e12289834857b3d1b3ad6202154741cbd3556e3f297b7f1934",
@@ -171,6 +181,22 @@ def _compatible_runtime(saved, current):
         return False
     # Each pair is the LF and CRLF digest of a reviewed Git revision.
     previous = (
+        (
+            (
+                "d1e51ac9a686de97e34e539ddd60e14c92f8d4f97222e0d36a4452897027c00a",
+                "ac8dee93f2541abbee5fc4e0731d47aef8078055ee57a9717dfcd35e34137603",
+                "2c1bf551ec3bb0255302c36a488d18f69dde6ee9a51807e6dc084306b118ff29",
+                "c1127db764d3ff54cc206035f589eb48a0c2668fa0cd700c3c1fb625fc2ad435",
+            ),
+            (
+                "072f6c8b933d043c3344bff46c8e02e590d2a867d655552322e12bfe767ae578",
+                "ab68d85195953676c7a4193e8509d68232bd4a7ea0fe662bff4367c57fc8d873",
+            ),
+            (
+                "9e6b9a70107278be7c77a884c8785ac7c22774d701398c78dae04cf8fb95aa4b",
+                "3c628b150dbe1eedbbc0126769661bd2c4074414807befdee1febe2d0e7cfc9f",
+            ),
+        ),
         (
             (
                 "c53fdec660b9366a27bd96c007f17337c3b49f1cb5a5592908e884f1e52238e4",
@@ -481,7 +507,22 @@ class WritingSession:
         self.serial = 0
         self.latest_checkpoint = None
         self.hashes = runtime_hashes()
-        self._save([], "RESUMED" if book is not None else "EMPTY_START")
+        trace = []
+        if book is not None:
+            self.balance_working_memory(trace)
+        self._save(trace, "RESUMED" if book is not None else "EMPTY_START")
+
+    def balance_working_memory(self, trace):
+        """Keep saved prose and memory sources while bounding the next context."""
+        memory = self.book["memory"]
+        staged, moves = self.engine.layers.intake(
+            memory,
+            self.book["chapters"],
+            f"writing-working-balance-{memory['revision']}",
+        )
+        if moves:
+            self.book["memory"] = staged
+            trace.append({"role": "working_memory_balance", "moves": moves})
 
     def _save(self, trace, reason):
         from check_memory import save_new

@@ -7,9 +7,11 @@ from memory_runtime.continuity import empty
 from memory_runtime.engine import MemoryEngine
 from memory_runtime.event_first import prepare, project_memory, realize
 from memory_runtime.pipeline import LayerAgent
+from memory_runtime.prose_memory import store_prose_excerpts
 from tests.unit.test_event_consistency import proposal
 from tome_writer.domain import canonical, digest
 from tome_writer.models import ModelReply
+from tome_writer.tiered_memory import select_context
 
 
 class PartialPlacementGateway:
@@ -41,6 +43,24 @@ class PartialPlacementGateway:
 
 
 class MemoryLayerTests(unittest.TestCase):
+    def test_optional_memory_fits_at_exact_utf8_boundary(self):
+        text = "甲走到台阶下。\n\n乙拿起了信。"
+        chapter = {"number": 1, "text": text, "sha256": digest(text)}
+        memory = store_prose_excerpts(MemoryEngine.empty(), [chapter], 1)
+        for item in memory["items"].values():
+            item["tier"] = "recent"
+        full = select_context(memory, query="拿起")
+        self.assertEqual(len(full["items"]), 2)
+        exact = len(canonical(full["items"]).encode("utf-8"))
+        at_limit = select_context(memory, query="拿起", max_bytes=exact)
+        below_limit = select_context(memory, query="拿起", max_bytes=exact - 1)
+        self.assertEqual(at_limit["items"], full["items"])
+        self.assertEqual(at_limit["bytes"], exact)
+        self.assertEqual(below_limit["items"], full["items"][:1])
+        self.assertEqual(
+            below_limit["bytes"], len(canonical(below_limit["items"]).encode("utf-8"))
+        )
+
     def test_partial_placement_repairs_only_missing_items(self):
         commit = prepare(empty(), proposal(), 1)["commit"]
         template = "[[event:arrival]]"

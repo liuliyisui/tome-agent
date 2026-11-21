@@ -438,9 +438,10 @@ class WebIntegrationTests(unittest.TestCase):
             {"title": "新书", "prompt": "故事构想", "chapters": 3, "target_units": 500},
         )
         self.assertEqual(book["metadata"]["title"], "新书")
-        with self.assertRaises(HTTPError) as error:
-            self.request("/api/books/missing-book")
-        self.assertEqual(error.exception.code, 404)
+        for path in ("/api/books/missing-book", "/api/books/"):
+            with self.subTest(path=path), self.assertRaises(HTTPError) as error:
+                self.request(path)
+            self.assertEqual(error.exception.code, 404)
 
     def test_first_run_api_configuration_is_private_persistent_and_one_time(self):
         with (

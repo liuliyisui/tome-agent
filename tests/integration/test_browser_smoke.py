@@ -12,6 +12,7 @@ the cost-estimate dialog, deletion and refresh persistence.
 import os
 import tempfile
 import threading
+import time
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -42,6 +43,14 @@ class BrowserSmokeTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.browser.close()
         cls.playwright.stop()
+
+    @staticmethod
+    def _await_generate(mock, timeout=5.0):
+        """service.generate 在后台线程中调用，轮询直到它被记录。"""
+        deadline = time.time() + timeout
+        while mock.call_args is None and time.time() < deadline:
+            time.sleep(0.05)
+        return mock.call_args
 
     def setUp(self):
         self.folder = tempfile.TemporaryDirectory()
@@ -155,7 +164,7 @@ class BrowserSmokeTests(unittest.TestCase):
             self.page.wait_for_selector(
                 "#estimate-dialog:not([open])", state="attached"
             )
-            self.assertTrue(generate.call_args.kwargs["privacy_confirmed"])
+            self.assertTrue(self._await_generate(generate).kwargs["privacy_confirmed"])
 
     def test_privacy_secret_blocks_generation_even_in_dark_theme(self):
         self.page.emulate_media(color_scheme="dark")
@@ -211,7 +220,9 @@ class BrowserSmokeTests(unittest.TestCase):
                 self.page.wait_for_selector(
                     "#regenerate-dialog:not([open])", state="attached"
                 )
-                self.assertIs(generate.call_args.kwargs["privacy_confirmed"], False)
+                self.assertIs(
+                    self._await_generate(generate).kwargs["privacy_confirmed"], False
+                )
 
     def test_home_and_empty_library(self):
         page = self.page

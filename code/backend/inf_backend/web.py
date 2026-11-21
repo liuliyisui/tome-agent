@@ -368,6 +368,10 @@ class WebServer(ThreadingHTTPServer):
         return {"job_id": job_id, **info}
 
 
+JOB_PATH_PREFIX = "/api/jobs/"
+UNKNOWN_ENDPOINT = "接口不存在"
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_request(self, code="-", size="-"):
         # Do not include URLs, query strings, headers, or request bodies.
@@ -409,21 +413,7 @@ class Handler(BaseHTTPRequestHandler):
         self.dispatch(True)
 
     def dispatch(self, post):
-        host = self.headers.get("Host", "").strip().lower()
-        allowed = {
-            f"127.0.0.1:{self.server.server_port}",
-            f"localhost:{self.server.server_port}",
-            *self.server.allowed_hosts,
-        }
-        same_origin = True
-        if post:
-            origin = self.headers.get("Origin")
-            if origin:
-                try:
-                    same_origin = urlsplit(origin).netloc.lower() == host
-                except ValueError:
-                    same_origin = False
-        if host not in allowed or not same_origin:
+        if not self._allows_origin(post):
             self.reply(
                 403,
                 {"error": "仅允许同源访问；对外部署请设置 TOME_ALLOWED_HOSTS"},
@@ -431,65 +421,69 @@ class Handler(BaseHTTPRequestHandler):
             return
         path = urlsplit(self.path).path
         try:
-            data = {}
-            if post:
-                if (
-                    self.headers.get("Content-Type", "").split(";")[0]
-                    != "application/json"
-                ):
-                    self.reply(415, {"error": "请求必须使用 JSON"})
-                    return
-                length = int(self.headers.get("Content-Length", "0"))
-                limit = (
-                    2_800_100
-                    if path.endswith("/cover")
-                    else 1_300_000
-                    if "/chapters/" in path and path.endswith(("/edit", "/review"))
-                    else 65536
-                )
-                if not 0 < length <= limit:
-                    raise ValueError("请求大小无效")
-                data = json.loads(self.rfile.read(length))
-                if not isinstance(data, dict):
-                    raise ValueError("请求必须是 JSON 对象")
-            if not post and path == "/api/model-config":
-                cfg = Settings.load(require_key=False)
-                self.reply(
-                    200,
-                    {
-                        **cfg.public_config(),
-                        "provider_name": cfg.provider_name,
-                        "configured": bool(cfg.api_key.strip()),
-                    },
-                )
-            elif post and path == "/api/model-test":
-                test_model_connection(
-                    data.get("provider"),
-                    data.get("model"),
-                    data.get("endpoint"),
-                    data.get("api_key"),
-                    data.get("provider_name"),
-                )
+            if post and (
+                self.headers.get("Content-Type", "").split(";")[0] != "application/json"
+            ):
+                self.reply(415, {"error": "请求必须使用 JSON"})
+                return
+            self._route(post, path, self._read_json(path) if post else {})
+        except FileNotFoundError:
+            self.reply(404, {"error": "作品或文件不存在"})
+        except database.DatabaseUnavailable as exc:
+            log_failure("Database request", exc)
+            self.reply(503, {"error": str(exc)})
+        except privacy.SensitiveInformationError as exc:
+            self.reply(400, {"error": str(exc), "safety": exc.report})
+        except (ValueError, TypeError) as exc:
+            self.reply(400, {"error": str(exc)})
+        except Exception as exc:
+            log_failure("Web request", exc)
+            self.reply(500, {"error": "操作失败，请检查本地服务日志"})
+
+    def _allows_origin(self, post):
+        host = self.headers.get("Host", "").strip().lower()
+        allowed = {
+            f"127.0.0.1:{self.server.server_port}",
+            f"localhost:{self.server.server_port}",
+            *self.server.allowed_hosts,
+        }
+        if host not in allowed:
+            return False
+        origin = self.headers.get("Origin") if post else None
+        if not origin:
+            return True
+        try:
+            return urlsplit(origin).netloc.lower() == host
+        except ValueError:
+            return False
+
+    def _read_json(self, path):
+        length = int(self.headers.get("Content-Length", "0"))
+        if path.endswith("/cover"):
+            limit = 2_800_100
+        elif "/chapters/" in path and path.endswith(("/edit", "/review")):
+            limit = 1_300_000
+        else:
+            limit = 65_536
+        if not 0 < length <= limit:
+            raise ValueError("请求大小无效")
+        data = json.loads(self.rfile.read(length))
+        if not isinstance(data, dict):
+            raise ValueError("请求必须是 JSON 对象")
+        return data
+
+    def _route(self, post, path, data):
+        match post, path:
+            case False, "/api/model-config":
+                self._reply_model_config(Settings.load(require_key=False))
+            case True, "/api/model-test":
+                test_model_connection(*self._model_parameters(data))
                 self.reply(200, {"ok": True})
-            elif post and path == "/api/model-config":
-                cfg = configure_model(
-                    data.get("provider"),
-                    data.get("model"),
-                    data.get("endpoint"),
-                    data.get("api_key"),
-                    data.get("provider_name"),
-                )
-                self.reply(
-                    200,
-                    {
-                        **cfg.public_config(),
-                        "provider_name": cfg.provider_name,
-                        "configured": bool(cfg.api_key.strip()),
-                    },
-                )
-            elif not post and path == "/api/skills":
+            case True, "/api/model-config":
+                self._reply_model_config(configure_model(*self._model_parameters(data)))
+            case False, "/api/skills":
                 self.reply(200, {"skills": service.list_skills()})
-            elif post and path == "/api/skills":
+            case True, "/api/skills":
                 self.reply(
                     201,
                     {
@@ -498,17 +492,17 @@ class Handler(BaseHTTPRequestHandler):
                         )
                     },
                 )
-            elif not post and path == "/api/config":
+            case False, "/api/config":
                 cfg = Settings.load(require_key=False)
                 self.reply(
                     200, {"configured": bool(cfg.api_key.strip()), "model": cfg.model}
                 )
-            elif post and path == "/api/config":
+            case True, "/api/config":
                 cfg = configure_api_key(data.get("api_key"))
                 self.reply(
                     200, {"configured": bool(cfg.api_key.strip()), "model": cfg.model}
                 )
-            elif not post and path == "/api/books":
+            case False, "/api/books":
                 books = []
                 for book_id in service.list_books():
                     try:
@@ -530,11 +524,11 @@ class Handler(BaseHTTPRequestHandler):
                         books.append({"id": book_id, "error": "存档无法读取"})
                 books.sort(key=lambda book: not book.get("pinned", False))
                 self.reply(200, {"books": books})
-            elif not post and path == "/api/books/trash":
+            case False, "/api/books/trash":
                 with self.server.job_lock:
                     books = library.list_deleted_books()
                 self.reply(200, {"books": books})
-            elif post and path == "/api/books":
+            case True, "/api/books":
                 book_id = service.new_book_id()
                 service.create_book(
                     book_id,
@@ -546,7 +540,7 @@ class Handler(BaseHTTPRequestHandler):
                     skills=data.get("skills"),
                 )
                 self.reply(201, load_view(book_id))
-            elif post and path == "/api/books/trash/purge":
+            case True, "/api/books/trash/purge":
                 if data.get("confirmed") is not True:
                     raise ValueError("彻底删除无法恢复，请先确认")
                 with self.server.job_lock:
@@ -554,161 +548,171 @@ class Handler(BaseHTTPRequestHandler):
                         data.get("restore_token"), data.get("confirmation_title")
                     )
                 self.reply(200, result)
-            elif post and path == "/api/books/restore":
+            case True, "/api/books/restore":
                 with self.server.job_lock:
                     book_id = library.restore_book(data.get("restore_token"))
                 self.reply(200, load_view(book_id))
-            elif not post and path == "/api/_internal/worker-status":
+            case False, "/api/_internal/worker-status":
                 with self.server.job_lock:
                     self.reply(200, {"busy": bool(self.server.busy)})
-            elif not post and path.startswith("/api/jobs/"):
+            case False, job_path if job_path.startswith(JOB_PATH_PREFIX):
+                job_id = job_path.removeprefix(JOB_PATH_PREFIX)
                 with self.server.job_lock:
-                    job = self.server.jobs.get(path.removeprefix("/api/jobs/"))
+                    job = self.server.jobs.get(job_id)
                     if job is None and database.enabled():
-                        job = database.job(path.removeprefix("/api/jobs/"))
+                        job = database.job(job_id)
                 self.reply(
                     200 if job else 404,
                     job or {"error": "任务不存在；服务可能已重启，请刷新作品"},
                 )
-            elif path.startswith("/api/books/"):
-                parts = path.strip("/").split("/")
-                book_id = parts[2]
-                if len(parts) == 4 and parts[3] == "cover" and post:
-                    version = service.save_cover(book_id, data.get("image"))
-                    self.reply(200, {"cover_version": version})
-                elif len(parts) == 4 and parts[3] == "cover" and not post:
-                    cover = service.cover_path(book_id).read_bytes()
-                    self.reply(200, cover, service.cover_type(cover))
-                elif post and len(parts) == 4 and parts[3] == "generate":
-                    self.reply(202, self.server.start_generation(book_id, data))
-                elif post and len(parts) == 4 and parts[3] == "estimate":
-                    self.reply(200, self.server.prepare_generation(book_id, data))
-                elif post and len(parts) == 4 and parts[3] == "review":
-                    self.reply(200, editing.review_book(book_id))
-                elif post and len(parts) == 4 and parts[3] == "export":
-                    body = editing.reviewed_export(book_id, data).encode("utf-8")
-                    self.reply(
-                        200, body, "text/markdown; charset=utf-8", attachment=True
-                    )
-                elif (
-                    post
-                    and len(parts) == 6
-                    and parts[3] == "chapters"
-                    and parts[5] in ("review", "edit")
-                ):
-                    try:
-                        number = int(parts[4])
-                    except ValueError:
-                        raise ValueError("章节号无效") from None
-                    with self.server.job_lock:
-                        if book_id in self.server.busy:
-                            raise ValueError("作品正在生成，请完成后修改正文")
-                        if parts[5] == "review":
-                            result = editing.review_draft(book_id, number, data)
-                        else:
-                            result = editing.save_chapter(book_id, number, data)
-                            result["book"] = load_view(book_id)
-                    self.reply(200, result)
-                elif post and len(parts) == 4 and parts[3] == "pin":
-                    with self.server.job_lock:
-                        result = library.pin_book(book_id, data.get("pinned"))
-                    self.reply(200, result)
-                elif post and len(parts) == 4 and parts[3] == "delete":
-                    if data.get("confirmed") is not True:
-                        raise ValueError("请先确认要删除的作品")
-                    with self.server.job_lock:
-                        if book_id in self.server.busy:
-                            raise ValueError("作品正在生成，请等当前任务结束后再删除")
-                        result = library.delete_book(book_id)
-                        self.server.estimates = {
-                            k: v
-                            for k, v in self.server.estimates.items()
-                            if v["book_id"] != book_id
-                        }
-                    self.reply(200, result)
-                elif post and len(parts) == 4 and parts[3] == "skills":
-                    with self.server.job_lock:
-                        if book_id in self.server.busy:
-                            raise ValueError("当前章节正在生成，请完成后选择技能")
-                        selected = service.save_book_skills(book_id, data.get("skills"))
-                    self.reply(200, {"skills": selected})
-                elif post and len(parts) == 4 and parts[3] == "style":
-                    with self.server.job_lock:
-                        if book_id in self.server.busy:
-                            raise ValueError("当前章节正在生成，请在完成后保存文风设定")
-                        style = service.save_writing_style(book_id, data)
-                    self.reply(200, {"style": style})
-                elif (
-                    post
-                    and len(parts) == 6
-                    and parts[3] == "chapters"
-                    and parts[5] == "regenerate"
-                ):
-                    try:
-                        number = int(parts[4])
-                    except ValueError:
-                        raise ValueError("章节号无效") from None
-                    self.reply(
-                        202,
-                        self.server.start_regeneration(
-                            book_id,
-                            number,
-                            data.get("confirmed") is True,
-                            data.get("author_feedback"),
-                            data.get("privacy_confirmed") is True,
-                        ),
-                    )
-                elif not post and len(parts) == 3:
-                    self.reply(
-                        200,
-                        {
-                            **load_view(book_id),
-                            "job": self.server.job_for_book(book_id),
-                        },
-                    )
-                elif not post and len(parts) == 4 and parts[3] == "export":
-                    body = service.export_markdown(service.load_book(book_id)).encode()
-                    self.reply(
-                        200, body, "text/markdown; charset=utf-8", attachment=True
-                    )
-                else:
-                    self.reply(404, {"error": "接口不存在"})
-            elif not post and path == "/favicon.ico":
+            case _, book_path if book_path.startswith("/api/books/"):
+                self._route_book(post, book_path, data)
+            case False, "/favicon.ico":
                 self.send_response(204)
                 self.send_header("Cache-Control", "public, max-age=86400")
                 self.end_headers()
-            elif not post and path in (
-                "/",
-                "/app.js",
-                "/style.css",
-                "/vue.runtime.global.prod.js",
-                "/vue-components.js",
+            case False, (
+                "/"
+                | "/app.js"
+                | "/style.css"
+                | "/vue.runtime.global.prod.js"
+                | "/vue-components.js"
             ):
-                name = "index.html" if path == "/" else path[1:]
-                mime = (
-                    "text/css"
-                    if name.endswith(".css")
-                    else "text/javascript"
-                    if name.endswith(".js")
-                    else "text/html"
-                )
-                self.reply(
-                    200, (FRONTEND / name).read_bytes(), mime + "; charset=utf-8"
-                )
-            else:
+                self._reply_frontend(path)
+            case _:
                 self.reply(404, {"error": "页面不存在"})
-        except FileNotFoundError:
-            self.reply(404, {"error": "作品或文件不存在"})
-        except database.DatabaseUnavailable as exc:
-            log_failure("Database request", exc)
-            self.reply(503, {"error": str(exc)})
-        except privacy.SensitiveInformationError as exc:
-            self.reply(400, {"error": str(exc), "safety": exc.report})
-        except (ValueError, TypeError) as exc:
-            self.reply(400, {"error": str(exc)})
-        except Exception as exc:
-            log_failure("Web request", exc)
-            self.reply(500, {"error": "操作失败，请检查本地服务日志"})
+
+    @staticmethod
+    def _model_parameters(data):
+        return (
+            data.get("provider"),
+            data.get("model"),
+            data.get("endpoint"),
+            data.get("api_key"),
+            data.get("provider_name"),
+        )
+
+    def _reply_model_config(self, config):
+        self.reply(
+            200,
+            {
+                **config.public_config(),
+                "provider_name": config.provider_name,
+                "configured": bool(config.api_key.strip()),
+            },
+        )
+
+    def _reply_frontend(self, path):
+        name = "index.html" if path == "/" else path[1:]
+        mime = {".css": "text/css", ".js": "text/javascript", ".html": "text/html"}
+        asset = FRONTEND / name
+        self.reply(200, asset.read_bytes(), mime[asset.suffix] + "; charset=utf-8")
+
+    def _route_book(self, post, path, data):
+        parts = path.strip("/").split("/")
+        if len(parts) < 3:
+            self.reply(404, {"error": UNKNOWN_ENDPOINT})
+            return
+        book_id = parts[2]
+        if not post and len(parts) == 3:
+            self.reply(
+                200,
+                {**load_view(book_id), "job": self.server.job_for_book(book_id)},
+            )
+            return
+        if post and len(parts) == 6 and parts[3] == "chapters":
+            self._route_chapter(book_id, parts[4], parts[5], data)
+            return
+        action = parts[3] if len(parts) == 4 else None
+        match post, action:
+            case True, "cover":
+                version = service.save_cover(book_id, data.get("image"))
+                self.reply(200, {"cover_version": version})
+            case False, "cover":
+                cover = service.cover_path(book_id).read_bytes()
+                self.reply(200, cover, service.cover_type(cover))
+            case True, "generate":
+                self.reply(202, self.server.start_generation(book_id, data))
+            case True, "estimate":
+                self.reply(200, self.server.prepare_generation(book_id, data))
+            case True, "review":
+                self.reply(200, editing.review_book(book_id))
+            case True, "export":
+                self._reply_manuscript(editing.reviewed_export(book_id, data))
+            case False, "export":
+                self._reply_manuscript(
+                    service.export_markdown(service.load_book(book_id))
+                )
+            case True, "pin":
+                with self.server.job_lock:
+                    result = library.pin_book(book_id, data.get("pinned"))
+                self.reply(200, result)
+            case True, "delete":
+                self._delete_book(book_id, data)
+            case True, "skills":
+                with self.server.job_lock:
+                    if book_id in self.server.busy:
+                        raise ValueError("当前章节正在生成，请完成后选择技能")
+                    selected = service.save_book_skills(book_id, data.get("skills"))
+                self.reply(200, {"skills": selected})
+            case True, "style":
+                with self.server.job_lock:
+                    if book_id in self.server.busy:
+                        raise ValueError("当前章节正在生成，请在完成后保存文风设定")
+                    style = service.save_writing_style(book_id, data)
+                self.reply(200, {"style": style})
+            case _:
+                self.reply(404, {"error": UNKNOWN_ENDPOINT})
+
+    def _reply_manuscript(self, markdown):
+        self.reply(
+            200,
+            markdown.encode("utf-8"),
+            "text/markdown; charset=utf-8",
+            attachment=True,
+        )
+
+    def _route_chapter(self, book_id, raw_number, action, data):
+        if action not in ("review", "edit", "regenerate"):
+            self.reply(404, {"error": UNKNOWN_ENDPOINT})
+            return
+        try:
+            number = int(raw_number)
+        except ValueError:
+            raise ValueError("章节号无效") from None
+        if action == "regenerate":
+            result = self.server.start_regeneration(
+                book_id,
+                number,
+                data.get("confirmed") is True,
+                data.get("author_feedback"),
+                data.get("privacy_confirmed") is True,
+            )
+            self.reply(202, result)
+            return
+        with self.server.job_lock:
+            if book_id in self.server.busy:
+                raise ValueError("作品正在生成，请完成后修改正文")
+            if action == "review":
+                result = editing.review_draft(book_id, number, data)
+            else:
+                result = editing.save_chapter(book_id, number, data)
+                result["book"] = load_view(book_id)
+        self.reply(200, result)
+
+    def _delete_book(self, book_id, data):
+        if data.get("confirmed") is not True:
+            raise ValueError("请先确认要删除的作品")
+        with self.server.job_lock:
+            if book_id in self.server.busy:
+                raise ValueError("作品正在生成，请等当前任务结束后再删除")
+            result = library.delete_book(book_id)
+            self.server.estimates = {
+                k: v
+                for k, v in self.server.estimates.items()
+                if v["book_id"] != book_id
+            }
+        self.reply(200, result)
 
 
 def main():

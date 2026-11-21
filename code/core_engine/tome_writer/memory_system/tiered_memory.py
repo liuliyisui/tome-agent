@@ -350,6 +350,36 @@ def select_context(
     required = set(required_ids)
     if required - memory["items"].keys():
         raise ContractError("Unknown required memory ID")
+    forced, ranked = _rank_context(
+        memory, terms, subjects, required, include_historical
+    )
+    selected = sorted(forced, key=lambda row: row["id"])
+    used_bytes = len(canonical(selected).encode("utf-8"))
+    if used_bytes > max_bytes:
+        raise ContractError(
+            "Required/working memory exceeds wire budget; demote or increase explicit budget"
+        )
+    for _, _, _, row in sorted(ranked, key=lambda r: (-r[0], -r[1], r[2])):
+        # Canonical JSON arrays add one comma per item after the first.
+        row_bytes = len(canonical(row).encode("utf-8"))
+        if selected:
+            row_bytes += 1
+        if used_bytes + row_bytes <= max_bytes:
+            selected.append(row)
+            used_bytes += row_bytes
+    ids = {r["id"] for r in selected}
+    return {
+        "items": selected,
+        "selected_ids": sorted(ids),
+        "omitted_ids": sorted(set(memory["items"]) - ids),
+        "bytes": used_bytes,
+        "budget_bytes": max_bytes,
+        "retrieval": "lexical-baseline-not-semantic-completeness",
+        "storage_revision": memory["revision"],
+    }
+
+
+def _rank_context(memory, terms, subjects, required, include_historical):
     forced, ranked = [], []
     for identifier, item in memory["items"].items():
         if not has_current_content(item) and not include_historical:
@@ -359,32 +389,15 @@ def select_context(
                 )
             continue
         row = wire_item(item, include_historical)
-        hay = canonical(row).lower()
-        score = sum(term in hay for term in terms) + 5 * sum(
-            s == item["subject"] for s in subjects
-        )
         if identifier in required or item["tier"] == "working":
             forced.append(row)
-        elif item["tier"] == "recent" or score:
-            ranked.append((score, item["tier"] == "recent", identifier, row))
-    selected = sorted(forced, key=lambda r: r["id"])
-    if len(canonical(selected).encode("utf-8")) > max_bytes:
-        raise ContractError(
-            "Required/working memory exceeds wire budget; demote or increase explicit budget"
-        )
-    for _, _, _, row in sorted(ranked, key=lambda r: (-r[0], -r[1], r[2])):
-        if len(canonical(selected + [row]).encode("utf-8")) <= max_bytes:
-            selected.append(row)
-    ids = {r["id"] for r in selected}
-    return {
-        "items": selected,
-        "selected_ids": sorted(ids),
-        "omitted_ids": sorted(set(memory["items"]) - ids),
-        "bytes": len(canonical(selected).encode("utf-8")),
-        "budget_bytes": max_bytes,
-        "retrieval": "lexical-baseline-not-semantic-completeness",
-        "storage_revision": memory["revision"],
-    }
+            continue
+        hay = canonical(row).lower()
+        score = sum(term in hay for term in terms) + 5 * subjects.count(item["subject"])
+        recent = item["tier"] == "recent"
+        if recent or score:
+            ranked.append((score, recent, identifier, row))
+    return forced, ranked
 
 
 def legacy_projection(selection):

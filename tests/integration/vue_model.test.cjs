@@ -8,7 +8,10 @@ const frontend = path.resolve(__dirname, "../../code/frontend");
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const flush = () => new Promise((resolve) => setImmediate(resolve));
 
-async function fixture({ configured = true, theme = null, darkSystem = false, blockStorage = false } = {}) {
+async function fixture({
+  configured = true, theme = null, darkSystem = false, blockStorage = false,
+  storedProviders = [], modelConfig = null,
+} = {}) {
   const calls = [],
     timers = [],
     mounted = [],
@@ -36,7 +39,8 @@ async function fixture({ configured = true, theme = null, darkSystem = false, bl
     gate = null,
     jobStatus = "running";
   const response = (data) => ({ ok: true, json: async () => clone(data) });
-  const storage = new Map(theme === null ? [] : [["tome-theme", theme]]);
+  const storage = new Map(storedProviders);
+  if (theme !== null) storage.set("tome-theme", theme);
   const root = { dataset: {} };
   const themeListeners = new Set();
   const media = {
@@ -63,6 +67,9 @@ async function fixture({ configured = true, theme = null, darkSystem = false, bl
       const payload = options?.body ? JSON.parse(options.body) : undefined;
       calls.push({ url, payload });
       if (url === "/api/config") return response({ configured, model: "test" });
+      if (url === "/api/model-config" && modelConfig && payload === undefined) {
+        return response(modelConfig);
+      }
       if (url === "/api/books")
         return response({
           books: Object.entries(books).map(([id, b]) => ({
@@ -349,6 +356,24 @@ test("remove custom entries and select common providers", async () => {
   f.dispose();
 });
 
+
+test("a corrupt preset preference does not hide a saved custom provider", async () => {
+  const endpoint = "https://custom.example.test/v1";
+  const f = await fixture({
+    storedProviders: [
+      ["tome-provider-presets", "invalid JSON"],
+      ["tome-custom-providers", JSON.stringify([
+        { providerName: "个人服务", model: "draft-model", endpoint },
+      ])],
+    ],
+    modelConfig: { provider: "compatible", provider_name: "个人服务", model: "active-model", endpoint },
+  });
+  assert.equal(f.model.state.customProviders.length, 1);
+  assert.equal(f.model.state.providerSlot, "custom-1");
+  assert.equal(f.model.state.modelForm.model, "active-model");
+  assert.equal(f.model.state.modelForm.endpoint, endpoint);
+  f.dispose();
+});
 
 test("provider catalog contains requested compatible services", async () => {
   const f = await fixture();
