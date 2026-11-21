@@ -197,6 +197,12 @@ class PostgreSQLTests(unittest.TestCase):
         self.create()
 
         class Session:
+            def attempt_narrative_repair(self, *, final=False):
+                pass
+
+            def _save(self, trace, reason):
+                pass
+
             def __init__(inner, run, gateway, plan, book=None):
                 inner.book = (
                     copy.deepcopy(book)
@@ -220,6 +226,7 @@ class PostgreSQLTests(unittest.TestCase):
         cfg = Settings(api_key="FAKE")
         with (
             patch.object(service, "WritingSession", Session),
+            patch.object(service, "StoryClosure", **{"return_value.instruction.return_value": ""}),
             patch.object(service, "_gateway", return_value=(object(), budget)),
         ):
             service.generate("pg-book", count=1, settings=cfg)

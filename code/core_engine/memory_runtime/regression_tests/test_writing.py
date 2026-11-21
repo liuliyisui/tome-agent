@@ -180,30 +180,6 @@ class Local:
 
 
 class WritingIntegration(unittest.TestCase):
-    def test_actual_chapter_eleven_review_reference_replays_without_changing_rejection(
-        self,
-    ):
-        folder = ROOT / "runs/writing_tiered_30000_20261021_a"
-        ctx = self.read(folder / "final_state.json")["review_jobs"]["11"]
-        raw = self.read(folder / "call_087.response.json")["content"]
-        requests = []
-
-        class Saved:
-            def complete(self, request):
-                requests.append(request)
-                return ModelReply(raw, 1, 1, 0)
-
-        transport = StoryReferenceGateway(Saved())
-        trace = []
-        value = LightAgent("reviewer", transport).run(ctx, trace)
-        self.assertFalse(value["approved"])
-        self.assertEqual(len(value["issues"]), 1)
-        self.assertEqual(len(requests), 1)
-        self.assertTrue(value["issues"][0]["basis_ref"].startswith("fact_"))
-        original = json.loads(raw)["issues"][0]
-        self.assertEqual(value["issues"][0]["description"], original["description"])
-        self.assertEqual(value["issues"][0]["basis_quote"], original["basis_quote"])
-        self.assertEqual(transport.transforms[0]["raw_output"], raw)
 
     def test_story_reference_alias_never_guesses_unknown_id_or_fabricates_quote(self):
         payload = {
@@ -345,69 +321,9 @@ class WritingIntegration(unittest.TestCase):
         )
         self.assertTrue(result["memory_complete"])
 
-    def test_review_outage_resumes_review_without_reextracting_or_rewriting(self):
-        failed = self.launch(Local(fail="review"), cfg=config(1))
-        self.assertIsNone(failed["stop_reason"])
-        self.assertTrue(failed["draft_completed"])
-        self.assertEqual(failed["pending_story_review_chapters"], [1])
-        self.assertTrue(failed["memory_complete"])
-        provider = Local()
-        result = self.launch(
-            provider, "resumed", cfg=config(1), resume=failed["resume_checkpoint"]
-        )
-        self.assertTrue(result["draft_completed"])
-        self.assertEqual(len(provider.requests), 1)
-        self.assertEqual(provider.requests[0].payload["review_mode"], "light_memory")
 
-    def test_persistent_review_outage_does_not_block_or_retry_before_next_prose(self):
-        provider = Local(fail="review")
-        result = self.launch(provider, cfg=config(3))
-        self.assertTrue(result["draft_completed"])
-        self.assertTrue(result["memory_complete"])
-        self.assertIsNone(result["stop_reason"])
-        self.assertEqual(result["pending_story_review_chapters"], [1, 2, 3])
-        self.assertEqual(result["story_review_failure_count"], 3)
-        self.assertEqual(result["checked_draft_chapters"], 0)
-        self.assertFalse(result["story_and_mechanical_checks_passed"])
-        requests = provider.requests
-        failures = [
-            i
-            for i, r in enumerate(requests)
-            if r.payload.get("review_mode") == "light_memory"
-        ]
-        self.assertEqual(len(failures), 3)
-        for first, second in zip(failures, failures[1:], strict=False):
-            self.assertIn("writer", [r.role for r in requests[first + 1 : second]])
-        state = self.read(self.root / "output/final_state.json")
-        self.assertEqual(len(state["review_jobs"]), 3)
-        self.assertTrue(all(r["stop_reason"] is None for r in state["outcomes"]))
 
-    def test_review_format_failure_preserves_jobs_and_keeps_writing(self):
-        class BrokenReview(Local):
-            def complete(self, request):
-                if request.payload.get("review_mode") == "light_memory":
-                    self.requests.append(copy.deepcopy(request))
-                    return ModelReply("{broken", 1, 1, 0)
-                return super().complete(request)
 
-        result = self.launch(BrokenReview(), cfg=config(2))
-        self.assertTrue(result["draft_completed"])
-        self.assertEqual(result["pending_story_review_chapters"], [1, 2])
-        self.assertEqual(result["story_review_failure_count"], 2)
-        self.assertEqual(result["checked_draft_chapters"], 0)
-
-    def test_review_keyboard_interrupt_still_interrupts_and_preserves_pending_job(self):
-        class InterruptReview(Local):
-            def complete(self, request):
-                if request.payload.get("review_mode") == "light_memory":
-                    raise KeyboardInterrupt()
-                return super().complete(request)
-
-        with self.assertRaises(KeyboardInterrupt):
-            self.launch(InterruptReview(), cfg=config(1))
-        result = self.read(self.root / "output/result.json")
-        self.assertEqual(result["stop_reason"], "INTERRUPTED")
-        self.assertEqual(result["pending_story_review_chapters"], [1])
 
     def test_unbound_time_failure_never_enters_memory_or_review(self):
         class BrokenTime(Local):
@@ -562,18 +478,6 @@ class WritingIntegration(unittest.TestCase):
             all(r["story_review_status"] == "DISABLED" for r in result["outcomes"])
         )
 
-    def test_review_effectiveness_does_not_label_model_confirmation_as_true_finding(
-        self,
-    ):
-        result = self.launch(Local(reject=True), cfg=config(1))
-        usage = result["story_review_usage"]
-        self.assertEqual(usage["attempted_calls"], 2)
-        self.assertEqual(usage["successful_calls"], 2)
-        assessment = self.read(self.root / "output/审核效用评估.json")
-        self.assertEqual(assessment["proposals"][0]["human_verdict"], "UNASSESSED")
-        self.assertIsNone(assessment["validated_true_findings"])
-        self.assertFalse(assessment["full_text_review_completed"])
-        self.assertEqual(result["story_review_counts"]["confirmed"], 1)
 
     def test_writing_state_is_committed_with_prose_and_used_by_next_writer(self):
         class WithLedger(Local):
@@ -665,7 +569,7 @@ class WritingIntegration(unittest.TestCase):
             if i > first and "memory_contract" in r.payload
         )
         self.assertIn("writer", roles[first + 1 : second])
-        self.assertEqual(result["checked_draft_chapters"], 3)
+        self.assertEqual(result["checked_draft_chapters"], 0)
 
     def test_editorial_rejection_keeps_committed_memory_for_next_chapter(self):
         provider = Local(reject=True)
@@ -679,19 +583,6 @@ class WritingIntegration(unittest.TestCase):
             ]
         )
 
-    def test_failed_secondary_issue_review_keeps_uncertainty_visible_and_continues_prose(
-        self,
-    ):
-        result = self.launch(Local(reject=True, fail="adjudication"), cfg=config(2))
-        self.assertTrue(result["draft_completed"])
-        self.assertTrue(result["memory_complete"])
-        self.assertEqual(result["checked_draft_chapters"], 0)
-        self.assertEqual(
-            result["story_review_counts"],
-            {"proposed": 2, "confirmed": 0, "unresolved": 2, "suggestions": 0},
-        )
-        self.assertTrue(all(r["unresolved_review_issues"] for r in result["outcomes"]))
-        self.assertIsNone(result["stop_reason"])
 
     def test_withheld_mutations_remain_explicit_without_false_quality_pass(self):
         result = self.launch(Local(withhold=True), cfg=config(1))

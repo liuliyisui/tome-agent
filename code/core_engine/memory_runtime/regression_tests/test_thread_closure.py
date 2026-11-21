@@ -243,6 +243,22 @@ class ThreadClosureTests(unittest.TestCase):
         self.assertTrue(thread_report(book)["important_threads_accounted_for"])
         verify_ledger(book)
 
+    def test_partially_answered_thread_requires_evidence_and_explicit_open_intent(self):
+        book = book_with_threads()
+        sources = evidence_sources(
+            {2: book["chapters"][1]["text"]}, 2, 0, len(book["chapters"][1]["text"]), []
+        )
+        value = decisions(book, sources, {"丢失的报告": "open_ending"})
+        row = next(r for r in value["thread_updates"] if r["thread_id"] == digest("丢失的报告")[:24])
+        row["remaining_questions"] = ["报告中的具体内容"]
+        apply_thread_review(book, value, sources, 2)
+        record = book["narrative_planning"]["threads"][row["thread_id"]]
+        self.assertEqual(record["prose_assessment"]["status"], "pending")
+        record["planning_decision"] = {"action": "leave_open", "reason": "正文交代报告已毁且无法补回"}
+        apply_thread_review(book, value, sources, 2)
+        self.assertEqual(record["prose_assessment"]["status"], "open_ending")
+        self.assertTrue(record["prose_assessment"]["evidence"])
+
     def test_bad_missing_and_boolean_sources_do_not_erase_valid_peers(self):
         for bad in ("missing", "duplicate", "boolean", "fabricated"):
             with self.subTest(bad=bad):
@@ -367,6 +383,7 @@ class ThreadClosureTests(unittest.TestCase):
         self.assertEqual(len(book["narrative_planning"]["threads"]), 100)
         self.assertTrue(thread_report(book)["important_threads_accounted_for"])
 
+    @unittest.skipUnless((ROOT / 'runs/event_first_30000_20261027_baseline_a/final_state.json').is_file(), "历史运行文件未随仓库提供")
     def test_real_baseline_preserves_eight_open_threads_and_source_files(self):
         path = ROOT / "runs/event_first_30000_20261027_baseline_a/final_state.json"
         raw = path.read_bytes()
@@ -377,6 +394,7 @@ class ThreadClosureTests(unittest.TestCase):
         self.assertIn("流程单背面的陌生铅笔问号", [r["topic"] for r in report["items"]])
         self.assertEqual(path.read_bytes(), raw)
 
+    @unittest.skipUnless((ROOT / 'runs/event_first_30000_20261027_baseline_a/final_state.json').is_file(), "历史运行文件未随仓库提供")
     def test_real_baseline_review_includes_original_questions_and_source_identity(self):
         book = json.loads(
             (

@@ -66,7 +66,6 @@ def build_writing_graph(session):
         "legacy_writer": session._graph_legacy_writer,
         "legacy_commit": session._graph_legacy_commit,
         "memory": repair_and_remember,
-        "reviewer": lambda run: session._review_pending(run["trace"]),
     }
     for name, action in actions.items():
         graph.add_node(name, phase(name, action))
@@ -91,6 +90,5 @@ def build_writing_graph(session):
     graph.add_edge("legacy_writer", "legacy_commit")
     for name in ("event_commit", "legacy_commit"):
         graph.add_edge(name, "memory")
-    graph.add_edge("memory", "reviewer")
-    graph.add_edge("reviewer", END)
+    graph.add_edge("memory", END)
     return graph.compile(name="tome_longform_writing")

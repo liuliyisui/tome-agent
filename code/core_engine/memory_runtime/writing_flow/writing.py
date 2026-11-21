@@ -6,7 +6,7 @@ from functools import partial
 from pathlib import Path
 
 from tome_writer.agents import JsonAgent
-from tome_writer.domain import ContractError, canonical, digest, evidence_segments
+from tome_writer.domain import ContractError, canonical, digest
 from tome_writer.tiered_memory import (
     legacy_projection,
     select_context,
@@ -37,7 +37,6 @@ from .numeric_grounding import POLICY as QUANTITY_POLICY
 from .numeric_grounding import sources as quantity_sources
 from .pipeline import source_evidence_view
 from .prose_rendering import render as render_prose
-from .story_review import StoryReferenceGateway, StoryReviewAgent
 from .time_calculation import CONTRACT as TIME_CONTRACT
 from .time_calculation import calculate, write_with_calculations
 
@@ -444,7 +443,6 @@ class WritingSession:
         self.engine = MemoryEngine(gateway)
         if self.plan.get("event_first", True):
             self.plan["story_review_enabled"] = False
-        self.story_gateway = StoryReferenceGateway(gateway)
         self.agents = {
             "planner": JsonAgent(
                 "planner",
@@ -456,7 +454,6 @@ class WritingSession:
             "writer": JsonAgent(
                 "writer", gateway, compact_narrative=True, max_output_tokens=16384
             ),
-            "reviewer": StoryReviewAgent(self.story_gateway),
         }
         self.book = (
             copy.deepcopy(book)
@@ -929,51 +926,6 @@ class WritingSession:
             )
             self._save(trace, "SAVED_PROSE_STATE_RECOVERY_DEFERRED")
             return False
-
-    def _review_pending(self, trace):
-        if not self.plan.get("story_review_enabled", True):
-            return
-        for key in sorted(self.book["review_jobs"], key=int):
-            row = self.book["outcomes"][int(key) - 1]
-            context = self.book["review_jobs"][key]
-            start = len(self.story_gateway.transforms)
-            try:
-                review = self.agents["reviewer"].run(context, trace)
-            except Exception as exc:
-                row.update(status="DRAFT_UNCHECKED", stop_reason=None)
-                failure = {
-                    "chapter": int(key),
-                    "after_written_chapter": len(self.book["chapters"]),
-                    "error_type": type(exc).__name__,
-                    "error": str(exc)
-                    if isinstance(exc, ContractError)
-                    else "Review service failed",
-                    "policy": "DEFERRED_CONTINUE_WRITING",
-                }
-                row.setdefault("review_errors", []).append(failure)
-                self.book.setdefault("review_failures", []).append(failure)
-                self._save(trace, "REVIEW_DEFERRED_CONTINUE_WRITING")
-                # End this queue pass: do not retry the same failing service for
-                # every pending chapter before allowing another prose chapter.
-                break
-            finally:
-                trace.extend(copy.deepcopy(self.story_gateway.transforms[start:]))
-            row.update(
-                review=review,
-                issues=review["issues"],
-                suggestions=review["suggestions"],
-                stop_reason=None,
-                story_review_status="REPORTED",
-                unresolved_review_issues=review.get("unresolved_issues", []),
-                dismissed_review_issues=review.get("dismissed_issues", []),
-                status="DRAFT_CHECKED"
-                if review["approved"]
-                and row["memory_update_status"] == "APPLIED"
-                and not row.get("withheld_mutations")
-                else "DRAFT_UNCHECKED",
-            )
-            del self.book["review_jobs"][key]
-            self._save(trace, "CHAPTER_REVIEWED")
 
     def finish_pending(self):
         from .graph_runtime import new_run
@@ -1948,21 +1900,6 @@ class WritingSession:
             )
         if prepared.get("stage_reports"):
             chapter["event_stage_reports"] = copy.deepcopy(prepared["stage_reports"])
-        refs = {
-            f"constraint_{i}": rule
-            for i, rule in enumerate(self.book["constraints"], 1)
-        }
-        refs.update({f"draft_{s['id']}": s["text"] for s in evidence_segments(draft)})
-        refs.update(
-            {f"past_{c['number']}": c["text"] for c in context["recent_chapters"]}
-        )
-        refs.update(
-            {
-                f"past_memory_{i}": canonical(h)
-                for i, h in enumerate(context["historical_memory"]["items"], 1)
-            }
-        )
-        review_context = dict(context, current_draft=draft, hard_references=refs)
         # Event outcome and prose enter the same durable checkpoint. The
         # candidate was never treated as already happened before this point.
         previous_book = copy.deepcopy(self.book)
@@ -1981,9 +1918,7 @@ class WritingSession:
             memory_update_status="PENDING",
             writing_invariants="EVENT_DATA_COMMITTED_PROSE_UNCHECKED",
             event_commit_sha256=prepared["commit"]["sha256"],
-            story_review_status="PENDING"
-            if self.plan.get("story_review_enabled", True)
-            else "DISABLED",
+            story_review_status="DISABLED",
         )
         self.book["outcomes"].append(row)
         if chapter["event_plan_status"] in ("partial", "unavailable"):
@@ -1993,8 +1928,6 @@ class WritingSession:
                 "deferred_stages": copy.deepcopy(row.get("deferred_event_stages", [])),
                 "instruction": "Rebuild only from saved prose with source evidence; rejected proposals are not facts.",
             }
-        if self.plan.get("story_review_enabled", True):
-            self.book["review_jobs"][key] = review_context
         try:
             self._save(trace, "DRAFT_SAVED_MEMORY_PENDING")
         except BaseException:
@@ -2082,7 +2015,6 @@ class WritingSession:
         trace = run["trace"]
         row = run["row"]
         proposal = run["proposal"]
-        context = run["context"]
         draft = run["draft"]
         calculations = run["calculations"]
         writing_state = run["writing_state"]
@@ -2103,22 +2035,6 @@ class WritingSession:
             "sha256": digest(draft),
             "time_calculations": calculations,
         }
-        review_context = dict(context, current_draft=draft)
-        refs = {
-            f"constraint_{i}": rule
-            for i, rule in enumerate(self.book["constraints"], 1)
-        }
-        refs.update({f"draft_{s['id']}": s["text"] for s in evidence_segments(draft)})
-        refs.update(
-            {f"past_{c['number']}": c["text"] for c in context["recent_chapters"]}
-        )
-        refs.update(
-            {
-                f"past_memory_{i}": canonical(h)
-                for i, h in enumerate(context["historical_memory"]["items"], 1)
-            }
-        )
-        review_context["hard_references"] = refs
         self.book["chapters"].append(chapter)
         self.book["pending"].append(number)
         from .narrative_planning import publish
@@ -2135,11 +2051,7 @@ class WritingSession:
             memory_update_status="PENDING",
             stop_reason=None,
             writing_invariants="VALIDATED_DECLARATIONS",
-            story_review_status="PENDING"
-            if self.plan.get("story_review_enabled", True)
-            else "DISABLED",
+            story_review_status="DISABLED",
         )
         self.book["outcomes"].append(row)
-        if self.plan.get("story_review_enabled", True):
-            self.book["review_jobs"][str(number)] = review_context
         self._save(trace, "DRAFT_SAVED_MEMORY_PENDING")

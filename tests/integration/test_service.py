@@ -83,7 +83,10 @@ class ServiceIntegrationTests(unittest.TestCase):
                         1,
                     )
 
-            with patch.object(service, "WritingSession", FakeSession):
+            with (
+                patch.object(service, "WritingSession", FakeSession),
+                patch.object(service, "StoryClosure", **{"return_value.instruction.return_value": ""}),
+            ):
                 with self.assertRaisesRegex(RuntimeError, "第2章"):
                     service.generate(
                         "batch-book",

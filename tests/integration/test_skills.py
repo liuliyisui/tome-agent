@@ -98,6 +98,12 @@ class SkillTests(unittest.TestCase):
         }
 
         class FakeSession:
+            def attempt_narrative_repair(self, *, final=False):
+                pass
+
+            def _save(self, trace, reason):
+                pass
+
             def __init__(self, output, gateway, plan, book=None):
                 self.output = output
                 self.output.mkdir(parents=True)
@@ -118,6 +124,7 @@ class SkillTests(unittest.TestCase):
             patch.object(service, "_longform_plan", return_value={}),
             patch.object(service, "_load_longform_book", return_value=None),
             patch.object(service, "WritingSession", FakeSession),
+            patch.object(service, "StoryClosure", **{"return_value.instruction.return_value": ""}),
         ):
             service.generate_longform("book-a", gateway=captured, settings=config)
         forwarded = captured.complete.call_args.args[0]

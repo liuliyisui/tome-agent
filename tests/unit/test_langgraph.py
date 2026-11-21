@@ -87,7 +87,7 @@ class LangGraphTests(unittest.TestCase):
         self.assertIsNone(row["stop_reason"], row)
         self.assertEqual(
             self.nodes(session),
-            ["event_planner", "event_writer", "event_commit", "memory", "reviewer"],
+            ["event_planner", "event_writer", "event_commit", "memory"],
         )
         self.assertEqual(len(session.book["chapters"]), 1)
         self.assertEqual(session.book["memory"]["processed_through"], 1)
@@ -115,7 +115,6 @@ class LangGraphTests(unittest.TestCase):
                 "event_writer",
                 "event_commit",
                 "memory",
-                "reviewer",
             ],
         )
         self.assertEqual(len(session.book["chapters"]), 1)
@@ -128,7 +127,7 @@ class LangGraphTests(unittest.TestCase):
         row = session.write_next("继续")
         self.assertEqual(
             self.nodes(session),
-            ["legacy_planner", "legacy_writer", "legacy_commit", "memory", "reviewer"],
+            ["legacy_planner", "legacy_writer", "legacy_commit", "memory"],
         )
         self.assertNotEqual(row["status"], "NO_DRAFT")
         self.assertEqual(session.book["pending"], [1])
@@ -156,7 +155,7 @@ class LangGraphTests(unittest.TestCase):
         prose = copy.deepcopy(session.book["chapters"])
         calls = len([r for r in provider.requests if r.role in ("planner", "writer")])
         session.finish_pending()
-        self.assertEqual(self.nodes(session), ["memory", "reviewer"])
+        self.assertEqual(self.nodes(session), ["memory"])
         self.assertEqual(session.book["pending"], [])
         self.assertEqual(session.book["chapters"], prose)
         self.assertEqual(

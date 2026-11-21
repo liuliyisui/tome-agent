@@ -47,24 +47,12 @@ class MeteredGateway:
             )
         integer(request.max_output_tokens, "max_output_tokens", 1)
         self.calls += 1
-        is_story_review = request.role == "reviewer" and (
-            request.payload.get("review_mode") == "light_memory"
-            or request.payload.get("issue_consistency_review") is True
-        )
-        started = time.monotonic()
-        if is_story_review:
-            self.story_review_usage["attempted_calls"] += 1
         try:
             reply = self.provider.complete(copy.deepcopy(request))
         except BaseException as exc:
             if isinstance(exc, ProviderError) and exc.http_status in (401, 402, 403):
                 self.provider_blocked = exc.safe_details()
-            if is_story_review:
-                self.story_review_usage["failed_calls"] += 1
             raise
-        finally:
-            if is_story_review:
-                self.story_review_usage["elapsed_seconds"] += time.monotonic() - started
         if not isinstance(reply, ModelReply):
             raise ContractError("Provider must return ModelReply with usage")
         integer(reply.input_tokens, "input_tokens")
@@ -81,11 +69,6 @@ class MeteredGateway:
         if reply.output_tokens > request.max_output_tokens:
             raise ContractError("Provider exceeded output limit")
         text(reply.content, "model content")
-        if is_story_review:
-            self.story_review_usage["successful_calls"] += 1
-            self.story_review_usage["input_tokens"] += reply.input_tokens
-            self.story_review_usage["output_tokens"] += reply.output_tokens
-            self.story_review_usage["cost_usd_estimate_not_bill"] += reply.cost_usd
         return reply
 
 
@@ -104,8 +87,7 @@ def run_draft_trial(output, provider, plan, *, resume_book=None):
             "writing_mode": "event_first"
             if plan.get("event_first", True)
             else "legacy_prose_first",
-            "story_review_failure_policy": "defer_failures_continue_writing",
-            "resumed": resume_book is not None,
+                        "resumed": resume_book is not None,
         },
     )
     recorder = RecordedProvider(provider, output)
@@ -198,8 +180,6 @@ def run_draft_trial(output, provider, plan, *, resume_book=None):
         stop = (
             "MEMORY_PENDING"
             if session.book["pending"]
-            else "REVIEW_PENDING"
-            if session.book["review_jobs"]
             else "RUNTIME_FAILURE"
         )
         save_new(
@@ -258,10 +238,8 @@ def run_draft_trial(output, provider, plan, *, resume_book=None):
     save_new(
         output / "问题清单.json",
         {
-            "scope": "Model-reviewed reports, not independently certified error counts",
-            "story_review_status": "ENABLED"
-            if plan.get("story_review_enabled", True)
-            else "DISABLED_NOT_CHECKED",
+            "scope": "Pending writing, memory and closure work; no general prose review",
+            "story_review_status": "DISABLED_NOT_CHECKED",
             "story_review_counts_scope": "Review findings only; zero with disabled review does not mean no story issues",
             "narrative_thread_dispositions": narrative_threads,
             "pending_narrative_planning_chapters": narrative_threads[
@@ -323,36 +301,6 @@ def run_draft_trial(output, provider, plan, *, resume_book=None):
                 ],
             },
         )
-    assessment = []
-    for row in state["outcomes"]:
-        review = row.get("review", {})
-        for index, issue in enumerate(
-            review.get("proposed_issues", review.get("issues", [])), 1
-        ):
-            assessment.append(
-                {
-                    "id": f"chapter_{row['chapter_number']}_issue_{index}",
-                    "chapter": row["chapter_number"],
-                    "proposal": issue,
-                    "human_verdict": "UNASSESSED",
-                    "human_evidence": [],
-                    "reason": "",
-                }
-            )
-    save_new(
-        output / "审核效用评估.json",
-        {
-            "story_review_enabled": plan.get("story_review_enabled", True),
-            "story_review_usage": meter.story_review_usage,
-            "novel_sha256": digest(prose + "\n"),
-            "policy": "Manually verify proposals against prose and separately record missed errors. Model confirmation is not a true-positive label.",
-            "proposals": assessment,
-            "missed_errors": [],
-            "full_text_review_completed": False,
-            "effectiveness": "NOT_YET_MEASURED",
-            "validated_true_findings": None,
-        },
-    )
     han = sum(
         len(re.findall(r"[\u3400-\u9fff]", ch["text"])) for ch in state["chapters"]
     )
@@ -469,10 +417,9 @@ def run_draft_trial(output, provider, plan, *, resume_book=None):
             for c in state["chapters"]
         ),
         "prepared_event_chapters": sorted(int(n) for n in state["prepared_events"]),
-        "story_review_failure_policy": "DEFERRED_CONTINUE_WRITING",
-        "story_review_enabled": plan.get("story_review_enabled", True),
+        "story_review_enabled": False,
         "story_review_usage": meter.story_review_usage,
-        "story_review_effectiveness": "NOT_YET_MEASURED",
+        "story_review_effectiveness": "DISABLED",
         "story_review_failure_count": len(state.get("review_failures", [])),
         "pending_story_review_chapters": sorted(int(n) for n in state["review_jobs"]),
         "time_calculation_count": sum(

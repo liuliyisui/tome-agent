@@ -73,7 +73,7 @@ def estimate(book_id, count=1, approved_first=False):
     )
     base_input = 6000 + 2 * context_chars
     base_output = target * 2 + 2500
-    basis = "按故事上下文、目标篇幅和多阶段调用粗估，无历史用量时误差较大。"
+    basis = "按故事上下文、目标篇幅和包含收束的多阶段调用粗估，无历史用量时误差较大。"
     calibrated = False
     usage = service.last_usage(book_id)
     if usage:
@@ -90,17 +90,17 @@ def estimate(book_id, count=1, approved_first=False):
                 base_input = max(base_input, incoming / samples)
                 base_output = max(base_output, outgoing / samples)
                 calibrated = True
-                basis = "结合上次实际用量与本次上下文粗估，并计入后续章节上下文增长。"
+                basis = "结合上次实际用量与本次上下文粗估，并计入后续章节上下文增长；收束调用可能增加用量。"
         except (OSError, ValueError, TypeError, KeyError):
             pass
     if not calibrated:
-        # One chapter runs the planner, writer, memory and review stages:
+        # One chapter runs planning, writing, memory and closure stages:
         # ~10 model calls, each resending the story context.
         base_input *= CALLS_PER_CHAPTER
         base_output += (CALLS_PER_CHAPTER - 1) * CALL_OUTPUT_TOKENS
         basis = (
             f"无历史用量时按每章约 {CALLS_PER_CHAPTER} 次模型调用估算："
-            "输入随每次调用重复计入，输出含规划与记忆等阶段的附加 token。"
+            "输入随每次调用重复计入，输出含规划、记忆与收束等阶段的附加 token。"
             "重试次数与章节长度会造成偏差，预估仅供参考。"
         )
     incoming = math.ceil(

@@ -64,6 +64,7 @@ class StoryFlowEndToEndTests(unittest.TestCase):
         self._patches = [
             patch.object(service, "BOOKS", self.books),
             patch.object(service.database, "enabled", return_value=False),
+            patch.object(service, "StoryClosure", **{"return_value.instruction.return_value": ""}),
         ]
         for item in self._patches:
             item.start()
@@ -116,6 +117,60 @@ class StoryFlowEndToEndTests(unittest.TestCase):
         self.assertIn("## 第2章 第2章", markdown)
         self.assertIn("　　这是第1章的第一段。", markdown)
         self.assertIn("　　这是第2章的第二段。", markdown)
+
+    def test_closure_runs_for_each_saved_chapter_and_is_checkpointed(self):
+        self.create()
+
+        class Closure:
+            def __init__(self, session):
+                self.session = session
+                self.session.book["story_closure"] = {"observed": []}
+
+            def initialize(self):
+                pass
+
+            def instruction(self):
+                return " 收束提示。"
+
+            def observe(self, chapter):
+                self.session.book["story_closure"]["observed"].append(chapter["number"])
+                self.session.save()
+
+        with (
+            patch.object(service, "WritingSession", SuccessfulSession),
+            patch.object(service, "StoryClosure", Closure),
+        ):
+            result = service.generate(self.book_id, count=2, gateway=object(), settings=self.settings)
+
+        self.assertEqual(result["state"]["story_closure"]["observed"], [1, 2])
+        self.assertEqual(self.checkpoint()["story_closure"]["observed"], [1, 2])
+
+    def test_real_session_uses_closure_and_resumes_saved_state(self):
+        from memory_runtime.story_closure import StoryClosure
+        from memory_runtime.test_event_first import EventLocal
+        from memory_runtime.test_story_closure import ClosureLocal
+        from tools.testing.archived_plan_fixture import compile_archived_plan
+
+        class EventClosure(ClosureLocal, EventLocal):
+            pass
+
+        self.create()
+        provider = EventClosure()
+        with (
+            patch.object(service, "StoryClosure", StoryClosure),
+            patch("memory_runtime.reference_choices.compile_plan", side_effect=compile_archived_plan),
+        ):
+            first = service.generate(self.book_id, gateway=provider, settings=self.settings)
+            second = service.generate(self.book_id, gateway=provider, settings=self.settings)
+
+        self.assertEqual(len(second["state"]["chapters"]), 2)
+        self.assertTrue(first["state"]["story_closure"]["obligations"])
+        self.assertEqual(len([r for r in provider.requests if r.role == "closure_planner"]), 1)
+        self.assertFalse(any(r.role == "reviewer" for r in provider.requests))
+        self.assertEqual(
+            service.load_longform(self.book_id)["state"]["story_closure"],
+            second["state"]["story_closure"],
+        )
 
     def test_alternate_flow_failure_keeps_committed_chapters(self):
         self.create()

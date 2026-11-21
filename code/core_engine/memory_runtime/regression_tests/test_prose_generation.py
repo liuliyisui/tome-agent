@@ -149,7 +149,10 @@ class ProseGenerationTests(unittest.TestCase):
 
     def test_real_v_fifth_chapter_saves_without_content_gate(self):
         folder = ROOT / "runs/event_first_50000_20261022_v/working"
-        saved = self.read(max(folder.glob("checkpoint_*.json")))
+        checkpoints = list(folder.glob("checkpoint_*.json"))
+        if not checkpoints:
+            self.skipTest("历史真实作品检查点未随仓库提供")
+        saved = self.read(max(checkpoints))
         book = saved["book"]
         original = copy.deepcopy(book)
         prose = json.loads(

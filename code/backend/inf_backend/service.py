@@ -1,4 +1,4 @@
-"""UI services backed by INF's planner/writer/memory/reviewer transaction."""
+"""UI services for planning, writing, memory, and story closure."""
 
 import base64
 import binascii
@@ -17,6 +17,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from memory_runtime.writing import WritingSession, load_resume
+from memory_runtime.story_closure import StoryClosure
 from tome_writer.chat_provider import ChatCompletionProvider
 from tome_writer.domain import (
     ContractError,
@@ -717,6 +718,7 @@ def generate_longform(
         gateway = RegenerationGateway(gateway, author_feedback, original_chapter)
     run = book_path(book_id) / "longform-runs" / ("run-" + uuid4().hex)
     session = WritingSession(run, gateway, plan, book=previous)
+    closure = StoryClosure(session)
     _atomic_json(
         run / "skills-used.json",
         [
@@ -725,6 +727,7 @@ def generate_longform(
         ],
     )
     failure = None
+    closure.initialize()
     for _ in range(count):
         if stream_provider:
             stream_provider.reset_chapter()
@@ -746,8 +749,19 @@ def generate_longform(
             f"作品《{meta['title']}》，现在创作第{number}章；本章约{target}字。"
             "先规划可验证的场景事件，再写完整正文；保持人物、时间、物品和因果连续。"
         )
+        instruction += closure.instruction()
         try:
             outcome = session.write_next(instruction)
+            if outcome["status"] != "NO_DRAFT":
+                closure.observe(session.book["chapters"][-1])
+                if number >= meta["target_chapters"]:
+                    for _ in range(2):
+                        session.attempt_narrative_repair(final=True)
+                        closure.retry_pending(final=True)
+                        closure.refresh_status()
+                        if closure.passed():
+                            break
+                    session._save([], "STORY_CLOSURE_FINALIZED")
         finally:
             if original_chapter is None or len(session.book["chapters"]) > written:
                 _save_generation_checkpoint(book_id, session, written, budget)
