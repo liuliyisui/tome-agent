@@ -1,10 +1,10 @@
 # Tome Agent 汇报幻灯片（Slidev）
 
-[Slidev](https://cn.sli.dev/) 把一页页 Markdown 构建成可翻页的网页演示，并能导出 PDF。本目录包含 23 页中文幻灯片，覆盖：
+[Slidev](https://cn.sli.dev/) 把一页页 Markdown 构建成可翻页的网页演示，并能导出 PDF。本目录包含 35 页中文幻灯片，覆盖：
 
 - 01 产品设计：问题、使命、用户、价值主张、差异化、产品形态
 - 02 设计原则：四组共十二条，每条原则对应仓库证据
-- 03 产品实现：四层架构、LangGraph 编排、三层记忆、数据接口、质量保障
+- 03 产品实现：用户体验、技术选型、仓库与提交历史、全生命周期问题、软件概要设计与工具、四层架构、LangGraph 编排、三层记忆、数据接口、质量保障
 
 部署后地址：<https://liuliyisui.github.io/tome-agent/>
 
@@ -101,7 +101,7 @@ npm run export
 # 输出 dist/tome-agent-slides.pdf
 ```
 
-`npm run export` 调用 `scripts/export-pdf.mjs`：先执行 `slidev export --format png --per-slide`，再用 `pdf-lib` 按 960×540 pt 拼成 23 页 PDF。`pdf-lib` 已写入 `devDependencies`。
+`npm run export` 调用 `scripts/export-pdf.mjs`：先执行 `slidev export --format png --per-slide`，再用 `pdf-lib` 按 960×540 pt 拼成 35 页 PDF。`pdf-lib` 已写入 `devDependencies`。
 
 本地 Windows / macOS 通常已有中文字体；Linux 需要先安装 `fonts-noto-cjk`。
 

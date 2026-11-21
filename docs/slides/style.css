@@ -1806,6 +1806,166 @@
   color: var(--ink-soft);
 }
 
+.assert-title {
+  margin-top: 16px;
+}
+
+.assert-band {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 6px 0 4px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+}
+
+.assert-band b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.assert-band span {
+  display: block;
+  margin-top: 2px;
+  font-size: 8.6px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.assert-band em {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 6.9px;
+  color: var(--sage);
+}
+
+.code-ledger {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 14px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.code-ledger > div {
+  padding: 9px 14px;
+  border-left: 1px solid var(--line-soft);
+}
+
+.code-ledger > div:first-child {
+  padding-left: 0;
+  border-left: none;
+}
+
+.code-ledger b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--pine);
+}
+
+.code-ledger span {
+  font-size: 8.4px;
+  color: var(--muted);
+}
+
+.code-lang {
+  display: flex;
+  flex-direction: column;
+}
+
+.code-lang > div {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 46px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-top: 1px solid var(--line-soft);
+}
+
+.code-lang b {
+  font-family: var(--mono);
+  font-size: 7.5px;
+  font-weight: 700;
+  color: var(--pine);
+}
+
+.code-lang em {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 7.5px;
+  text-align: right;
+  color: var(--muted);
+}
+
+.code-lang .bar {
+  display: block;
+  height: 5px;
+  background: rgba(125, 146, 116, 0.16);
+}
+
+.code-lang .bar i {
+  display: block;
+  height: 100%;
+  background: var(--sage);
+}
+
+.ai-split {
+  margin-top: 12px;
+}
+
+.ai-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ai-head b {
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--pine);
+}
+
+.ai-head span {
+  font-size: 8.6px;
+  color: var(--muted);
+}
+
+.ai-bar {
+  display: flex;
+  height: 10px;
+  margin-top: 5px;
+  background: var(--paper-2);
+}
+
+.ai-bar i {
+  display: block;
+  height: 100%;
+  background: var(--pine);
+}
+
+.ai-bar em {
+  display: block;
+  height: 100%;
+  background: var(--sage);
+}
+
+.ai-note {
+  margin-top: 5px;
+  font-size: 7.8px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
 /* section 21 */
 
 .summary-grid {
@@ -1999,6 +2159,206 @@
 .mermaid svg {
   max-width: 100%;
 }
+
+/* 3.1 UX factors */
+.ux-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.ux-card {
+  min-height: 96px;
+  padding: 11px 13px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.44);
+  box-shadow: 0 10px 26px rgba(31, 48, 38, 0.04);
+}
+
+.ux-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ux-no {
+  font-family: var(--mono);
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--sage);
+}
+
+.ux-title {
+  margin-top: 6px;
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.ux-text {
+  margin-top: 4px;
+  font-size: 9.1px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.ux-foot {
+  margin-top: 11px;
+  padding: 8px 12px;
+  border-left: 2px solid var(--gold);
+  background: var(--paper-2);
+  font-size: 9.6px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.ux-foot b {
+  color: var(--ink);
+}
+
+/* 3.2 Technology stack */
+.tech-table {
+  font-size: 9px;
+}
+
+.tech-table th:first-child {
+  width: 16%;
+}
+
+.tech-table th:nth-child(2) {
+  width: 25%;
+}
+
+.tech-table th:nth-child(3) {
+  width: 18%;
+}
+
+.tech-table td {
+  padding: 5px 7px;
+  line-height: 1.42;
+}
+
+.tech-table td:nth-child(2) {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.slidev-layout .tech-table code {
+  padding: 0;
+  font-size: 8px;
+  color: var(--pine);
+  background: transparent;
+}
+
+.tech-note {
+  margin-top: 9px;
+  padding: 7px 11px;
+  border-left: 2px solid var(--gold);
+  background: var(--paper-2);
+  font-size: 8.5px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.slidev-layout .tech-note code {
+  padding: 0;
+  font-size: 8px;
+  color: var(--pine);
+  background: transparent;
+}
+
+/* 3.3 Repository and commit history */
+.repo-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.repo-left,
+.repo-right {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.44);
+  box-shadow: 0 10px 26px rgba(31, 48, 38, 0.04);
+}
+
+.slidev-layout .repo-url {
+  display: block;
+  margin-top: 9px;
+  border-bottom: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--pine);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.repo-stats {
+  display: flex;
+  gap: 24px;
+  margin-top: 17px;
+}
+
+.repo-stats b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 27px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--pine);
+}
+
+.repo-stats span {
+  display: block;
+  margin-top: 4px;
+  font-size: 8.5px;
+  color: var(--muted);
+}
+
+.repo-note {
+  margin-top: 17px;
+  font-size: 9.4px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+.repo-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.repo-links span {
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 7.5px;
+  color: var(--muted);
+}
+
+.repo-right img {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  border-radius: 6px;
+}
+
+.repo-right .small {
+  margin-top: 7px;
+  font-size: 8px;
+  line-height: 1.5;
+}
+
+
 
 /* =========================================================
    Tome Agent light theme (ivory + pine + sage + muted gold)
@@ -2225,6 +2585,160 @@
 .mock-logo {
   background: var(--pine);
 }
+/* 3.4 Lifecycle issues */
+.issue-table {
+  font-size: 8.8px;
+}
 
+.issue-table th:first-child {
+  width: 11%;
+}
 
+.issue-table th:nth-child(2) {
+  width: 18%;
+}
+
+.issue-table th:nth-child(3) {
+  width: 33%;
+}
+
+.issue-table td {
+  padding: 5px 6px;
+  line-height: 1.42;
+}
+
+.issue-table td:first-child {
+  white-space: nowrap;
+}
+
+.issue-note {
+  margin-top: 9px;
+  padding: 7px 11px;
+  border-left: 2px solid var(--gold);
+  background: var(--paper-2);
+  font-size: 8.5px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.slidev-layout .issue-note code {
+  padding: 0;
+  font-size: 8px;
+  color: var(--pine);
+  background: transparent;
+}
+/* 3.5.0 Diagramming and publishing tools */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tool-card {
+  min-height: 226px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.44);
+  box-shadow: 0 10px 26px rgba(31, 48, 38, 0.04);
+}
+
+.tool-name {
+  margin-top: 12px;
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.tool-role {
+  margin-top: 4px;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.tool-list {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.tool-list div {
+  margin-top: 6px;
+  font-size: 9.2px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.slidev-layout .tool-list code {
+  padding: 0;
+  font-size: 7.8px;
+  color: var(--pine);
+  background: transparent;
+  word-break: break-all;
+}
+
+.tool-note {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-left: 2px solid var(--gold);
+  background: var(--paper-2);
+  font-size: 9.5px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* 3.5.3 Agent design and 3.5.5 API table */
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.agent-grid .ux-card {
+  min-height: 120px;
+}
+
+.slidev-layout .ux-text code {
+  padding: 0;
+  font-size: 8px;
+  color: var(--pine);
+  background: transparent;
+}
+
+.interface-table {
+  font-size: 8.7px;
+  table-layout: fixed;
+}
+
+.interface-table th:first-child {
+  width: 8%;
+}
+
+.interface-table th:nth-child(2) {
+  width: 37%;
+}
+
+.interface-table th:nth-child(3) {
+  width: 28%;
+}
+
+.interface-table th:nth-child(4) {
+  width: 27%;
+}
+
+.interface-table td {
+  padding: 6px 7px;
+  line-height: 1.45;
+}
+
+.slidev-layout .interface-table code {
+  padding: 0;
+  font-size: 7.8px;
+  color: var(--pine);
+  background: transparent;
+  word-break: break-all;
+}
 

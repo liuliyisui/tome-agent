@@ -18,7 +18,7 @@ class: cover
 ---
 
 <div class="cover-top">
-  <div class="cover-brand">TOME AGENT <span>/</span> 卷宗</div>
+    <div class="cover-brand">TOME AGENT <span>/</span> 项目汇报</div>
   <div class="cover-kicker">创新工程实践营 · 项目汇报 · 2026.11</div>
 </div>
 
@@ -100,7 +100,7 @@ layout: default
 
 <div class="kicker">问题 / 五个症状</div>
 
-# 读者不会说“状态漂移”，<br>只会说“看不下去了”。
+# 读者先感到“看不下去了”，<br>问题通常已经积累了几章。
 
 <div class="rule"></div>
 
@@ -222,8 +222,6 @@ layout: default
     <div class="persona-row"><b>我们要给</b><span>任务、用量、导出和可恢复的工程化流程。</span></div>
   </div>
 </div>
-
-<div class="exclude-line"><b>不做什么：</b>不替代专业作家的审美判断，不承诺“一键神作”，也不把演示原型当作真实生成能力。</div>
 
 <div class="bottom-note">来源：docs/requirements/user_stories.md · docs/requirements/functional_spec.md</div>
 
@@ -432,7 +430,7 @@ layout: default
   </div>
   <div class="principle-col">
     <div class="pg-head"><span>04</span>质量</div>
-    <div class="pg-item"><b>能测就测</b><span>单元、集成、数据库矩阵。</span></div>
+    <div class="pg-item"><b>量化验收</b><span>测试、覆盖率、用量都有数。</span></div>
     <div class="pg-item"><b>能简就简</b><span>少一个运行时变量。</span></div>
     <div class="pg-item"><b>每一步都审</b><span>规则、评审、CI 同源。</span></div>
   </div>
@@ -443,7 +441,7 @@ layout: default
   <div>原则要能解释取舍：<b>为什么选这个、不选那个</b>。</div>
 </div>
 
-<div class="bottom-note">结构对应：需求与信息 → 系统与迭代 → 继承与效益 → 测试与审查</div>
+<div class="bottom-note">结构对应：需求与信息 → 系统与迭代 → 继承与效益 → 定量、简化与审核</div>
 
 <!-- 四组原则，从方向到系统，再到取舍和质量。 -->
 
@@ -616,8 +614,8 @@ class: principle-page
   <div class="p-row">
     <div class="p-no">10</div>
     <div class="p-body">
-      <div class="p-title">能测就测</div>
-      <div class="p-text">单元测试、集成测试、真实 PostgreSQL 17/18 矩阵、Linux hosted 回归；失败路径和成功路径一样要测。</div>
+      <div class="p-title">量化验收</div>
+      <div class="p-text">单元测试、集成测试、PostgreSQL 17/18 矩阵、hosted 回归；测试数、覆盖率、失败率和 token 用量都有记录。</div>
     </div>
     <div class="p-ev"><span>证据</span><code>.github/workflows/tests.yml</code><em>tests/TEST_REPORT.md</em></div>
   </div>
@@ -645,7 +643,7 @@ class: principle-page
 
 <div class="p-quote">每次提交都留下可复查的证据。</div>
 
-<!-- 第四组：质量。测试、简化、审查，三件事都变成默认动作。 -->
+<!-- 第四组：质量。定量验收、简化、审核，三件事都变成默认动作。 -->
 
 ---
 layout: default
@@ -700,7 +698,7 @@ class: section
   <div class="section-body">
     <div class="kicker light">Product implementation</div>
     <h1>产品实现</h1>
-    <p>从状态图到可运行的服务。<br>把设计原则变成代码、测试和部署记录。</p>
+    <p>从体验与选型，到概要设计、架构与质量。<br>把设计原则变成代码、测试和部署记录。</p>
   </div>
 </div>
 
@@ -712,7 +710,252 @@ class: section
 layout: default
 ---
 
-<div class="kicker">3.1 架构 / ARCHITECTURE</div>
+<div class="kicker">3.1 用户体验 / UX</div>
+
+# 写作工具先要让人敢一直用。
+
+<div class="rule"></div>
+
+<div class="ux-grid">
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">01</span><span class="tag">可用性</span></div>
+    <div class="ux-title">打开浏览器就能写</div>
+    <div class="ux-text">登录后进入自己的作品空间，账号之间数据隔离，无需安装客户端。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">02</span><span class="tag">连续性</span></div>
+    <div class="ux-title">中断后还能接着写</div>
+    <div class="ux-text">每个阶段保存检查点，保留已完成章节和待处理任务，恢复后继续下一步。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">03</span><span class="tag">成本</span></div>
+    <div class="ux-title">调用前知道大概花多少</div>
+    <div class="ux-text">生成前给出费用预估，生成后记录 token 与用量，避免越写越不敢调用。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">04</span><span class="tag">容错</span></div>
+    <div class="ux-title">失败时保住已有正文</div>
+    <div class="ux-text">超时、截断、坏 JSON 对用户可见；局部失败时保留有效内容并标记待处理。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">05</span><span class="tag">可控</span></div>
+    <div class="ux-title">写作流程由作者掌握</div>
+    <div class="ux-text">创建作品、配置文风、逐章或批量生成、修改、复查，最后导出 Markdown。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">06</span><span class="tag">安全</span></div>
+    <div class="ux-title">技能只作文本，密钥留在服务端</div>
+    <div class="ux-text">写作 Skill 只注入模型文本；敏感信息在本地检查，模型密钥不回传网页。</div>
+  </div>
+</div>
+
+<div class="ux-foot">六个因素围绕同一个目标：<b>让作者把注意力留在故事上。</b></div>
+
+<div class="bottom-note">来源：README「核心功能」 · docs/software/USER_GUIDE.md · code/backend/inf_backend/web.py</div>
+
+<!-- 3.1 用户体验：可用、连续、成本、容错、可控、安全。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.2 技术选型 / STACK</div>
+
+# 够用、可验证，避免过度设计。
+
+<div class="rule"></div>
+
+<table class="compare tech-table">
+  <thead>
+    <tr><th>条目</th><th>选型</th><th>版本</th><th>选型原因</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>程序设计语言</td><td>Python</td><td>3.11（CI 3.11）</td><td>复用写作引擎与标准库测试，部署简单</td></tr>
+    <tr><td>智能体编排</td><td>LangGraph</td><td>1.2.17</td><td>状态图表达规划、写作、记忆、审核与条件边</td></tr>
+    <tr><td>前端</td><td>Vue runtime-only + 原生 HTML/CSS/JS</td><td>Vue 3.5.44</td><td>仓库内置运行时，无前端构建链</td></tr>
+    <tr><td>Web 服务</td><td>Python 标准库 <code>http.server</code></td><td>随 Python 3.11</td><td>单机与单服务够用，不额外引入 ASGI</td></tr>
+    <tr><td>运行平台</td><td>Windows 本地 / Linux 托管</td><td>Python 3.11</td><td>同一套服务代码，CI 覆盖 Ubuntu</td></tr>
+    <tr><td>数据库</td><td>PostgreSQL + Psycopg</td><td>PG 17（CI 17/18）· Psycopg 3.3.3</td><td>持久化作品、章节与任务；未配置时降级文件模式</td></tr>
+    <tr><td>模型服务</td><td>DeepSeek / OpenAI 兼容</td><td>Chat Completions</td><td>复用已接入接口、计费预估与故障处理</td></tr>
+    <tr><td>开发工具</td><td>VS Code + Ruff</td><td>Ruff 0.17.4</td><td>编辑、格式化与静态检查共用一套规则</td></tr>
+  </tbody>
+</table>
+
+<div class="tech-note">版本与选型理由同步写在 <code>README.md</code>「技术选型」；依赖版本见 <code>requirements.txt</code> 与 <code>pyproject.toml</code>。</div>
+
+<div class="bottom-note">来源：README「技术选型」 · code/backend/requirements.txt · code/backend/pyproject.toml · docs/software/LANGGRAPH_MIGRATION.md</div>
+
+<!-- 3.2 技术选型：语言、IDE、平台、框架与版本。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.3 代码仓库 / REPOSITORY</div>
+
+# 仓库与提交历史：真实协作留痕。
+
+<div class="rule"></div>
+
+<div class="repo-layout">
+  <div class="repo-left">
+    <div class="tag">仓库地址</div>
+    <a class="repo-url" href="https://github.com/liuliyisui/tome-agent">github.com/liuliyisui/tome-agent</a>
+    <div class="repo-stats">
+      <div><b>217</b><span>次提交</span></div>
+      <div><b>5</b><span>位贡献者</span></div>
+      <div><b>5</b><span>个代码模块</span></div>
+    </div>
+    <div class="repo-note">提交分布可在仓库 Insights → Pulse 复查；任务与缺陷以 GitHub Issues 记录，看板、分工和路线图保存在 docs/mgmt/。</div>
+    <div class="repo-links">
+      <span>KANBAN.md</span><span>TEAM_PLAN.md</span><span>ROADMAP.md</span>
+    </div>
+  </div>
+  <div class="repo-right">
+    <div class="tag">GitHub Pulse · Top committers</div>
+    <img src="/pulse-committers.png" alt="Top committers">
+    <div class="small">横轴为贡献者，纵轴为提交次数；截图截至 2026-11-21。</div>
+  </div>
+</div>
+
+<div class="bottom-note">来源：github.com/liuliyisui/tome-agent · docs/mgmt/KANBAN.md · docs/mgmt/TEAM_PLAN.md · docs/mgmt/ROADMAP.md</div>
+
+<!-- 3.3 代码仓库：链接、提交分布与协作记录。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.4 全生命周期 / LIFECYCLE</div>
+
+# 主要问题与处理记录。
+
+<div class="rule"></div>
+
+<table class="compare issue-table">
+  <thead>
+    <tr><th>问题类别</th><th>问题名称</th><th>发生原因</th><th>解决办法</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>分析</td><td>需求边界反复</td><td>演示原型与真实生成容易混在一起</td><td>原型只作交互演示；正式服务单独验证</td></tr>
+    <tr><td>设计</td><td>编排框架迁移</td><td>迁移可能破坏已验证的领域逻辑</td><td>复用领域函数；只换编排层，回归验证</td></tr>
+    <tr><td>开发</td><td>模型调用失败</td><td>超时、截断、坏 JSON</td><td>记录错误与用量；降级保留正文</td></tr>
+    <tr><td>开发</td><td>长篇生成中断</td><td>一次成稿多次调用，耗时长</td><td>阶段检查点；恢复时识别待处理任务</td></tr>
+    <tr><td>测试</td><td>文件与数据库双写</td><td>两份记录不在同一事务</td><td>故障演练；明确未覆盖边界</td></tr>
+    <tr><td>部署运维</td><td>旧版本无法续写</td><td>旧检查点哈希与新源码不一致</td><td>保留旧代码与作品；新版本重建检查点</td></tr>
+    <tr><td>运维</td><td>成本不可预测</td><td>token 计费随上下文变化</td><td>费用预估、用量记录、用户确认</td></tr>
+  </tbody>
+</table>
+
+<div class="issue-note">问题清单已保存为 <code>docs/software/ISSUES_SUMMARY.md</code>，按分析、设计、开发、测试、部署运维顺序维护。</div>
+
+<div class="bottom-note">来源：docs/software/ISSUES_SUMMARY.md · docs/software/architecture.md · tests/TEST_REPORT.md</div>
+
+<!-- 3.4 全生命周期：主要问题、发生原因、解决办法与仓库证据。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.5 软件概要设计 / DESIGN</div>
+
+# 概要设计：先把边界和依赖画清楚。
+
+<div class="rule"></div>
+
+<div class="ux-grid">
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">01</span><span class="tag">3.5.1</span></div>
+    <div class="ux-title">系统架构</div>
+    <div class="ux-text">界面、服务、引擎、存储四层边界，模型服务从引擎层旁路调用。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">02</span><span class="tag">3.5.2</span></div>
+    <div class="ux-title">基础设施</div>
+    <div class="ux-text">单台 Linux 服务器，Nginx 负责 HTTPS 与反向代理，服务只监听本机。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">03</span><span class="tag">3.5.3</span></div>
+    <div class="ux-title">智能体设计</div>
+    <div class="ux-text">LangGraph 编排事件、写作、提交、记忆与审核；三层记忆负责跨章状态。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">04</span><span class="tag">3.5.4</span></div>
+    <div class="ux-title">数据库</div>
+    <div class="ux-text">6 张表覆盖作品、章节、版本、任务与用量；PostgreSQL 可选，文件模式可降级。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">05</span><span class="tag">3.5.5</span></div>
+    <div class="ux-title">接口</div>
+    <div class="ux-text">作品、生成、编辑、复查、任务状态和导出都走真实 HTTP 路由。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">06</span><span class="tag">3.5.6</span></div>
+    <div class="ux-title">前端</div>
+    <div class="ux-text">Vue runtime-only 页面承载书架、文风、生成、编辑、复查与导出。</div>
+  </div>
+</div>
+
+<div class="ux-foot">设计文档入口：<b>docs/software/architecture.md</b> · <b>docs/algorithm/LANGGRAPH.mmd</b> · <b>schema.sql</b></div>
+
+<div class="bottom-note">来源：docs/software/architecture.md · docs/algorithm/LANGGRAPH.mmd · code/backend/inf_backend/schema.sql</div>
+
+<!-- 3.5 软件概要设计：设计文档索引，具体展开见 3.5.1–3.5.6。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.5.0 使用工具 / TOOLING</div>
+
+# 图源、讲稿和代码放在同一个仓库。
+
+<div class="rule"></div>
+
+<div class="tool-grid">
+  <div class="tool-card">
+    <div class="ux-top"><span class="ux-no">01</span><span class="tag">画图</span></div>
+    <div class="tool-name">Mermaid</div>
+    <div class="tool-role">架构图 · 状态图 · E-R 图</div>
+    <div class="tool-list">
+      <div>用 <code>flowchart</code> / <code>erDiagram</code> 写图源</div>
+      <div>状态图源文件：<code>docs/algorithm/LANGGRAPH.mmd</code></div>
+      <div>图随代码一起 review、一起 diff</div>
+    </div>
+  </div>
+  <div class="tool-card">
+    <div class="ux-top"><span class="ux-no">02</span><span class="tag">讲稿</span></div>
+    <div class="tool-name">Slidev</div>
+    <div class="tool-role">Markdown → 网页 / PDF</div>
+    <div class="tool-list">
+      <div>幻灯片本身就是 Markdown</div>
+      <div>Mermaid 代码块在页面内直接渲染</div>
+      <div>GitHub Actions 构建并发布 Pages</div>
+    </div>
+  </div>
+  <div class="tool-card">
+    <div class="ux-top"><span class="ux-no">03</span><span class="tag">工程</span></div>
+    <div class="tool-name">VS Code + Git</div>
+    <div class="tool-role">编辑 · 检查 · 提交</div>
+    <div class="tool-list">
+      <div>Markdown、Mermaid、Python 在同一编辑器</div>
+      <div>Ruff / Pylance 做格式与静态检查</div>
+      <div>图源、讲稿和实现进入同一次提交</div>
+    </div>
+  </div>
+</div>
+
+<div class="tool-note">工具选择标准：图能 diff，稿能构建，结果能复查。</div>
+
+<div class="bottom-note">来源：docs/algorithm/LANGGRAPH.mmd · docs/slides/slides.md · README「技术选型」</div>
+
+<!-- 3.5.0 使用工具：Mermaid、Slidev、VS Code + Git。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.5.1 架构 / ARCHITECTURE</div>
 
 # 四层边界：界面不碰模型，模型不碰存储。
 
@@ -754,6 +997,79 @@ flowchart LR
 <div class="bottom-note">来源：docs/software/architecture.md · code/backend/inf_backend/service.py · code/core_engine/</div>
 
 <!-- 四层架构，重点是边界。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.5.2 基础设施 / INFRA</div>
+
+# 单机部署：入口、应用、数据三段就够。
+
+<div class="rule"></div>
+
+<div class="ux-grid">
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">01</span><span class="tag">入口</span></div>
+    <div class="ux-title">Nginx · 443 / TLS</div>
+    <div class="ux-text">负责 HTTPS、反向代理和请求限流；证书续期独立于应用。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">02</span><span class="tag">应用</span></div>
+    <div class="ux-title">systemd · Python 3.11</div>
+    <div class="ux-text">服务只监听 <code>127.0.0.1:8765</code>，崩溃自动重启，后台任务上限为 3。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">03</span><span class="tag">数据</span></div>
+    <div class="ux-title">/var/lib/tome-agent</div>
+    <div class="ux-text">保存作品、Skill、模型配置和检查点；定期备份，PostgreSQL 作为可选增强。</div>
+  </div>
+</div>
+
+<div class="ux-foot">部署边界只有三段：<b>Nginx、Python 服务、持久化目录。</b></div>
+
+<div class="bottom-note">来源：docs/software/LINUX_HOSTED.md · docs/software/DEPLOY.md · code/backend/compose.yaml</div>
+
+<!-- 3.5.2 基础设施：单机部署，入口、应用、数据三段。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.5.3 智能体设计 / AGENT</div>
+
+# 智能体设计：编排、记忆、护栏、工具各有边界。
+
+<div class="rule"></div>
+
+<div class="agent-grid">
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">01</span><span class="tag">编排</span></div>
+    <div class="ux-title">LangGraph 状态图</div>
+    <div class="ux-text">规划、写作、提交、记忆、审核五个节点；写作可条件边回到规划，最多一次。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">02</span><span class="tag">记忆</span></div>
+    <div class="ux-title">工作 / 近期 / 长期</div>
+    <div class="ux-text">当前章、最近章节、全书事实分层保存；长期事实带版本、变更理由和正文出处。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">03</span><span class="tag">护栏</span></div>
+    <div class="ux-title">结构、来源、失败与审核</div>
+    <div class="ux-text">JSON 结构校验、来源追踪、失败降级和提交前审核门共同约束输出。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">04</span><span class="tag">工具与知识</span></div>
+    <div class="ux-title">内部函数 + 文本 Skill</div>
+    <div class="ux-text">模型接口、文件/数据库读写和敏感信息检查由服务内部完成；写作 Skill 以文本注入。</div>
+  </div>
+</div>
+
+<div class="ux-foot">当前知识主要来自 Skill 文本和结构化记忆；<b>未引入向量库或知识图谱。</b></div>
+
+<div class="bottom-note">来源：docs/software/architecture.md · docs/software/LANGGRAPH_MIGRATION.md · code/core_engine/memory_runtime/ · code/core_engine/writing_skills/</div>
+
+<!-- 3.5.3 智能体设计：编排、记忆、护栏、工具与知识。 -->
 
 ---
 layout: default
@@ -851,45 +1167,102 @@ layout: default
 layout: default
 ---
 
-<div class="kicker">3.5.4–3.5.5 数据与接口 / DATA</div>
+<div class="kicker">3.5.4 数据库 / DATABASE</div>
 
-# 一章一次事务，<br>正文、状态、用量一起落盘。
+# 六张表把作品、任务和成本分开记。
 
 <div class="rule"></div>
 
+```mermaid {theme: 'base', themeCSS: '.node rect{fill:#F6F3E9 !important;stroke:#1E4A36 !important;rx:4px;ry:4px}.node polygon{fill:#F6F3E9 !important;stroke:#1E4A36 !important}.nodeLabel{fill:#1F3026 !important;font-family:Noto Sans SC,Microsoft YaHei,sans-serif !important;font-size:12px !important}.edgePath .path{stroke:#7D9274 !important;stroke-width:1.4px !important}.marker{fill:#7D9274 !important;stroke:#7D9274 !important}.labelBkg{background:#F6F3E9 !important;color:#5D7355 !important}.labelBkg p{background:transparent !important;color:#5D7355 !important}', scale: 0.8}
+flowchart LR
+  BOOKS["tome_books<br/>作品"] -->|1:N| CHAPTERS["tome_chapters<br/>章节"]
+  CHAPTERS -->|1:N| VERSIONS["tome_chapter_versions<br/>版本"]
+  BOOKS -->|1:N| JOBS["tome_jobs<br/>任务"]
+  BOOKS -->|1:N| USAGE["tome_usage<br/>用量"]
+```
+
 <div class="cols cols-2 gap-lg data-layout">
   <div>
-    <div class="subhead">PostgreSQL 数据模型</div>
-    <div class="table-chips">
-      <div><code>tome_books</code><span>作品与元数据</span></div>
-      <div><code>tome_chapters</code><span>章节与当前状态</span></div>
-      <div><code>tome_chapter_versions</code><span>章节版本历史</span></div>
-      <div><code>tome_jobs</code><span>生成任务与进度</span></div>
-      <div><code>tome_usage</code><span>token 与费用记录</span></div>
-      <div><code>tome_schema_version</code><span>迁移版本</span></div>
-    </div>
-    <div class="data-note">PostgreSQL 可选；未配置时降级为文件模式。两种存储共享同一套领域语义。</div>
+    <div class="subhead">聚合关系</div>
+    <div class="data-note">作品是聚合根：章节、版本、任务和用量都按 <code>book_id</code> 归属。版本表保留章节历史；任务表记录进度；用量表保留 token 与费用。</div>
+    <div class="data-note"><code>tome_schema_version</code> 独立维护迁移版本，不参与作品聚合。</div>
   </div>
-
   <div>
-    <div class="subhead">真实 HTTP 路由</div>
-    <div class="route-table">
-      <div><span class="method get">GET</span><code>/api/books</code><em>书架</em></div>
-      <div><span class="method post">POST</span><code>/api/books/{id}/generate</code><em>生成</em></div>
-      <div><span class="method post">POST</span><code>/api/books/{id}/chapters/{n}/edit</code><em>编辑</em></div>
-      <div><span class="method post">POST</span><code>/api/books/{id}/chapters/{n}/review</code><em>复查</em></div>
-      <div><span class="method get">GET</span><code>/api/jobs/{id}</code><em>任务状态</em></div>
-      <div><span class="method get">GET</span><code>/api/books/{id}/export</code><em>导出</em></div>
-    </div>
-    <div class="data-note">后台任务通过 job id 查询；页面刷新不打断生成。</div>
+    <div class="subhead">存储与降级</div>
+    <div class="data-note">PostgreSQL 可选；未配置时降级为文件模式，两种存储共享同一套领域语义。</div>
+    <div class="data-note">数据库保存作品、章节、版本、任务和用量；文件模式保存检查点与作品文件，便于本地运行和迁移。</div>
   </div>
 </div>
 
+<div class="bottom-note">来源：code/backend/inf_backend/schema.sql · docs/software/POSTGRESQL.md · code/backend/inf_backend/database.py</div>
+
+<!-- 3.5.4 数据库：6 张表、关系与两种存储模式。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.5.5 接口 / API</div>
+
+# 生成、编辑、复查、导出都有固定入口。
+
+<div class="rule"></div>
+
+<table class="compare interface-table">
+  <thead>
+    <tr><th>方法</th><th>路径</th><th>输入</th><th>输出</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>GET</td><td><code>/api/books</code></td><td>—</td><td>作品列表</td></tr>
+    <tr><td>POST</td><td><code>/api/books/{id}/generate</code></td><td>生成选项 / 模型配置</td><td>job_id</td></tr>
+    <tr><td>POST</td><td><code>/api/books/{id}/chapters/{n}/edit</code></td><td>标题 / 正文 / base_revision</td><td>保存结果</td></tr>
+    <tr><td>POST</td><td><code>/api/books/{id}/chapters/{n}/review</code></td><td>检查项 / 作者确认</td><td>复查报告</td></tr>
+    <tr><td>GET</td><td><code>/api/jobs/{id}</code></td><td>—</td><td>进度 / 结果</td></tr>
+    <tr><td>GET</td><td><code>/api/books/{id}/export</code></td><td>—</td><td>Markdown</td></tr>
+  </tbody>
+</table>
+
 <div class="tx-line"><span>事务边界</span> 章节内容 + 版本记录 + 用量，同批提交；任务状态单独记录，失败保留已完成部分。</div>
 
-<div class="bottom-note">来源：code/backend/inf_backend/schema.sql · code/backend/inf_backend/web.py</div>
+<div class="data-note">后台任务通过 job id 查询；页面刷新不打断生成。导出使用复查后的正文版本。</div>
 
-<!-- 数据模型与接口只列真实存在的表和路由，不画不存在的架构。 -->
+<div class="bottom-note">来源：code/backend/inf_backend/web.py · code/backend/inf_backend/schema.sql · README「核心功能」</div>
+
+<!-- 3.5.5 接口：真实路由、输入输出和事务边界。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.5.6 前端 / FRONTEND</div>
+
+# 前端设计：零构建、同源、渐进增强。
+
+<div class="rule"></div>
+
+<div class="ux-grid">
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">01</span><span class="tag">技术</span></div>
+    <div class="ux-title">Vue runtime-only</div>
+    <div class="ux-text">Vue 3.5.44 + 原生 HTML/CSS/JS；仓库内置运行时，无 CDN、无前端构建链。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">02</span><span class="tag">页面</span></div>
+    <div class="ux-title">五个工作区</div>
+    <div class="ux-text">书架、文风与费用、生成、编辑与复查、导出；动作与用户故事一一对应。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">03</span><span class="tag">交互</span></div>
+    <div class="ux-title">任务可查询</div>
+    <div class="ux-text">生成任务通过 job id 查询；刷新不打断后台；错误详情可定位，导出 Markdown。</div>
+  </div>
+</div>
+
+<div class="ux-foot">与后端同源部署，静态文件由 Python 服务或 Nginx 提供。</div>
+
+<div class="bottom-note">来源：code/frontend/ · code/backend/inf_backend/web.py · README「核心功能」</div>
+
+<!-- 3.5.6 前端：Vue runtime-only、五个工作区与任务查询。 -->
 
 ---
 layout: default
@@ -930,6 +1303,97 @@ layout: default
 <div class="bottom-note">来源：tests/TEST_REPORT.md · .github/workflows/tests.yml · docs/software/CODE_QUALITY_FIXES.md</div>
 
 <!-- 质量数字来自仓库里的测试报告，不手填“感觉良好”。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.6.1–3.6.2 质量控制 / TOOLS</div>
+
+# 规矩写成工具，<br>才不会靠人记得。
+
+<div class="rule"></div>
+
+<div class="cols cols-2 gap-lg quality-layout">
+  <div>
+    <div class="subhead">静态检查：提交前拦下</div>
+    <div class="quality-row"><b>Ruff format</b><span>191 个文件符合 PEP8，本地与 CI 跑同一条命令</span></div>
+    <div class="quality-row"><b>Ruff check</b><span>0 违规；规则集中在 pyproject.toml，例外要写明理由</span></div>
+    <div class="quality-row"><b>Pylint</b><span>9.62 / 10 · 0 error · 0 fatal（pylint 4.1.4）</span></div>
+    <div class="quality-row"><b>McCabe</b><span>复杂度阈值 10；14 个超阈函数列入重构清单</span></div>
+  </div>
+  <div>
+    <div class="subhead">运行时：失败也要留下证据</div>
+    <div class="quality-row"><b>日志</b><span>统一 logger 输出；生成进度同时写入 tome_jobs</span></div>
+    <div class="quality-row"><b>异常</b><span>后端 69 个 try 块 / 219 个函数；引擎 138 个 / 1,196 个</span></div>
+    <div class="quality-row"><b>抛出</b><span>1,054 处 raise，区分可重试与不可重试</span></div>
+    <div class="quality-row"><b>降级</b><span>失败保留已完成正文；错误详情脱敏后回传</span></div>
+  </div>
+</div>
+
+<div class="subhead assert-title">把症状写成断言</div>
+<div class="assert-band">
+  <div><b>设定过期</b><span>过期修订与旧事实直接拒绝</span><em>test_event_consistency</em></div>
+  <div><b>中断即重来</b><span>进度不能无证据回退</span><em>test_core_boundaries</em></div>
+  <div><b>成本黑箱</b><span>缺少 usage 不得标记完成</span><em>test_streaming_progress</em></div>
+  <div><b>凭证泄漏</b><span>失败日志自动脱敏</span><em>test_logging</em></div>
+</div>
+
+<div class="quality-note">复现：<code>ruff check .</code> · <code>ruff format --check .</code> · <code>pylint --rcfile code/backend/pyproject.toml</code>。Pylint 的 30 处导入误报来自 memory_runtime 动态扩展 <code>__path__</code>，已单独排除。</div>
+
+<div class="bottom-note">来源：code/backend/pyproject.toml · .github/workflows/tests.yml · Ruff 0.17.4 / Pylint 4.1.4 本地实测</div>
+
+<!-- 质量工具只列仓库里真实启用的检查，不把“打算上”的工具写成“已经用”。 -->
+
+---
+layout: default
+---
+
+<div class="kicker">3.7 代码统计 / CODE</div>
+
+# 代码行数只是中间产物，<br>真正的考验在于持续维护。
+
+<div class="rule"></div>
+
+<div class="code-ledger">
+  <div><b>214</b><span>次提交</span></div>
+  <div><b>129</b><span>个生产文件</span></div>
+  <div><b>43,962</b><span>行 Python 生产代码</span></div>
+  <div><b>5.4 : 1</b><span>生产代码 : 测试代码</span></div>
+</div>
+
+<div class="cols cols-2 gap-lg">
+  <div>
+    <div class="subhead">语言分布（行）</div>
+    <div class="code-lang">
+      <div><b>Python</b><span class="bar"><i style="width:100%"></i></span><em>52,414</em></div>
+      <div><b>Markdown</b><span class="bar"><i style="width:14%"></i></span><em>7,423</em></div>
+      <div><b>JavaScript</b><span class="bar"><i style="width:13%"></i></span><em>6,750</em></div>
+      <div><b>HTML / CSS</b><span class="bar"><i style="width:9%"></i></span><em>4,948</em></div>
+      <div><b>其他</b><span class="bar"><i style="width:2%"></i></span><em>613</em></div>
+    </div>
+    <div class="data-note">Python 含测试与脚本；其他为 SQL / YAML / TOML。统计排除 <code>.venv</code>、<code>node_modules</code>、<code>dist</code> 与运行数据。</div>
+  </div>
+
+  <div>
+    <div class="subhead">结构</div>
+    <div class="quality-row"><b>模块</b><span>3 个 Python 包 · 11 个子模块</span></div>
+    <div class="quality-row"><b>后端</b><span>24 文件 · 5,809 行</span></div>
+    <div class="quality-row"><b>引擎</b><span>105 文件 · 38,153 行</span></div>
+    <div class="quality-row"><b>测试</b><span>44 文件 · 8,145 行 · 256 项用例</span></div>
+    <div class="quality-row"><b>前端</b><span>5,815 行 JS / HTML / CSS</span></div>
+  </div>
+</div>
+
+<div class="ai-split">
+  <div class="ai-head"><b>AI 辅助 ≈ 80%</b><span>团队手写 ≈ 20%</span></div>
+  <div class="ai-bar"><i style="width:80%"></i><em style="width:20%"></em></div>
+  <div class="ai-note">团队自评区间 70–90%；AI 产出经人工审查、测试与代码复核后合入。</div>
+</div>
+
+<div class="bottom-note">来源：仓库文件统计（Python 3.12）· git log · tests/TEST_REPORT.md</div>
+
+<!-- 代码量按真实仓库统计，AI 比例为团队自评区间，不伪装成精确测量。 -->
 
 ---
 layout: default
