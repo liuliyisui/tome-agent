@@ -2585,6 +2585,45 @@
 .mock-logo {
   background: var(--pine);
 }
+/* 3.4 Lifecycle issues */
+.issue-table {
+  font-size: 8.8px;
+}
 
+.issue-table th:first-child {
+  width: 11%;
+}
 
+.issue-table th:nth-child(2) {
+  width: 18%;
+}
 
+.issue-table th:nth-child(3) {
+  width: 33%;
+}
+
+.issue-table td {
+  padding: 5px 6px;
+  line-height: 1.42;
+}
+
+.issue-table td:first-child {
+  white-space: nowrap;
+}
+
+.issue-note {
+  margin-top: 9px;
+  padding: 7px 11px;
+  border-left: 2px solid var(--gold);
+  background: var(--paper-2);
+  font-size: 8.5px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.slidev-layout .issue-note code {
+  padding: 0;
+  font-size: 8px;
+  color: var(--pine);
+  background: transparent;
+}

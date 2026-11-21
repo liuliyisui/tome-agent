@@ -826,6 +826,37 @@ layout: default
 layout: default
 ---
 
+<div class="kicker">3.4 全生命周期 / LIFECYCLE</div>
+
+# 主要问题与处理记录。
+
+<div class="rule"></div>
+
+<table class="compare issue-table">
+  <thead>
+    <tr><th>问题类别</th><th>问题名称</th><th>发生原因</th><th>解决办法</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>分析</td><td>需求边界反复</td><td>演示原型与真实生成容易混在一起</td><td>原型只作交互演示；正式服务单独验证</td></tr>
+    <tr><td>设计</td><td>编排框架迁移</td><td>迁移可能破坏已验证的领域逻辑</td><td>复用领域函数；只换编排层，回归验证</td></tr>
+    <tr><td>开发</td><td>模型调用失败</td><td>超时、截断、坏 JSON</td><td>记录错误与用量；降级保留正文</td></tr>
+    <tr><td>开发</td><td>长篇生成中断</td><td>一次成稿多次调用，耗时长</td><td>阶段检查点；恢复时识别待处理任务</td></tr>
+    <tr><td>测试</td><td>文件与数据库双写</td><td>两份记录不在同一事务</td><td>故障演练；明确未覆盖边界</td></tr>
+    <tr><td>部署运维</td><td>旧版本无法续写</td><td>旧检查点哈希与新源码不一致</td><td>保留旧代码与作品；新版本重建检查点</td></tr>
+    <tr><td>运维</td><td>成本不可预测</td><td>token 计费随上下文变化</td><td>费用预估、用量记录、用户确认</td></tr>
+  </tbody>
+</table>
+
+<div class="issue-note">问题清单已保存为 <code>docs/software/ISSUES_SUMMARY.md</code>，按分析、设计、开发、测试、部署运维顺序维护。</div>
+
+<div class="bottom-note">来源：docs/software/ISSUES_SUMMARY.md · docs/software/architecture.md · tests/TEST_REPORT.md</div>
+
+<!-- 3.4 全生命周期：主要问题、发生原因、解决办法与仓库证据。 -->
+
+---
+layout: default
+---
+
 <div class="kicker">3.5.1 架构 / ARCHITECTURE</div>
 
 # 四层边界：界面不碰模型，模型不碰存储。
