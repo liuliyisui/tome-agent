@@ -31,6 +31,17 @@ TITLE = "浏览器冒烟作品"
 
 @unittest.skipUnless(sync_playwright, "Install playwright to run browser smoke tests")
 class BrowserSmokeTests(unittest.TestCase):
+    def test_brand_returns_home_and_refresh_stays_home(self):
+        service.create_book("home-link", "返回首页测试", "故事", 3, 3000)
+        self.open_library()
+        self.page.locator('[data-book="home-link"]').click()
+        self.page.get_by_role("heading", name="返回首页测试").wait_for()
+        self.page.get_by_role("link", name="Tome 首页").click()
+        self.page.wait_for_function("() => document.querySelector('#tome-app > div')?.classList.contains('home-view')")
+        self.page.reload()
+        self.page.wait_for_function("() => document.querySelector('#tome-app > div')?.classList.contains('home-view')")
+        self.assertFalse(self.page.locator("#book-title").is_visible())
+
     def test_reload_restores_open_book(self):
         service.create_book("resume-view", "刷新测试", "故事", 3, 3000)
         self.open_library()

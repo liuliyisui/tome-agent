@@ -700,6 +700,15 @@ const app = createApp({
         );
       } catch {}
     }
+    function showHome() {
+      if (!leaveEditor()) return;
+      navigationVersion++;
+      state.current = null;
+      state.view = "home";
+      state.menuId = null;
+      notify();
+      window.scrollTo({ top: 0, left: 0 });
+    }
     function showLibrary() {
       if (!leaveEditor()) return;
       navigationVersion++;
@@ -1596,6 +1605,7 @@ const app = createApp({
       toggleSidebar,
       closeBookMenu,
       openApiConfig,
+      showHome,
       showLibrary,
       closeDialog,
       openCreate,

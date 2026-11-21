@@ -25,7 +25,7 @@
           :inert="sidebarHidden"
           :aria-hidden="sidebarHidden"
         >
-          <a class="brand" href="/" aria-label="Tome 首页"
+          <a class="brand" href="/" aria-label="Tome 首页" @click.prevent="showHome"
             ><span class="brand-icon">T</span>tome<span class="brand-dot"
               >.</span
             ></a
