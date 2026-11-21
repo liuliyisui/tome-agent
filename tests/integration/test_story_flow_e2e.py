@@ -14,6 +14,7 @@ from unittest.mock import patch
 
 from inf_backend import service
 from inf_backend.settings import Settings
+from inf_backend.web import serialize
 
 
 class SuccessfulSession:
@@ -58,6 +59,33 @@ class FailingSecondChapter(SuccessfulSession):
 
 
 class StoryFlowEndToEndTests(unittest.TestCase):
+    def test_closure_status_is_available_in_book_view(self):
+        state = {
+            "chapters": [],
+            "memory": {"items": {}},
+            "story_closure": {
+                "status": "UNKNOWN",
+                "basic_mainline_model_passed": False,
+            },
+        }
+        view = serialize({"id": "book-a", "metadata": {}, "state": state})
+        self.assertEqual(view["state"]["story_closure"]["status"], "UNKNOWN")
+        self.assertEqual(view["state"]["story_closure"]["pending_threads"], [])
+
+    def test_unresolved_closure_exposes_thread_reasons(self):
+        from memory_runtime.test_thread_closure import book_with_threads
+
+        state = book_with_threads()
+        state["memory"] = {"items": {}}
+        state["story_closure"] = {"status": "UNRESOLVED"}
+        view = serialize({"id": "book-a", "metadata": {}, "state": state})
+        closure = view["state"]["story_closure"]
+        self.assertEqual(closure["status"], "UNRESOLVED")
+        self.assertEqual(len(closure["pending_threads"]), 2)
+        self.assertTrue(
+            all(item["topic"] and item["reason"] for item in closure["pending_threads"])
+        )
+
     def setUp(self):
         self._folder = tempfile.TemporaryDirectory()
         self.books = Path(self._folder.name)
@@ -148,6 +176,28 @@ class StoryFlowEndToEndTests(unittest.TestCase):
 
         self.assertEqual(result["state"]["story_closure"]["observed"], [1, 2])
         self.assertEqual(self.checkpoint()["story_closure"]["observed"], [1, 2])
+
+    def test_final_chapter_queues_ending_intent_before_repair(self):
+        self.create()
+
+        class FinalSession(SuccessfulSession):
+            def attempt_narrative_repair(self, *, final=False):
+                self.book["repair_seen"] = final
+
+            def _save(self, trace, reason):
+                self.save()
+
+        with (
+            patch.object(service, "WritingSession", FinalSession),
+            patch(
+                "memory_runtime.narrative_repair.queue_ending_intent_review"
+            ) as queue,
+        ):
+            result = service.generate(
+                self.book_id, count=3, gateway=object(), settings=self.settings
+            )
+        queue.assert_called()
+        self.assertTrue(result["state"]["repair_seen"])
 
     def test_real_session_uses_closure_and_resumes_saved_state(self):
         from tools.testing.archived_plan_fixture import compile_archived_plan

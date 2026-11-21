@@ -200,7 +200,7 @@ const WritingNotes = {
       if (!note) return null;
       const context = note.context || {}, comparison = note.comparison;
       const scenes = Array.isArray(note.scenes) ? note.scenes : [];
-      const skills = Array.isArray(context.skills) ? context.skills : [];
+      const hasRevision = note.operation === "regenerate" || Boolean(comparison);
       const block = (title, children) => h("div", { class: "writing-note-block" }, [h("h4", title), ...children]);
       const revision = comparison ? [
         h("p", comparison.format_only ? "仅调整了段落间空白或缩进，文字内容未变。" : comparison.text_changed
@@ -217,31 +217,22 @@ const WritingNotes = {
       ] : [h("p", note.operation === "generate"
         ? "本章为新生成内容，没有历史正文可供对照。"
         : "该历史章节未保存当次修改对照。")];
-      return h("section", { class: "writing-notes", "aria-label": "写作摘要与修改说明" }, [
-        h("h3", "写作摘要与修改说明"),
+      return h("section", { class: "writing-notes", "aria-label": "本章安排" }, [
+        h("h3", "本章安排"),
         h("p", { class: "writing-notes-brief" }, note.brief || "本章未保留简要规划，可展开查看现存记录。"),
         h("details", { class: "writing-notes-details" }, [
-          h("summary", "查看写作安排与修改对照"),
-          block("本章安排", scenes.length ? [
+          h("summary", hasRevision ? "查看章节安排与修改对照" : "查看章节安排"),
+          block("场景安排", scenes.length ? [
             h("ol", scenes.map((scene, index) => h("li", { key: index }, [
               h("p", scene.purpose || `场景 ${index + 1}`),
               h("ul", (scene.events || []).map((event, i) => h("li", { key: i }, event))),
             ]))),
             note.scenes_omitted ? h("p", { class: "form-hint" }, `另有 ${note.scenes_omitted} 个场景；此处展示前 ${scenes.length} 个。`) : null,
           ] : [h("p", "没有可展示的场景规划记录。")]),
-          context.model ? block("本次写作要求", [
-            h("p", `使用模型：${context.model}`),
-            h("p", context.style_instructions ? `文风要求：${context.style_instructions}` : "未额外设置文风要求。"),
-            context.reference_used ? h("p", "参考片段已作为文风参考提供给写作模型。") : null,
-            skills.length ? h("p", `选用 Skill：${skills.join("、")}`) : null,
-          ]) : null,
-          block("修改说明", [
+          hasRevision ? block("修改说明", [
             context.author_feedback ? h("p", { class: "author-feedback-note" }, `本次作者意见：${context.author_feedback}`) : null,
             ...revision,
-            ...(note.adjustments || []).map((text, index) => h("p", { key: index }, text)),
-          ]),
-          block("完成记录", [h("p", note.memory), h("p", note.review)]),
-          h("p", { class: "form-hint" }, note.provenance),
+          ]) : null,
         ]),
       ]);
     };
@@ -300,6 +291,9 @@ const app = createApp({
   setup() {
     let sidebarCollapsed = false;
     let theme = "system";
+    const navigationKey = "tome-session-navigation-v1";
+    let previousNavigation = null;
+    try { previousNavigation = JSON.parse(sessionStorage.getItem(navigationKey) || "null"); } catch {}
     try {
       sidebarCollapsed =
         localStorage.getItem("tome-sidebar-collapsed") === "true";
@@ -309,6 +303,7 @@ const app = createApp({
     const systemTheme = window.matchMedia?.("(prefers-color-scheme: dark)");
     const state = reactive({
       view: "home",
+      restoringNavigation: previousNavigation?.view === "book" || previousNavigation?.view === "library",
       theme,
       sidebarCollapsed,
       books: [],
@@ -1515,6 +1510,14 @@ const app = createApp({
       state.providerSlot = compatible ? compatibleProviderSlot(config) : config.provider;
       state.modelForm = modelFormFromConfig(config);
     }
+    watch(
+      () => [state.view, state.current?.state?.project_id, chapter.value?.number],
+      ([view, bookId, chapterNumber]) => {
+        try {
+          sessionStorage.setItem(navigationKey, JSON.stringify({ view, bookId, chapterNumber }));
+        } catch {}
+      },
+    );
     onMounted(async () => {
       try {
         localStorage.removeItem("tome-selected-book");
@@ -1530,12 +1533,23 @@ const app = createApp({
         } catch { /* Keep defaults when connecting to an older server. */ }
         if (!cfg.configured) openApiConfig();
         await refreshBooks();
+        if (previousNavigation?.view === "library") {
+          state.view = "library";
+        } else if (previousNavigation?.view === "book" &&
+                   state.books.some((book) => book.id === previousNavigation.bookId)) {
+          await selectBook(previousNavigation.bookId);
+          if (id.value === previousNavigation.bookId) {
+            const index = chapters.value.findIndex((item) => item.number === previousNavigation.chapterNumber);
+            if (index >= 0) state.chapterIndex = index;
+          }
+        }
         try { state.skills = (await api("/api/skills")).skills; }
         catch (e) { notify(`技能列表加载失败：${e.message}`, "warning"); }
       } catch (e) {
         state.connectionError = true;
         notify(e.message, "error");
       } finally {
+        state.restoringNavigation = false;
         window.scrollTo({ top: 0, left: 0 });
       }
     });

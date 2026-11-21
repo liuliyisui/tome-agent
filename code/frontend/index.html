@@ -14,6 +14,7 @@
     <!-- Source template, precompiled by build-vue.cjs. Never compiled in the browser. -->
     <template id="tome-template">
       <div
+        v-show="!state.restoringNavigation"
         :class="{'home-view':state.view==='home','sidebar-collapsed':sidebarHidden}"
         @click="state.menuId=$event.target.closest('.book-menu')?state.menuId:null"
         @keydown.esc="state.menuId=null"
@@ -329,14 +330,13 @@
                   >
                 </div>
               </div>
-              <section
+              <details
                 class="panel style-panel"
                 aria-labelledby="style-heading"
               >
-                <div class="panel-heading">
-                  <h3 id="style-heading">文风设定</h3>
-                  <span class="tiny-label">WRITING STYLE</span>
-                </div>
+                <summary class="panel-heading">
+                  <h3 id="style-heading">文风设定 <span class="settings-disclosure-arrow" aria-hidden="true">▸</span></h3>
+                </summary>
                 <p class="muted">
                   为这部作品固定叙述方式。保存后从下一章生效，已生成的正文保留原样。
                 </p>
@@ -390,9 +390,9 @@
                     </button>
                   </div>
                 </form>
-              </section>
-              <section class="panel style-panel" aria-labelledby="skills-heading">
-                <div class="panel-heading"><h3 id="skills-heading">写作 Skill</h3></div>
+              </details>
+              <details class="panel style-panel" aria-labelledby="skills-heading">
+                <summary class="panel-heading"><h3 id="skills-heading">写作 Skill <span class="settings-disclosure-arrow" aria-hidden="true">▸</span></h3></summary>
                 <p class="muted">导入 SKILL.md，为当前作品选择最多 5 个技能。技能文本用于指导正文写作，不执行其中的脚本或工具。</p>
                 <label>安装技能文件 <input type="file" accept=".md,text/markdown,text/plain" @change="installSkill" :disabled="running" /></label>
                 <div @change="selectSkills">
@@ -401,7 +401,7 @@
                     <input type="checkbox" :value="skill.id" :checked="(state.current.skills || []).includes(skill.id)" :disabled="running" /> {{skill.name}}
                   </label>
                 </div>
-              </section>
+              </details>
               <div class="writing-grid">
                 <section class="manuscript panel">
                   <div class="panel-heading">
@@ -415,8 +415,8 @@
                     <button type="button" class="chapter-step" :disabled="state.chapterIndex===0||Boolean(state.editor)" @click="turnChapter(-1)" aria-label="上一章">← 上一章</button>
                     <button id="chapter-picker-trigger" type="button" class="chapter-picker-trigger" :disabled="Boolean(state.editor)"
                       :aria-expanded="state.chapterPickerOpen" aria-controls="chapter-directory" @click="toggleChapterPicker">
-                      <span><small>章节目录 · {{state.chapterIndex+1}} / {{chapters.length}}</small><strong>第 {{chapter.number}} 章 · {{chapter.title}}</strong></span>
-                      <span aria-hidden="true">⌄</span>
+                      <span><strong>第 {{chapter.number}} 章 · {{chapter.title}}</strong></span>
+                      <svg class="chapter-picker-chevron" aria-hidden="true" viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5.5 7.5 4.5 4.5 4.5-4.5" /></svg>
                     </button>
                     <button type="button" class="chapter-step" :disabled="state.chapterIndex>=chapters.length-1||Boolean(state.editor)" @click="turnChapter(1)" aria-label="下一章">下一章 →</button>
                   </div>
@@ -541,6 +541,16 @@
                       <strong class="message-label">{{messageLabels[jobLevel]}}</strong><span>{{jobStatus}}</span>
                     </p>
                   </section>
+                  <details v-if="state.current?.state.story_closure" class="panel style-panel closure-panel" aria-label="故事收束状态">
+                    <summary class="panel-heading"><h3>故事收束 <span class="settings-disclosure-arrow" aria-hidden="true">▸</span></h3></summary>
+                    <p role="status">
+                      {{state.current.state.story_closure.status==='MODEL_PASSED' ? '主线和重要线索已通过模型检查' : state.current.state.story_closure.status==='UNRESOLVED' ? '还有重要线索需要处理' : state.current.state.story_closure.status==='DISABLED' ? '未启用收束检查' : '收束情况尚待确认'}}
+                    </p>
+                    <p class="muted">这是模型根据已保存正文作出的判断，请结合正文核对。</p>
+                    <ul v-if="state.current.state.story_closure.pending_threads.length">
+                      <li v-for="item in state.current.state.story_closure.pending_threads" :key="item.topic"><strong>{{item.topic}}</strong>：{{item.reason}}</li>
+                    </ul>
+                  </details>
                   <section class="panel">
                     <div class="panel-heading">
                       <h3>故事构想</h3>

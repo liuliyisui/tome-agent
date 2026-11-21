@@ -9,6 +9,7 @@ The suite never calls the model: it only exercises page load, book creation,
 the cost-estimate dialog, deletion and refresh persistence.
 """
 
+import json
 import os
 import tempfile
 import threading
@@ -30,6 +31,84 @@ TITLE = "浏览器冒烟作品"
 
 @unittest.skipUnless(sync_playwright, "Install playwright to run browser smoke tests")
 class BrowserSmokeTests(unittest.TestCase):
+    def test_reload_restores_open_book(self):
+        service.create_book("resume-view", "刷新测试", "故事", 3, 3000)
+        self.open_library()
+        self.page.locator('[data-book="resume-view"]').click()
+        self.page.get_by_role("heading", name="刷新测试").wait_for()
+        self.page.add_init_script("""(() => {
+            const original = window.fetch;
+            window.fetch = async (...args) => {
+                if (String(args[0]) === '/api/config')
+                    await new Promise(resolve => setTimeout(resolve, 1200));
+                return original(...args);
+            };
+        })();""")
+        self.page.reload(wait_until="domcontentloaded")
+        root = self.page.locator("#tome-app > div")
+        root.wait_for(state="attached")
+        self.assertTrue(root.is_hidden())
+        self.page.get_by_role("heading", name="刷新测试").wait_for()
+        self.assertTrue(root.is_visible())
+        self.assertTrue(self.page.locator("#book-title").is_visible())
+
+    def test_reload_restores_selected_chapter(self):
+        service.create_book("resume-chapter", "章节测试", "故事", 3, 3000)
+
+        def chapters(route):
+            response = route.fetch()
+            data = response.json()
+            data["state"]["chapters"] = [
+                {"number": 1, "title": "第一章", "text": "第一章正文"},
+                {"number": 2, "title": "第二章", "text": "第二章正文"},
+            ]
+            route.fulfill(response=response, body=json.dumps(data, ensure_ascii=False))
+
+        self.page.route("**/api/books/resume-chapter", chapters)
+        self.open_library()
+        self.page.locator('[data-book="resume-chapter"]').click()
+        self.page.get_by_role("button", name="下一章", exact=True).first.click()
+        self.assertIn("第二章正文", self.page.locator("#chapter-body").inner_text())
+        self.page.reload()
+        self.page.wait_for_function(
+            "() => document.querySelector('#chapter-body')?.textContent.includes('第二章正文')"
+        )
+        self.page.wait_for_load_state("networkidle")
+
+    def test_book_page_shows_unresolved_closure(self):
+        service.create_book("closure-ui", "收束测试", "故事", 3, 3000)
+
+        def add_closure(route):
+            response = route.fetch()
+            data = response.json()
+            data["state"]["story_closure"] = {
+                "status": "UNRESOLVED",
+                "mainline_passed": True,
+                "pending_threads": [{"topic": "失踪的信", "reason": "去向尚未交代"}],
+            }
+            route.fulfill(response=response, body=json.dumps(data, ensure_ascii=False))
+
+        self.page.route("**/api/books/closure-ui", add_closure)
+        self.open_library()
+        self.page.locator('[data-book="closure-ui"]').click()
+        panel = self.page.get_by_label("故事收束状态")
+        self.assertFalse(panel.evaluate("el => el.open"))
+        panel.locator("summary").click()
+        self.assertTrue(panel.evaluate("el => el.open"))
+        self.assertIn("还有重要线索需要处理", panel.inner_text())
+        self.assertIn("失踪的信", panel.inner_text())
+        self.assertIn("去向尚未交代", panel.inner_text())
+        self.assertEqual(
+            panel.evaluate("el => el.parentElement.className"), "writing-aside"
+        )
+        for heading in ("文风设定", "写作 Skill"):
+            section = self.page.locator("details.style-panel").filter(
+                has=self.page.get_by_role("heading", name=heading)
+            )
+            self.assertFalse(section.evaluate("el => el.open"))
+            section.locator("summary").click()
+            self.assertTrue(section.evaluate("el => el.open"))
+
     @classmethod
     def setUpClass(cls):
         cls.playwright = sync_playwright().start()
@@ -628,9 +707,10 @@ class BrowserSmokeTests(unittest.TestCase):
             )
             notes = self.page.locator(".writing-notes")
             notes.wait_for()
-            notes.get_by_text("查看写作安排与修改对照").click()
-            self.assertIn("本章为新生成内容", notes.inner_text())
-            self.assertIn("未启用独立正文审核", notes.inner_text())
+            notes.get_by_text("查看章节安排", exact=True).click()
+            self.assertNotIn("修改说明", notes.inner_text())
+            self.assertNotIn("完成记录", notes.inner_text())
+            self.assertNotIn("本次写作要求", notes.inner_text())
             old_text = self.page.inner_text("#chapter-body")
             book_id = self.page.locator("#export").get_attribute("href").split("/")[3]
             endpoint = f"{self.base}/api/books/{book_id}/chapters/1/regenerate"
@@ -663,7 +743,7 @@ class BrowserSmokeTests(unittest.TestCase):
             )
             notes = self.page.locator(".writing-notes")
             if not notes.locator(".writing-notes-details").evaluate("el => el.open"):
-                notes.get_by_text("查看写作安排与修改对照").click()
+                notes.get_by_text("查看章节安排与修改对照").click()
             self.assertIn("本次作者意见：保留来信，删掉走廊描写", notes.inner_text())
             self.assertIn("与原稿相比", notes.inner_text())
             self.assertGreater(notes.locator(".revision-example").count(), 0)
@@ -671,7 +751,7 @@ class BrowserSmokeTests(unittest.TestCase):
             self.page.click("#my-works")
             self.page.locator(f'[data-book="{book_id}"]').first.click()
             notes = self.page.locator(".writing-notes")
-            notes.get_by_text("查看写作安排与修改对照").click()
+            notes.get_by_text("查看章节安排与修改对照").click()
             self.assertIn("保留来信，删掉走廊描写", notes.inner_text())
             self.assertNotIn(
                 "写作摘要与修改说明", self.page.inner_text("#chapter-body")

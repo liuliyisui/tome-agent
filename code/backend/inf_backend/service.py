@@ -776,7 +776,12 @@ def generate_longform(
             if outcome["status"] != "NO_DRAFT":
                 closure.observe(session.book["chapters"][-1])
                 if number >= meta["target_chapters"]:
+                    from memory_runtime.narrative_repair import (
+                        queue_ending_intent_review,
+                    )
+
                     for _ in range(2):
+                        queue_ending_intent_review(session.book)
                         session.attempt_narrative_repair(final=True)
                         closure.retry_pending(final=True)
                         closure.refresh_status()

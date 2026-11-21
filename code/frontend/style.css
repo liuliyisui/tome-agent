@@ -334,6 +334,11 @@ button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: no
 
 /* Saved writing notes stay outside the manuscript and export. */
 .writing-notes{margin:24px 0;padding:18px;border:1px solid var(--control-border);border-radius:10px;background:var(--well-background,#f0f3e9);color:var(--ink);overflow-wrap:anywhere}
+.style-panel > summary { cursor: pointer; list-style: none; }
+.style-panel > summary::-webkit-details-marker { display: none; }
+.style-panel:not([open]) > summary { margin-bottom: 0; }
+.settings-disclosure-arrow { display: inline-block; margin-left: 4px; transition: transform .15s ease; }
+.style-panel[open] .settings-disclosure-arrow { transform: rotate(90deg); }
 .writing-notes h3{margin:0 0 10px;font-size:16px;font-weight:600}
 .writing-notes-brief{margin:0 0 12px;line-height:1.8}
 .writing-notes summary{padding:8px 4px;cursor:pointer;font-weight:600;border-radius:4px}
@@ -482,6 +487,8 @@ body.editor-open{overflow:hidden}
 .chapter-picker-trigger>span:first-child{min-width:0}.chapter-picker-trigger small{display:block;font-size:11px;color:var(--text-secondary);margin-bottom:4px}
 .chapter-picker-trigger strong{display:block;font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chapter-picker-trigger:hover,.chapter-picker-trigger[aria-expanded=true]{border-color:var(--green);background:var(--hover-background)}
+.chapter-picker-chevron{flex-shrink:0;color:var(--text-secondary);transition:transform .15s ease}
+.chapter-picker-trigger[aria-expanded=true] .chapter-picker-chevron{transform:rotate(180deg)}
 .chapter-picker .chapter-step{padding:8px;font-size:12px}
 .chapter-directory{position:fixed;inset:auto;margin:0;z-index:1000;width:480px;max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:14px;color:var(--ink);background:var(--panel-background);border:1px solid var(--control-border);border-radius:10px;box-shadow:0 10px 32px #0003;overflow:auto}
 .chapter-directory>label{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;font-weight:600;font-size:13px}.chapter-directory>label span{font-size:12px;color:var(--text-secondary);font-weight:400}

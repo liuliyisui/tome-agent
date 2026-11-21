@@ -72,6 +72,21 @@ def serialize(book):
                 for tier in ("working", "recent", "long")
             },
         }
+        closure = raw.get("story_closure")
+        if isinstance(closure, dict):
+            from memory_runtime.narrative_planning import thread_report
+
+            report = thread_report(raw)
+            pending_ids = set(report["unhandled_important_thread_ids"])
+            state["story_closure"] = {
+                "status": closure.get("status", "UNKNOWN"),
+                "mainline_passed": closure.get("basic_mainline_model_passed", False),
+                "pending_threads": [
+                    {"topic": row["topic"], "reason": row["reason"]}
+                    for row in report["items"]
+                    if row["thread_id"] in pending_ids
+                ],
+            }
         mode = "legacy" if book.get("read_only") else "longform"
     state["project_id"] = book["id"]
     return {"metadata": book["metadata"], "state": state, "mode": mode}
