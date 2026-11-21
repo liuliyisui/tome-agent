@@ -1,14 +1,21 @@
 # 用 GitHub Actions 把 Slidev 幻灯片构建并发布到 GitHub Pages
 #
-# 流程：push（只改幻灯片目录时）→ 安装 pnpm / Node → 装依赖 → slidev build
-#       → 上传 Pages artifact → deploy-pages 发布
-# 首次使用前，需在仓库 Settings → Pages → Source 选择 “GitHub Actions”。
+# 触发：
+#   push 到 main/master 且改动 docs/slides/**  → 构建 + 发布到 Pages
+#   Pull Request 改动 docs/slides/**           → 只构建校验，不发布
+#   手动 workflow_dispatch                      → 构建 + 发布
+#
+# 首次使用前需要在仓库 Settings → Pages → Source 选择 “GitHub Actions”（需仓库 owner 操作）。
 
 name: Deploy slides (Slidev)
 
 on:
   push:
     branches: [main, master]
+    paths:
+      - "docs/slides/**"
+      - ".github/workflows/deploy-slides.yml"
+  pull_request:
     paths:
       - "docs/slides/**"
       - ".github/workflows/deploy-slides.yml"
@@ -56,6 +63,14 @@ jobs:
       - name: Build Slidev
         run: pnpm exec slidev build slides.md --out dist --base "/${{ github.event.repository.name }}/"
 
+      # 构建产物自检：入口页存在且引用了正确的 base
+      - name: Verify build output
+        run: |
+          test -f dist/index.html || { echo "缺少 dist/index.html"; exit 1; }
+          grep -q "/${{ github.event.repository.name }}/" dist/index.html || { echo "base 未注入"; exit 1; }
+          echo "页面数：$(ls dist/*.html | wc -l)"
+          du -sh dist
+
       # 额外留一份可下载的构建产物，便于排查部署问题
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -63,21 +78,17 @@ jobs:
           name: slides-dist
           path: docs/slides/dist
           retention-days: 7
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-        with:
-          # 仓库还没开 Pages 时自动开启，省掉手工点 Settings 的步骤；
-          # 若组织策略禁止自动开启，仍会失败，需要手动在 Settings → Pages 选 “GitHub Actions”。
-          enablement: true
+          if-no-files-found: error
 
       - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs/slides/dist
 
   deploy:
     name: Deploy
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:
