@@ -1,6 +1,7 @@
 node_modules/
 dist/
 dist-local/
+dist-full/
 .pnpm-store/
 *.local
 .DS_Store
