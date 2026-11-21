@@ -61,7 +61,7 @@ layout: default
 
 <div class="eyebrow">汇报目录</div>
 
-# 三个部分、23 页：8 分钟讲完设计与实现
+# 三个部分、24 页：8 分钟讲完设计与实现
 
 <div class="hr-line"></div>
 
@@ -81,7 +81,7 @@ layout: default
 
 <div class="text-[12.5px] font-bold text-[#1B3B5F] mt-5">2 · 产品设计应用的原则</div>
 <div class="mt-1">
-  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">十二条原则：四组，每组三条</div><div class="text-[11px] font-bold text-[#1B3B5F]">P9</div></div>
+  <div class="flex items-baseline justify-between py-[7px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">十二条原则：四组，每组三条</div><div class="text-[11px] font-bold text-[#1B3B5F]">P9–10</div></div>
 <div class="text-[10.5px] mt-1 leading-[1.7]" style="color:#8A8072">需求 / 信息 / 创新 · 系统 / 收敛 / 优化 · 继承 / 效益 / 时间 · 定量 / 简化 / 审核</div>
 </div>
 
@@ -91,18 +91,18 @@ layout: default
 
 <div class="text-[12.5px] font-bold text-[#1B3B5F]">3 · 产品实现</div>
 <div class="mt-1">
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.1 用户体验设计考虑的因素</div><div class="text-[11px] font-bold text-[#1B3B5F]">P10</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.2 编程语言 / IDE / 平台 / 框架</div><div class="text-[11px] font-bold text-[#1B3B5F]">P11</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.3 代码仓库链接与提交历史</div><div class="text-[11px] font-bold text-[#1B3B5F]">P12</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.4 全生命周期问题与解决方法</div><div class="text-[11px] font-bold text-[#1B3B5F]">P13</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.1 系统架构图</div><div class="text-[11px] font-bold text-[#1B3B5F]">P14</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.2 基础设施与部署形态</div><div class="text-[11px] font-bold text-[#1B3B5F]">P15</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.3 智能体技术设计（编排 / 记忆 / 护栏）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P16–17</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.4 数据库设计（E-R）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P18</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.5 接口设计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P19</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.6 前端设计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P20</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.6 软件质量（方法与工具）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P21</div></div>
-  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.7 代码统计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P22</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.1 用户体验设计考虑的因素</div><div class="text-[11px] font-bold text-[#1B3B5F]">P11</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.2 编程语言 / IDE / 平台 / 框架</div><div class="text-[11px] font-bold text-[#1B3B5F]">P12</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.3 代码仓库链接与提交历史</div><div class="text-[11px] font-bold text-[#1B3B5F]">P13</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.4 全生命周期问题与解决方法</div><div class="text-[11px] font-bold text-[#1B3B5F]">P14</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.1 系统架构图</div><div class="text-[11px] font-bold text-[#1B3B5F]">P15</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.2 基础设施与部署形态</div><div class="text-[11px] font-bold text-[#1B3B5F]">P16</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.3 智能体技术设计（编排 / 记忆 / 护栏）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P17–18</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.4 数据库设计（E-R）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P19</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.5 接口设计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P20</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.5.6 前端设计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P21</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.6 软件质量（方法与工具）</div><div class="text-[11px] font-bold text-[#1B3B5F]">P22</div></div>
+  <div class="flex items-baseline justify-between py-[6px] border-b border-[#EFE9DC]"><div class="text-[11.5px]">3.7 代码统计</div><div class="text-[11px] font-bold text-[#1B3B5F]">P23</div></div>
 </div>
 
 </div>
@@ -342,55 +342,123 @@ layout: default
 ---
 layout: default
 ---
-<div class="eyebrow">2. 产品设计应用的原则</div>
+<div class="eyebrow">2. 产品设计应用的原则（1/2）</div>
 
-# 只列项目里真正用到的原则，每条标注对应实现或文档
+# 需求定方向，信息校准方向，创新才有落脚点
 
 <div class="hr-line"></div>
 
 <div class="grid grid-cols-2 gap-3">
 
-<div class="card-soft p-4">
+<div class="card-soft px-4 py-3">
   <div class="tag">组一 · 需求 信息 创新</div>
-  <div class="body-text mt-2 leading-[1.75]">
-    <div><b>需求原则</b>：先冻结 MVP 与「不做」清单<span class="ev">problem_definition.md</span></div>
-    <div><b>信息原则</b>：竞品与长文本方案对比后才定架构<span class="ev">architecture.md</span></div>
-    <div><b>创新原则</b>：事件先行 + 事实账本，提交是事务<span class="ev">LANGGRAPH.mmd</span></div>
+
+  <div class="mt-2">
+    <div class="text-[12px] font-bold text-[#1B3B5F]">需求原则</div>
+    <div class="text-[10px] leading-[1.55]" style="color:#6C7784">功能要求来自客观需求；显需求推动改进，隐需求催生创新。</div>
+    <div class="body-text mt-1">先冻结 MVP 与「不做」清单：单用户账号、中文、顺序逐章；多人协作 / 移动端 / 自动出版明确不做。<span class="ev">problem_definition.md</span></div>
+  </div>
+
+  <div class="mt-2.5">
+    <div class="text-[12px] font-bold text-[#1B3B5F]">信息原则</div>
+    <div class="text-[10px] leading-[1.55]" style="color:#6C7784">全面、充分、正确地掌握市场与技术信息，用它引导设计。</div>
+    <div class="body-text mt-1">先做竞品与长文本方案对比（长上下文 / 摘要 / 向量 / 结构化事实），结论写进问题定义，再定功能。<span class="ev">architecture.md</span></div>
+  </div>
+
+  <div class="mt-2.5">
+    <div class="text-[12px] font-bold text-[#1B3B5F]">创新原则</div>
+    <div class="text-[10px] leading-[1.55]" style="color:#6C7784">冲破传统观念与惯例的束缚，做别人没做的。</div>
+    <div class="body-text mt-1">事件先行 + 事实账本：每条设定带版本与正文原句；提交是事务，失败不改正式稿。<span class="ev">LANGGRAPH.mmd</span></div>
   </div>
 </div>
 
-<div class="card-soft p-4">
+<div class="card-soft px-4 py-3">
   <div class="tag">组二 · 系统 收敛 优化</div>
-  <div class="body-text mt-2 leading-[1.75]">
-    <div><b>系统原则</b>：五阶段状态图、四角色契约固定<span class="ev">LANGGRAPH.mmd</span></div>
-    <div><b>收敛原则</b>：摘要 / 向量 / 全文 / 结构化事实四选一<span class="ev">architecture.md L75</span></div>
-    <div><b>优化原则</b>：篇幅按字数动态分配、失败降级、重规划只改未写章<span class="ev">README</span></div>
+
+  <div class="mt-2">
+    <div class="text-[12px] font-bold text-[#1B3B5F]">系统原则</div>
+    <div class="text-[10px] leading-[1.55]" style="color:#6C7784">把产品看作技术系统，用系统论求功能结构、取综合最优。</div>
+    <div class="body-text mt-1">写作拆成「规划—写作—记忆—审核—提交」的状态系统，四角色契约固定，任何环节失败都不污染正式快照。<span class="ev">LANGGRAPH.mmd</span></div>
+  </div>
+
+  <div class="mt-2.5">
+    <div class="text-[12px] font-bold text-[#1B3B5F]">收敛原则</div>
+    <div class="text-[10px] leading-[1.55]" style="color:#6C7784">先发散构思，再综合多种信息收敛。</div>
+    <div class="body-text mt-1">记忆方案对比四种后收敛到「结构化事实 + 三层记忆」；首版只带最近两章、最多 128 条有效事实。<span class="ev">architecture.md L75</span></div>
+  </div>
+
+  <div class="mt-2.5">
+    <div class="text-[12px] font-bold text-[#1B3B5F]">优化原则</div>
+    <div class="text-[10px] leading-[1.55]" style="color:#6C7784">方案择优、参数优化、总体优化：高效、优质、经济。</div>
+    <div class="body-text mt-1">篇幅按目标字数与剩余章节动态分配；局部失败降级保正文；审核格式错误最多修一次。<span class="ev">README</span></div>
   </div>
 </div>
 
-<div class="card-soft p-4">
+</div>
+
+<!-- 原则 1/2：组一、组二。 -->
+
+---
+layout: default
+---
+
+<div class="eyebrow">2. 产品设计应用的原则（2/2）</div>
+
+# 能继承的不重造，算清效益，抢住时间窗口
+
+<div class="hr-line"></div>
+
+<div class="grid grid-cols-2 gap-3">
+
+<div class="card-soft px-4 py-3">
   <div class="tag">组三 · 继承 效益 时间</div>
-  <div class="body-text mt-2 leading-[1.75]">
-    <div><b>继承原则</b>：编排 / 接口 / 前端 / 存储全部复用<span class="ev">README 技术选型</span></div>
-    <div><b>效益原则</b>：生成前费用预估、单台服务器托管<span class="ev">official_pricing.py</span></div>
-    <div><b>时间原则</b>：两周交付计划与里程碑 M1–M4<span class="ev">TEAM_PLAN.md</span></div>
+
+  <div class="mt-2">
+    <div class="text-[12px] font-bold text-[#1B3B5F]">继承原则</div>
+    <div class="text-[10px] leading-[1.55]" style="color:#6C7784">批判地吸收前人成果，为我所用，才能集中精力解决主要问题。</div>
+    <div class="body-text mt-1">编排 / 接口 / 前端 / 存储全部复用成熟方案（LangGraph、兼容接口、Vue、PostgreSQL），只重写业务逻辑。<span class="ev">README 技术选型</span></div>
+  </div>
+
+  <div class="mt-2.5">
+    <div class="text-[12px] font-bold text-[#1B3B5F]">效益原则</div>
+    <div class="text-[10px] leading-[1.55]" style="color:#6C7784">既讲技术经济效益，也讲社会效益。</div>
+    <div class="body-text mt-1">生成前给出费用预估、单台服务器托管、用户自带 Key；成本可算、可省，作品可备份迁移。<span class="ev">official_pricing.py</span></div>
+  </div>
+
+  <div class="mt-2.5">
+    <div class="text-[12px] font-bold text-[#1B3B5F]">时间原则</div>
+    <div class="text-[10px] leading-[1.55]" style="color:#6C7784">加快研制节奏，并预测同类产品在开发期的变化。</div>
+    <div class="body-text mt-1">两周交付计划 + M1–M4 里程碑；窗口期内用对照实验证明「状态记忆减少吃设定」。<span class="ev">TEAM_PLAN.md</span></div>
   </div>
 </div>
 
-<div class="card-soft p-4">
+<div class="card-soft px-4 py-3">
   <div class="tag">组四 · 定量 简化 审核</div>
-  <div class="body-text mt-2 leading-[1.75]">
-    <div><b>定量原则</b>：成功标准可测 + 127 / 42 项回归<span class="ev">VALIDATION.md</span></div>
-    <div><b>简化原则</b>：标准库 HTTP、零前端构建、零外部依赖<span class="ev">README</span></div>
-    <div><b>审核原则</b>：独立审核节点 + PR 复核 + ruff/CI<span class="ev">tests.yml</span></div>
+
+  <div class="mt-2">
+    <div class="text-[12px] font-bold text-[#1B3B5F]">定量原则</div>
+    <div class="text-[10px] leading-[1.55]" style="color:#6C7784">方案选择与成果评价尽量采用科学的定量方法。</div>
+    <div class="body-text mt-1">成功标准可测（约 1 万字 / 8–10 章、跨章矛盾数、token 与费用）；127 项应用回归 + 42 项引擎回归。<span class="ev">VALIDATION.md</span></div>
+  </div>
+
+  <div class="mt-2.5">
+    <div class="text-[12px] font-bold text-[#1B3B5F]">简化原则</div>
+    <div class="text-[10px] leading-[1.55]" style="color:#6C7784">保证功能的前提下力求简化，降成本、保质量。</div>
+    <div class="body-text mt-1">标准库 HTTP、零前端构建、零外部依赖即可跑；不引入 ASGI 框架与前端构建链。<span class="ev">README</span></div>
+  </div>
+
+  <div class="mt-2.5">
+    <div class="text-[12px] font-bold text-[#1B3B5F]">审核原则</div>
+    <div class="text-[10px] leading-[1.55]" style="color:#6C7784">随时审核每个设计步骤的信息，确保每一步正确。</div>
+    <div class="body-text mt-1">独立审核节点（查矛盾与遗漏、只判不改）+ PR 必他人复核 + ruff / CI 四类 job。<span class="ev">tests.yml</span></div>
   </div>
 </div>
 
 </div>
 
-<div class="absolute left-[52px] bottom-[16px] text-[9px] text-[#A99C88]">凡在项目中找不到对应实践的条目已不列入；括号内为可查证的实现或文档位置。</div>
+<div class="absolute left-[52px] bottom-[16px] text-[9px] text-[#A99C88]">每条先写原则要求，再写本产品的做法，末尾为该做法在仓库中的位置；找不到对应实践的条目不列入。</div>
 
-<!-- 原则页：只保留仓库里能落地的条目，并标出处。 -->
+<!-- 原则 2/2：组三、组四。 -->
 ---
 layout: default
 ---
