@@ -223,8 +223,6 @@ layout: default
   </div>
 </div>
 
-<div class="exclude-line"><b>不做什么：</b>不替代专业作家的审美判断，不承诺“一键神作”，也不把演示原型当作真实生成能力。</div>
-
 <div class="bottom-note">来源：docs/requirements/user_stories.md · docs/requirements/functional_spec.md</div>
 
 <!-- 三类用户，从个人到团队；边界同样重要。 -->
