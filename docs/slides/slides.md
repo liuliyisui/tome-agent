@@ -791,6 +791,41 @@ layout: default
 layout: default
 ---
 
+<div class="kicker">3.3 代码仓库 / REPOSITORY</div>
+
+# 仓库与提交历史：真实协作留痕。
+
+<div class="rule"></div>
+
+<div class="repo-layout">
+  <div class="repo-left">
+    <div class="tag">仓库地址</div>
+    <a class="repo-url" href="https://github.com/liuliyisui/tome-agent">github.com/liuliyisui/tome-agent</a>
+    <div class="repo-stats">
+      <div><b>217</b><span>次提交</span></div>
+      <div><b>5</b><span>位贡献者</span></div>
+      <div><b>5</b><span>个代码模块</span></div>
+    </div>
+    <div class="repo-note">提交分布可在仓库 Insights → Pulse 复查；任务与缺陷以 GitHub Issues 记录，看板、分工和路线图保存在 docs/mgmt/。</div>
+    <div class="repo-links">
+      <span>KANBAN.md</span><span>TEAM_PLAN.md</span><span>ROADMAP.md</span>
+    </div>
+  </div>
+  <div class="repo-right">
+    <div class="tag">GitHub Pulse · Top committers</div>
+    <img src="/pulse-committers.png" alt="Top committers">
+    <div class="small">横轴为贡献者，纵轴为提交次数；截图截至 2026-11-21。</div>
+  </div>
+</div>
+
+<div class="bottom-note">来源：github.com/liuliyisui/tome-agent · docs/mgmt/KANBAN.md · docs/mgmt/TEAM_PLAN.md · docs/mgmt/ROADMAP.md</div>
+
+<!-- 3.3 代码仓库：链接、提交分布与协作记录。 -->
+
+---
+layout: default
+---
+
 <div class="kicker">3.5.1 架构 / ARCHITECTURE</div>
 
 # 四层边界：界面不碰模型，模型不碰存储。

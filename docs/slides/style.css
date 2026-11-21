@@ -2111,6 +2111,94 @@
   background: transparent;
 }
 
+/* 3.3 Repository and commit history */
+.repo-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.repo-left,
+.repo-right {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.44);
+  box-shadow: 0 10px 26px rgba(31, 48, 38, 0.04);
+}
+
+.slidev-layout .repo-url {
+  display: block;
+  margin-top: 9px;
+  border-bottom: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--pine);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.repo-stats {
+  display: flex;
+  gap: 24px;
+  margin-top: 17px;
+}
+
+.repo-stats b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 27px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--pine);
+}
+
+.repo-stats span {
+  display: block;
+  margin-top: 4px;
+  font-size: 8.5px;
+  color: var(--muted);
+}
+
+.repo-note {
+  margin-top: 17px;
+  font-size: 9.4px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+.repo-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.repo-links span {
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 7.5px;
+  color: var(--muted);
+}
+
+.repo-right img {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  border-radius: 6px;
+}
+
+.repo-right .small {
+  margin-top: 7px;
+  font-size: 8px;
+  line-height: 1.5;
+}
+
+
 
 /* =========================================================
    Tome Agent light theme (ivory + pine + sage + muted gold)
