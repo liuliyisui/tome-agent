@@ -1166,16 +1166,16 @@ layout: default
 
 <div class="ui-shot-grid">
   <div class="ui-shot">
+    <img src="/frontend-login.png" alt="登录">
+    <div class="ui-shot-cap"><b>登录</b><span>账号进入工作区，Key 登录后配置</span></div>
+  </div>
+  <div class="ui-shot">
     <img src="/frontend-home.png" alt="首页">
     <div class="ui-shot-cap"><b>首页</b><span>品牌入口与开始写作</span></div>
   </div>
   <div class="ui-shot">
     <img src="/frontend-library.png" alt="书架">
     <div class="ui-shot-cap"><b>书架</b><span>作品列表、空状态与新建入口</span></div>
-  </div>
-  <div class="ui-shot">
-    <img src="/frontend-login.png" alt="登录">
-    <div class="ui-shot-cap"><b>登录</b><span>账号进入工作区，Key 登录后配置</span></div>
   </div>
 </div>
 
