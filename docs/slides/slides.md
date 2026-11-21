@@ -750,6 +750,7 @@ layout: default
 
 ---
 layout: default
+class: repo-page
 ---
 
 <div class="kicker">3.3 代码仓库 / REPOSITORY</div>
