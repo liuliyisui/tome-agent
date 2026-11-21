@@ -162,13 +162,7 @@ layout: default
 
 </div>
 
-<div class="card-soft px-4 py-3 mt-6">
-  <div class="text-[11.5px] leading-[1.8]"><span class="tag text-[11px]">口号纪律：</span>只承诺能验证的三件事——自洽（矛盾可查）、可恢复（失败能续）、可导出（作品归你）；不使用「最强」「超越」「一键成神」这类无法证伪的词。</div>
-</div>
-
-<div class="absolute left-[52px] bottom-[18px] text-[9px] text-[#A99C88]">口号出现在：封面、工作台首屏、演示结尾、仓库 README 第一行</div>
-
-<!-- 主口号给用户，副口号给我们自己：先把记得住做对。口号纪律是不用无法证伪的词。 -->
+<!-- 主口号给用户，副口号给我们自己：先把记得住做对。 -->
 
 ---
 layout: default
@@ -338,11 +332,7 @@ layout: default
 
 </div>
 
-<div class="px-4 py-3 mt-4 rounded-[10px] bg-[#F7ECE8]">
-  <div class="text-[11.5px]"><span class="tag text-[11px]">自曝一条风险：</span>成员开发经验有差距，核心框架集中在一人。对策：任务拆小、关键操作结对、改公共接口前先通知、交叉复核不省略。</div>
-</div>
-
-<!-- 四个人是一条链：开发、创作评估、测试、体验文档，每项交付都有第二个人复核。风险也说了：经验差距、核心集中在一人。 -->
+<!-- 四个人是一条链：开发、创作评估、测试、体验文档，每项交付都有第二个人复核。 -->
 
 ---
 layout: default
@@ -416,7 +406,7 @@ layout: default
 
 </div>
 
-<div class="mt-4 text-[10.5px] text-[#6C7784]"><span class="font-bold text-[#1B3B5F]">自检：</span>把这段念给一个没看过代码的人，他能复述出「给谁、解决什么、哪里不一样」，定义才算过。</div>
+
 
 <!-- 定位模板逐行念一遍：对于谁、他们有什么诉求、我们是什么、能做什么、不同于谁、最终给到什么。 -->
 
@@ -462,10 +452,7 @@ layout: default
     <div class="text-[11px] mt-3 leading-[1.75] text-[#E6DFD2]">模型不是不想记。是「把前文再喂一遍」这种记忆方式，撑不起一部书——越往后越贵、越模糊。</div>
     <div class="text-[11px] font-bold mt-3 leading-[1.75]">所以我们不从「再写一段更长的提示词」入手，而从「怎么让故事状态可查、可验、可恢复」入手。</div>
   </div>
-  <div class="mt-4">
-    <div class="tag">一条诚实说明</div>
-    <div class="small mt-1">「状态记忆能减少跨章矛盾」目前是待验证假设：要用同输入、同模型、有 / 无记忆的对照实验来证明，在跑完对照前不把它当结论。</div>
-  </div>
+  <div class="mt-4 text-[10.5px] leading-[1.7] text-[#6C7784]">「状态记忆能减少跨章矛盾」目前是待验证假设：用同输入、同模型、有 / 无记忆的对照实验来证明。</div>
 </div>
 
 </div>
@@ -514,7 +501,7 @@ layout: default
 
 </div>
 
-<div class="mt-4 text-[10.5px] leading-[1.8] text-[#6C7784]"><span class="tag text-[10.5px]">写法纪律：</span>用用户的业务语言，不出现「向量」「检查点」「JSON 契约」；每条故事配 Gherkin 验收条件，见 <span class="mono">docs/requirements/user_stories.md</span>（按 INVEST 拆分，共 5 条）。</div>
+<div class="mt-4 text-[10.5px] leading-[1.8] text-[#6C7784]">每条故事配 Gherkin 验收条件，见 <span class="mono">docs/requirements/user_stories.md</span>（按 INVEST 拆分，共 5 条）。</div>
 
 <!-- 四条用户故事，都是业务语言：读者点单、设定可查、文风统一、连续批量。验收条件在仓库的 user_stories 文档里。 -->
 

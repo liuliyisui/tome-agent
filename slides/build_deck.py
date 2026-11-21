@@ -295,7 +295,7 @@ for num, title, body, cnt in cards:
     tf = tb(s, W - MR - 1.2, y + 0.55, 1.0, 0.4)
     para(tf, cnt, size=13, color=PRIMARY, bold=True, align=PP_ALIGN.RIGHT, first=True, space_after=0)
     y += 1.75
-pager(s, 2, note="完整汇报 8 分钟；本篇约 4 分钟")
+pager(s, 2)
 notes(s, "只放结构，不写过渡语：1.1 策略六项，1.2 定义四项，2 十二条原则。")
 
 # ================================================================ 03 使命
@@ -334,27 +334,19 @@ tf = tb(s, ML, 2.3, CW, 1.0)
 para(tf, "一个点子，一部自洽的长篇。", size=44, color=INK, bold=True, first=True, space_after=0, line=1.1)
 hairline(s, ML, 3.42, CW)
 
-card(s, ML, 3.72, 5.55, 1.28, fill=CARD_SOFT)
-tf = tb(s, ML + 0.3, 3.86, 4.95, 1.0)
+card(s, ML, 4.3, 5.55, 1.5, fill=CARD_SOFT)
+tf = tb(s, ML + 0.3, 4.5, 4.95, 1.1)
 para(tf, "副口号（对内 / README 首行）", size=9.5, color=ACCENT, bold=True, first=True, space_after=4)
 para(tf, "先把「记得住」做对，再谈「写得好」。", size=15, color=PRIMARY, bold=True, space_after=0, line=1.3)
 
-tf = tb(s, 6.75, 3.72, 5.7, 1.9)
+tf = tb(s, 6.75, 4.32, 5.7, 1.9)
 para(tf, "备选（按场景取用）", size=9.5, color=ACCENT, bold=True, first=True, space_after=6)
 for t in ["「想看的，自己写出来。」——面向读者，情绪最直接",
           "「不会写，也能写完。」——强调完成度，适合首屏",
           "「设定不丢，故事才长。」——强调一致性，适合技术读者"]:
     para(tf, t, size=10.5, color=INK_SOFT, space_after=5, line=1.35)
 
-card(s, ML, 5.28, CW, 1.02, fill=CARD)
-tf = tb(s, ML + 0.32, 5.42, CW - 0.64, 0.78)
-rich(para(tf, first=True, space_after=0, line=1.5),
-     [("口号纪律：", {"bold": True, "color": ACCENT}),
-      ("只承诺能验证的三件事——自洽（矛盾可查）、可恢复（失败能续）、可导出（作品归你）；"
-       "不使用「最强」「超越」「一键成神」这类无法证伪的词。", {"color": INK_SOFT})])
-tf = tb(s, ML, 6.58, CW, 0.3)
-para(tf, "口号出现在：封面、工作台首屏、演示结尾、仓库 README 第一行", size=9, color=MUTED, first=True, space_after=0)
-notes(s, "主口号给用户，副口号给我们自己：先把记得住做对。口号纪律是不用无法证伪的词。")
+notes(s, "主口号给用户，副口号给我们自己：先把记得住做对。")
 
 # ================================================================ 05 目标用户
 s = new_slide()
@@ -467,7 +459,7 @@ for name, role, task in members:
     tf = tb(s, ML + 1.28, y + 0.08, 4.2, 0.68)
     para(tf, role, size=9, color=ACCENT, bold=True, first=True, space_after=2)
     para(tf, task, size=9.5, color=MUTED, space_after=0, line=1.3)
-    y += 0.92
+    y += 1.02
 
 tf = tb(s, 6.95, 1.8, 5.5, 0.3)
 para(tf, "三条可验证的优势", size=9.5, color=ACCENT, bold=True, first=True, space_after=0)
@@ -481,15 +473,9 @@ for t, body in adv:
     tf = tb(s, 6.95, y, 5.5, 0.95)
     para(tf, t, size=11.5, color=PRIMARY, bold=True, first=True, space_after=3)
     para(tf, body, size=9.8, color=INK_SOFT, space_after=0, line=1.45)
-    y += 1.06
+    y += 1.16
 
-card(s, ML, 5.95, CW, 0.86, fill=RGBColor(0xF7, 0xEC, 0xE8))
-tf = tb(s, ML + 0.3, 6.06, CW - 0.6, 0.7)
-rich(para(tf, first=True, space_after=0, line=1.45),
-     [("自曝一条风险：", {"bold": True, "color": ACCENT}),
-      ("成员开发经验有差距，核心框架集中在一人。对策：任务拆小、关键操作结对、改公共接口前先通知、交叉复核不省略。",
-       {"color": INK_SOFT, "size": 10})])
-notes(s, "四个人是一条链：开发、创作评估、测试、体验文档，每项交付都有第二个人复核。风险也说了：经验差距、核心集中在一人。")
+notes(s, "四个人是一条链：开发、创作评估、测试、体验文档，每项交付都有第二个人复核。")
 
 # ================================================================ 08 差异化
 s = new_slide()
@@ -535,11 +521,6 @@ for label, text in lines:
     hairline(s, ML, y + 0.68, CW, RGBColor(0xE8, 0xE1, 0xD5))
     y += 0.74
 
-tf = tb(s, ML, 6.35, CW, 0.4)
-rich(para(tf, first=True, space_after=0, line=1.4),
-     [("自检：", {"bold": True, "color": PRIMARY}),
-      ("把这段念给一个没看过代码的人，他能复述出「给谁、解决什么、哪里不一样」，定义才算过。",
-       {"color": MUTED, "size": 9.5})])
 notes(s, "定位模板逐行念一遍：对于谁、他们有什么诉求、我们是什么、能做什么、不同于谁、最终给到什么。")
 
 # ================================================================ 10 解决的问题
@@ -571,10 +552,9 @@ para(tf, "模型不是不想记。是「把前文再喂一遍」这种记忆方�
 para(tf, "所以我们不从「再写一段更长的提示词」入手，而从「怎么让故事状态可查、可验、可恢复」入手。",
      size=10.5, color=WHITE, bold=True, space_after=0, line=1.55)
 
-tf = tb(s, 7.55, 5.35, 4.93, 1.3)
-para(tf, "一条诚实说明", size=9.5, color=ACCENT, bold=True, first=True, space_after=5)
-para(tf, "「状态记忆能减少跨章矛盾」目前是待验证假设：要用同输入、同模型、有/无记忆的对照实验来证明，"
-         "在跑完对照前不把它当结论。", size=9.5, color=MUTED, space_after=0, line=1.45)
+tf = tb(s, 7.55, 5.35, 4.93, 1.0)
+para(tf, "「状态记忆能减少跨章矛盾」目前是待验证假设：用同输入、同模型、有/无记忆的对照实验来证明。",
+     size=9.5, color=MUTED, first=True, space_after=0, line=1.45)
 notes(s, "五个症状，一个根因：记忆能力不等于上下文长度。最后那句诚实说明很重要——一致性提升目前还是待验证假设。")
 
 # ================================================================ 11 用户故事
@@ -609,10 +589,8 @@ for (x, y), (who, what, value) in zip(pos, stories):
           (value, {"size": 9.8, "color": PRIMARY, "bold": True})])
 
 tf = tb(s, ML, 6.02, CW, 0.4)
-rich(para(tf, first=True, space_after=0, line=1.4),
-     [("写法纪律：", {"bold": True, "color": ACCENT}),
-      ("用用户的业务语言，不出现「向量」「检查点」「JSON 契约」；每条故事配 Gherkin 验收条件，见 "
-       "docs/requirements/user_stories.md（按 INVEST 拆分，共 5 条）。", {"color": MUTED, "size": 9.3})])
+para(tf, "每条故事配 Gherkin 验收条件，见 docs/requirements/user_stories.md（按 INVEST 拆分，共 5 条）。",
+     size=9.3, color=MUTED, first=True, space_after=0)
 notes(s, "四条用户故事，都是业务语言：读者点单、设定可查、文风统一、连续批量。验收条件在仓库的 user_stories 文档里。")
 
 # ================================================================ 12 解决方案
