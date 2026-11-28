@@ -585,6 +585,16 @@ class: agent-page
 layout: default
 ---
 
+<div class="kicker">3.5.3 智能体设计 · 工作流</div>
+
+<div class="workflow-figure"><img src="/story-workflow.png" alt="Tome Agent 故事创作工作流"></div>
+
+<div class="bottom-note">读法：实线是主链，虚线是后续检索，回环是需要时有限次修订。来源：docs/algorithm/LANGGRAPH.mmd · code/core_engine/</div>
+
+---
+layout: default
+---
+
 <div class="kicker">3.5.5–3.5.6 接口与前端</div>
 
 <div class="rule"></div>

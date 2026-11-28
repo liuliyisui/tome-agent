@@ -3054,6 +3054,9 @@
 .infra-row .ux-title { margin-top: 3px; font-size: 12px; }
 .infra-row .ux-text { font-size: 8.3px; line-height: 1.45; }
 
+.workflow-figure { margin-top: 6px; display: flex; justify-content: center; }
+.workflow-figure img { display: block; width: auto; max-width: 100%; max-height: 428px; border-radius: 10px; }
+
 .agent-merged { display: grid; grid-template-columns: 1.1fr 0.95fr 0.95fr; gap: 9px; }
 .agent-col {
   padding: 11px 13px;
