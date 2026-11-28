@@ -281,6 +281,7 @@ class: tech-page
 
 ---
 layout: default
+class: agensi-single
 ---
 
 <div class="kicker">3.3 外部邀约 / AGENSI</div>
@@ -288,24 +289,6 @@ layout: default
 <div class="rule"></div>
 
 <div class="agensi-mail"><img src="/agensi-email.jpg" alt="Agensi 来信：邀请把 Tome Agent 的工作流打包成 skill"></div>
-
-<div class="agensi-points">
-  <div class="ux-card">
-    <div class="ux-top"><span class="ux-no">01</span><span class="tag">被看到</span></div>
-    <div class="ux-title">GitHub 上的长篇写作工作台</div>
-    <div class="ux-text">对方把 Tome Agent 称为「multi-agent writing studio for long novels」，并点名基于 LangGraph。</div>
-  </div>
-  <div class="ux-card">
-    <div class="ux-top"><span class="ux-no">02</span><span class="tag">对方是谁</span></div>
-    <div class="ux-title">Agensi · AI skill 市场</div>
-    <div class="ux-text">agensi.io 做 agent skill 的上架与分发，月访问 15 万+，流量主要来自自然搜索。</div>
-  </div>
-  <div class="ux-card">
-    <div class="ux-top"><span class="ux-no">03</span><span class="tag">提出什么</span></div>
-    <div class="ux-title">把工作流打包成 skill</div>
-    <div class="ux-text">可把现有工作流与指令整理成 skill 上架，非排他、自主定价，并附带推荐链接。</div>
-  </div>
-</div>
 
 <div class="bottom-note">来源：2026-11-17 Agensi（Joeri Brons）来信 · agensi.io</div>
 
