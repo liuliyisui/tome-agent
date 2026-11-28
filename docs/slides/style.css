@@ -3017,20 +3017,22 @@
 .form-strip b { color: var(--pine); }
 
 .tech-repo { display: grid; grid-template-columns: 1.35fr 0.65fr; gap: 12px; }
-.agensi-strip {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 14px;
-  align-items: center;
-  margin-top: 8px;
-  padding: 6px 9px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: rgba(255,255,255,.44);
+.tech-bottom { display: grid; grid-template-columns: 1fr 264px; gap: 10px; align-items: start; margin-top: 8px; }
+.tech-bottom .tech-principles { margin-top: 0; }
+.agensi-card { position: relative; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }
+.agensi-card img { display: block; width: 100%; }
+.slidev-layout .agensi-tag {
+  position: absolute;
+  left: 5px;
+  bottom: 5px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(31, 48, 38, .84);
+  color: var(--paper);
+  font-size: 7.4px;
+  line-height: 1.4;
+  letter-spacing: .04em;
 }
-.agensi-strip img { display: block; width: 100%; border: 1px solid var(--line-soft); border-radius: 6px; }
-.agensi-strip .agensi-cap { font-size: 10px; line-height: 1.55; color: var(--ink-soft); }
-.agensi-strip .agensi-cap b { display: block; margin-bottom: 4px; font-size: 10.6px; color: var(--pine); }
 .compact-tech { font-size: 8.2px; }
 .compact-tech td, .compact-tech th { padding: 6px 7px; }
 .repo-mini {
