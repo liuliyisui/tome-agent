@@ -297,7 +297,7 @@ layout: default
 class: lifecycle-page
 ---
 
-<div class="kicker">3.4 全生命周期 / LIFECYCLE</div>
+<div class="kicker">3.4 原因分析 / 解决方案</div>
 
 <div class="rule"></div>
 
