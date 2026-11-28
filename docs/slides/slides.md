@@ -267,9 +267,6 @@ class: tech-page
         <tr><td>模型</td><td>大部分 AI 大模型</td><td>Chat Completions</td><td>复用接口、计费预估与故障处理</td></tr>
       </tbody>
     </table>
-    <div class="agensi-shot">
-      <img src="/agensi-email.jpg" alt="Agensi 邀请邮件">
-    </div>
   </div>
   <div class="repo-mini">
     <div class="tag">仓库地址</div>
@@ -279,6 +276,38 @@ class: tech-page
     <div class="small">提交分布见 Insights → Pulse；看板与路线图在 docs/mgmt/。</div>
   </div>
 </div>
+
+<div class="bottom-note">来源：README「技术选型」 · code/frontend/ · code/backend/ · docs/mgmt/</div>
+
+---
+layout: default
+---
+
+<div class="kicker">3.3 外部邀约 / AGENSI</div>
+
+<div class="rule"></div>
+
+<div class="agensi-mail"><img src="/agensi-email.jpg" alt="Agensi 来信：邀请把 Tome Agent 的工作流打包成 skill"></div>
+
+<div class="agensi-points">
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">01</span><span class="tag">被看到</span></div>
+    <div class="ux-title">GitHub 上的长篇写作工作台</div>
+    <div class="ux-text">对方把 Tome Agent 称为「multi-agent writing studio for long novels」，并点名基于 LangGraph。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">02</span><span class="tag">对方是谁</span></div>
+    <div class="ux-title">Agensi · AI skill 市场</div>
+    <div class="ux-text">agensi.io 做 agent skill 的上架与分发，月访问 15 万+，流量主要来自自然搜索。</div>
+  </div>
+  <div class="ux-card">
+    <div class="ux-top"><span class="ux-no">03</span><span class="tag">提出什么</span></div>
+    <div class="ux-title">把工作流打包成 skill</div>
+    <div class="ux-text">可把现有工作流与指令整理成 skill 上架，非排他、自主定价，并附带推荐链接。</div>
+  </div>
+</div>
+
+<div class="bottom-note">来源：2026-11-17 Agensi（Joeri Brons）来信 · agensi.io</div>
 
 ---
 layout: default
@@ -349,27 +378,6 @@ layout: default
 <div class="workflow-figure"><img src="/agent-components.png" alt="Tome Agent 智能体五个组成与代码位置"></div>
 
 <div class="bottom-note">来源：code/core_engine/ · graph_runtime.py · event_first.py · writing.py · tiered_memory.py · privacy.py · editing.py</div>
-
----
-layout: default
----
-
-<div class="kicker">3.5.4 智能体要素</div>
-
-<div class="rule"></div>
-
-<table class="compare element-table">
-  <thead><tr><th>要素</th><th>是什么</th><th>Tome Agent 中如何体现</th></tr></thead>
-  <tbody>
-    <tr><td>Prompt 提示词</td><td>告诉模型扮演什么角色、完成什么任务、遵守什么要求</td><td>我们为规划、写作、记忆处理等角色设置不同提示词。例如，写作角色需要依据已确定的事件生成正文；如果需要改变关键事件，可以提出修订请求。</td></tr>
-    <tr><td>LLM 大语言模型</td><td>负责理解要求、规划内容和生成文本</td><td>系统通过模型接口接入 DeepSeek 等兼容服务，由大模型参与章节规划、正文生成、记忆整理和故事收束判断。</td></tr>
-    <tr><td>Tools 工具</td><td>帮助系统完成检索、计算、校验或数据操作的程序能力</td><td>我们有事件状态校验、记忆选择、章节保存、成本估算等内部程序功能。例如程序检查物品状态，再把结果提供给后续流程。</td></tr>
-    <tr><td>Knowledge Base 知识库</td><td>保存和提供智能体完成任务所需的知识</td><td>我们主要使用作品自己的故事记忆：人物、事件、物品、历史信息及来源正文，分为工作、近期和长期三层，供后续写作选择使用。</td></tr>
-    <tr><td>Workflow 工作流</td><td>决定各个角色和步骤如何衔接</td><td>我们使用 LangGraph 组织章节规划、正文写作、保存和记忆处理；需要修订事件时，可以有限次返回规划。故事收束由相关控制器协调。</td></tr>
-  </tbody>
-</table>
-
-<div class="bottom-note">来源：docs/software/LANGGRAPH_MIGRATION.md · docs/software/architecture.md · code/core_engine/</div>
 
 ---
 layout: default
