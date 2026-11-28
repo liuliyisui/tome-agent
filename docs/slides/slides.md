@@ -117,7 +117,7 @@ layout: default
   </div>
   <div class="persona compact">
     <div class="persona-top"><span class="persona-index">02</span><span class="tag">高价值用户</span></div>
-    <div class="persona-title">类型小说作者</div>
+    <div class="persona-title">小说作者</div>
     <div class="persona-row"><b>卡在哪里</b><span>设定复杂、伏笔多，最怕前后矛盾。</span></div>
     <div class="persona-row"><b>我们要给</b><span>状态与来源可追溯，改设定不重读全书。</span></div>
   </div>
