@@ -168,13 +168,13 @@ class: section
   <div class="section-body">
     <div class="kicker light">Design principles</div>
     <h1>设计原则</h1>
-    <p>四组，十二条。<br>每条原则都要落到一个动作、一份证据。</p>
+    <p>四组，十条。<br>每条原则都要落到一个动作、一份证据。</p>
   </div>
 </div>
 
 <div class="section-foot">Tome Agent · 产品设计 / 设计原则 / 产品实现</div>
 
-<!-- 第二部分：十二条原则要能回到仓库里的决策。 -->
+<!-- 第二部分：十条原则要能回到仓库里的决策。 -->
 
 ---
 layout: default
@@ -310,7 +310,7 @@ class: principle-page
 
 ---
 layout: default
-class: principle-page
+class: principle-page single-principle
 ---
 
 <div class="principle-head">
@@ -330,28 +330,17 @@ class: principle-page
     </div>
     <div class="p-ev"><span>证据</span><code>.github/workflows/tests.yml</code><em>tests/TEST_REPORT.md</em></div>
   </div>
+</div>
 
-  <div class="p-row">
-    <div class="p-no">11</div>
-    <div class="p-body">
-      <div class="p-title">能简就简</div>
-      <div class="p-text">标准库 HTTP 服务、Vue runtime-only、无 CDN、无前端构建步骤；少一个运行时变量，就少一类线上问题。</div>
-    </div>
-    <div class="p-ev"><span>证据</span><code>code/frontend/</code><em>README「技术选型」</em></div>
-  </div>
-
-  <div class="p-row">
-    <div class="p-no">12</div>
-    <div class="p-body">
-      <div class="p-title">每一步都审</div>
-      <div class="p-text">Ruff 规则、pre-commit 与 CI 共用同一份配置；代码评审、质量报告与整改记录都留在仓库。</div>
-    </div>
-    <div class="p-ev"><span>证据</span><code>docs/software/CODE_QUALITY_FIXES.md</code><em>code_review.md · .pre-commit-config.yaml</em></div>
-  </div>
+<div class="single-metrics">
+  <div><b>256</b><span>测试通过</span></div>
+  <div><b>0</b><span>失败 / 跳过</span></div>
+  <div><b>67.52%</b><span>核心 8 模块覆盖率</span></div>
+  <div><b>103</b><span>复杂度超阈函数</span></div>
 </div>
 
 
-<!-- 第四组：质量。定量验收、简化、审核，三件事都变成默认动作。 -->
+<!-- 第四组：质量。保留量化验收。 -->
 
 ---
 layout: center
@@ -677,7 +666,7 @@ layout: default
   <div class="summary-col">
     <div class="summary-index">02</div>
     <div class="summary-title">原则</div>
-    <div class="summary-line">四组十二条，<br>每条都有证据。</div>
+    <div class="summary-line">四组十条，<br>每条都有证据。</div>
     <div class="summary-detail">从需求、系统、取舍到质量</div>
   </div>
   <div class="summary-col">

@@ -3269,3 +3269,34 @@
 .nine-grid .ux-title { margin-top: 4px; font-size: 16px; }
 .nine-grid .ux-text { font-size: 10.2px; line-height: 1.5; }
 .nine-grid .tag { font-size: 8px; }
+
+/* Fourth principle group after removing 11 and 12 */
+.single-principle .p-rows { height: 280px; }
+.single-principle .p-row { align-items: center; }
+.single-principle .p-title { font-size: 30px; }
+.single-principle .p-text { font-size: 15px; }
+.single-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.single-metrics div {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(255,255,255,.44);
+}
+.single-metrics b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 30px;
+  line-height: 1;
+  color: var(--pine);
+}
+.single-metrics span {
+  display: block;
+  margin-top: 4px;
+  font-size: 9px;
+  color: var(--ink-soft);
+}
