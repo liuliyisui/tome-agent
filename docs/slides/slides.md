@@ -440,7 +440,9 @@ class: tech-page
         <tr><td>模型</td><td>DeepSeek / OpenAI 兼容</td><td>Chat Completions</td><td>复用接口、计费预估与故障处理</td></tr>
       </tbody>
     </table>
-    <div class="tech-note">版本与理由同步写在 README「技术选型」；依赖见 requirements.txt 与 pyproject.toml。</div>
+    <div class="agensi-shot">
+      <img src="/agensi-email.jpg" alt="Agensi 邀请邮件">
+    </div>
   </div>
   <div class="repo-mini">
     <div class="tag">仓库地址</div>
@@ -450,20 +452,6 @@ class: tech-page
     <div class="small">提交分布见 Insights → Pulse；看板与路线图在 docs/mgmt/。</div>
   </div>
 </div>
-
-<div class="tech-bottom">
-  <div class="tech-principles">
-    <div><b>够用</b><span>单机与单服务优先，不引入 ASGI。</span></div>
-    <div><b>可验证</b><span>版本写进 README，依赖锁进 pyproject。</span></div>
-    <div><b>不过重</b><span>无前端构建链，图源与代码同仓。</span></div>
-  </div>
-  <div class="agensi-card">
-    <img src="/agensi-email.jpg" alt="Agensi 邀请邮件">
-    <span class="agensi-tag">Agensi 邀约 · 2026.11.17</span>
-  </div>
-</div>
-
-<div class="bottom-note">来源：README「技术选型」 · code/backend/pyproject.toml · github.com/liuliyisui/tome-agent · 右下：Agensi 邮件，邀请把工作流打包为 Skill 上架</div>
 
 ---
 layout: default
