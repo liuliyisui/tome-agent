@@ -3302,3 +3302,30 @@
   font-size: 9px;
   color: var(--ink-soft);
 }
+
+/* Principle summary table */
+.principle-summary-lede {
+  margin: 4px 0 12px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+.principle-summary-lede b { color: var(--pine); }
+.principle-summary {
+  width: 100%;
+  table-layout: fixed;
+  font-size: 13.2px;
+}
+.principle-summary th:first-child { width: 10%; }
+.principle-summary th:nth-child(2) { width: 28%; }
+.principle-summary th:nth-child(3) { width: 62%; }
+.principle-summary td {
+  padding: 16px 12px;
+  line-height: 1.65;
+  vertical-align: top;
+}
+.principle-summary td:first-child {
+  font-family: var(--serif);
+  font-size: 17px;
+  color: var(--pine);
+}

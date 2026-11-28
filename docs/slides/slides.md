@@ -168,119 +168,37 @@ class: section
   <div class="section-body">
     <div class="kicker light">Design principles</div>
     <h1>设计原则</h1>
-    <p>四组，六条。<br>每条原则都要落到一个动作、一份证据。</p>
+    <p>四组：方向、系统、取舍、质量。<br>每组原则都要落到一个动作、一份证据。</p>
   </div>
 </div>
 
 <div class="section-foot">Tome Agent · 产品设计 / 设计原则 / 产品实现</div>
 
-<!-- 第二部分：六条原则要能回到仓库里的决策。 -->
+<!-- 第二部分：四组原则要能回到仓库里的决策。 -->
 
 ---
 layout: default
-class: principle-page
 ---
 
-<div class="principle-head">
-  <div>
-    <div class="kicker">原则组 I–II · 方向与系统</div>
-  </div>
-</div>
+<div class="kicker">设计原则 / 四组</div>
 
 <div class="rule"></div>
 
-<div class="p-rows">
-  <div class="p-row">
-    <div class="p-no">01</div>
-    <div class="p-body">
-      <div class="p-title">需求定方向</div>
-      <div class="p-text">先把问题定义、功能规格、非功能约束和用户故事写成文档，再决定做什么、不做什么。</div>
-    </div>
-    <div class="p-ev"><span>证据</span><code>docs/requirements/</code><em>problem_definition · functional_spec · user_stories</em></div>
-  </div>
+<p class="principle-summary-lede">我们的设计原则可以归纳为四组：<b>方向、系统、取舍、质量</b>。</p>
 
-  <div class="p-row">
-    <div class="p-no">02</div>
-    <div class="p-body">
-      <div class="p-title">信息校准方向</div>
-      <div class="p-text">用真实仓库状态、测试记录和框架文档修正判断。</div>
-    </div>
-    <div class="p-ev"><span>证据</span><code>docs/algorithm/architecture.md</code><em>能力边界与备选方案对比</em></div>
-  </div>
+<table class="compare principle-summary">
+  <thead>
+    <tr><th>分组</th><th>核心原则</th><th>项目中的体现</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>方向</td><td>从需求出发，用实际信息校准方案</td><td>围绕长篇创作中的失忆、矛盾和中断问题确定功能，用代码与测试记录核对实际能力</td></tr>
+    <tr><td>系统</td><td>整体设计，逐步优化</td><td>将人物、物品、时间和事件作为关联状态处理，结合三层记忆维护跨章信息，再逐步改进速度和文风</td></tr>
+    <tr><td>取舍</td><td>复用已有能力，控制成本和开发范围</td><td>保留已有领域逻辑，使用 LangGraph 组织流程，优先完成可运行、可恢复的核心创作流程</td></tr>
+    <tr><td>质量</td><td>用证据验收，保持实现简洁</td><td>通过 Ruff、自动化测试、代码检查和实际演示验证功能，并记录缺陷与修改结果</td></tr>
+  </tbody>
+</table>
 
-  <div class="p-row">
-    <div class="p-no">04</div>
-    <div class="p-body">
-      <div class="p-title">把作品当系统设计</div>
-      <div class="p-text">人物、物品、时间、事件分别建模；状态变化带版本。创新落在事件先行、三层记忆和可恢复提交上，围绕作者能感知的问题持续迭代。</div>
-    </div>
-    <div class="p-ev"><span>证据</span><code>tome_writer/memory_system/</code><em>tiered_memory · LANGGRAPH_MIGRATION.md</em></div>
-  </div>
-</div>
-
-<!-- 第一、二组合并：方向与系统。 -->
-
----
-layout: default
-class: principle-page
----
-
-<div class="principle-head">
-  <div>
-    <div class="kicker">原则组 III–IV · 取舍与质量</div>
-  </div>
-</div>
-
-<div class="rule"></div>
-
-<div class="p-rows">
-  <div class="p-row">
-    <div class="p-no">07</div>
-    <div class="p-body">
-      <div class="p-title">能继承的不重造</div>
-      <div class="p-text">复用已接入的模型适配、事件推演与记忆函数；LangGraph 只替换编排层，控制迁移范围。</div>
-    </div>
-    <div class="p-ev"><span>证据</span><code>memory_runtime/writing_flow/</code><em>graph_runtime.py · LANGGRAPH_MIGRATION.md</em></div>
-  </div>
-
-  <div class="p-row">
-    <div class="p-no">08</div>
-    <div class="p-body">
-      <div class="p-title">算清效益</div>
-      <div class="p-text">不引入 ASGI 框架、前端构建链和向量库；把省下的复杂度放在状态一致性与恢复上。</div>
-    </div>
-    <div class="p-ev"><span>证据</span><code>README.md</code><em>「技术选型」与选型理由</em></div>
-  </div>
-
-  <div class="p-row">
-    <div class="p-no">10</div>
-    <div class="p-body">
-      <div class="p-title">量化验收</div>
-      <div class="p-text">先保证一致性，再补恢复，最后谈速度和文风。测试数、覆盖率、失败率和 token 用量都有记录。</div>
-    </div>
-    <div class="p-ev"><span>证据</span><code>.github/workflows/tests.yml</code><em>tests/TEST_REPORT.md</em></div>
-  </div>
-</div>
-
-<!-- 第三、四组合并：取舍与质量。 -->
-
----
-layout: center
-class: section
----
-
-<div class="section-grid">
-  <div class="section-no">03</div>
-  <div class="section-body">
-    <div class="kicker light">Product implementation</div>
-    <h1>产品实现</h1>
-    <p>从体验与选型，到概要设计、架构与质量。<br>把设计原则变成代码、测试和部署记录。</p>
-  </div>
-</div>
-
-<div class="section-foot">Tome Agent · 产品设计 / 设计原则 / 产品实现</div>
-
-<!-- 第三部分：每个设计决定都能在仓库里找到落点。 -->
+<div class="bottom-note">来源：docs/requirements/ · docs/software/architecture.md · README「技术选型」</div>
 
 ---
 layout: default
@@ -598,7 +516,7 @@ layout: default
   <div class="summary-col">
     <div class="summary-index">02</div>
     <div class="summary-title">原则</div>
-    <div class="summary-line">四组六条，<br>每条都有证据。</div>
+    <div class="summary-line">四组原则，<br>每组都有证据。</div>
     <div class="summary-detail">从需求、系统、取舍到质量</div>
   </div>
   <div class="summary-col">
