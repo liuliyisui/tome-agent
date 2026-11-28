@@ -1226,7 +1226,7 @@ layout: default
     <div class="quality-row"><b>Ruff format</b><span>191 个文件符合 PEP8，本地与 CI 跑同一条命令</span></div>
     <div class="quality-row"><b>Ruff check</b><span>0 违规；规则集中在 pyproject.toml，例外要写明理由</span></div>
     <div class="quality-row"><b>Pylint</b><span>9.62 / 10 · 0 error · 0 fatal（pylint 4.1.4）</span></div>
-    <div class="quality-row"><b>McCabe</b><span>复杂度阈值 10；14 个超阈函数列入重构清单</span></div>
+    <div class="quality-row"><b>McCabe</b><span>复杂度阈值 10；103 个函数超阈，按文件分批重构</span></div>
   </div>
   <div>
     <div class="subhead">运行时：失败也要留下证据</div>
@@ -1247,7 +1247,7 @@ layout: default
 
 <div class="quality-note">复现：<code>ruff check .</code> · <code>ruff format --check .</code> · <code>pylint --rcfile code/backend/pyproject.toml</code>。Pylint 的 30 处导入误报来自 memory_runtime 动态扩展 <code>__path__</code>，已单独排除。</div>
 
-<div class="bottom-note">来源：code/backend/pyproject.toml · .github/workflows/tests.yml · Ruff 0.17.4 / Pylint 4.1.4 本地实测</div>
+<div class="bottom-note">来源：code/backend/pyproject.toml · docs/software/quality/QUALITY_REPORT.md · Ruff 0.17.4 / Pylint 4.1.4 本地实测</div>
 
 <!-- 质量工具只列仓库里真实启用的检查，不把“打算上”的工具写成“已经用”。 -->
 
