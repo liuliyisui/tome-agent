@@ -431,7 +431,6 @@ class: principle-page
 ---
 
 <div class="principle-head">
-  <div class="principle-big">01</div>
   <div>
     <div class="kicker">原则组 I · 方向</div>
   </div>
@@ -478,7 +477,6 @@ class: principle-page
 ---
 
 <div class="principle-head">
-  <div class="principle-big">02</div>
   <div>
     <div class="kicker">原则组 II · 系统</div>
   </div>
@@ -525,7 +523,6 @@ class: principle-page
 ---
 
 <div class="principle-head">
-  <div class="principle-big">03</div>
   <div>
     <div class="kicker">原则组 III · 取舍</div>
   </div>
@@ -572,7 +569,6 @@ class: principle-page
 ---
 
 <div class="principle-head">
-  <div class="principle-big">04</div>
   <div>
     <div class="kicker">原则组 IV · 质量</div>
   </div>
