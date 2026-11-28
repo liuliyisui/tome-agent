@@ -168,13 +168,13 @@ class: section
   <div class="section-body">
     <div class="kicker light">Design principles</div>
     <h1>设计原则</h1>
-    <p>四组，十条。<br>每条原则都要落到一个动作、一份证据。</p>
+    <p>四组，六条。<br>每条原则都要落到一个动作、一份证据。</p>
   </div>
 </div>
 
 <div class="section-foot">Tome Agent · 产品设计 / 设计原则 / 产品实现</div>
 
-<!-- 第二部分：十条原则要能回到仓库里的决策。 -->
+<!-- 第二部分：六条原则要能回到仓库里的决策。 -->
 
 ---
 layout: default
@@ -183,7 +183,7 @@ class: principle-page
 
 <div class="principle-head">
   <div>
-    <div class="kicker">原则组 I · 方向</div>
+    <div class="kicker">原则组 I–II · 方向与系统</div>
   </div>
 </div>
 
@@ -209,60 +209,16 @@ class: principle-page
   </div>
 
   <div class="p-row">
-    <div class="p-no">03</div>
-    <div class="p-body">
-      <div class="p-title">创新才有落脚点</div>
-      <div class="p-text">把创新放在“事件先行 + 三层记忆 + 可恢复提交”，围绕作者可感知的问题持续迭代。</div>
-    </div>
-    <div class="p-ev"><span>证据</span><code>docs/software/LANGGRAPH_MIGRATION.md</code><em>graph_runtime.py</em></div>
-  </div>
-</div>
-
-<!-- 第一组：方向。每条原则后面都跟证据，不空喊。 -->
-
----
-layout: default
-class: principle-page
----
-
-<div class="principle-head">
-  <div>
-    <div class="kicker">原则组 II · 系统</div>
-  </div>
-</div>
-
-<div class="rule"></div>
-
-<div class="p-rows">
-  <div class="p-row">
     <div class="p-no">04</div>
     <div class="p-body">
       <div class="p-title">把作品当系统设计</div>
-      <div class="p-text">人物、物品、时间、事件分别建模；状态变化带版本，正文只是状态的一次投影。</div>
+      <div class="p-text">人物、物品、时间、事件分别建模；状态变化带版本。创新落在事件先行、三层记忆和可恢复提交上，围绕作者能感知的问题持续迭代。</div>
     </div>
-    <div class="p-ev"><span>证据</span><code>tome_writer/memory_system/</code><em>tiered_memory · events/continuity</em></div>
-  </div>
-
-  <div class="p-row">
-    <div class="p-no">05</div>
-    <div class="p-body">
-      <div class="p-title">先发散后收敛</div>
-      <div class="p-text">全量上下文、自然语言摘要、向量检索、事件状态四种方案都评估，再按一致性、成本和可恢复性收敛。</div>
-    </div>
-    <div class="p-ev"><span>证据</span><code>docs/algorithm/architecture.md</code><em>备选策略对比表</em></div>
-  </div>
-
-  <div class="p-row">
-    <div class="p-no">06</div>
-    <div class="p-body">
-      <div class="p-title">逐项优化</div>
-      <div class="p-text">先保证跨章一致性，再补恢复能力，最后才谈速度与文风；一次只改一个变量，避免“越优化越乱”。</div>
-    </div>
-    <div class="p-ev"><span>证据</span><code>docs/mgmt/ROADMAP.md</code><em>docs/retrospection/README.md</em></div>
+    <div class="p-ev"><span>证据</span><code>tome_writer/memory_system/</code><em>tiered_memory · LANGGRAPH_MIGRATION.md</em></div>
   </div>
 </div>
 
-<!-- 第二组：系统。先建模，再比较方案，最后按顺序优化。 -->
+<!-- 第一、二组合并：方向与系统。 -->
 
 ---
 layout: default
@@ -271,7 +227,7 @@ class: principle-page
 
 <div class="principle-head">
   <div>
-    <div class="kicker">原则组 III · 取舍</div>
+    <div class="kicker">原则组 III–IV · 取舍与质量</div>
   </div>
 </div>
 
@@ -297,50 +253,16 @@ class: principle-page
   </div>
 
   <div class="p-row">
-    <div class="p-no">09</div>
-    <div class="p-body">
-      <div class="p-title">抢住时间窗口</div>
-      <div class="p-text">先做出可演示、可验证的完整闭环：本地 Web + 文件存储；PostgreSQL 与 hosted 模式按需增强。</div>
-    </div>
-    <div class="p-ev"><span>证据</span><code>docs/software/DEPLOY.md</code><em>WINDOWS_PORTABLE.md · LINUX_HOSTED.md</em></div>
-  </div>
-</div>
-
-<!-- 第三组：取舍。把工程资源花在确定性上。 -->
-
----
-layout: default
-class: principle-page single-principle
----
-
-<div class="principle-head">
-  <div>
-    <div class="kicker">原则组 IV · 质量</div>
-  </div>
-</div>
-
-<div class="rule"></div>
-
-<div class="p-rows">
-  <div class="p-row">
     <div class="p-no">10</div>
     <div class="p-body">
       <div class="p-title">量化验收</div>
-      <div class="p-text">单元测试、集成测试、PostgreSQL 17/18 矩阵、hosted 回归；测试数、覆盖率、失败率和 token 用量都有记录。</div>
+      <div class="p-text">先保证一致性，再补恢复，最后谈速度和文风。测试数、覆盖率、失败率和 token 用量都有记录。</div>
     </div>
     <div class="p-ev"><span>证据</span><code>.github/workflows/tests.yml</code><em>tests/TEST_REPORT.md</em></div>
   </div>
 </div>
 
-<div class="single-metrics">
-  <div><b>256</b><span>测试通过</span></div>
-  <div><b>0</b><span>失败 / 跳过</span></div>
-  <div><b>67.52%</b><span>核心 8 模块覆盖率</span></div>
-  <div><b>103</b><span>复杂度超阈函数</span></div>
-</div>
-
-
-<!-- 第四组：质量。保留量化验收。 -->
+<!-- 第三、四组合并：取舍与质量。 -->
 
 ---
 layout: center
@@ -666,7 +588,7 @@ layout: default
   <div class="summary-col">
     <div class="summary-index">02</div>
     <div class="summary-title">原则</div>
-    <div class="summary-line">四组十条，<br>每条都有证据。</div>
+    <div class="summary-line">四组六条，<br>每条都有证据。</div>
     <div class="summary-detail">从需求、系统、取舍到质量</div>
   </div>
   <div class="summary-col">
