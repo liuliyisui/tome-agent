@@ -594,8 +594,6 @@ layout: default
   </tbody>
 </table>
 
-<div class="agent-foot">五个要素各管一段：提示词定角色，模型产内容，工具做校验，知识库存事实，工作流定顺序。</div>
-
 <div class="bottom-note">来源：docs/software/LANGGRAPH_MIGRATION.md · docs/software/architecture.md · code/core_engine/</div>
 
 ---
@@ -710,8 +708,6 @@ layout: default
     <div class="demo-text">复查后导出 Markdown，回到书架，数据仍在。</div>
   </div>
 </div>
-
-<div class="demo-note">演示路径固定，不切窗口；生成慢时直接看检查点和已保存正文。</div>
 
 <div class="bottom-note">来源：README「核心功能」 · docs/software/USER_GUIDE.md · tests/TEST_REPORT.md</div>
 
