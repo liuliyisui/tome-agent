@@ -412,8 +412,6 @@ layout: default
   </div>
 </div>
 
-<div class="ux-foot">六个因素围绕同一个目标：<b>让作者把注意力留在故事上。</b></div>
-
 <div class="bottom-note">来源：README「核心功能」 · docs/software/USER_GUIDE.md · code/backend/inf_backend/web.py</div>
 
 <!-- 3.1 用户体验：可用、连续、成本、容错、可控、安全。 -->
