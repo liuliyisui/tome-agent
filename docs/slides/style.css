@@ -3205,8 +3205,8 @@
 }
 
 /* Principle pages: larger titles, no footer */
-.p-rows { min-height: 440px; justify-content: space-between; }
-.p-row { padding: 14px 0 13px; }
+.p-rows { height: 440px; min-height: 0; justify-content: flex-start; }
+.p-row { flex: 1; padding: 14px 0 13px; }
 .p-title { font-size: 24px; line-height: 1.25; }
 .p-text { margin-top: 8px; font-size: 14px; line-height: 1.6; }
 .p-no { font-size: 10px; }
