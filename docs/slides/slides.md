@@ -193,20 +193,15 @@ class: principle-page
   <div class="p-row">
     <div class="p-no">01</div>
     <div class="p-body">
-      <div class="p-title">需求定方向</div>
-      <div class="p-text">先把问题定义、功能规格、非功能约束和用户故事写成文档，再决定做什么、不做什么。</div>
+      <div class="p-title">需求确定，信息校准</div>
+      <div class="p-text">问题定义、功能规格、非功能约束和用户故事写成文档，决定做什么。</div>
+      <div class="p-text">通过真实仓库状态、测试记录和框架文档修正判断。</div>
     </div>
     <div class="p-ev"><span>证据</span><code>docs/requirements/</code><em>problem_definition · functional_spec · user_stories</em></div>
-  </div>
-
-  <div class="p-row">
-    <div class="p-no">02</div>
-    <div class="p-body">
-      <div class="p-title">信息校准方向</div>
-      <div class="p-text">用真实仓库状态、测试记录和框架文档修正判断。</div>
-    </div>
     <div class="p-ev"><span>证据</span><code>docs/algorithm/architecture.md</code><em>能力边界与备选方案对比</em></div>
   </div>
+
+  
 
   <div class="p-row">
     <div class="p-no">03</div>
