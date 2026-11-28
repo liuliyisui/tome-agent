@@ -196,12 +196,12 @@ class: principle-page
     <div class="p-ev"><span>证据</span><code>docs/requirements/</code><em>docs/algorithm/architecture.md</em></div>
   </div>
   <div class="p-row">
-    <div class="p-no">03</div>
+    <div class="p-no">02</div>
     <div class="p-body"><div class="p-title">创新才有落脚点</div><div class="p-text">创新落在“事件先行 + 三层记忆 + 可恢复提交”，围绕作者能感知的问题迭代。</div></div>
     <div class="p-ev"><span>证据</span><code>docs/software/LANGGRAPH_MIGRATION.md</code><em>graph_runtime.py</em></div>
   </div>
   <div class="p-row">
-    <div class="p-no">04</div>
+    <div class="p-no">03</div>
     <div class="p-body"><div class="p-title">把作品当系统设计</div><div class="p-text">人物、物品、时间、事件分别建模；状态变化带版本，正文是状态的一次投影。</div></div>
     <div class="p-ev"><span>证据</span><code>code/core_engine/memory_runtime/</code><em>tiered_memory · events/continuity</em></div>
   </div>
@@ -225,7 +225,7 @@ layout: default
     <div class="deep-ev">docs/requirements/ · problem_definition · functional_spec · user_stories</div>
   </div>
   <div class="deep-card">
-    <div class="deep-head"><span class="deep-no">03</span><span class="tag">创新</span></div>
+    <div class="deep-head"><span class="deep-no">02</span><span class="tag">创新</span></div>
     <div class="deep-title">创新才有落脚点</div>
     <div class="deep-row"><b>切口</b><span>创新放在跨章状态；模型文笔交给模型。</span></div>
     <div class="deep-row"><b>机制</b><span>事件先行、三层记忆、可恢复提交；LangGraph 只换编排层，领域逻辑复用。</span></div>
@@ -253,17 +253,17 @@ class: principle-page
 
 <div class="p-rows">
   <div class="p-row">
-    <div class="p-no">07</div>
+    <div class="p-no">04</div>
     <div class="p-body"><div class="p-title">能继承的不重造</div><div class="p-text">复用已接入的模型适配、事件推演与记忆函数；LangGraph 只替换编排层，控制迁移范围。</div></div>
     <div class="p-ev"><span>证据</span><code>code/core_engine/memory_runtime/writing_flow/</code><em>graph_runtime.py · LANGGRAPH_MIGRATION.md</em></div>
   </div>
   <div class="p-row">
-    <div class="p-no">08</div>
+    <div class="p-no">05</div>
     <div class="p-body"><div class="p-title">算清效益</div><div class="p-text">不引入 ASGI、前端构建链和向量库；标准库 HTTP 与 Vue runtime-only，把省下的复杂度放在状态一致性和恢复上。</div></div>
     <div class="p-ev"><span>证据</span><code>README.md</code><em>「技术选型」与选型理由</em></div>
   </div>
   <div class="p-row">
-    <div class="p-no">10</div>
+    <div class="p-no">06</div>
     <div class="p-body"><div class="p-title">量化验收</div><div class="p-text">先保证一致性，再补恢复，最后谈速度和文风；Ruff、测试与 CI 同一套标准，测试数、覆盖率、失败率和 token 用量都有记录。</div></div>
     <div class="p-ev"><span>证据</span><code>.github/workflows/tests.yml</code><em>tests/TEST_REPORT.md · CODE_QUALITY_FIXES.md</em></div>
   </div>
