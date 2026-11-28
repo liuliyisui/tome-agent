@@ -457,7 +457,12 @@ class: tech-page
   <div><b>不过重</b><span>无前端构建链，图源与代码同仓。</span></div>
 </div>
 
-<div class="bottom-note">来源：README「技术选型」 · code/backend/pyproject.toml · github.com/liuliyisui/tome-agent</div>
+<div class="agensi-strip">
+  <img src="/agensi-email.jpg" alt="Agensi 邀请邮件">
+  <div class="agensi-cap"><b>外部邀请 · 2026.11.17</b>Agensi 希望把工作流打包成 Skill 上架其技能市场。</div>
+</div>
+
+<div class="bottom-note">来源：README「技术选型」 · code/backend/pyproject.toml · github.com/liuliyisui/tome-agent · Agensi 邀请邮件（2026-11-17）</div>
 
 ---
 layout: default
@@ -585,7 +590,30 @@ class: agent-page
 layout: default
 ---
 
-<div class="kicker">3.5.3 智能体设计 · 工作流</div>
+<div class="kicker">3.5.4 智能体要素</div>
+
+<div class="rule"></div>
+
+<table class="compare element-table">
+  <thead><tr><th>要素</th><th>是什么</th><th>Tome Agent 中如何体现</th></tr></thead>
+  <tbody>
+    <tr><td>Prompt 提示词</td><td>告诉模型扮演什么角色、完成什么任务、遵守什么要求</td><td>我们为规划、写作、记忆处理等角色设置不同提示词。例如，写作角色需要依据已确定的事件生成正文；如果需要改变关键事件，可以提出修订请求。</td></tr>
+    <tr><td>LLM 大语言模型</td><td>负责理解要求、规划内容和生成文本</td><td>系统通过模型接口接入 DeepSeek 等兼容服务，由大模型参与章节规划、正文生成、记忆整理和故事收束判断。</td></tr>
+    <tr><td>Tools 工具</td><td>帮助系统完成检索、计算、校验或数据操作的程序能力</td><td>我们有事件状态校验、记忆选择、章节保存、成本估算等内部程序功能。例如程序检查物品状态，再把结果提供给后续流程。</td></tr>
+    <tr><td>Knowledge Base 知识库</td><td>保存和提供智能体完成任务所需的知识</td><td>我们主要使用作品自己的故事记忆：人物、事件、物品、历史信息及来源正文，分为工作、近期和长期三层，供后续写作选择使用。</td></tr>
+    <tr><td>Workflow 工作流</td><td>决定各个角色和步骤如何衔接</td><td>我们使用 LangGraph 组织章节规划、正文写作、保存和记忆处理；需要修订事件时，可以有限次返回规划。故事收束由相关控制器协调。</td></tr>
+  </tbody>
+</table>
+
+<div class="agent-foot">五个要素各管一段：提示词定角色，模型产内容，工具做校验，知识库存事实，工作流定顺序。</div>
+
+<div class="bottom-note">来源：docs/software/LANGGRAPH_MIGRATION.md · docs/software/architecture.md · code/core_engine/</div>
+
+---
+layout: default
+---
+
+<div class="kicker">3.5.4 智能体要素 · 工作流</div>
 
 <div class="workflow-figure"><img src="/story-workflow.png" alt="Tome Agent 故事创作工作流"></div>
 
