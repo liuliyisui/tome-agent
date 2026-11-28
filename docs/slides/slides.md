@@ -234,8 +234,6 @@ layout: default
   </div>
 </div>
 
-<div class="deep-foot">需求决定做什么，创新决定在哪里做得不一样。</div>
-
 <div class="bottom-note">来源：docs/requirements/ · docs/software/LANGGRAPH_MIGRATION.md · code/core_engine/memory_runtime/</div>
 
 ---
