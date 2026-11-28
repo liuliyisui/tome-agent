@@ -91,7 +91,7 @@ README.md                        项目说明
 - 部署：GitHub Actions 工作流 [`.github/workflows/slides-pages.yml`](.github/workflows/slides-pages.yml)；首次使用需在仓库 **Settings → Pages → Source** 选择 **GitHub Actions**
 - PDF：Actions 中手动运行 **Slides / Export PDF**，在 Artifacts 下载
 
-幻灯片包含 22 页，覆盖产品设计、十二条设计原则、用户体验与技术选型、仓库与提交历史、全生命周期问题、软件概要设计与工具、架构与 LangGraph 编排、三层记忆、数据接口和质量证据；架构图与状态图使用 Mermaid 绘制。详细说明见 [`docs/slides/README.md`](docs/slides/README.md)。
+幻灯片包含 23 页，覆盖产品设计、十二条设计原则、用户体验与技术选型、仓库与提交历史、全生命周期问题、软件概要设计与工具、架构与 LangGraph 编排、三层记忆、数据接口和质量证据；架构图与状态图使用 Mermaid 绘制。详细说明见 [`docs/slides/README.md`](docs/slides/README.md)。
 
 ## 快速验证（Windows）
 

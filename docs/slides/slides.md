@@ -490,19 +490,16 @@ class: design-page
 
 <div class="rule"></div>
 
-<div class="ux-grid design-grid">
+<div class="nine-grid design-nine">
   <div class="ux-card"><div class="ux-top"><span class="ux-no">01</span><span class="tag">架构</span></div><div class="ux-title">四层边界</div><div class="ux-text">界面、服务、引擎、存储；模型旁路调用。</div></div>
   <div class="ux-card"><div class="ux-top"><span class="ux-no">02</span><span class="tag">部署</span></div><div class="ux-title">单机三段</div><div class="ux-text">Nginx、Python 服务、持久化目录。</div></div>
   <div class="ux-card"><div class="ux-top"><span class="ux-no">03</span><span class="tag">智能体</span></div><div class="ux-title">状态图</div><div class="ux-text">规划、写作、提交、记忆、审核。</div></div>
   <div class="ux-card"><div class="ux-top"><span class="ux-no">04</span><span class="tag">数据</span></div><div class="ux-title">作品聚合</div><div class="ux-text">章节、版本、任务、用量按 book_id 归属。</div></div>
   <div class="ux-card"><div class="ux-top"><span class="ux-no">05</span><span class="tag">接口</span></div><div class="ux-title">真实路由</div><div class="ux-text">生成、编辑、复查、任务查询、导出。</div></div>
   <div class="ux-card"><div class="ux-top"><span class="ux-no">06</span><span class="tag">界面</span></div><div class="ux-title">Vue + 原生</div><div class="ux-text">书架、文风、生成、编辑、导出。</div></div>
-</div>
-
-<div class="tool-cards">
-  <div><b>Mermaid</b><span>图源随代码，架构图 / 状态图 / E-R 图。</span></div>
-  <div><b>Slidev</b><span>Markdown 讲稿，Mermaid 直接渲染。</span></div>
-  <div><b>VS Code + Git</b><span>编辑、检查、提交在同一仓库。</span></div>
+  <div class="ux-card"><div class="ux-top"><span class="ux-no">07</span><span class="tag">画图</span></div><div class="ux-title">Mermaid</div><div class="ux-text">图源随代码，架构图 / 状态图 / E-R 图。</div></div>
+  <div class="ux-card"><div class="ux-top"><span class="ux-no">08</span><span class="tag">讲稿</span></div><div class="ux-title">Slidev</div><div class="ux-text">Markdown 讲稿，Mermaid 直接渲染。</div></div>
+  <div class="ux-card"><div class="ux-top"><span class="ux-no">09</span><span class="tag">工程</span></div><div class="ux-title">VS Code + Git</div><div class="ux-text">编辑、检查、提交在同一仓库。</div></div>
 </div>
 
 <div class="bottom-note">来源：docs/software/architecture.md · docs/algorithm/LANGGRAPH.mmd · docs/slides/slides.md</div>

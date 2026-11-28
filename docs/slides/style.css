@@ -3252,3 +3252,20 @@
 .agent-page .memory-mini div, .agent-page .guard-mini div { font-size: 9.8px; padding: 6px 0; }
 .agent-page .agent-evidence { font-size: 8.5px; }
 .agent-page .agent-foot { font-size: 11px; }
+
+/* 3.5 design page: uniform 3x3 grid */
+.nine-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  height: 430px;
+}
+.nine-grid .ux-card {
+  min-height: 0;
+  height: 100%;
+  padding: 12px 13px;
+}
+.nine-grid .ux-title { margin-top: 4px; font-size: 16px; }
+.nine-grid .ux-text { font-size: 10.2px; line-height: 1.5; }
+.nine-grid .tag { font-size: 8px; }
