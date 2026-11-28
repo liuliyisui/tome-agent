@@ -218,8 +218,6 @@ class: principle-page
   </div>
 </div>
 
-<div class="p-foot">判断标准：这个决定，能不能在仓库里找到对应文件与测试？</div>
-
 <!-- 第一组：方向。每条原则后面都跟证据，不空喊。 -->
 
 ---
@@ -263,8 +261,6 @@ class: principle-page
     <div class="p-ev"><span>证据</span><code>docs/mgmt/ROADMAP.md</code><em>docs/retrospection/README.md</em></div>
   </div>
 </div>
-
-<div class="p-foot">系统视角：先定义状态，再定义操作；先保证正确，再追求好看。</div>
 
 <!-- 第二组：系统。先建模，再比较方案，最后按顺序优化。 -->
 
@@ -310,8 +306,6 @@ class: principle-page
   </div>
 </div>
 
-<div class="p-foot">取舍标准：新增的每一层，都要能回答“它替作者解决了什么”。</div>
-
 <!-- 第三组：取舍。把工程资源花在确定性上。 -->
 
 ---
@@ -355,8 +349,6 @@ class: principle-page
     <div class="p-ev"><span>证据</span><code>docs/software/CODE_QUALITY_FIXES.md</code><em>code_review.md · .pre-commit-config.yaml</em></div>
   </div>
 </div>
-
-<div class="p-foot">质量是每次提交都在走的默认路径。</div>
 
 
 <!-- 第四组：质量。定量验收、简化、审核，三件事都变成默认动作。 -->
