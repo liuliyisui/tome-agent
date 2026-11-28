@@ -437,7 +437,7 @@ class: tech-page
         <tr><td>前端</td><td>Vue runtime-only + 原生 JS</td><td>3.5.44</td><td>无前端构建链，部署轻</td></tr>
         <tr><td>服务</td><td>Python http.server</td><td>随 3.11</td><td>单机与单服务够用</td></tr>
         <tr><td>数据</td><td>PostgreSQL + Psycopg</td><td>PG 17 · 3.3.3</td><td>可选持久化，未配置降级文件</td></tr>
-        <tr><td>模型</td><td>DeepSeek / OpenAI 兼容</td><td>Chat Completions</td><td>复用接口、计费预估与故障处理</td></tr>
+        <tr><td>模型</td><td>大部分 AI 大模型</td><td>Chat Completions</td><td>复用接口、计费预估与故障处理</td></tr>
       </tbody>
     </table>
     <div class="agensi-shot">
