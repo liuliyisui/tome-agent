@@ -513,38 +513,6 @@ flowchart LR
 
 ---
 layout: default
-class: agent-page
----
-
-<div class="kicker">3.5.3 智能体设计</div>
-
-<div class="rule"></div>
-
-<div class="agent-merged">
-  <div class="agent-col">
-    <div class="tag">编排</div>
-    <div class="flow-mini"><span>规划</span><i>→</i><span>写作</span><i>→</i><span>提交</span><i>→</i><span>记忆</span><i>→</i><span>审核</span></div>
-    <p>事件先行：先推演人物、物品和时间，再把状态写进正文。写作可条件边回到规划，最多一次。</p>
-    <div class="agent-evidence">源：docs/algorithm/LANGGRAPH.mmd</div>
-  </div>
-  <div class="agent-col">
-    <div class="tag">记忆</div>
-    <div class="memory-mini"><div><b>工作</b><span>当前章</span></div><div><b>近期</b><span>最近章节</span></div><div><b>长期</b><span>全书事实</span></div></div>
-    <p>每条长期事实带版本、变更理由和正文出处；修改只影响该影响的地方。</p>
-    <div class="agent-evidence">源：code/core_engine/memory_runtime/</div>
-  </div>
-  <div class="agent-col">
-    <div class="tag">护栏与工具</div>
-    <div class="guard-mini"><div><b>结构</b><span>JSON 校验</span></div><div><b>来源</b><span>事实可追溯</span></div><div><b>失败</b><span>降级保正文</span></div><div><b>知识</b><span>Skill 文本注入</span></div></div>
-    <p>模型接口、文件/数据库读写由服务内部完成；当前未引入向量库或知识图谱。</p>
-    <div class="agent-evidence">源：docs/software/architecture.md</div>
-  </div>
-</div>
-
-<div class="bottom-note">来源：docs/software/LANGGRAPH_MIGRATION.md · code/core_engine/memory_runtime/ · code/core_engine/writing_skills/</div>
-
----
-layout: default
 ---
 
 <div class="kicker">3.5.3 智能体设计 · 五个组成</div>
