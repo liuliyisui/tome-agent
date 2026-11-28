@@ -530,13 +530,6 @@ flowchart LR
   <span class="legend-note">模型服务不直接访问存储</span>
 </div>
 
-<div class="arch-rules">
-  <div><b>界面</b><span>只表达意图，不拼提示词</span></div>
-  <div><b>服务</b><span>校验、路由与鉴权</span></div>
-  <div><b>引擎</b><span>编排、记忆与审核</span></div>
-  <div><b>存储</b><span>文件 / PostgreSQL 可替换</span></div>
-</div>
-
 <div class="arch-foot"><span>请求路径</span> 界面动作 → 服务层校验 → 引擎编排 → 检查点 / 数据库提交 → 结果回传。</div>
 
 <div class="bottom-note">来源：docs/software/architecture.md · code/frontend/ · code/backend/inf_backend/ · code/core_engine/</div>
