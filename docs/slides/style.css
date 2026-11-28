@@ -3100,3 +3100,55 @@
   font-size: 9px;
   color: var(--ink-soft);
 }
+
+/* Large-room readability pass */
+.kicker { font-size: 12.5px; letter-spacing: 0.12em; }
+.problem-quote { font-size: 30px; }
+.problem-copy { font-size: 12px; }
+.problem-facts b { font-size: 32px; }
+.problem-facts span { font-size: 9px; }
+.symptom-title { font-size: 17px; }
+.symptom-text { font-size: 10.5px; line-height: 1.55; }
+.root-text { font-size: 20px; }
+.root-note { font-size: 9.5px; }
+.mission-card.compact .mission-text { font-size: 22px; }
+.mission-card.compact .mission-foot { font-size: 9.5px; }
+.slogan-card.compact .slogan { font-size: 25px; }
+.persona.compact .persona-title { font-size: 16px; }
+.persona.compact .persona-row { font-size: 10px; }
+.story-role { font-size: 10px; }
+.compact-stories .story-text { font-size: 10.5px; }
+.compact-stories .story-value { font-size: 10.5px; }
+.compact-compare { font-size: 9.2px; }
+.compact-compare td, .compact-compare th { padding: 5px 8px; }
+.form-strip { font-size: 9.8px; }
+.compact-tech { font-size: 9.2px; }
+.compact-tech td, .compact-tech th { padding: 7px 8px; }
+.repo-mini .repo-url { font-size: 10px; }
+.repo-mini .repo-stats b { font-size: 23px; }
+.repo-mini .repo-stats span { font-size: 8.5px; }
+.repo-mini .small { font-size: 8.2px; }
+.design-grid .ux-title { font-size: 14px; }
+.design-grid .ux-text { font-size: 9.5px; }
+.tool-strip { font-size: 9.5px; }
+.infra-row .ux-title { font-size: 14px; }
+.infra-row .ux-text { font-size: 9.5px; }
+.agent-col p { font-size: 9.8px; }
+.flow-mini span { font-size: 9px; }
+.memory-mini div, .guard-mini div { font-size: 9.5px; }
+.agent-evidence { font-size: 8px; }
+.agent-foot { font-size: 10.5px; }
+.compact-interface { font-size: 9px; }
+.compact-interface td, .compact-interface th { padding: 5px 7px; }
+.compact-stats .q-num { font-size: 32px; }
+.compact-stats .q-label { font-size: 9.5px; }
+.quality-code-grid .quality-row b { font-size: 9.8px; }
+.quality-code-grid .quality-row span { font-size: 9.8px; }
+.quality-code-grid .code-ledger b { font-size: 24px; }
+.quality-code-grid .code-ledger span { font-size: 8.5px; }
+.p-title { font-size: 16px; }
+.p-text { font-size: 12px; }
+.p-ev code { font-size: 8.5px; }
+.p-ev em { font-size: 8.5px; }
+.ux-title { font-size: 15px; }
+.ux-text { font-size: 10px; }

@@ -129,8 +129,6 @@ layout: default
   </div>
 </div>
 
-<div class="bottom-note">来源：docs/requirements/user_stories.md · docs/requirements/functional_spec.md · README「产品优势」</div>
-
 ---
 layout: default
 ---
