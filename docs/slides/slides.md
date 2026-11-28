@@ -571,8 +571,6 @@ class: agent-page
   </div>
 </div>
 
-<div class="agent-foot">编排决定顺序，记忆保证事实，护栏守住边界；三者共同支撑长篇可续写。</div>
-
 <div class="bottom-note">来源：docs/software/LANGGRAPH_MIGRATION.md · code/core_engine/memory_runtime/ · code/core_engine/writing_skills/</div>
 
 ---
