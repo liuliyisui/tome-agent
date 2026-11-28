@@ -37,6 +37,7 @@ from .settings import BACKEND_ROOT, Settings
 
 DATA = BACKEND_ROOT / "data"
 BOOKS = DATA / "inf_books"
+MAX_STORY_CONCEPT_LENGTH = 12_000
 BUILTIN_SKILLS = (
     Path(sys._MEIPASS) / "tome-core" / "writing_skills"
     if getattr(sys, "frozen", False)
@@ -408,6 +409,9 @@ def create_book(
         or not prompt.strip()
     ):
         raise ValueError("作品名称和故事构想不能为空")
+    # Match the textarea's maxlength, which counts UTF-16 code units.
+    if len(prompt.encode("utf-16-le")) // 2 > MAX_STORY_CONCEPT_LENGTH:
+        raise ValueError(f"故事构想最多可输入 {MAX_STORY_CONCEPT_LENGTH:,} 个字符")
     if type(chapters) is not int or not 1 <= chapters <= 100:
         raise ValueError("章节数必须在 1 到 100 之间")
     if type(target_units) is not int or not 500 <= target_units <= 200000:

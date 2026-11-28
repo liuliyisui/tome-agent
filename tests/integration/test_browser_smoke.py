@@ -218,6 +218,19 @@ class BrowserSmokeTests(unittest.TestCase):
         page.fill('input[name="chapters"]', "1")
         page.fill('input[name="target_units"]', "500")
 
+    def test_story_concept_displays_and_enforces_live_limit(self):
+        self.open_create_dialog()
+        prompt = self.page.get_by_role("textbox", name="故事构想", exact=True)
+        counter = self.page.locator("#create-prompt-count")
+        self.assertEqual(counter.inner_text(), "已输入 0 / 12,000 字符")
+
+        prompt.fill("主角回乡")
+        self.assertEqual(counter.inner_text(), "已输入 4 / 12,000 字符")
+
+        prompt.fill("甲" * 12_001)
+        self.assertEqual(len(prompt.input_value()), 12_000)
+        self.assertEqual(counter.inner_text(), "已输入 12,000 / 12,000 字符")
+
     def test_create_style_displays_recommendations_and_live_limits(self):
         self.open_create_dialog()
         self.page.locator("#create-dialog .create-style summary").first.click()

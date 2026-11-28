@@ -774,16 +774,20 @@
                 placeholder="为你的故事取一个名字"
                 v-model="state.createForm.title"
                 :disabled="state.busy.create" /></label
-            ><label
-              >故事构想<textarea
+            ><label>
+              <span id="create-prompt-label">故事构想</span>
+              <textarea
                 name="prompt"
                 required
                 maxlength="12000"
                 rows="5"
                 placeholder="谁是主角？故事发生在哪里？有什么冲突正等待发生？"
+                aria-labelledby="create-prompt-label"
+                aria-describedby="create-prompt-count"
                 v-model="state.createForm.prompt"
                 :disabled="state.busy.create"
               ></textarea>
+              <small id="create-prompt-count">已输入 {{fmt(state.createForm.prompt.length)}} / 12,000 字符</small>
             </label>
             <div class="form-row">
               <label

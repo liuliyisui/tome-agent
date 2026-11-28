@@ -84,6 +84,16 @@ class BookInputValidationTests(unittest.TestCase):
                     self.create(name, prompt=value)
                 self.assertFalse((self.books / name).exists())
 
+    def test_story_concept_length_matches_the_browser_limit(self):
+        # The book emoji uses two UTF-16 code units.
+        prompt_at_limit = "甲" * 11_998 + "📖"
+        book = self.create("prompt-at-limit", prompt=prompt_at_limit)
+        self.assertEqual(book["metadata"]["prompt"], prompt_at_limit)
+
+        with self.assertRaisesRegex(ValueError, "故事构想最多可输入 12,000 个字符"):
+            self.create("prompt-over-limit", prompt=prompt_at_limit + "乙")
+        self.assertFalse((self.books / "prompt-over-limit").exists())
+
     def test_chapters_boundary_values(self):
         cases = (
             (0, False),
