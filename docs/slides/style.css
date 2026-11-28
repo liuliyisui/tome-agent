@@ -3115,6 +3115,7 @@
 
 /* Large-room readability pass */
 .kicker { font-size: 12.5px; letter-spacing: 0.12em; }
+.principle-head .kicker { font-size: 19px; letter-spacing: 0.14em; }
 .problem-quote { font-size: 30px; }
 .problem-copy { font-size: 12px; }
 .problem-facts b { font-size: 32px; }
