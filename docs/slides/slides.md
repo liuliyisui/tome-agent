@@ -420,6 +420,7 @@ layout: default
 
 ---
 layout: default
+class: tech-page
 ---
 
 <div class="kicker">3.2–3.3 技术选型与代码仓库</div>
@@ -450,10 +451,17 @@ layout: default
   </div>
 </div>
 
+<div class="tech-principles">
+  <div><b>够用</b><span>单机与单服务优先，不引入 ASGI。</span></div>
+  <div><b>可验证</b><span>版本写进 README，依赖锁进 pyproject。</span></div>
+  <div><b>不过重</b><span>无前端构建链，图源与代码同仓。</span></div>
+</div>
+
 <div class="bottom-note">来源：README「技术选型」 · code/backend/pyproject.toml · github.com/liuliyisui/tome-agent</div>
 
 ---
 layout: default
+class: lifecycle-page
 ---
 
 <div class="kicker">3.4 全生命周期 / LIFECYCLE</div>
@@ -483,6 +491,7 @@ layout: default
 
 ---
 layout: default
+class: design-page
 ---
 
 <div class="kicker">3.5–3.5.0 概要设计与工具</div>
@@ -498,7 +507,11 @@ layout: default
   <div class="ux-card"><div class="ux-top"><span class="ux-no">06</span><span class="tag">界面</span></div><div class="ux-title">Vue + 原生</div><div class="ux-text">书架、文风、生成、编辑、导出。</div></div>
 </div>
 
-<div class="tool-strip"><b>工具</b><span>Mermaid · 图源随代码</span><span>Slidev · Markdown 讲稿</span><span>VS Code + Git · 同仓提交</span></div>
+<div class="tool-cards">
+  <div><b>Mermaid</b><span>图源随代码，架构图 / 状态图 / E-R 图。</span></div>
+  <div><b>Slidev</b><span>Markdown 讲稿，Mermaid 直接渲染。</span></div>
+  <div><b>VS Code + Git</b><span>编辑、检查、提交在同一仓库。</span></div>
+</div>
 
 <div class="bottom-note">来源：docs/software/architecture.md · docs/algorithm/LANGGRAPH.mmd · docs/slides/slides.md</div>
 
@@ -536,6 +549,7 @@ flowchart LR
 
 ---
 layout: default
+class: agent-page
 ---
 
 <div class="kicker">3.5.3 智能体设计</div>

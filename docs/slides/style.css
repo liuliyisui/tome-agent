@@ -3200,3 +3200,43 @@
 .p-no { font-size: 10px; }
 .p-ev code { font-size: 9px; }
 .p-ev em { font-size: 9px; }
+
+/* Fill dense pages to ~3/4 of the canvas */
+.tech-page .compact-tech { font-size: 10.2px; }
+.tech-page .compact-tech td, .tech-page .compact-tech th { padding: 10px 8px; }
+.tech-page .tech-note { padding: 9px 11px; font-size: 9.8px; }
+.tech-page .repo-mini { padding: 16px; }
+.tech-page .repo-chart-mini { height: 180px; }
+.tech-principles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 7px;
+  margin-top: 10px;
+}
+.tech-principles div { padding: 8px 10px; border-left: 2px solid var(--gold); background: var(--paper-2); }
+.tech-principles b { display: block; font-family: var(--serif); font-size: 12px; color: var(--ink); }
+.tech-principles span { display: block; margin-top: 2px; font-size: 8.8px; line-height: 1.45; color: var(--ink-soft); }
+
+.lifecycle-page .issue-table { font-size: 10.8px; }
+.lifecycle-page .issue-table td, .lifecycle-page .issue-table th { padding: 13px 8px; }
+.lifecycle-page .issue-note { padding: 9px 12px; font-size: 9.8px; }
+
+.design-page .design-grid .ux-card { min-height: 165px; padding: 15px 14px; }
+.design-page .design-grid .ux-title { font-size: 17px; }
+.design-page .design-grid .ux-text { font-size: 10.8px; line-height: 1.55; }
+.tool-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+.tool-cards div { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.44); }
+.tool-cards b { display: block; font-family: var(--serif); font-size: 13px; color: var(--ink); }
+.tool-cards span { display: block; margin-top: 3px; font-size: 9px; line-height: 1.45; color: var(--ink-soft); }
+
+.agent-page .agent-col { min-height: 360px; }
+.agent-page .agent-col p { font-size: 10.2px; }
+.agent-page .flow-mini span { font-size: 9.8px; }
+.agent-page .memory-mini div, .agent-page .guard-mini div { font-size: 9.8px; padding: 6px 0; }
+.agent-page .agent-evidence { font-size: 8.5px; }
+.agent-page .agent-foot { font-size: 11px; }
