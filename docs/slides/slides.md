@@ -514,22 +514,22 @@ layout: default
 layout: default
 ---
 
-<div class="kicker">3.5.1–3.5.2 架构与基础设施</div>
+<div class="kicker">3.5.1–3.5.2 架构与仓库结构</div>
 
 <div class="rule"></div>
 
 ```mermaid {theme: 'base', themeCSS: '.node rect{fill:#F6F3E9 !important;stroke:#1E4A36 !important;rx:4px;ry:4px}.node polygon{fill:#F6F3E9 !important;stroke:#1E4A36 !important}.nodeLabel{fill:#1F3026 !important;font-family:Noto Sans SC,Microsoft YaHei,sans-serif !important;font-size:12.5px !important;line-height:1.35 !important}.edgePath .path{stroke:#7D9274 !important;stroke-width:1.5px !important}.marker{fill:#7D9274 !important;stroke:#7D9274 !important}.labelBkg{background:#F6F3E9 !important}.labelBkg p{background:transparent !important;color:#5D7355 !important}.edgeLabel{background:#F6F3E9 !important;color:#5D7355 !important}', scale: 0.82}
 flowchart LR
-  UI["界面层<br/>Vue · 书架 / 编辑"] -->|HTTP| API["服务层<br/>路由 · 校验"]
-  API -->|调用| ENGINE["引擎层<br/>LangGraph · 记忆"]
-  ENGINE -->|读写| STORE["存储层<br/>文件 / PostgreSQL"]
-  ENGINE -. "旁路调用" .-> MODEL["模型服务<br/>DeepSeek / 兼容接口"]
+  UI["界面层<br/>Vue · 书架 / 编辑"] -->|HTTP| API["服务层<br/>inf_backend/"]
+  API -->|调用| ENGINE["引擎层<br/>core_engine/"]
+  ENGINE -->|读写| STORE["存储层<br/>schema.sql · data/"]
+  ENGINE -. "旁路调用" .-> MODEL["模型服务<br/>chat_provider.py"]
 ```
 
 <div class="infra-row">
-  <div class="ux-card"><div class="tag">入口</div><div class="ux-title">Nginx · 443 / TLS</div><div class="ux-text">HTTPS、反向代理、请求限流。</div></div>
-  <div class="ux-card"><div class="tag">应用</div><div class="ux-title">systemd · Python 3.11</div><div class="ux-text">只监听 127.0.0.1:8765，崩溃自动重启。</div></div>
-  <div class="ux-card"><div class="tag">数据</div><div class="ux-title">/var/lib/tome-agent</div><div class="ux-text">作品、Skill、配置与检查点；定期备份。</div></div>
+  <div class="ux-card"><div class="tag">前端</div><div class="ux-title">code/frontend/</div><div class="ux-text">Vue runtime-only；书架、编辑、导出。</div></div>
+  <div class="ux-card"><div class="tag">服务</div><div class="ux-title">inf_backend/</div><div class="ux-text">HTTP 路由、参数校验、存储适配。</div></div>
+  <div class="ux-card"><div class="tag">引擎</div><div class="ux-title">core_engine/</div><div class="ux-text">LangGraph 编排、三层记忆、写作流程。</div></div>
 </div>
 
 <div class="arch-legend">
@@ -547,7 +547,7 @@ flowchart LR
 
 <div class="arch-foot"><span>请求路径</span> 界面动作 → 服务层校验 → 引擎编排 → 检查点 / 数据库提交 → 结果回传。</div>
 
-<div class="bottom-note">来源：docs/software/architecture.md · docs/software/LINUX_HOSTED.md · docs/software/DEPLOY.md</div>
+<div class="bottom-note">来源：docs/software/architecture.md · code/frontend/ · code/backend/inf_backend/ · code/core_engine/</div>
 
 ---
 layout: default
