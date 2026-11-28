@@ -575,6 +575,16 @@ class: agent-page
 layout: default
 ---
 
+<div class="kicker">3.5.3 智能体设计 · 五个组成</div>
+
+<div class="workflow-figure"><img src="/agent-components.png" alt="Tome Agent 智能体五个组成与代码位置"></div>
+
+<div class="bottom-note">来源：code/core_engine/ · graph_runtime.py · event_first.py · writing.py · tiered_memory.py · privacy.py · editing.py</div>
+
+---
+layout: default
+---
+
 <div class="kicker">3.5.4 智能体要素</div>
 
 <div class="rule"></div>
