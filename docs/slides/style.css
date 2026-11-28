@@ -3328,3 +3328,48 @@
 }
 
 .agensi-single .agensi-mail { margin-top: 55px; }
+
+/* Deep dive: demand and innovation */
+.deep-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 12px;
+}
+.deep-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 410px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255,255,255,.44);
+  box-shadow: 0 10px 26px rgba(31,48,38,.04);
+}
+.deep-head { display: flex; align-items: center; justify-content: space-between; }
+.deep-no { font-family: var(--mono); font-size: 9px; font-weight: 700; color: var(--gold); }
+.deep-title { margin: 10px 0 8px; font-family: var(--serif); font-size: 24px; color: var(--ink); }
+.deep-row {
+  display: grid;
+  grid-template-columns: 46px minmax(0,1fr);
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.deep-row b { font-size: 10px; color: var(--pine); }
+.deep-row span { font-size: 12px; line-height: 1.65; color: var(--ink-soft); }
+.deep-ev {
+  margin-top: auto;
+  padding-top: 10px;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.deep-foot {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-left: 2px solid var(--gold);
+  background: var(--paper-2);
+  font-size: 10.5px;
+  color: var(--ink-soft);
+}

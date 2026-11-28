@@ -209,6 +209,37 @@ class: principle-page
 
 ---
 layout: default
+---
+
+<div class="kicker">原则详解 / 需求与创新</div>
+
+<div class="rule"></div>
+
+<div class="deep-grid">
+  <div class="deep-card">
+    <div class="deep-head"><span class="deep-no">01</span><span class="tag">需求</span></div>
+    <div class="deep-title">需求定方向</div>
+    <div class="deep-row"><b>问题</b><span>长篇创作里的失忆、矛盾和中断，先被写成问题定义，再拆成功能。</span></div>
+    <div class="deep-row"><b>做法</b><span>问题定义、功能规格、用户故事进仓库；三类用户分别对应核心、高价值和延展需求。</span></div>
+    <div class="deep-row"><b>结果</b><span>每个功能都能回到具体痛点，不做的边界也写清楚。</span></div>
+    <div class="deep-ev">docs/requirements/ · problem_definition · functional_spec · user_stories</div>
+  </div>
+  <div class="deep-card">
+    <div class="deep-head"><span class="deep-no">03</span><span class="tag">创新</span></div>
+    <div class="deep-title">创新才有落脚点</div>
+    <div class="deep-row"><b>切口</b><span>创新放在跨章状态；模型文笔交给模型。</span></div>
+    <div class="deep-row"><b>机制</b><span>事件先行、三层记忆、可恢复提交；LangGraph 只换编排层，领域逻辑复用。</span></div>
+    <div class="deep-row"><b>结果</b><span>长篇能续写、能恢复、能追溯，创新变成可测试的工程机制。</span></div>
+    <div class="deep-ev">LANGGRAPH_MIGRATION.md · graph_runtime.py · memory_runtime/</div>
+  </div>
+</div>
+
+<div class="deep-foot">需求决定做什么，创新决定在哪里做得不一样。</div>
+
+<div class="bottom-note">来源：docs/requirements/ · docs/software/LANGGRAPH_MIGRATION.md · code/core_engine/memory_runtime/</div>
+
+---
+layout: default
 class: principle-page
 ---
 
