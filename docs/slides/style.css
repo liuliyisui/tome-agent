@@ -3152,3 +3152,42 @@
 .p-ev em { font-size: 8.5px; }
 .ux-title { font-size: 15px; }
 .ux-text { font-size: 10px; }
+
+/* Architecture diagram enrichment */
+.arch-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 2px;
+  padding: 5px 10px;
+  font-size: 8.5px;
+  color: var(--ink-soft);
+}
+.arch-legend span { display: flex; align-items: center; gap: 6px; }
+.arch-legend i { display: inline-block; width: 26px; height: 0; border-top: 1.5px solid var(--sage-deep); }
+.arch-legend i.dash { border-top-style: dashed; }
+.arch-legend .legend-note { margin-left: auto; color: var(--muted); }
+.arch-rules {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 7px;
+  margin-top: 7px;
+}
+.arch-rules div {
+  padding: 7px 9px;
+  border-left: 2px solid var(--gold);
+  background: var(--paper-2);
+}
+.arch-rules b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 11.5px;
+  color: var(--ink);
+}
+.arch-rules span {
+  display: block;
+  margin-top: 2px;
+  font-size: 8.2px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
