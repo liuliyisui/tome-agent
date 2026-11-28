@@ -331,24 +331,6 @@ class: principle-page
     <div class="p-ev"><span>证据</span><code>.github/workflows/tests.yml</code><em>tests/TEST_REPORT.md</em></div>
   </div>
 
-  <div class="p-row">
-    <div class="p-no">11</div>
-    <div class="p-body">
-      <div class="p-title">能简就简</div>
-      <div class="p-text">标准库 HTTP 服务、Vue runtime-only、无 CDN、无前端构建步骤；少一个运行时变量，就少一类线上问题。</div>
-    </div>
-    <div class="p-ev"><span>证据</span><code>code/frontend/</code><em>README「技术选型」</em></div>
-  </div>
-
-  <div class="p-row">
-    <div class="p-no">12</div>
-    <div class="p-body">
-      <div class="p-title">每一步都审</div>
-      <div class="p-text">Ruff 规则、pre-commit 与 CI 共用同一份配置；代码评审、质量报告与整改记录都留在仓库。</div>
-    </div>
-    <div class="p-ev"><span>证据</span><code>docs/software/CODE_QUALITY_FIXES.md</code><em>code_review.md · .pre-commit-config.yaml</em></div>
-  </div>
-</div>
 
 
 <!-- 第四组：质量。定量验收、简化、审核，三件事都变成默认动作。 -->
