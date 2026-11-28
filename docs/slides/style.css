@@ -3338,7 +3338,7 @@
 .deep-card {
   display: flex;
   flex-direction: column;
-  min-height: 410px;
+  min-height: 380px;
   padding: 16px 18px;
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -3347,12 +3347,12 @@
 }
 .deep-head { display: flex; align-items: center; justify-content: space-between; }
 .deep-no { font-family: var(--mono); font-size: 9px; font-weight: 700; color: var(--gold); }
-.deep-title { margin: 10px 0 8px; font-family: var(--serif); font-size: 24px; color: var(--ink); }
+.deep-title { margin: 8px 0 5px; font-family: var(--serif); font-size: 24px; color: var(--ink); }
 .deep-row {
   display: grid;
   grid-template-columns: 46px minmax(0,1fr);
   gap: 10px;
-  padding: 9px 0;
+  padding: 7px 0;
   border-bottom: 1px solid var(--line-soft);
 }
 .deep-row b { font-size: 10px; color: var(--pine); }
