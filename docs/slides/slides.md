@@ -477,8 +477,6 @@ class: lifecycle-page
   </tbody>
 </table>
 
-<div class="issue-note">问题清单已保存为 <code>docs/software/ISSUES_SUMMARY.md</code>，按分析、设计、开发、测试、部署运维顺序维护。</div>
-
 <div class="bottom-note">来源：docs/software/ISSUES_SUMMARY.md · docs/software/architecture.md · tests/TEST_REPORT.md</div>
 
 <!-- 3.4 全生命周期：主要问题、发生原因、解决办法与仓库证据。 -->
