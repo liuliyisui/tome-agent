@@ -467,6 +467,16 @@ layout: default
 layout: default
 ---
 
+<div class="kicker">3.5.4 智能体要素 · 类 RAG 流程</div>
+
+<div class="workflow-figure"><img src="/rag-flow.png" alt="Tome Agent 类 RAG 流程"></div>
+
+<div class="bottom-note">检索时工作记忆优先；近期与长期记忆按词面匹配、规则和预算选择；相关记忆、来源证据和故事状态一起组装上下文。来源：docs/algorithm/LANGGRAPH.mmd · code/core_engine/</div>
+
+---
+layout: default
+---
+
 <div class="kicker">3.5.5–3.5.6 接口与前端</div>
 
 <div class="rule"></div>
